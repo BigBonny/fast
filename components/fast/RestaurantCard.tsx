@@ -1,0 +1,120 @@
+"use client";
+
+import { motion } from "framer-motion";
+import { Star, Clock, Heart } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+
+interface Restaurant {
+  id: string;
+  name: string;
+  image?: string;
+  image_url?: string;
+  description?: string;
+  rating?: number;
+  pickupPrepTime?: number;
+  normalPrepTime?: number;
+  rushPrepTime?: number;
+  delivery_time_min?: number;
+  delivery_time_max?: number;
+  isActive?: boolean;
+  is_open?: boolean;
+  promotion?: string;
+}
+
+interface RestaurantCardProps {
+  restaurant: Restaurant;
+  onClick?: () => void;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
+}
+
+export default function RestaurantCard({ 
+  restaurant, 
+  onClick, 
+  isFavorite, 
+  onToggleFavorite 
+}: RestaurantCardProps) {
+  return (
+    <motion.div
+      whileTap={{ scale: 0.97 }}
+      whileHover={{ y: -4, scale: 1.01 }}
+      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+      onClick={onClick}
+      className="bg-white dark:bg-slate-900 rounded-2xl overflow-hidden shadow-sm border border-gray-100 dark:border-slate-800 hover:shadow-xl cursor-pointer group"
+    >
+      <div className="relative h-40 bg-gradient-to-br from-gray-100 to-gray-50 dark:from-slate-800 dark:to-slate-900 overflow-hidden">
+        {(restaurant.image || restaurant.image_url) ? (
+          <img
+            src={restaurant.image || restaurant.image_url}
+            alt={restaurant.name}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-5xl opacity-40">
+            🍽️
+          </div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+        {restaurant.promotion && (
+          <Badge className="absolute top-3 left-3 bg-gradient-to-r from-red-500 to-pink-600 text-white font-black text-[10px] px-2.5 py-1 rounded-lg shadow-lg border-0">
+            {restaurant.promotion}
+          </Badge>
+        )}
+        {(restaurant.isActive === false || restaurant.is_open === false) && (
+          <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-[2px] flex items-center justify-center">
+            <span className="text-white font-bold text-sm px-4 py-1.5 rounded-full bg-slate-900/80 border border-white/20">
+              Fermé
+            </span>
+          </div>
+        )}
+        {onToggleFavorite && (
+          <motion.button
+            whileTap={{ scale: 0.75 }}
+            onClick={(e) => { e.stopPropagation(); e.preventDefault(); onToggleFavorite(); }}
+            className="absolute top-2.5 right-2.5 w-8 h-8 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-all hover:scale-110 border border-gray-100 dark:border-slate-700"
+          >
+            <Heart
+              className={`w-4 h-4 transition-all duration-300 ${isFavorite ? "text-red-500 fill-red-500 scale-110" : "text-gray-400 hover:text-red-400"}`}
+            />
+          </motion.button>
+        )}
+      </div>
+
+      <div className="p-3.5">
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="font-extrabold text-gray-900 dark:text-white text-[15px] leading-tight">
+            {restaurant.name}
+          </h3>
+          {restaurant.rating && (
+            <div className="flex items-center gap-0.5 bg-amber-50 dark:bg-amber-500/10 px-1.5 py-0.5 rounded-md shrink-0">
+              <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+              <span className="text-xs font-black text-amber-700 dark:text-amber-400">
+                {restaurant.rating}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {restaurant.description && (
+          <p className="text-xs text-gray-500 dark:text-slate-400 mt-1 line-clamp-1">
+            {restaurant.description}
+          </p>
+        )}
+
+        <div className="flex items-center justify-between mt-2.5">
+          <div className="flex items-center gap-1 text-gray-500 dark:text-slate-400 bg-gray-100 dark:bg-slate-800 px-2 py-1 rounded-lg">
+            <Clock className="w-3.5 h-3.5" />
+            <span className="text-[11px] font-bold">
+              {restaurant.delivery_time_min || restaurant.pickupPrepTime || 5}-{restaurant.delivery_time_max || restaurant.pickupPrepTime || 15} min
+            </span>
+          </div>
+          <div className="flex items-center gap-1 text-[#00c8b3]">
+            <span className="text-[11px] font-black uppercase tracking-wide">Fast</span>
+            <div className="w-2 h-2 rounded-full bg-[#00c8b3] shadow-[0_0_8px_#00c8b3]" />
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
