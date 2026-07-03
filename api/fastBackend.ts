@@ -23,45 +23,53 @@ function lsSet(key: string, value: any) {
   if (typeof window !== "undefined") localStorage.setItem(key, JSON.stringify(value));
 }
 
+// Bump this version whenever seed data changes to refresh existing visitors' data
+const SEED_VERSION = "2";
+if (typeof window !== "undefined" && localStorage.getItem("mock_seed_version") !== SEED_VERSION) {
+  localStorage.removeItem("mock_restaurants");
+  localStorage.removeItem("mock_menus");
+  localStorage.setItem("mock_seed_version", SEED_VERSION);
+}
+
 // ─── Seed data ─────────────────────────────────────────────────────────────────
 
 const SEED_RESTAURANTS = [
-  { id: "r1", name: "Burger Palace", description: "Les meilleurs burgers de la ville", cuisineType: "burger", category: "fast-food", address: "12 Rue de la Paix", city: "Paris", rating: 4.8, reviewsCount: 124, normalPrepTime: 12, rushPrepTime: 20, pickupPrepTime: 10, isRushMode: false, image: "", dietaryOptions: [] },
-  { id: "r2", name: "Pizza Roma", description: "Authentique pizza napolitaine", cuisineType: "pizza", category: "italien", address: "34 Avenue Victor Hugo", city: "Paris", rating: 4.6, reviewsCount: 89, normalPrepTime: 15, rushPrepTime: 25, pickupPrepTime: 12, isRushMode: false, image: "", dietaryOptions: [{ option: "VEGETARIAN" }] },
-  { id: "r3", name: "Sushi Zen", description: "Sushis frais préparés à la commande", cuisineType: "sushi", category: "japonais", address: "8 Rue du Faubourg", city: "Paris", rating: 4.9, reviewsCount: 203, normalPrepTime: 18, rushPrepTime: 28, pickupPrepTime: 15, isRushMode: true, image: "", dietaryOptions: [{ option: "GLUTEN_FREE" }] },
-  { id: "r4", name: "Tacos House", description: "Tacos généreux et savoureux", cuisineType: "tacos", category: "mexicain", address: "56 Rue Nationale", city: "Lyon", rating: 4.5, reviewsCount: 67, normalPrepTime: 10, rushPrepTime: 18, pickupPrepTime: 8, isRushMode: false, image: "", dietaryOptions: [] },
-  { id: "r5", name: "Green Bowl", description: "Cuisine vegan et végétarienne", cuisineType: "vegan", category: "healthy", address: "22 Boulevard Haussmann", city: "Paris", rating: 4.7, reviewsCount: 145, normalPrepTime: 14, rushPrepTime: 22, pickupPrepTime: 11, isRushMode: false, image: "", dietaryOptions: [{ option: "VEGAN" }, { option: "GLUTEN_FREE" }] },
+  { id: "r1", name: "Burger Palace", description: "Les meilleurs burgers de la ville", cuisineType: "burger", category: "fast-food", address: "12 Rue de la Paix", city: "Paris", rating: 4.8, reviewsCount: 124, normalPrepTime: 12, rushPrepTime: 20, pickupPrepTime: 10, isRushMode: false, promotion: "-20%", image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80", dietaryOptions: [] },
+  { id: "r2", name: "Pizza Roma", description: "Authentique pizza napolitaine", cuisineType: "pizza", category: "italien", address: "34 Avenue Victor Hugo", city: "Paris", rating: 4.6, reviewsCount: 89, normalPrepTime: 15, rushPrepTime: 25, pickupPrepTime: 12, isRushMode: false, image: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=800&q=80", dietaryOptions: [{ option: "VEGETARIAN" }] },
+  { id: "r3", name: "Sushi Zen", description: "Sushis frais préparés à la commande", cuisineType: "sushi", category: "japonais", address: "8 Rue du Faubourg", city: "Paris", rating: 4.9, reviewsCount: 203, normalPrepTime: 18, rushPrepTime: 28, pickupPrepTime: 15, isRushMode: true, image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=800&q=80", dietaryOptions: [{ option: "GLUTEN_FREE" }] },
+  { id: "r4", name: "Tacos House", description: "Tacos généreux et savoureux", cuisineType: "tacos", category: "mexicain", address: "56 Rue Nationale", city: "Lyon", rating: 4.5, reviewsCount: 67, normalPrepTime: 10, rushPrepTime: 18, pickupPrepTime: 8, isRushMode: false, promotion: "1 acheté = 1 offert", image: "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=800&q=80", dietaryOptions: [] },
+  { id: "r5", name: "Green Bowl", description: "Cuisine vegan et végétarienne", cuisineType: "vegan", category: "healthy", address: "22 Boulevard Haussmann", city: "Paris", rating: 4.7, reviewsCount: 145, normalPrepTime: 14, rushPrepTime: 22, pickupPrepTime: 11, isRushMode: false, image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=80", dietaryOptions: [{ option: "VEGAN" }, { option: "GLUTEN_FREE" }] },
 ];
 
 const SEED_MENUS: Record<string, any[]> = {
   r1: [
-    { id: "m1", restaurantId: "r1", name: "Classic Burger", description: "Bœuf, cheddar, salade, tomate", price: 9.90, category: "Burgers", image: "", isAvailable: true, dietaryTags: [] },
-    { id: "m2", restaurantId: "r1", name: "Double Smash", description: "Double steak haché, sauce spéciale", price: 12.90, category: "Burgers", image: "", isAvailable: true, dietaryTags: [] },
-    { id: "m3", restaurantId: "r1", name: "Chicken Burger", description: "Poulet croustillant, mayo", price: 10.50, category: "Burgers", image: "", isAvailable: true, dietaryTags: [] },
-    { id: "m4", restaurantId: "r1", name: "Frites maison", description: "Pommes de terre fraîches", price: 3.50, category: "Accompagnements", image: "", isAvailable: true, dietaryTags: [{ option: "VEGAN" }] },
-    { id: "m5", restaurantId: "r1", name: "Coca-Cola", description: "33cl", price: 2.50, category: "Boissons", image: "", isAvailable: true, dietaryTags: [] },
+    { id: "m1", restaurantId: "r1", name: "Classic Burger", description: "Bœuf, cheddar, salade, tomate", price: 9.90, category: "Burgers", image: "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400&q=80", isAvailable: true, dietaryTags: [] },
+    { id: "m2", restaurantId: "r1", name: "Double Smash", description: "Double steak haché, sauce spéciale", price: 12.90, category: "Burgers", image: "https://images.unsplash.com/photo-1553979459-d2229ba7433b?w=400&q=80", isAvailable: true, dietaryTags: [] },
+    { id: "m3", restaurantId: "r1", name: "Chicken Burger", description: "Poulet croustillant, mayo", price: 10.50, category: "Burgers", image: "https://images.unsplash.com/photo-1606755962773-d324e0a13086?w=400&q=80", isAvailable: true, dietaryTags: [] },
+    { id: "m4", restaurantId: "r1", name: "Frites maison", description: "Pommes de terre fraîches", price: 3.50, category: "Accompagnements", image: "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=400&q=80", isAvailable: true, dietaryTags: [{ option: "VEGAN" }] },
+    { id: "m5", restaurantId: "r1", name: "Coca-Cola", description: "33cl", price: 2.50, category: "Boissons", image: "https://images.unsplash.com/photo-1554866585-cd94860890b7?w=400&q=80", isAvailable: true, dietaryTags: [] },
   ],
   r2: [
-    { id: "m6", restaurantId: "r2", name: "Margherita", description: "Tomate, mozzarella, basilic", price: 11.00, category: "Pizzas", image: "", isAvailable: true, dietaryTags: [{ option: "VEGETARIAN" }] },
-    { id: "m7", restaurantId: "r2", name: "4 Fromages", description: "Mozzarella, gorgonzola, parmesan, chèvre", price: 13.50, category: "Pizzas", image: "", isAvailable: true, dietaryTags: [{ option: "VEGETARIAN" }] },
-    { id: "m8", restaurantId: "r2", name: "Pepperoni", description: "Tomate, mozzarella, pepperoni", price: 12.50, category: "Pizzas", image: "", isAvailable: true, dietaryTags: [] },
-    { id: "m9", restaurantId: "r2", name: "Tiramisu", description: "Fait maison", price: 5.50, category: "Desserts", image: "", isAvailable: true, dietaryTags: [{ option: "VEGETARIAN" }] },
+    { id: "m6", restaurantId: "r2", name: "Margherita", description: "Tomate, mozzarella, basilic", price: 11.00, category: "Pizzas", image: "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=400&q=80", isAvailable: true, dietaryTags: [{ option: "VEGETARIAN" }] },
+    { id: "m7", restaurantId: "r2", name: "4 Fromages", description: "Mozzarella, gorgonzola, parmesan, chèvre", price: 13.50, category: "Pizzas", image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&q=80", isAvailable: true, dietaryTags: [{ option: "VEGETARIAN" }] },
+    { id: "m8", restaurantId: "r2", name: "Pepperoni", description: "Tomate, mozzarella, pepperoni", price: 12.50, category: "Pizzas", image: "https://images.unsplash.com/photo-1628840042765-356cda07504e?w=400&q=80", isAvailable: true, dietaryTags: [] },
+    { id: "m9", restaurantId: "r2", name: "Tiramisu", description: "Fait maison", price: 5.50, category: "Desserts", image: "https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=400&q=80", isAvailable: true, dietaryTags: [{ option: "VEGETARIAN" }] },
   ],
   r3: [
-    { id: "m10", restaurantId: "r3", name: "California Roll x8", description: "Avocat, surimi, concombre", price: 9.50, category: "Makis", image: "", isAvailable: true, dietaryTags: [] },
-    { id: "m11", restaurantId: "r3", name: "Saumon Nigiri x4", description: "Saumon frais sur riz vinaigré", price: 8.00, category: "Nigiris", image: "", isAvailable: true, dietaryTags: [{ option: "GLUTEN_FREE" }] },
-    { id: "m12", restaurantId: "r3", name: "Plateau Zen 30p", description: "Assortiment makis, nigiris, sashimis", price: 22.90, category: "Plateaux", image: "", isAvailable: true, dietaryTags: [] },
-    { id: "m13", restaurantId: "r3", name: "Edamame", description: "Fèves de soja salées", price: 4.00, category: "Entrées", image: "", isAvailable: true, dietaryTags: [{ option: "VEGAN" }, { option: "GLUTEN_FREE" }] },
+    { id: "m10", restaurantId: "r3", name: "California Roll x8", description: "Avocat, surimi, concombre", price: 9.50, category: "Makis", image: "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400&q=80", isAvailable: true, dietaryTags: [] },
+    { id: "m11", restaurantId: "r3", name: "Saumon Nigiri x4", description: "Saumon frais sur riz vinaigré", price: 8.00, category: "Nigiris", image: "https://images.unsplash.com/photo-1611143669185-af224c5e3252?w=400&q=80", isAvailable: true, dietaryTags: [{ option: "GLUTEN_FREE" }] },
+    { id: "m12", restaurantId: "r3", name: "Plateau Zen 30p", description: "Assortiment makis, nigiris, sashimis", price: 22.90, category: "Plateaux", image: "https://images.unsplash.com/photo-1553621042-f6e147245754?w=400&q=80", isAvailable: true, dietaryTags: [] },
+    { id: "m13", restaurantId: "r3", name: "Edamame", description: "Fèves de soja salées", price: 4.00, category: "Entrées", image: "https://images.unsplash.com/photo-1564834744159-ff0ea41ba4b9?w=400&q=80", isAvailable: true, dietaryTags: [{ option: "VEGAN" }, { option: "GLUTEN_FREE" }] },
   ],
   r4: [
-    { id: "m14", restaurantId: "r4", name: "Tacos Poulet", description: "Poulet grillé, fromage, sauce fromagère", price: 7.50, category: "Tacos", image: "", isAvailable: true, dietaryTags: [] },
-    { id: "m15", restaurantId: "r4", name: "Tacos Mixte", description: "Poulet + viande hachée, sauce blanche", price: 8.50, category: "Tacos", image: "", isAvailable: true, dietaryTags: [] },
-    { id: "m16", restaurantId: "r4", name: "Burrito Végé", description: "Haricots, maïs, guacamole", price: 8.00, category: "Burritos", image: "", isAvailable: true, dietaryTags: [{ option: "VEGETARIAN" }] },
+    { id: "m14", restaurantId: "r4", name: "Tacos Poulet", description: "Poulet grillé, fromage, sauce fromagère", price: 7.50, category: "Tacos", image: "https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?w=400&q=80", isAvailable: true, dietaryTags: [] },
+    { id: "m15", restaurantId: "r4", name: "Tacos Mixte", description: "Poulet + viande hachée, sauce blanche", price: 8.50, category: "Tacos", image: "https://images.unsplash.com/photo-1599974579688-8dbdd335c77f?w=400&q=80", isAvailable: true, dietaryTags: [] },
+    { id: "m16", restaurantId: "r4", name: "Burrito Végé", description: "Haricots, maïs, guacamole", price: 8.00, category: "Burritos", image: "https://images.unsplash.com/photo-1626700051175-6818013e1d4f?w=400&q=80", isAvailable: true, dietaryTags: [{ option: "VEGETARIAN" }] },
   ],
   r5: [
-    { id: "m17", restaurantId: "r5", name: "Buddha Bowl", description: "Quinoa, légumes rôtis, tahini", price: 12.00, category: "Bols", image: "", isAvailable: true, dietaryTags: [{ option: "VEGAN" }, { option: "GLUTEN_FREE" }] },
-    { id: "m18", restaurantId: "r5", name: "Smoothie Detox", description: "Épinards, pomme, gingembre", price: 5.50, category: "Boissons", image: "", isAvailable: true, dietaryTags: [{ option: "VEGAN" }] },
-    { id: "m19", restaurantId: "r5", name: "Wrap Végétarien", description: "Avocat, houmous, légumes croquants", price: 9.50, category: "Wraps", image: "", isAvailable: true, dietaryTags: [{ option: "VEGETARIAN" }] },
+    { id: "m17", restaurantId: "r5", name: "Buddha Bowl", description: "Quinoa, légumes rôtis, tahini", price: 12.00, category: "Bols", image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80", isAvailable: true, dietaryTags: [{ option: "VEGAN" }, { option: "GLUTEN_FREE" }] },
+    { id: "m18", restaurantId: "r5", name: "Smoothie Detox", description: "Épinards, pomme, gingembre", price: 5.50, category: "Boissons", image: "https://images.unsplash.com/photo-1610970881699-44a5587cabec?w=400&q=80", isAvailable: true, dietaryTags: [{ option: "VEGAN" }] },
+    { id: "m19", restaurantId: "r5", name: "Wrap Végétarien", description: "Avocat, houmous, légumes croquants", price: 9.50, category: "Wraps", image: "https://images.unsplash.com/photo-1600850056064-a8b380df8395?w=400&q=80", isAvailable: true, dietaryTags: [{ option: "VEGETARIAN" }] },
   ],
 };
 
@@ -106,16 +114,16 @@ const DEMO_RESTAURANT = {
   rushPrepTime: 25,
   pickupPrepTime: 12,
   isRushMode: false,
-  image: "",
+  image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80",
   dietaryOptions: [{ option: "VEGETARIAN" }],
 };
 
 const DEMO_MENU: any[] = [
-  { id: "dm1", restaurantId: "demo_r", name: "Soupe à l'oignon", description: "Gratinée, pain maison", price: 7.50, category: "Entrées", image: "", isAvailable: true, dietaryTags: [{ option: "VEGETARIAN" }] },
-  { id: "dm2", restaurantId: "demo_r", name: "Steak Frites", description: "Entrecôte, frites maison, sauce au poivre", price: 16.90, category: "Plats", image: "", isAvailable: true, dietaryTags: [] },
-  { id: "dm3", restaurantId: "demo_r", name: "Poulet rôti", description: "Demi-poulet, jus de cuisson, pommes sautées", price: 14.50, category: "Plats", image: "", isAvailable: true, dietaryTags: [] },
-  { id: "dm4", restaurantId: "demo_r", name: "Crème brûlée", description: "Vanille de Madagascar", price: 6.00, category: "Desserts", image: "", isAvailable: true, dietaryTags: [{ option: "VEGETARIAN" }] },
-  { id: "dm5", restaurantId: "demo_r", name: "Eau minérale", description: "50cl", price: 2.50, category: "Boissons", image: "", isAvailable: true, dietaryTags: [{ option: "VEGAN" }] },
+  { id: "dm1", restaurantId: "demo_r", name: "Soupe à l'oignon", description: "Gratinée, pain maison", price: 7.50, category: "Entrées", image: "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400&q=80", isAvailable: true, dietaryTags: [{ option: "VEGETARIAN" }] },
+  { id: "dm2", restaurantId: "demo_r", name: "Steak Frites", description: "Entrecôte, frites maison, sauce au poivre", price: 16.90, category: "Plats", image: "https://images.unsplash.com/photo-1600891964092-4316c288032e?w=400&q=80", isAvailable: true, dietaryTags: [] },
+  { id: "dm3", restaurantId: "demo_r", name: "Poulet rôti", description: "Demi-poulet, jus de cuisson, pommes sautées", price: 14.50, category: "Plats", image: "https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=400&q=80", isAvailable: true, dietaryTags: [] },
+  { id: "dm4", restaurantId: "demo_r", name: "Crème brûlée", description: "Vanille de Madagascar", price: 6.00, category: "Desserts", image: "https://images.unsplash.com/photo-1470324161839-ce2bb6fa6bc3?w=400&q=80", isAvailable: true, dietaryTags: [{ option: "VEGETARIAN" }] },
+  { id: "dm5", restaurantId: "demo_r", name: "Eau minérale", description: "50cl", price: 2.50, category: "Boissons", image: "https://images.unsplash.com/photo-1560023907-5f339617ea30?w=400&q=80", isAvailable: true, dietaryTags: [{ option: "VEGAN" }] },
 ];
 
 function getUsers(): any[] {

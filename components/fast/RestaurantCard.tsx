@@ -11,6 +11,8 @@ interface Restaurant {
   image_url?: string;
   description?: string;
   rating?: number;
+  reviewsCount?: number;
+  cuisineType?: string;
   pickupPrepTime?: number;
   normalPrepTime?: number;
   rushPrepTime?: number;
@@ -18,7 +20,23 @@ interface Restaurant {
   delivery_time_max?: number;
   isActive?: boolean;
   is_open?: boolean;
+  isRushMode?: boolean;
   promotion?: string;
+}
+
+const cuisineVisuals: Record<string, { emoji: string; bg: string }> = {
+  burger: { emoji: "\ud83c\udf54", bg: "linear-gradient(135deg,#fbbf24,#f97316)" },
+  pizza: { emoji: "\ud83c\udf55", bg: "linear-gradient(135deg,#f87171,#dc2626)" },
+  sushi: { emoji: "\ud83c\udf63", bg: "linear-gradient(135deg,#38bdf8,#0284c7)" },
+  tacos: { emoji: "\ud83c\udf2e", bg: "linear-gradient(135deg,#fb923c,#ea580c)" },
+  vegan: { emoji: "\ud83e\udd66", bg: "linear-gradient(135deg,#4ade80,#16a34a)" },
+  kebab: { emoji: "\ud83e\udd59", bg: "linear-gradient(135deg,#fbbf24,#d97706)" },
+  français: { emoji: "\ud83c\udf7d\ufe0f", bg: "linear-gradient(135deg,#a78bfa,#7c3aed)" },
+  dessert: { emoji: "\ud83c\udf70", bg: "linear-gradient(135deg,#f9a8d4,#ec4899)" },
+};
+
+function getCuisineVisual(type?: string) {
+  return (type && cuisineVisuals[type.toLowerCase()]) || { emoji: "\ud83c\udf7d\ufe0f", bg: "linear-gradient(135deg,#94a3b8,#64748b)" };
 }
 
 interface RestaurantCardProps {
@@ -50,15 +68,20 @@ export default function RestaurantCard({
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-5xl opacity-40">
-            🍽️
+          <div className="w-full h-full flex items-center justify-center" style={{ background: getCuisineVisual(restaurant.cuisineType).bg }}>
+            <span className="text-6xl drop-shadow-lg">{getCuisineVisual(restaurant.cuisineType).emoji}</span>
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
         {restaurant.promotion && (
           <Badge className="absolute top-3 left-3 bg-gradient-to-r from-red-500 to-pink-600 text-white font-black text-[10px] px-2.5 py-1 rounded-lg shadow-lg border-0">
-            {restaurant.promotion}
+            {"\ud83c\udf81"} {restaurant.promotion}
+          </Badge>
+        )}
+        {restaurant.isRushMode && (
+          <Badge className="absolute bottom-3 left-3 bg-slate-900/80 backdrop-blur-sm text-orange-400 font-black text-[10px] px-2 py-0.5 rounded-lg shadow-lg border border-orange-500/30">
+            {"\ud83d\udd25"} Rush
           </Badge>
         )}
         {(restaurant.isActive === false || restaurant.is_open === false) && (
@@ -86,14 +109,17 @@ export default function RestaurantCard({
           <h3 className="font-extrabold text-gray-900 dark:text-white text-[15px] leading-tight">
             {restaurant.name}
           </h3>
-          {restaurant.rating && (
+          {restaurant.rating ? (
             <div className="flex items-center gap-0.5 bg-amber-50 dark:bg-amber-500/10 px-1.5 py-0.5 rounded-md shrink-0">
               <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
               <span className="text-xs font-black text-amber-700 dark:text-amber-400">
                 {restaurant.rating}
               </span>
+              {restaurant.reviewsCount ? (
+                <span className="text-[10px] text-amber-500/70 font-semibold">({restaurant.reviewsCount})</span>
+              ) : null}
             </div>
-          )}
+          ) : null}
         </div>
 
         {restaurant.description && (
