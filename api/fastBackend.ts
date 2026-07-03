@@ -67,19 +67,69 @@ const SEED_MENUS: Record<string, any[]> = {
 
 function getRestaurants() {
   const stored = ls<any[]>("mock_restaurants", []);
-  if (stored.length === 0) { lsSet("mock_restaurants", SEED_RESTAURANTS); return SEED_RESTAURANTS; }
-  return stored;
+  const base = stored.length === 0 ? SEED_RESTAURANTS : stored;
+  // always ensure demo restaurant exists
+  if (!base.find((r: any) => r.id === DEMO_RESTAURANT.id)) {
+    return [DEMO_RESTAURANT, ...base];
+  }
+  return base;
 }
 
 function getMenuItems() {
   const stored = ls<Record<string, any[]>>("mock_menus", {});
   const isEmpty = Object.keys(stored).length === 0;
-  if (isEmpty) { lsSet("mock_menus", SEED_MENUS); return SEED_MENUS; }
-  return stored;
+  const base = isEmpty ? { ...SEED_MENUS } : { ...stored };
+  // always ensure demo menu exists
+  if (!base["demo_r"] || base["demo_r"].length === 0) {
+    base["demo_r"] = DEMO_MENU;
+  }
+  return base;
 }
 
-function getUsers(): any[] { return ls("mock_users", []); }
-function saveUsers(u: any[]) { lsSet("mock_users", u); }
+const DEMO_USERS = [
+  { id: "demo_client", email: "client@fast.demo", password: "Demo1234", name: "Alex Dupont", phone: "0612345678", role: "CLIENT", points: 85, restaurant: null },
+  { id: "demo_resto", email: "resto@fast.demo", password: "Demo1234", name: "Chef Marco", phone: "0698765432", role: "RESTAURANT", points: 0, restaurant: null },
+];
+
+const DEMO_RESTAURANT = {
+  id: "demo_r",
+  ownerId: "demo_resto",
+  name: "La Belle Assiette",
+  description: "Cuisine française raffinée, faite maison avec des produits frais.",
+  cuisineType: "français",
+  category: "gastronomique",
+  address: "15 Rue des Gourmets",
+  city: "Paris",
+  rating: 4.7,
+  reviewsCount: 52,
+  normalPrepTime: 15,
+  rushPrepTime: 25,
+  pickupPrepTime: 12,
+  isRushMode: false,
+  image: "",
+  dietaryOptions: [{ option: "VEGETARIAN" }],
+};
+
+const DEMO_MENU: any[] = [
+  { id: "dm1", restaurantId: "demo_r", name: "Soupe à l'oignon", description: "Gratinée, pain maison", price: 7.50, category: "Entrées", image: "", isAvailable: true, dietaryTags: [{ option: "VEGETARIAN" }] },
+  { id: "dm2", restaurantId: "demo_r", name: "Steak Frites", description: "Entrecôte, frites maison, sauce au poivre", price: 16.90, category: "Plats", image: "", isAvailable: true, dietaryTags: [] },
+  { id: "dm3", restaurantId: "demo_r", name: "Poulet rôti", description: "Demi-poulet, jus de cuisson, pommes sautées", price: 14.50, category: "Plats", image: "", isAvailable: true, dietaryTags: [] },
+  { id: "dm4", restaurantId: "demo_r", name: "Crème brûlée", description: "Vanille de Madagascar", price: 6.00, category: "Desserts", image: "", isAvailable: true, dietaryTags: [{ option: "VEGETARIAN" }] },
+  { id: "dm5", restaurantId: "demo_r", name: "Eau minérale", description: "50cl", price: 2.50, category: "Boissons", image: "", isAvailable: true, dietaryTags: [{ option: "VEGAN" }] },
+];
+
+function getUsers(): any[] {
+  const stored = ls<any[]>("mock_users", []);
+  // always ensure demo accounts exist
+  const merged = [...DEMO_USERS];
+  stored.forEach((u) => { if (!DEMO_USERS.find((d) => d.id === u.id)) merged.push(u); });
+  return merged;
+}
+function saveUsers(u: any[]) {
+  // never overwrite demo users, only save non-demo ones
+  const custom = u.filter((x) => !DEMO_USERS.find((d) => d.id === x.id));
+  lsSet("mock_users", custom);
+}
 function getOrders(): any[] { return ls("mock_orders", []); }
 function saveOrders(o: any[]) { lsSet("mock_orders", o); }
 function currentUser(): any | null { return ls("mock_current_user", null); }
