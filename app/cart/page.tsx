@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { orderApi } from "@/api/fastBackend";
 import { getCart, updateCartQuantity, removeFromCart, clearCart, getCartTotal, CartItem } from "@/lib/localCart";
-import { ArrowLeft, Minus, Plus, Trash2, Zap } from "lucide-react";
+import { ArrowLeft, Minus, Plus, Trash2, Zap, ShoppingCart, PartyPopper, UtensilsCrossed } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { motion, AnimatePresence } from "framer-motion";
@@ -57,7 +57,9 @@ export default function CartPage() {
   if (cartItems.length === 0 && !confirmed) {
     return (
       <div className="flex flex-col items-center justify-center h-screen px-5">
-        <div className="text-6xl mb-4">🛒</div>
+        <div className="w-20 h-20 rounded-3xl bg-gray-100 flex items-center justify-center mb-4">
+          <ShoppingCart className="w-9 h-9 text-gray-300" />
+        </div>
         <h2 className="font-bold text-gray-900 text-lg mb-1">Panier vide</h2>
         <p className="text-sm text-gray-400 text-center mb-6">
           Explorez les restaurants et ajoutez des plats
@@ -74,7 +76,9 @@ export default function CartPage() {
   if (confirmed) {
     return (
       <div className="min-h-screen bg-gray-50/50 flex flex-col items-center justify-center px-5">
-        <div className="text-6xl mb-4">🎉</div>
+        <div className="w-20 h-20 rounded-3xl bg-emerald-50 flex items-center justify-center mb-4">
+          <PartyPopper className="w-9 h-9 text-emerald-500" />
+        </div>
         <h1 className="text-2xl font-black text-gray-900 mb-2">Commande confirmée !</h1>
         <p className="text-gray-400 text-center mb-6">Votre commande a été envoyée au restaurant.</p>
         <Button onClick={() => router.push("/orders")} style={{ background: "#14b8a6" }}>
@@ -101,7 +105,9 @@ export default function CartPage() {
 
       {cartItems.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 px-5">
-          <div className="text-6xl mb-4">🛒</div>
+          <div className="w-20 h-20 rounded-3xl bg-gray-100 flex items-center justify-center mb-4">
+            <ShoppingCart className="w-9 h-9 text-gray-300" />
+          </div>
           <h2 className="font-bold text-gray-900 text-lg mb-1">Panier vide</h2>
           <p className="text-sm text-gray-400 text-center mb-6">
             Explorez les restaurants et ajoutez des plats
@@ -138,7 +144,7 @@ export default function CartPage() {
                     {item.imageUrl ? (
                       <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-2xl opacity-30">🍽️</div>
+                      <div className="w-full h-full flex items-center justify-center bg-gray-100"><UtensilsCrossed className="w-6 h-6 text-gray-300" /></div>
                     )}
                   </div>
 

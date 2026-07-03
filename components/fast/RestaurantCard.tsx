@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Star, Clock, Heart } from "lucide-react";
+import { Star, Clock, Heart, Gift, Flame, Beef, Pizza, Fish, Utensils, Leaf, Sandwich, type LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface Restaurant {
@@ -24,19 +24,18 @@ interface Restaurant {
   promotion?: string;
 }
 
-const cuisineVisuals: Record<string, { emoji: string; bg: string }> = {
-  burger: { emoji: "\ud83c\udf54", bg: "linear-gradient(135deg,#fbbf24,#f97316)" },
-  pizza: { emoji: "\ud83c\udf55", bg: "linear-gradient(135deg,#f87171,#dc2626)" },
-  sushi: { emoji: "\ud83c\udf63", bg: "linear-gradient(135deg,#38bdf8,#0284c7)" },
-  tacos: { emoji: "\ud83c\udf2e", bg: "linear-gradient(135deg,#fb923c,#ea580c)" },
-  vegan: { emoji: "\ud83e\udd66", bg: "linear-gradient(135deg,#4ade80,#16a34a)" },
-  kebab: { emoji: "\ud83e\udd59", bg: "linear-gradient(135deg,#fbbf24,#d97706)" },
-  français: { emoji: "\ud83c\udf7d\ufe0f", bg: "linear-gradient(135deg,#a78bfa,#7c3aed)" },
-  dessert: { emoji: "\ud83c\udf70", bg: "linear-gradient(135deg,#f9a8d4,#ec4899)" },
+const cuisineVisuals: Record<string, { Icon: LucideIcon; bg: string }> = {
+  burger: { Icon: Beef, bg: "linear-gradient(135deg,#fbbf24,#f97316)" },
+  pizza: { Icon: Pizza, bg: "linear-gradient(135deg,#f87171,#dc2626)" },
+  sushi: { Icon: Fish, bg: "linear-gradient(135deg,#38bdf8,#0284c7)" },
+  tacos: { Icon: Utensils, bg: "linear-gradient(135deg,#fb923c,#ea580c)" },
+  vegan: { Icon: Leaf, bg: "linear-gradient(135deg,#4ade80,#16a34a)" },
+  kebab: { Icon: Sandwich, bg: "linear-gradient(135deg,#fbbf24,#d97706)" },
+  français: { Icon: Utensils, bg: "linear-gradient(135deg,#a78bfa,#7c3aed)" },
 };
 
 function getCuisineVisual(type?: string) {
-  return (type && cuisineVisuals[type.toLowerCase()]) || { emoji: "\ud83c\udf7d\ufe0f", bg: "linear-gradient(135deg,#94a3b8,#64748b)" };
+  return (type && cuisineVisuals[type.toLowerCase()]) || { Icon: Utensils, bg: "linear-gradient(135deg,#94a3b8,#64748b)" };
 }
 
 interface RestaurantCardProps {
@@ -69,19 +68,19 @@ export default function RestaurantCard({
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center" style={{ background: getCuisineVisual(restaurant.cuisineType).bg }}>
-            <span className="text-6xl drop-shadow-lg">{getCuisineVisual(restaurant.cuisineType).emoji}</span>
+            {(() => { const V = getCuisineVisual(restaurant.cuisineType).Icon; return <V className="w-14 h-14 text-white/90 drop-shadow-lg" strokeWidth={1.6} />; })()}
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
         {restaurant.promotion && (
           <Badge className="absolute top-3 left-3 bg-gradient-to-r from-red-500 to-pink-600 text-white font-black text-[10px] px-2.5 py-1 rounded-lg shadow-lg border-0">
-            {"\ud83c\udf81"} {restaurant.promotion}
+            <Gift className="w-3 h-3 mr-1" /> {restaurant.promotion}
           </Badge>
         )}
         {restaurant.isRushMode && (
           <Badge className="absolute bottom-3 left-3 bg-slate-900/80 backdrop-blur-sm text-orange-400 font-black text-[10px] px-2 py-0.5 rounded-lg shadow-lg border border-orange-500/30">
-            {"\ud83d\udd25"} Rush
+            <Flame className="w-3 h-3 mr-0.5" /> Rush
           </Badge>
         )}
         {(restaurant.isActive === false || restaurant.is_open === false) && (

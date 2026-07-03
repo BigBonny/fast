@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { restaurantApi } from "@/api/fastBackend";
 import { getFavorites } from "@/lib/localCart";
-import { ArrowLeft, Heart } from "lucide-react";
+import { ArrowLeft, Heart, HeartOff, UtensilsCrossed } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 
@@ -38,7 +38,9 @@ export default function FavoritesPage() {
 
       {favRestaurants.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 px-5">
-          <div className="text-6xl mb-4">💔</div>
+          <div className="w-20 h-20 rounded-3xl bg-red-50 flex items-center justify-center mb-4">
+            <HeartOff className="w-9 h-9 text-red-300" />
+          </div>
           <h2 className="font-bold text-gray-900 text-lg mb-1">Aucun favori</h2>
           <p className="text-sm text-gray-400 text-center mb-6">
             Ajoutez des restaurants à vos favoris pour les retrouver ici
@@ -68,7 +70,7 @@ export default function FavoritesPage() {
                     {restaurant.image_url ? (
                       <img src={restaurant.image_url} alt={restaurant.name} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-3xl opacity-30">🍽️</div>
+                      <div className="w-full h-full flex items-center justify-center bg-gray-100"><UtensilsCrossed className="w-7 h-7 text-gray-300" /></div>
                     )}
                   </div>
                   <div className="p-4 flex-1">

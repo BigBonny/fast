@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Plus, Flame } from "lucide-react";
+import { Plus, Flame, UtensilsCrossed } from "lucide-react";
 
 interface MenuItem {
   id: string;
@@ -34,8 +34,8 @@ export default function MenuItemCard({ item, onAdd }: MenuItemCardProps) {
             className="w-full h-full object-cover"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-3xl opacity-30">
-            🍽️
+          <div className="w-full h-full flex items-center justify-center bg-gray-100">
+            <UtensilsCrossed className="w-7 h-7 text-gray-300" />
           </div>
         )}
       </div>

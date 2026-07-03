@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, Phone } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, Phone, Zap } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/lib/AuthContext";
 
@@ -44,7 +44,9 @@ export default function RegisterPage() {
           className="w-full max-w-sm"
         >
           <div className="text-center mb-8">
-            <div className="text-4xl mb-3">⚡</div>
+            <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
+              <Zap className="w-7 h-7 text-white fill-white" />
+            </div>
             <h1 className="font-black text-3xl italic tracking-tight text-white">FAST</h1>
             <p className="text-gray-400 text-sm mt-2">Crée ton compte</p>
           </div>

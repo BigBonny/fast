@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, Mail, Lock, ArrowLeft, Store } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, ArrowLeft, Store, Zap, User } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/lib/AuthContext";
 
@@ -51,7 +51,9 @@ export default function LoginPage() {
         >
           {/* Logo */}
           <div className="text-center mb-8">
-            <div className="text-4xl mb-3">⚡</div>
+            <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
+              <Zap className="w-7 h-7 text-white fill-white" />
+            </div>
             <h1 className="font-black text-3xl italic tracking-tight text-white">
               FAST
             </h1>
@@ -124,7 +126,7 @@ export default function LoginPage() {
                 className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 transition-all"
               >
                 <div className="text-left">
-                  <p className="text-xs font-bold text-emerald-400">👤 Compte Client</p>
+                  <p className="flex items-center gap-1.5 text-xs font-bold text-emerald-400"><User className="w-3.5 h-3.5" /> Compte Client</p>
                   <p className="text-[11px] text-gray-400">client@fast.demo</p>
                 </div>
                 <span className="text-[10px] text-gray-500 font-mono">Demo1234</span>
@@ -135,7 +137,7 @@ export default function LoginPage() {
                 className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl bg-violet-500/10 border border-violet-500/20 hover:bg-violet-500/20 transition-all"
               >
                 <div className="text-left">
-                  <p className="text-xs font-bold text-violet-400">🏪 Compte Restaurateur</p>
+                  <p className="flex items-center gap-1.5 text-xs font-bold text-violet-400"><Store className="w-3.5 h-3.5" /> Compte Restaurateur</p>
                   <p className="text-[11px] text-gray-400">resto@fast.demo</p>
                 </div>
                 <span className="text-[10px] text-gray-500 font-mono">Demo1234</span>
