@@ -38,6 +38,7 @@ export default function PartnerLayout({ children }: { children: React.ReactNode 
   const queryClient = useQueryClient();
   const router = useRouter();
   const pathname = usePathname();
+  const isOnboarding = pathname === "/partner/onboarding";
   const { user, isAuthenticated, isLoadingAuth } = useAuth();
 
   useEffect(() => {
@@ -54,12 +55,19 @@ export default function PartnerLayout({ children }: { children: React.ReactNode 
     refetchInterval: 10000,
   });
 
-  const { data: settings, isLoading: settingsLoading } = useQuery({
+  const { data: settings, isLoading: settingsLoading, error: settingsError } = useQuery({
     queryKey: ["settings"],
     queryFn: () => restaurantApi.mine(),
     staleTime: 0,
     refetchOnMount: true,
+    retry: false,
   });
+
+  useEffect(() => {
+    if (settingsError && !isOnboarding) {
+      router.replace("/partner/onboarding");
+    }
+  }, [settingsError, isOnboarding, router]);
 
   useEffect(() => {
     const theme = localStorage.getItem("fast_r_theme") || "dark";
@@ -90,9 +98,9 @@ export default function PartnerLayout({ children }: { children: React.ReactNode 
   };
 
   const activeTabId = currentTabId(pathname);
-  const isOnboarding = pathname === "/partner/onboarding";
+  const isOnboardingRoute = isOnboarding;
 
-  if (isLoadingAuth || settingsLoading) {
+  if (isLoadingAuth || (settingsLoading && !settingsError)) {
     return (
       <div className="fixed inset-0 flex items-center justify-center" style={{ background: "#020617" }}>
         <div className="font-bebas text-3xl tracking-[8px] animate-pulse" style={{ color: "#00c8b3" }}>
@@ -106,7 +114,7 @@ export default function PartnerLayout({ children }: { children: React.ReactNode 
     return null;
   }
 
-  if (isOnboarding) {
+  if (isOnboardingRoute) {
     return (
       <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
         <Toast />
