@@ -1,15 +1,24 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, Phone, Zap, Store, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/lib/AuthContext";
 
+function RoleInitializer({ onRole }: { onRole: (role: "RESTAURANT") => void }) {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    if (searchParams.get("role") === "restaurant") {
+      onRole("RESTAURANT");
+    }
+  }, [searchParams, onRole]);
+  return null;
+}
+
 export default function RegisterPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { register, isLoadingAuth } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -18,12 +27,6 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState<"CLIENT" | "RESTAURANT">("CLIENT");
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    if (searchParams.get("role") === "restaurant") {
-      setRole("RESTAURANT");
-    }
-  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,6 +61,10 @@ export default function RegisterPage() {
             <h1 className="font-black text-3xl italic tracking-tight text-white">FAST</h1>
             <p className="text-gray-400 text-sm mt-2">Crée ton compte</p>
           </div>
+
+          <Suspense fallback={null}>
+            <RoleInitializer onRole={setRole} />
+          </Suspense>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-3 p-1 rounded-2xl bg-white/5 border border-white/10">
