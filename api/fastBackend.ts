@@ -1,468 +1,329 @@
-// ─── MOCK API — no backend required ───────────────────────────────────────────
-// All data is persisted in localStorage so the demo is fully functional.
+// ─── REAL BACKEND API CLIENT ───────────────────────────────────────────────────
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://backend-lovat-xi-0axv990rct.vercel.app/api";
 
-function delay(ms = 120) {
-  return new Promise((r) => setTimeout(r, ms));
+const TOKEN_KEY = "fast_token";
+
+function getToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(TOKEN_KEY);
 }
 
-function uid() {
-  return Math.random().toString(36).slice(2, 10);
+export function setToken(token: string | null) {
+  if (typeof window === "undefined") return;
+  if (token) localStorage.setItem(TOKEN_KEY, token);
+  else localStorage.removeItem(TOKEN_KEY);
 }
 
-function ls<T>(key: string, def: T): T {
-  if (typeof window === "undefined") return def;
-  try {
-    const v = localStorage.getItem(key);
-    return v ? JSON.parse(v) : def;
-  } catch {
-    return def;
+function buildHeaders(extra: Record<string, string> = {}): Record<string, string> {
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+    ...extra,
+  };
+  const token = getToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+  return headers;
+}
+
+async function apiFetch(path: string, options: RequestInit = {}): Promise<any> {
+  const url = `${API_URL}${path}`;
+  const headers = buildHeaders(options.body ? { "Content-Type": "application/json" } : {});
+
+  const res = await fetch(url, {
+    ...options,
+    headers,
+  });
+
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    const message = data?.error || data?.message || `Erreur ${res.status}`;
+    throw { status: res.status, message };
   }
+
+  return data;
 }
 
-function lsSet(key: string, value: any) {
-  if (typeof window !== "undefined") localStorage.setItem(key, JSON.stringify(value));
+function normalizeRestaurant(r: any): any {
+  if (!r) return r;
+  return {
+    ...r,
+    dietaryOptions: (r.dietaryOptions || []).map((o: any) => (typeof o === "string" ? { option: o } : o)),
+    menuItems: r.menuItems || [],
+  };
 }
 
-// Bump this version whenever seed data changes to refresh existing visitors' data
-const SEED_VERSION = "2";
-if (typeof window !== "undefined" && localStorage.getItem("mock_seed_version") !== SEED_VERSION) {
-  localStorage.removeItem("mock_restaurants");
-  localStorage.removeItem("mock_menus");
-  localStorage.setItem("mock_seed_version", SEED_VERSION);
+function normalizeMenuItem(m: any): any {
+  if (!m) return m;
+  return {
+    ...m,
+    dietaryTags: (m.dietaryTags || []).map((t: any) => (typeof t === "string" ? { option: t } : t)),
+  };
 }
 
-// ─── Seed data ─────────────────────────────────────────────────────────────────
-
-const SEED_RESTAURANTS = [
-  { id: "r1", name: "Burger Palace", description: "Les meilleurs burgers de la ville", cuisineType: "burger", category: "fast-food", address: "12 Rue de la Paix", city: "Paris", rating: 4.8, reviewsCount: 124, normalPrepTime: 12, rushPrepTime: 20, pickupPrepTime: 10, isRushMode: false, promotion: "-20%", image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80", dietaryOptions: [] },
-  { id: "r2", name: "Pizza Roma", description: "Authentique pizza napolitaine", cuisineType: "pizza", category: "italien", address: "34 Avenue Victor Hugo", city: "Paris", rating: 4.6, reviewsCount: 89, normalPrepTime: 15, rushPrepTime: 25, pickupPrepTime: 12, isRushMode: false, image: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=800&q=80", dietaryOptions: [{ option: "VEGETARIAN" }] },
-  { id: "r3", name: "Sushi Zen", description: "Sushis frais préparés à la commande", cuisineType: "sushi", category: "japonais", address: "8 Rue du Faubourg", city: "Paris", rating: 4.9, reviewsCount: 203, normalPrepTime: 18, rushPrepTime: 28, pickupPrepTime: 15, isRushMode: true, image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=800&q=80", dietaryOptions: [{ option: "GLUTEN_FREE" }] },
-  { id: "r4", name: "Tacos House", description: "Tacos généreux et savoureux", cuisineType: "tacos", category: "mexicain", address: "56 Rue Nationale", city: "Lyon", rating: 4.5, reviewsCount: 67, normalPrepTime: 10, rushPrepTime: 18, pickupPrepTime: 8, isRushMode: false, promotion: "1 acheté = 1 offert", image: "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=800&q=80", dietaryOptions: [] },
-  { id: "r5", name: "Green Bowl", description: "Cuisine vegan et végétarienne", cuisineType: "vegan", category: "healthy", address: "22 Boulevard Haussmann", city: "Paris", rating: 4.7, reviewsCount: 145, normalPrepTime: 14, rushPrepTime: 22, pickupPrepTime: 11, isRushMode: false, image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=80", dietaryOptions: [{ option: "VEGAN" }, { option: "GLUTEN_FREE" }] },
-];
-
-const SEED_MENUS: Record<string, any[]> = {
-  r1: [
-    { id: "m1", restaurantId: "r1", name: "Classic Burger", description: "Bœuf, cheddar, salade, tomate", price: 9.90, category: "Burgers", image: "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400&q=80", isAvailable: true, dietaryTags: [] },
-    { id: "m2", restaurantId: "r1", name: "Double Smash", description: "Double steak haché, sauce spéciale", price: 12.90, category: "Burgers", image: "https://images.unsplash.com/photo-1553979459-d2229ba7433b?w=400&q=80", isAvailable: true, dietaryTags: [] },
-    { id: "m3", restaurantId: "r1", name: "Chicken Burger", description: "Poulet croustillant, mayo", price: 10.50, category: "Burgers", image: "https://images.unsplash.com/photo-1606755962773-d324e0a13086?w=400&q=80", isAvailable: true, dietaryTags: [] },
-    { id: "m4", restaurantId: "r1", name: "Frites maison", description: "Pommes de terre fraîches", price: 3.50, category: "Accompagnements", image: "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=400&q=80", isAvailable: true, dietaryTags: [{ option: "VEGAN" }] },
-    { id: "m5", restaurantId: "r1", name: "Coca-Cola", description: "33cl", price: 2.50, category: "Boissons", image: "https://images.unsplash.com/photo-1554866585-cd94860890b7?w=400&q=80", isAvailable: true, dietaryTags: [] },
-  ],
-  r2: [
-    { id: "m6", restaurantId: "r2", name: "Margherita", description: "Tomate, mozzarella, basilic", price: 11.00, category: "Pizzas", image: "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=400&q=80", isAvailable: true, dietaryTags: [{ option: "VEGETARIAN" }] },
-    { id: "m7", restaurantId: "r2", name: "4 Fromages", description: "Mozzarella, gorgonzola, parmesan, chèvre", price: 13.50, category: "Pizzas", image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&q=80", isAvailable: true, dietaryTags: [{ option: "VEGETARIAN" }] },
-    { id: "m8", restaurantId: "r2", name: "Pepperoni", description: "Tomate, mozzarella, pepperoni", price: 12.50, category: "Pizzas", image: "https://images.unsplash.com/photo-1628840042765-356cda07504e?w=400&q=80", isAvailable: true, dietaryTags: [] },
-    { id: "m9", restaurantId: "r2", name: "Tiramisu", description: "Fait maison", price: 5.50, category: "Desserts", image: "https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=400&q=80", isAvailable: true, dietaryTags: [{ option: "VEGETARIAN" }] },
-  ],
-  r3: [
-    { id: "m10", restaurantId: "r3", name: "California Roll x8", description: "Avocat, surimi, concombre", price: 9.50, category: "Makis", image: "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400&q=80", isAvailable: true, dietaryTags: [] },
-    { id: "m11", restaurantId: "r3", name: "Saumon Nigiri x4", description: "Saumon frais sur riz vinaigré", price: 8.00, category: "Nigiris", image: "https://images.unsplash.com/photo-1611143669185-af224c5e3252?w=400&q=80", isAvailable: true, dietaryTags: [{ option: "GLUTEN_FREE" }] },
-    { id: "m12", restaurantId: "r3", name: "Plateau Zen 30p", description: "Assortiment makis, nigiris, sashimis", price: 22.90, category: "Plateaux", image: "https://images.unsplash.com/photo-1553621042-f6e147245754?w=400&q=80", isAvailable: true, dietaryTags: [] },
-    { id: "m13", restaurantId: "r3", name: "Edamame", description: "Fèves de soja salées", price: 4.00, category: "Entrées", image: "https://images.unsplash.com/photo-1564834744159-ff0ea41ba4b9?w=400&q=80", isAvailable: true, dietaryTags: [{ option: "VEGAN" }, { option: "GLUTEN_FREE" }] },
-  ],
-  r4: [
-    { id: "m14", restaurantId: "r4", name: "Tacos Poulet", description: "Poulet grillé, fromage, sauce fromagère", price: 7.50, category: "Tacos", image: "https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?w=400&q=80", isAvailable: true, dietaryTags: [] },
-    { id: "m15", restaurantId: "r4", name: "Tacos Mixte", description: "Poulet + viande hachée, sauce blanche", price: 8.50, category: "Tacos", image: "https://images.unsplash.com/photo-1599974579688-8dbdd335c77f?w=400&q=80", isAvailable: true, dietaryTags: [] },
-    { id: "m16", restaurantId: "r4", name: "Burrito Végé", description: "Haricots, maïs, guacamole", price: 8.00, category: "Burritos", image: "https://images.unsplash.com/photo-1626700051175-6818013e1d4f?w=400&q=80", isAvailable: true, dietaryTags: [{ option: "VEGETARIAN" }] },
-  ],
-  r5: [
-    { id: "m17", restaurantId: "r5", name: "Buddha Bowl", description: "Quinoa, légumes rôtis, tahini", price: 12.00, category: "Bols", image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80", isAvailable: true, dietaryTags: [{ option: "VEGAN" }, { option: "GLUTEN_FREE" }] },
-    { id: "m18", restaurantId: "r5", name: "Smoothie Detox", description: "Épinards, pomme, gingembre", price: 5.50, category: "Boissons", image: "https://images.unsplash.com/photo-1610970881699-44a5587cabec?w=400&q=80", isAvailable: true, dietaryTags: [{ option: "VEGAN" }] },
-    { id: "m19", restaurantId: "r5", name: "Wrap Végétarien", description: "Avocat, houmous, légumes croquants", price: 9.50, category: "Wraps", image: "https://images.unsplash.com/photo-1600850056064-a8b380df8395?w=400&q=80", isAvailable: true, dietaryTags: [{ option: "VEGETARIAN" }] },
-  ],
-};
-
-function getRestaurants() {
-  const stored = ls<any[]>("mock_restaurants", []);
-  const base = stored.length === 0 ? SEED_RESTAURANTS : stored;
-  // always ensure demo restaurant exists
-  if (!base.find((r: any) => r.id === DEMO_RESTAURANT.id)) {
-    return [DEMO_RESTAURANT, ...base];
-  }
-  return base;
+function normalizeOrder(o: any): any {
+  if (!o) return o;
+  return {
+    ...o,
+    items: (o.items || []).map((item: any) => ({
+      ...item,
+      menuItem: item.menuItem || { name: item.name || "Article", price: item.price || 0 },
+    })),
+  };
 }
 
-function getMenuItems() {
-  const stored = ls<Record<string, any[]>>("mock_menus", {});
-  const isEmpty = Object.keys(stored).length === 0;
-  const base = isEmpty ? { ...SEED_MENUS } : { ...stored };
-  // always ensure demo menu exists
-  if (!base["demo_r"] || base["demo_r"].length === 0) {
-    base["demo_r"] = DEMO_MENU;
-  }
-  return base;
-}
-
-const DEMO_USERS = [
-  { id: "demo_client", email: "client@fast.demo", password: "Demo1234", name: "Alex Dupont", phone: "0612345678", role: "CLIENT", points: 85, restaurant: null },
-  { id: "demo_resto", email: "resto@fast.demo", password: "Demo1234", name: "Chef Marco", phone: "0698765432", role: "RESTAURANT", points: 0, restaurant: null },
-];
-
-const DEMO_RESTAURANT = {
-  id: "demo_r",
-  ownerId: "demo_resto",
-  name: "La Belle Assiette",
-  description: "Cuisine française raffinée, faite maison avec des produits frais.",
-  cuisineType: "français",
-  category: "gastronomique",
-  address: "15 Rue des Gourmets",
-  city: "Paris",
-  rating: 4.7,
-  reviewsCount: 52,
-  normalPrepTime: 15,
-  rushPrepTime: 25,
-  pickupPrepTime: 12,
-  isRushMode: false,
-  image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80",
-  dietaryOptions: [{ option: "VEGETARIAN" }],
-};
-
-const DEMO_MENU: any[] = [
-  { id: "dm1", restaurantId: "demo_r", name: "Soupe à l'oignon", description: "Gratinée, pain maison", price: 7.50, category: "Entrées", image: "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400&q=80", isAvailable: true, dietaryTags: [{ option: "VEGETARIAN" }] },
-  { id: "dm2", restaurantId: "demo_r", name: "Steak Frites", description: "Entrecôte, frites maison, sauce au poivre", price: 16.90, category: "Plats", image: "https://images.unsplash.com/photo-1600891964092-4316c288032e?w=400&q=80", isAvailable: true, dietaryTags: [] },
-  { id: "dm3", restaurantId: "demo_r", name: "Poulet rôti", description: "Demi-poulet, jus de cuisson, pommes sautées", price: 14.50, category: "Plats", image: "https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=400&q=80", isAvailable: true, dietaryTags: [] },
-  { id: "dm4", restaurantId: "demo_r", name: "Crème brûlée", description: "Vanille de Madagascar", price: 6.00, category: "Desserts", image: "https://images.unsplash.com/photo-1470324161839-ce2bb6fa6bc3?w=400&q=80", isAvailable: true, dietaryTags: [{ option: "VEGETARIAN" }] },
-  { id: "dm5", restaurantId: "demo_r", name: "Eau minérale", description: "50cl", price: 2.50, category: "Boissons", image: "https://images.unsplash.com/photo-1560023907-5f339617ea30?w=400&q=80", isAvailable: true, dietaryTags: [{ option: "VEGAN" }] },
-];
-
-function getUsers(): any[] {
-  const stored = ls<any[]>("mock_users", []);
-  // always ensure demo accounts exist
-  const merged = [...DEMO_USERS];
-  stored.forEach((u) => { if (!DEMO_USERS.find((d) => d.id === u.id)) merged.push(u); });
-  return merged;
-}
-function saveUsers(u: any[]) {
-  // never overwrite demo users, only save non-demo ones
-  const custom = u.filter((x) => !DEMO_USERS.find((d) => d.id === x.id));
-  lsSet("mock_users", custom);
-}
-function getOrders(): any[] { return ls("mock_orders", []); }
-function saveOrders(o: any[]) { lsSet("mock_orders", o); }
-function currentUser(): any | null { return ls("mock_current_user", null); }
-function saveCurrentUser(u: any) { lsSet("mock_current_user", u); }
-
-// ─── Auth ──────────────────────────────────────────────────────────────────────
+// ─── Auth ─────────────────────────────────────────────────────────────────────
 
 export const authApi = {
   register: async (data: { email: string; password: string; name: string; phone?: string; role?: string }) => {
-    await delay();
-    const users = getUsers();
-    if (users.find((u) => u.email === data.email)) throw { status: 409, message: "Cet email est déjà utilisé." };
-    const user = { id: uid(), email: data.email, name: data.name, phone: data.phone || "", role: data.role || "CLIENT", points: 0, restaurant: null };
-    users.push({ ...user, password: data.password });
-    saveUsers(users);
-    saveCurrentUser(user);
-    lsSet("fast_token", "mock_" + user.id);
-    return { token: "mock_" + user.id, user };
+    const res = await apiFetch("/auth/register", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+    if (res.token) setToken(res.token);
+    return res;
   },
   login: async (data: { email: string; password: string }) => {
-    await delay();
-    const users = getUsers();
-    const found = users.find((u) => u.email === data.email && u.password === data.password);
-    if (!found) throw { status: 401, message: "Email ou mot de passe incorrect." };
-    const user = { id: found.id, email: found.email, name: found.name, phone: found.phone, role: found.role, points: found.points || 0, restaurant: found.restaurant || null };
-    saveCurrentUser(user);
-    lsSet("fast_token", "mock_" + user.id);
-    return { token: "mock_" + user.id, user };
+    const res = await apiFetch("/auth/login", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+    if (res.token) setToken(res.token);
+    return res;
   },
   me: async () => {
-    await delay(50);
-    const u = currentUser();
-    if (!u) throw { status: 401, message: "Non authentifié" };
-    // refresh restaurant data if RESTAURANT role
-    if (u.role === "RESTAURANT") {
-      const rests = getRestaurants();
-      const mine = rests.find((r: any) => r.ownerId === u.id);
-      u.restaurant = mine || null;
-    }
-    return u;
+    return apiFetch("/auth/me");
   },
   updateProfile: async (data: { name?: string; phone?: string }) => {
-    await delay();
-    const u = currentUser();
-    if (!u) throw { status: 401, message: "Non authentifié" };
-    if (data.name) u.name = data.name;
-    if (data.phone !== undefined) u.phone = data.phone;
-    saveCurrentUser(u);
-    // also update in users array
-    const users = getUsers();
-    const idx = users.findIndex((x) => x.id === u.id);
-    if (idx >= 0) { users[idx] = { ...users[idx], ...data }; saveUsers(users); }
-    return u;
+    return apiFetch("/auth/profile", {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
   },
-  logout: async () => { await delay(50); return null; },
+  logout: async () => {
+    await apiFetch("/auth/logout", { method: "POST" }).catch(() => {});
+    setToken(null);
+    return null;
+  },
 };
 
-// ─── Restaurants ───────────────────────────────────────────────────────────────
+// ─── Restaurants ──────────────────────────────────────────────────────────────
 
 export const restaurantApi = {
   list: async (params?: { category?: string; search?: string; dietary?: string }) => {
-    await delay();
-    let rests = getRestaurants();
-    if (params?.search) { const q = params.search.toLowerCase(); rests = rests.filter((r: any) => r.name?.toLowerCase().includes(q) || r.cuisineType?.toLowerCase().includes(q)); }
-    if (params?.category) { rests = rests.filter((r: any) => r.cuisineType?.toLowerCase() === params.category?.toLowerCase() || r.category?.toLowerCase() === params.category?.toLowerCase()); }
-    return rests;
+    const qs = new URLSearchParams();
+    if (params?.category && params.category !== "all") qs.set("category", params.category);
+    if (params?.search) qs.set("search", params.search);
+    if (params?.dietary) qs.set("dietary", params.dietary);
+    const list = await apiFetch(`/restaurants?${qs.toString()}`);
+    return (list || []).map(normalizeRestaurant);
   },
   get: async (id: string) => {
-    await delay();
-    const r = getRestaurants().find((x: any) => x.id === id);
-    if (!r) throw { status: 404, message: "Restaurant introuvable" };
-    const menus = getMenuItems();
-    return { ...r, menuItems: menus[id] || [] };
+    const r = await apiFetch(`/restaurants/${id}`);
+    return normalizeRestaurant(r);
   },
   create: async (data: any) => {
-    await delay();
-    const u = currentUser();
-    if (!u) throw { status: 401, message: "Non authentifié" };
-    const rests = getRestaurants();
-    if (rests.find((r: any) => r.ownerId === u.id)) throw { status: 409, message: "Vous avez déjà un restaurant." };
-    const r = { id: uid(), ownerId: u.id, rating: 0, reviewsCount: 0, isRushMode: false, ...data };
-    rests.push(r);
-    lsSet("mock_restaurants", rests);
-    u.restaurant = r;
-    saveCurrentUser(u);
-    return r;
+    const payload = {
+      ...data,
+      dietaryOptions: (data.dietaryOptions || []).map((o: any) => (typeof o === "object" ? o.option : o)),
+    };
+    return apiFetch("/restaurants", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
   },
   update: async (id: string, data: any) => {
-    await delay();
-    const rests = getRestaurants();
-    const idx = rests.findIndex((r: any) => r.id === id);
-    if (idx < 0) throw { status: 404, message: "Restaurant introuvable" };
-    rests[idx] = { ...rests[idx], ...data };
-    lsSet("mock_restaurants", rests);
-    const u = currentUser();
-    if (u) { u.restaurant = rests[idx]; saveCurrentUser(u); }
-    return rests[idx];
+    const payload = {
+      ...data,
+      dietaryOptions: data.dietaryOptions
+        ? data.dietaryOptions.map((o: any) => (typeof o === "object" ? o.option : o))
+        : undefined,
+    };
+    return apiFetch(`/restaurants/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    });
   },
   mine: async () => {
-    await delay();
-    const u = currentUser();
-    if (!u) throw { status: 401, message: "Non authentifié" };
-    const rests = getRestaurants();
-    const mine = rests.find((r: any) => r.ownerId === u.id);
-    if (!mine) throw { status: 404, message: "Aucun restaurant trouvé" };
-    return mine;
+    return apiFetch("/restaurants/account/mine");
   },
   toggleRush: async () => {
-    await delay();
-    const u = currentUser();
-    if (!u) throw { status: 401, message: "Non authentifié" };
-    const rests = getRestaurants();
-    const idx = rests.findIndex((r: any) => r.ownerId === u.id);
-    if (idx < 0) throw { status: 404, message: "Aucun restaurant trouvé" };
-    rests[idx].isRushMode = !rests[idx].isRushMode;
-    lsSet("mock_restaurants", rests);
-    return rests[idx];
+    return apiFetch("/restaurants/toggle-rush", { method: "POST" });
   },
 };
 
-// ─── Menu ──────────────────────────────────────────────────────────────────────
+// ─── Menu ─────────────────────────────────────────────────────────────────────
 
 export const menuApi = {
   byRestaurant: async (restaurantId: string) => {
-    await delay();
-    const menus = getMenuItems();
-    return menus[restaurantId] || [];
+    const items = await apiFetch(`/menu/restaurant/${restaurantId}`);
+    return (items || []).map(normalizeMenuItem);
   },
   create: async (restaurantId: string, data: any) => {
-    await delay();
-    const menus = getMenuItems();
-    const item = { id: uid(), restaurantId, isAvailable: true, dietaryTags: (data.dietaryTags || []).map((t: string) => ({ option: t })), ...data };
-    menus[restaurantId] = [...(menus[restaurantId] || []), item];
-    lsSet("mock_menus", menus);
-    return item;
+    const payload = {
+      ...data,
+      dietaryTags: (data.dietaryTags || []).map((t: any) => (typeof t === "object" ? t.option : t)),
+    };
+    return apiFetch(`/menu/restaurant/${restaurantId}`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
   },
   update: async (id: string, data: any) => {
-    await delay();
-    const menus = getMenuItems();
-    for (const rid of Object.keys(menus)) {
-      const idx = menus[rid].findIndex((i: any) => i.id === id);
-      if (idx >= 0) {
-        const updated = { ...menus[rid][idx], ...data };
-        if (data.dietaryTags) updated.dietaryTags = data.dietaryTags.map((t: string) => typeof t === "string" ? { option: t } : t);
-        menus[rid][idx] = updated;
-        lsSet("mock_menus", menus);
-        return updated;
-      }
-    }
-    throw { status: 404, message: "Article introuvable" };
+    const payload = {
+      ...data,
+      dietaryTags: data.dietaryTags
+        ? data.dietaryTags.map((t: any) => (typeof t === "object" ? t.option : t))
+        : undefined,
+    };
+    return apiFetch(`/menu/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    });
   },
   delete: async (id: string) => {
-    await delay();
-    const menus = getMenuItems();
-    for (const rid of Object.keys(menus)) {
-      const idx = menus[rid].findIndex((i: any) => i.id === id);
-      if (idx >= 0) { menus[rid].splice(idx, 1); lsSet("mock_menus", menus); return null; }
-    }
-    throw { status: 404, message: "Article introuvable" };
+    return apiFetch(`/menu/${id}`, { method: "DELETE" });
   },
 };
 
-// ─── Orders ────────────────────────────────────────────────────────────────────
+// ─── Orders ─────────────────────────────────────────────────────────────────────
 
 export const orderApi = {
   create: async (data: any) => {
-    await delay();
-    const u = currentUser();
-    const order = {
-      id: uid(), userId: u?.id, user: u ? { name: u.name } : null, status: "PLACED",
-      items: data.items || [], total: data.total || 0, subtotal: data.subtotal || 0,
-      serviceFee: data.serviceFee || 1.5, allergyNotes: data.allergyNotes || "",
-      restaurantId: data.restaurantId, createdAt: new Date().toISOString(),
-    };
-    const orders = getOrders();
-    orders.unshift(order);
-    saveOrders(orders);
-    return order;
+    const order = await apiFetch("/orders", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+    return normalizeOrder(order);
   },
   mine: async (status?: string) => {
-    await delay();
-    const u = currentUser();
-    let orders = getOrders().filter((o: any) => o.userId === u?.id);
-    if (status) orders = orders.filter((o: any) => o.status === status);
-    return orders;
+    const qs = status ? `?status=${status}` : "";
+    const orders = await apiFetch(`/orders/mine${qs}`);
+    return (orders || []).map(normalizeOrder);
   },
   cancel: async (id: string) => {
-    await delay();
-    const orders = getOrders();
-    const idx = orders.findIndex((o: any) => o.id === id);
-    if (idx >= 0) { orders[idx].status = "CANCELLED"; saveOrders(orders); }
-    return orders[idx];
+    return apiFetch(`/orders/${id}/cancel`, { method: "POST" });
   },
   restaurantOrders: async (status?: string) => {
-    await delay();
-    const u = currentUser();
-    const rests = getRestaurants();
-    const mine = rests.find((r: any) => r.ownerId === u?.id);
-    if (!mine) return [];
-    const menus = getMenuItems();
-    const restaurantMenu = menus[mine.id] || [];
-    let orders = getOrders().filter((o: any) => o.restaurantId === mine.id);
-    if (status) orders = orders.filter((o: any) => o.status === status);
-    // attach menuItem info to items
-    return orders.map((o: any) => ({
-      ...o,
-      items: (o.items || []).map((item: any) => ({
-        ...item,
-        menuItem: restaurantMenu.find((m: any) => m.id === item.menuItemId) || { name: item.name || "Article", price: item.price || 0 },
-      })),
-    }));
+    const qs = status ? `?status=${status}` : "";
+    const orders = await apiFetch(`/orders/restaurant${qs}`);
+    return (orders || []).map(normalizeOrder);
   },
   updateStatus: async (id: string, status: string) => {
-    await delay();
-    const orders = getOrders();
-    const idx = orders.findIndex((o: any) => o.id === id);
-    if (idx >= 0) { orders[idx].status = status; saveOrders(orders); return orders[idx]; }
-    throw { status: 404, message: "Commande introuvable" };
+    const order = await apiFetch(`/orders/${id}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    });
+    return normalizeOrder(order);
   },
 };
 
-// ─── Reviews ───────────────────────────────────────────────────────────────────
+// ─── Reviews ────────────────────────────────────────────────────────────────────
 
 export const reviewApi = {
   byRestaurant: async (restaurantId: string) => {
-    await delay();
-    return ls<any[]>(`mock_reviews_${restaurantId}`, [
-      { id: "rv1", rating: 5, comment: "Excellent, très rapide !", user: { name: "Marie" }, createdAt: new Date().toISOString() },
-      { id: "rv2", rating: 4, comment: "Très bon, je recommande.", user: { name: "Thomas" }, createdAt: new Date().toISOString() },
-    ]);
+    return apiFetch(`/reviews/restaurant/${restaurantId}`);
   },
   create: async (restaurantId: string, data: any) => {
-    await delay();
-    const u = currentUser();
-    const review = { id: uid(), ...data, user: { name: u?.name || "Anonyme" }, createdAt: new Date().toISOString() };
-    const reviews = ls<any[]>(`mock_reviews_${restaurantId}`, []);
-    reviews.unshift(review);
-    lsSet(`mock_reviews_${restaurantId}`, reviews);
-    return review;
+    const qs = data.orderId ? `?orderId=${data.orderId}` : "";
+    return apiFetch(`/reviews/restaurant/${restaurantId}${qs}`, {
+      method: "POST",
+      body: JSON.stringify({ rating: data.rating, comment: data.comment }),
+    });
   },
 };
 
-// ─── Notifications ─────────────────────────────────────────────────────────────
+// ─── Notifications ──────────────────────────────────────────────────────────────
 
 export const notificationApi = {
   list: async () => {
-    await delay(50);
-    return ls<any[]>("mock_notifs", [
-      { id: "n1", type: "ORDER_UPDATE", message: "Bienvenue sur FAST ! 🎉", read: false, createdAt: new Date().toISOString() },
-    ]);
+    return apiFetch("/notifications");
   },
-  create: async (data: any) => { await delay(50); return { id: uid(), ...data, read: false, createdAt: new Date().toISOString() }; },
-  readAll: async () => { await delay(50); const n = ls<any[]>("mock_notifs", []); n.forEach((x) => (x.read = true)); lsSet("mock_notifs", n); return null; },
-  read: async (id: string) => { await delay(50); return null; },
-  delete: async (id: string) => { await delay(50); return null; },
-  deleteAll: async () => { await delay(50); lsSet("mock_notifs", []); return null; },
+  create: async (data: any) => {
+    return apiFetch("/notifications", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  readAll: async () => {
+    return apiFetch("/notifications/read-all", { method: "POST" });
+  },
+  read: async (id: string) => {
+    return apiFetch(`/notifications/${id}/read`, { method: "PATCH" });
+  },
+  delete: async (id: string) => {
+    return apiFetch(`/notifications/${id}`, { method: "DELETE" });
+  },
+  deleteAll: async () => {
+    return apiFetch("/notifications", { method: "DELETE" });
+  },
 };
 
 // ─── Stats ─────────────────────────────────────────────────────────────────────
 
 export const statsApi = {
   get: async () => {
-    await delay();
-    const u = currentUser();
-    const rests = getRestaurants();
-    const mine = rests.find((r: any) => r.ownerId === u?.id);
-    const orders = getOrders().filter((o: any) => o.restaurantId === mine?.id);
-    const completed = orders.filter((o: any) => o.status === "COMPLETED");
-    const cancelled = orders.filter((o: any) => o.status === "CANCELLED");
-    const revenue = completed.reduce((sum: number, o: any) => sum + (o.total || 0), 0);
-    const menus = getMenuItems();
-    const restaurantMenu = mine ? (menus[mine.id] || []) : [];
-    // daily orders last 7 days
-    const dailyOrders = Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(); d.setDate(d.getDate() - (6 - i));
-      const dateStr = d.toISOString().slice(0, 10);
-      const count = orders.filter((o: any) => o.createdAt?.slice(0, 10) === dateStr).length;
-      return { date: dateStr, count };
-    });
-    // popular items
-    const itemCounts: Record<string, number> = {};
-    orders.forEach((o: any) => (o.items || []).forEach((it: any) => { itemCounts[it.menuItemId] = (itemCounts[it.menuItemId] || 0) + (it.quantity || 1); }));
-    const popularItems = Object.entries(itemCounts)
-      .map(([id, totalSold]) => ({ id, name: restaurantMenu.find((m: any) => m.id === id)?.name || "Article", totalSold }))
-      .sort((a: any, b: any) => b.totalSold - a.totalSold)
-      .slice(0, 5);
-    const now = new Date();
-    const monthOrders = orders.filter((o: any) => { const d = new Date(o.createdAt); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); }).length;
-    return {
-      totalOrders: orders.length,
-      monthOrders,
-      completedOrders: completed.length,
-      revenue: parseFloat(revenue.toFixed(2)),
-      averageRating: mine?.rating || 0,
-      cancellationRate: orders.length > 0 ? Math.round((cancelled.length / orders.length) * 100) : 0,
-      dailyOrders,
-      popularItems,
-    };
+    return apiFetch("/stats");
   },
 };
 
-// ─── Groups ────────────────────────────────────────────────────────────────────
+// ─── Groups ─────────────────────────────────────────────────────────────────────
 
 export const groupApi = {
-  create: async (data: any) => { await delay(); const g = { id: uid(), code: Math.random().toString(36).slice(2, 8).toUpperCase(), ...data, createdAt: new Date().toISOString() }; lsSet("mock_group_" + g.id, g); return g; },
-  join: async (code: string) => { await delay(); return { id: uid(), code }; },
-  mine: async () => { await delay(); return []; },
-  get: async (id: string) => { await delay(); return ls("mock_group_" + id, null); },
-  leave: async (id: string) => { await delay(); return null; },
+  create: async (data: any) => {
+    return apiFetch("/groups", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  join: async (code: string) => {
+    return apiFetch("/groups/join", {
+      method: "POST",
+      body: JSON.stringify({ code }),
+    });
+  },
+  mine: async () => {
+    return apiFetch("/groups/mine");
+  },
+  get: async (id: string) => {
+    return apiFetch(`/groups/${id}`);
+  },
+  leave: async (id: string) => {
+    return apiFetch(`/groups/${id}/leave`, { method: "POST" });
+  },
 };
 
-// ─── Deliveries ────────────────────────────────────────────────────────────────
+// ─── Deliveries ─────────────────────────────────────────────────────────────────
 
 export const deliveryApi = {
-  available: async () => { await delay(); return []; },
-  active: async () => { await delay(); return []; },
-  accept: async (id: string) => { await delay(); return null; },
-  updateStatus: async (id: string, status: string) => { await delay(); return null; },
-  generate: async () => { await delay(); return null; },
+  available: async () => {
+    return apiFetch("/deliveries/available");
+  },
+  active: async () => {
+    return apiFetch("/deliveries/active");
+  },
+  accept: async (id: string) => {
+    return apiFetch(`/deliveries/${id}/accept`, { method: "POST" });
+  },
+  updateStatus: async (id: string, status: string) => {
+    return apiFetch(`/deliveries/${id}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    });
+  },
+  generate: async (data: any) => {
+    return apiFetch("/deliveries/generate", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
 };
 
-// ─── Health ────────────────────────────────────────────────────────────────────
+// ─── Health ─────────────────────────────────────────────────────────────────────
 
 export const healthApi = {
-  check: async () => { await delay(50); return { status: "ok" }; },
+  check: async () => {
+    return apiFetch("/health");
+  },
 };
 
-export default function apiFetch() { return Promise.resolve(null); }
+export default authApi;

@@ -133,7 +133,9 @@ export default function RegisterPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Mot de passe"
                 required
-                minLength={6}
+                minLength={8}
+                pattern="(?=.*[A-Z])(?=.*[0-9]).{8,}"
+                title="8 caractères minimum, 1 majuscule et 1 chiffre"
                 className="w-full h-14 pl-12 pr-12 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
               />
               <button
@@ -144,6 +146,7 @@ export default function RegisterPage() {
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
+            <p className="text-[11px] text-slate-500">8 caractères minimum, 1 majuscule et 1 chiffre.</p>
 
             {error && (
               <div className="p-3 rounded-xl bg-red-500/10 text-red-400 text-sm text-center">
