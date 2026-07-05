@@ -8,20 +8,14 @@ interface Restaurant {
   id: string;
   name: string;
   image?: string;
-  image_url?: string;
   description?: string;
   rating?: number;
   reviewsCount?: number;
   cuisineType?: string;
-  pickupPrepTime?: number;
   normalPrepTime?: number;
   rushPrepTime?: number;
-  delivery_time_min?: number;
-  delivery_time_max?: number;
   isActive?: boolean;
-  is_open?: boolean;
   isRushMode?: boolean;
-  promotion?: string;
 }
 
 const cuisineVisuals: Record<string, { Icon: LucideIcon; bg: string }> = {
@@ -60,9 +54,9 @@ export default function RestaurantCard({
       className="bg-white dark:bg-slate-900 rounded-2xl overflow-hidden shadow-sm border border-gray-100 dark:border-slate-800 hover:shadow-xl cursor-pointer group"
     >
       <div className="relative h-40 bg-gradient-to-br from-gray-100 to-gray-50 dark:from-slate-800 dark:to-slate-900 overflow-hidden">
-        {(restaurant.image || restaurant.image_url) ? (
+        {restaurant.image ? (
           <img
-            src={restaurant.image || restaurant.image_url}
+            src={restaurant.image}
             alt={restaurant.name}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
@@ -73,17 +67,12 @@ export default function RestaurantCard({
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-        {restaurant.promotion && (
-          <Badge className="absolute top-3 left-3 bg-gradient-to-r from-red-500 to-pink-600 text-white font-black text-[10px] px-2.5 py-1 rounded-lg shadow-lg border-0">
-            <Gift className="w-3 h-3 mr-1" /> {restaurant.promotion}
-          </Badge>
-        )}
         {restaurant.isRushMode && (
           <Badge className="absolute bottom-3 left-3 bg-slate-900/80 backdrop-blur-sm text-orange-400 font-black text-[10px] px-2 py-0.5 rounded-lg shadow-lg border border-orange-500/30">
             <Flame className="w-3 h-3 mr-0.5" /> Rush
           </Badge>
         )}
-        {(restaurant.isActive === false || restaurant.is_open === false) && (
+        {restaurant.isActive === false && (
           <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-[2px] flex items-center justify-center">
             <span className="text-white font-bold text-sm px-4 py-1.5 rounded-full bg-slate-900/80 border border-white/20">
               Fermé
@@ -131,7 +120,7 @@ export default function RestaurantCard({
           <div className="flex items-center gap-1 text-gray-500 dark:text-slate-400 bg-gray-100 dark:bg-slate-800 px-2 py-1 rounded-lg">
             <Clock className="w-3.5 h-3.5" />
             <span className="text-[11px] font-bold">
-              {restaurant.delivery_time_min || restaurant.pickupPrepTime || 5}-{restaurant.delivery_time_max || restaurant.pickupPrepTime || 15} min
+              {restaurant.normalPrepTime || 5} min
             </span>
           </div>
           <div className="flex items-center gap-1 text-[#00c8b3]">

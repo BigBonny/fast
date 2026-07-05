@@ -67,8 +67,8 @@ export default function FavoritesPage() {
               <Link href={`/restaurant/${restaurant.id}`}>
                 <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex">
                   <div className="w-28 h-28 bg-gray-50 flex-shrink-0">
-                    {restaurant.image_url ? (
-                      <img src={restaurant.image_url} alt={restaurant.name} className="w-full h-full object-cover" />
+                    {restaurant.image ? (
+                      <img src={restaurant.image} alt={restaurant.name} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gray-100"><UtensilsCrossed className="w-7 h-7 text-gray-300" /></div>
                     )}
@@ -76,7 +76,7 @@ export default function FavoritesPage() {
                   <div className="p-4 flex-1">
                     <h3 className="font-bold text-gray-900">{restaurant.name}</h3>
                     <p className="flex items-center gap-1 text-xs text-gray-400 mt-1">
-                      {restaurant.delivery_time_min || 5}-{restaurant.delivery_time_max || 15} min • {restaurant.rating || "4.5"} <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+                      {restaurant.normalPrepTime || 5} min • {restaurant.rating || "4.5"} <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
                     </p>
                   </div>
                 </div>

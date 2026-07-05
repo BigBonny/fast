@@ -4,7 +4,7 @@ import { useState, useMemo, Suspense } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { restaurantApi, menuApi } from "@/api/fastBackend";
 import { addToCart, getCart, getCartCount, getCartTotal } from "@/lib/localCart";
-import { ArrowLeft, Star, Clock, Zap, ShoppingBag, MapPin, Phone, Info, Flame, Gift } from "lucide-react";
+import { ArrowLeft, Star, Clock, Zap, ShoppingBag, MapPin, Phone, Flame, Store, ClipboardList } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -83,7 +83,9 @@ function RestaurantContent({ restaurantId }: { restaurantId: string }) {
   if (!restaurant) {
     return (
       <div className="flex flex-col items-center justify-center h-screen gap-4">
-        <div className="text-5xl">😕</div>
+        <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center">
+          <Store className="w-8 h-8 text-gray-400" />
+        </div>
         <p className="text-gray-400">Restaurant introuvable</p>
         <Link href="/">
           <Button variant="outline" size="sm">Retour</Button>
@@ -96,8 +98,8 @@ function RestaurantContent({ restaurantId }: { restaurantId: string }) {
     <div className="pb-28">
       {/* Hero */}
       <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-50">
-        {(restaurant.image || restaurant.image_url) && (
-          <img src={restaurant.image || restaurant.image_url} alt={restaurant.name} className="w-full h-full object-cover" />
+        {restaurant.image && (
+          <img src={restaurant.image} alt={restaurant.name} className="w-full h-full object-cover" />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
         <Link href="/" className="absolute top-4 left-4 w-9 h-9 bg-white/90 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-sm">
@@ -126,7 +128,7 @@ function RestaurantContent({ restaurantId }: { restaurantId: string }) {
             <div className="flex items-center gap-1 text-gray-400">
               <Clock className="w-3.5 h-3.5" />
               <span className="text-xs font-medium">
-                {restaurant.pickupPrepTime || restaurant.normalPrepTime || 5} min
+                {restaurant.normalPrepTime || 5} min
               </span>
             </div>
             <div className="flex items-center gap-1 text-cyan-500">
@@ -138,11 +140,6 @@ function RestaurantContent({ restaurantId }: { restaurantId: string }) {
                 <Flame className="w-3 h-3" /> Rush
               </Badge>
             )}
-            {restaurant.promotion && (
-              <Badge className="bg-amber-50 text-amber-600 border-amber-100 text-xs inline-flex items-center gap-1">
-                <Gift className="w-3 h-3" /> {restaurant.promotion}
-              </Badge>
-            )}
           </div>
         </div>
       </div>
@@ -150,29 +147,16 @@ function RestaurantContent({ restaurantId }: { restaurantId: string }) {
       {/* Infos restaurant */}
       <div className="px-5 mt-3">
         <div className="bg-gray-50 rounded-2xl p-4 space-y-2.5">
-          {restaurant.address ? (
+          {restaurant.address && (
             <div className="flex items-center gap-3">
               <MapPin className="w-4 h-4 text-amber-500 flex-shrink-0" />
               <span className="text-xs text-gray-600">{restaurant.address}</span>
             </div>
-          ) : (
-            <div className="flex items-center gap-3">
-              <MapPin className="w-4 h-4 text-amber-500 flex-shrink-0" />
-              <span className="text-xs text-gray-600">12 Rue de la Paix, 75001 Paris <span className="text-gray-400">(démo)</span></span>
-            </div>
           )}
-          <div className="flex items-center gap-3">
-            <Phone className="w-4 h-4 text-amber-500 flex-shrink-0" />
-            <span className="text-xs text-gray-600">+33 1 23 45 67 89 <span className="text-gray-400">(démo)</span></span>
-          </div>
-          <div className="flex items-center gap-3">
-            <Clock className="w-4 h-4 text-amber-500 flex-shrink-0" />
-            <span className="text-xs text-gray-600">Ouvert · Lun–Sam 11h–23h, Dim 12h–22h <span className="text-gray-400">(démo)</span></span>
-          </div>
-          {restaurant.minimum_order && (
+          {restaurant.phone && (
             <div className="flex items-center gap-3">
-              <Info className="w-4 h-4 text-amber-500 flex-shrink-0" />
-              <span className="text-xs text-gray-600">Commande minimum : {restaurant.minimum_order} €</span>
+              <Phone className="w-4 h-4 text-amber-500 flex-shrink-0" />
+              <span className="text-xs text-gray-600">{restaurant.phone}</span>
             </div>
           )}
         </div>
@@ -208,7 +192,9 @@ function RestaurantContent({ restaurantId }: { restaurantId: string }) {
           ))
         ) : filteredItems.length === 0 ? (
           <div className="text-center py-12">
-            <div className="text-4xl mb-2">📋</div>
+            <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-3">
+              <ClipboardList className="w-7 h-7 text-gray-400" />
+            </div>
             <p className="text-gray-400 text-sm">Aucun plat dans cette catégorie</p>
           </div>
         ) : (

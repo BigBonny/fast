@@ -7,11 +7,9 @@ interface MenuItem {
   id: string;
   name: string;
   image?: string;
-  image_url?: string;
   description?: string;
   price: number;
   isPopular?: boolean;
-  is_popular?: boolean;
   rating?: number;
 }
 
@@ -27,9 +25,9 @@ export default function MenuItemCard({ item, onAdd }: MenuItemCardProps) {
       className="flex items-center gap-3 bg-white rounded-xl p-3 border border-gray-50 hover:border-amber-100 transition-colors"
     >
       <div className="w-20 h-20 rounded-xl bg-gray-50 overflow-hidden flex-shrink-0">
-        {(item.image || item.image_url) ? (
+        {item.image ? (
           <img
-            src={item.image || item.image_url}
+            src={item.image}
             alt={item.name}
             className="w-full h-full object-cover"
           />
@@ -45,7 +43,7 @@ export default function MenuItemCard({ item, onAdd }: MenuItemCardProps) {
           <h4 className="font-semibold text-sm text-gray-900 truncate">
             {item.name}
           </h4>
-          {(item.isPopular || item.is_popular || (item.rating && item.rating >= 4.5)) && (
+          {(item.isPopular || (item.rating && item.rating >= 4.5)) && (
             <Flame className="w-3.5 h-3.5 text-orange-400 flex-shrink-0" />
           )}
         </div>

@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { restaurantApi, orderApi } from "@/api/fastBackend";
 import { getFavorites, toggleFavorite } from "@/lib/localCart";
-import { Search, Menu, X, Store, ShoppingCart, User, Zap, Users, Sparkles, Gift, AlertTriangle, SearchX, UtensilsCrossed, type LucideIcon } from "lucide-react";
+import { Search, Menu, X, Store, ShoppingCart, User, Zap, Users, Sparkles, AlertTriangle, SearchX, UtensilsCrossed, type LucideIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
@@ -13,7 +13,6 @@ import { useAuth } from "@/lib/AuthContext";
 import CuisineChip from "@/components/fast/CuisineChip";
 import RestaurantCard from "@/components/fast/RestaurantCard";
 import FavoritesSection from "@/components/fast/FavoritesSection";
-import GPSTracker from "@/components/fast/GPSTracker";
 import SideMenu from "@/components/fast/SideMenu";
 
 const cuisineTypes = [
@@ -45,7 +44,6 @@ const quickCategories: { label: string; subtitle: string; Icon: LucideIcon; bg: 
   { label: "FOOD DROP", subtitle: "Commande express", Icon: Zap, bg: "linear-gradient(135deg,#dc2626,#b91c1c)", id: "drop", action: "orders" },
   { label: "AVEC MES AMIS", subtitle: "Commande de groupe", Icon: Users, bg: "linear-gradient(135deg,#7c3aed,#4f46e5)", id: "amis", action: "group" },
   { label: "SURPRISE ME", subtitle: "Laisse-toi surprendre", Icon: Sparkles, bg: "linear-gradient(135deg,#374151,#1a1f2e)", id: "surprise", action: "surprise" },
-  { label: "-20% CODE", subtitle: "Offre du moment", Icon: Gift, bg: "linear-gradient(135deg,#d97706,#b45309)", id: "promo", action: "promo" },
 ];
 
 export default function Home() {
@@ -55,7 +53,6 @@ export default function Home() {
   const [suggestions, setSuggestions] = useState<{ type: string; label: string; id?: string; cuisine?: string }[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [activeBanner, setActiveBanner] = useState(0);
-  const [showGPS, setShowGPS] = useState(true);
   const [showMenu, setShowMenu] = useState(false);
   const [mounted, setMounted] = useState(false);
   const queryClient = useQueryClient();
@@ -102,7 +99,7 @@ export default function Home() {
   });
 
   const activeOrder = orders.find(
-    (o: any) => o.status !== "recuperee" && o.status !== "annulee"
+    (o: any) => o.status !== "COMPLETED" && o.status !== "CANCELLED"
   );
 
   const toggleFavoriteMutation = useMutation({
@@ -151,11 +148,8 @@ export default function Home() {
       router.push("/orders");
     } else if (action === "group") {
       router.push("/group-order");
-    } else if (action === "promo") {
-      setActiveCuisine(null);
-      setSearch("promo");
     } else if (action === "surprise") {
-      const open = restaurants.filter((r: any) => r.is_open !== false);
+      const open = restaurants.filter((r: any) => r.isActive !== false);
       if (open.length > 0) {
         const rand = open[Math.floor(Math.random() * open.length)];
         router.push(`/restaurant/${rand.id}`);
@@ -163,19 +157,13 @@ export default function Home() {
     }
   };
 
-  const togglePromoFilter = () => {
-    setActiveCuisine(null);
-    setSearch(search === "promo" ? "" : "promo");
-  };
-
   const filtered = restaurants.filter((r: any) => {
     const matchCuisine = !activeCuisine || r.cuisineType === activeCuisine;
     const matchSearch =
-      !search || search === "promo"
-        ? search === "promo" ? false : true
-        : r.name?.toLowerCase().includes(search.toLowerCase()) ||
-          r.description?.toLowerCase().includes(search.toLowerCase()) ||
-          r.cuisineType?.toLowerCase().includes(search.toLowerCase());
+      !search ||
+      r.name?.toLowerCase().includes(search.toLowerCase()) ||
+      r.description?.toLowerCase().includes(search.toLowerCase()) ||
+      r.cuisineType?.toLowerCase().includes(search.toLowerCase());
     return matchCuisine && matchSearch;
   });
 
@@ -300,41 +288,32 @@ export default function Home() {
         </div>
       </div>
 
-      {/* GPS Tracker */}
+      {/* Active order card */}
       <AnimatePresence>
-        {activeOrder && showGPS && (
+        {activeOrder && (
           <motion.div
-            className="pt-4 relative"
+            className="px-5 pt-4"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
           >
-            <button
-              onClick={() => setShowGPS(false)}
-              className="absolute top-6 right-8 z-10 w-6 h-6 rounded-full flex items-center justify-center"
-              style={{ background: "#374151" }}
-            >
-              <X className="w-3 h-3 text-white" />
-            </button>
             <Link href={`/order-tracking/${activeOrder.id}`}>
-              <GPSTracker order={activeOrder} />
+              <div className="rounded-2xl p-4 border border-cyan-400/30" style={{ background: "rgba(6,182,212,0.08)" }}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="text-sm font-bold text-cyan-400">Commande en cours</span>
+                  </div>
+                  <span className="text-xs text-gray-400">#{activeOrder.id?.slice(-6).toUpperCase()}</span>
+                </div>
+                <p className="text-white text-sm mt-1">
+                  {activeOrder.restaurant?.name || activeOrder.restaurantName || "Restaurant"}
+                </p>
+              </div>
             </Link>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {activeOrder && !showGPS && (
-        <div className="px-5 pt-3">
-          <button
-            onClick={() => setShowGPS(true)}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-cyan-400 border border-cyan-400/30"
-            style={{ background: "rgba(6,182,212,0.05)" }}
-          >
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            Afficher le suivi de commande
-          </button>
-        </div>
-      )}
 
       {/* Bannières défilantes avec liens */}
       <div className="pt-5 pb-2 px-5 max-w-5xl mx-auto">
@@ -397,16 +376,6 @@ export default function Home() {
           <div className="h-px flex-1 bg-gradient-to-r from-gray-200 to-transparent" />
         </div>
         <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide -mx-1 px-1">
-          <button
-            onClick={togglePromoFilter}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-black whitespace-nowrap transition-all shadow-sm ${
-              search === "promo"
-                ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md shadow-amber-200"
-                : "bg-white text-amber-600 border border-amber-100 hover:bg-amber-50 hover:border-amber-200"
-            }`}
-          >
-            <Gift className="w-3.5 h-3.5" /> Promotions
-          </button>
           {cuisineTypes.map((c) => (
             <CuisineChip
               key={c.type}
@@ -439,7 +408,7 @@ export default function Home() {
           <div className="flex items-center gap-2">
             <div className="w-1 h-5 rounded-full bg-gradient-to-b from-violet-500 to-cyan-400" />
             <h3 className="font-black text-gray-900 text-lg">
-              {search === "promo" ? "Promotions" : activeCuisine
+              {activeCuisine
                 ? cuisineTypes.find((c) => c.type === activeCuisine)?.label
                 : "Près de vous"}
             </h3>
@@ -448,15 +417,6 @@ export default function Home() {
             {filtered.length} résultat{filtered.length > 1 ? "s" : ""}
           </span>
         </div>
-
-        {search === "promo" && (
-          <button
-            onClick={() => setSearch("")}
-            className="mb-4 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 transition-colors"
-          >
-            <X className="w-3 h-3" /> Effacer le filtre
-          </button>
-        )}
 
         {error ? (
           <div className="text-center py-16 px-5 rounded-2xl bg-gray-50 border border-gray-100">

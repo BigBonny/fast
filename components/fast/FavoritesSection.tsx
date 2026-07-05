@@ -41,9 +41,9 @@ export default function FavoritesSection({ favoriteIds, favorites, restaurants }
             <Link href={`/restaurant/${restaurant.id}`}>
               <div className="flex-shrink-0 w-28 group">
                 <div className="relative w-28 h-20 rounded-2xl overflow-hidden bg-gray-100 shadow-sm group-hover:shadow-md transition-all">
-                  {(restaurant.image || restaurant.image_url) ? (
+                  {restaurant.image ? (
                     <img
-                      src={restaurant.image || restaurant.image_url}
+                      src={restaurant.image}
                       alt={restaurant.name}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
@@ -56,7 +56,7 @@ export default function FavoritesSection({ favoriteIds, favorites, restaurants }
                   </div>
                 </div>
                 <p className="text-xs font-extrabold text-gray-900 mt-1.5 truncate px-0.5">{restaurant.name}</p>
-                <p className="text-[10px] font-semibold text-gray-500 px-0.5">{restaurant.delivery_time_min || 5}-{restaurant.delivery_time_max || 15} min</p>
+                <p className="text-[10px] font-semibold text-gray-500 px-0.5">{restaurant.normalPrepTime || 5} min</p>
               </div>
             </Link>
           </motion.div>

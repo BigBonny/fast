@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { orderApi } from "@/api/fastBackend";
-import { ArrowLeft, Package, Clock, CheckCircle2, Bike } from "lucide-react";
+import { ArrowLeft, Package, Clock, CheckCircle2, Bike, Inbox } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 
@@ -44,7 +44,9 @@ export default function OrdersPage() {
 
       {orders.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 px-5">
-          <div className="text-6xl mb-4">📭</div>
+          <div className="w-20 h-20 rounded-3xl bg-gray-100 flex items-center justify-center mb-4">
+            <Inbox className="w-10 h-10 text-gray-300" />
+          </div>
           <h2 className="font-bold text-gray-900 text-lg mb-1">Aucune commande</h2>
           <p className="text-sm text-gray-400 text-center mb-6">
             Passez votre première commande dès maintenant

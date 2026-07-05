@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, Mail, Lock, ArrowLeft, Store, Zap, User } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, ArrowLeft, Zap, Store } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/lib/AuthContext";
 
@@ -123,33 +123,6 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <div className="mt-8 p-4 rounded-2xl bg-white/5 border border-white/10">
-            <p className="text-gray-400 text-xs text-center mb-3">Comptes de démo — cliquer pour remplir</p>
-            <div className="space-y-2">
-              <button
-                type="button"
-                onClick={() => { setEmail("client@fast.demo"); setPassword("Demo1234"); }}
-                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 transition-all"
-              >
-                <div className="text-left">
-                  <p className="flex items-center gap-1.5 text-xs font-bold text-emerald-400"><User className="w-3.5 h-3.5" /> Compte Client</p>
-                  <p className="text-[11px] text-gray-400">client@fast.demo</p>
-                </div>
-                <span className="text-[10px] text-gray-500 font-mono">Demo1234</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => { setEmail("resto@fast.demo"); setPassword("Demo1234"); }}
-                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl bg-violet-500/10 border border-violet-500/20 hover:bg-violet-500/20 transition-all"
-              >
-                <div className="text-left">
-                  <p className="flex items-center gap-1.5 text-xs font-bold text-violet-400"><Store className="w-3.5 h-3.5" /> Compte Restaurateur</p>
-                  <p className="text-[11px] text-gray-400">resto@fast.demo</p>
-                </div>
-                <span className="text-[10px] text-gray-500 font-mono">Demo1234</span>
-              </button>
-            </div>
-          </div>
         </motion.div>
       </div>
     </div>

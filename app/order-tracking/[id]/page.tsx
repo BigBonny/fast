@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { orderApi } from "@/api/fastBackend";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Star, Clock, CheckCircle2, Circle, ChefHat, Package, Bike, PartyPopper } from "lucide-react";
+import { ArrowLeft, Star, Clock, CheckCircle2, Circle, ChefHat, Package, Bike, PartyPopper, Inbox } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
@@ -43,7 +43,9 @@ function OrderTrackingContent({ orderId }: { orderId: string }) {
   if (!order) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-6" style={{ background: "#0a0e1a" }}>
-        <div className="text-6xl">📭</div>
+        <div className="w-20 h-20 rounded-3xl bg-white/10 flex items-center justify-center">
+          <Inbox className="w-10 h-10 text-gray-400" />
+        </div>
         <p className="text-white font-bold text-lg">Aucune commande active</p>
         <p className="text-gray-400 text-sm text-center">Tes commandes apparaîtront ici une fois passées.</p>
         <Link href="/">
