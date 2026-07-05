@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { restaurantApi } from "@/api/fastBackend";
 import { getFavorites } from "@/lib/localCart";
-import { ArrowLeft, Heart, HeartOff, UtensilsCrossed } from "lucide-react";
+import { ArrowLeft, Heart, HeartOff, UtensilsCrossed, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 
@@ -75,8 +75,8 @@ export default function FavoritesPage() {
                   </div>
                   <div className="p-4 flex-1">
                     <h3 className="font-bold text-gray-900">{restaurant.name}</h3>
-                    <p className="text-xs text-gray-400 mt-1">
-                      {restaurant.delivery_time_min || 5}-{restaurant.delivery_time_max || 15} min • {restaurant.rating || "4.5"} ⭐
+                    <p className="flex items-center gap-1 text-xs text-gray-400 mt-1">
+                      {restaurant.delivery_time_min || 5}-{restaurant.delivery_time_max || 15} min • {restaurant.rating || "4.5"} <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
                     </p>
                   </div>
                 </div>

@@ -2,6 +2,7 @@
 
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Flame } from "lucide-react";
 
 export default function RushBar({ active }: { active: boolean }) {
   return (
@@ -26,7 +27,7 @@ export default function RushBar({ active }: { active: boolean }) {
             transition={{ repeat: Infinity, duration: 1.2 }}
             className="inline-block mr-1"
           >
-            🔥
+            <Flame className="w-4 h-4 inline-block fill-white" />
           </motion.span>
           MODE RUSH ACTIF — Clients alertés des délais allongés
         </motion.div>

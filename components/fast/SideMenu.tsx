@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, User, ShoppingBag, Heart, MapPin, Settings, Shield, FileText, LogOut, Store, LucideIcon } from "lucide-react";
+import { X, User, ShoppingBag, Heart, MapPin, Settings, Shield, FileText, LogOut, Store, LucideIcon, Zap, Star } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/lib/AuthContext";
 
@@ -72,7 +72,7 @@ export default function SideMenu({ isOpen, onClose }: SideMenuProps) {
             <div className="pt-12 pb-6 px-6" style={{ background: "linear-gradient(135deg, #1a0533, #0a1628)" }}>
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-1">
-                  <span className="text-lg">⚡</span>
+                  <Zap className="w-5 h-5 text-cyan-400 fill-cyan-400" />
                   <span className="font-black text-xl italic" style={{
                     background: "linear-gradient(90deg, #06b6d4, #8b5cf6, #ec4899)",
                     WebkitBackgroundClip: "text",
@@ -80,7 +80,7 @@ export default function SideMenu({ isOpen, onClose }: SideMenuProps) {
                     transform: "skewX(-8deg)",
                     display: "inline-block"
                   }}>FAST</span>
-                  <span className="text-lg">⚡</span>
+                  <Zap className="w-5 h-5 text-pink-500 fill-pink-500" />
                 </div>
                 <button onClick={onClose} className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
                   <X className="w-4 h-4 text-white" />
@@ -91,7 +91,7 @@ export default function SideMenu({ isOpen, onClose }: SideMenuProps) {
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl font-black text-white"
                   style={{ background: "linear-gradient(135deg, #7c3aed, #06b6d4)" }}>
-                  {user?.name ? user.name[0].toUpperCase() : "👤"}
+                  {user?.name ? user.name[0].toUpperCase() : <User className="w-6 h-6" />}
                 </div>
                 <div>
                   <p className="text-white font-bold text-sm">{user?.name || "Mon compte"}</p>
@@ -101,7 +101,7 @@ export default function SideMenu({ isOpen, onClose }: SideMenuProps) {
 
               {/* Points */}
               <div className="mt-4 flex items-center gap-2 bg-yellow-400/10 rounded-xl px-3 py-2">
-                <span className="text-yellow-400 text-lg">⭐</span>
+                <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
                 <div>
                   <p className="text-yellow-400 font-black text-sm">85 Points</p>
                   <p className="text-gray-400 text-xs">Portefeuille FAST</p>

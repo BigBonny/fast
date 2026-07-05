@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Users, Plus, Link2, Copy, Check } from "lucide-react";
+import { ArrowLeft, Users, Plus, Link2, Copy, Check, PartyPopper } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -32,7 +32,7 @@ export default function GroupOrderPage() {
       <div className="px-5 pt-6">
         {/* Create Group */}
         <div className="bg-gradient-to-br from-violet-500 to-pink-500 rounded-2xl p-6 text-white mb-6">
-          <div className="text-4xl mb-4">🎉</div>
+          <PartyPopper className="w-12 h-12 text-white/90 mb-4" />
           <h2 className="text-xl font-black mb-2">Commandez avec vos amis</h2>
           <p className="text-white/80 text-sm mb-4">
             Créez un groupe et invitez vos amis à commander ensemble. Chacun choisit ce qu'il veut !

@@ -54,7 +54,7 @@ export default function useOrderNotifications(queryClient: QueryClient) {
           knownIds.current.add(o.id);
           if (!initialized.current) return;
           playNotificationSound();
-          showToast(`🛍️ Nouvelle commande ${o?.orderNumber || ""} !`);
+          showToast(`Nouvelle commande ${o?.orderNumber || ""} !`);
           if (navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 300]);
         });
       } catch (e) {

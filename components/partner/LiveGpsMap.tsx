@@ -2,6 +2,7 @@
 
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { X, UtensilsCrossed, BrainCircuit } from "lucide-react";
 
 export default function LiveGpsMap({ orders, showGps, onToggle }: { orders: any[]; showGps: boolean; onToggle: () => void }) {
   const active = orders
@@ -41,10 +42,10 @@ export default function LiveGpsMap({ orders, showGps, onToggle }: { orders: any[
               </div>
               <button
                 onClick={onToggle}
-                className="w-6 h-6 rounded-full flex items-center justify-center text-[13px] font-bold"
+                className="w-6 h-6 rounded-full flex items-center justify-center"
                 style={{ background: "rgba(255,255,255,.1)", color: "#94a3b8" }}
               >
-                ✕
+                <X className="w-3.5 h-3.5" />
               </button>
             </div>
 
@@ -111,7 +112,7 @@ function RoadScene({ clients }: { clients: any[] }) {
         className="absolute flex flex-col items-center z-20"
         style={{ left: "6px", top: "50%", transform: "translateY(-54%)" }}
       >
-        <div style={{ fontSize: "36px", lineHeight: 1 }}>🍽️</div>
+        <UtensilsCrossed className="w-9 h-9 text-[#00c8b3]" />
         <div className="text-[8px] font-black tracking-widest" style={{ color: "#00c8b3" }}>
           ICI
         </div>
@@ -196,7 +197,7 @@ function IAQueue({ orders }: { orders: any[] }) {
   return (
     <div className="px-3 py-2 border-t" style={{ background: "var(--card)", borderColor: "var(--bdr)" }}>
       <div className="flex items-center gap-1.5 mb-1.5">
-        <span className="text-[10px]">🤖</span>
+        <BrainCircuit className="w-3.5 h-3.5 text-[#00c8b3]" />
         <span className="text-[10px] font-extrabold uppercase tracking-widest" style={{ color: "#00c8b3" }}>
           IA · Ordre de préparation
         </span>

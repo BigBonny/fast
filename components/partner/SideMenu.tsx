@@ -3,25 +3,30 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  Store, ShoppingBag, UtensilsCrossed, Settings, TrendingUp, BrainCircuit,
+  Users, LayoutDashboard, Radio, FileText, CircleUser, Moon, Sun, Zap,
+  Flame, ChefHat, Antenna, X, type LucideIcon,
+} from "lucide-react";
 
 const navItems = [
-  { icon: "📋", label: "Mon Service", href: "/partner" },
-  { icon: "🛍️", label: "Commandes", href: "/partner/orders" },
-  { icon: "🍽️", label: "Menu", href: "/partner/menu" },
-  { icon: "⚙️", label: "Réglages", href: "/partner/settings" },
+  { Icon: Store, label: "Mon Service", href: "/partner" },
+  { Icon: ShoppingBag, label: "Commandes", href: "/partner/orders" },
+  { Icon: UtensilsCrossed, label: "Menu", href: "/partner/menu" },
+  { Icon: Settings, label: "Réglages", href: "/partner/settings" },
 ];
 
 const extraItems = [
-  { icon: "📈", label: "Statistiques", href: "/partner/stats" },
-  { icon: "🤖", label: "Intelligence IA", href: "/partner/ai" },
-  { icon: "👥", label: "Mon Équipe", href: "/partner/team" },
+  { Icon: TrendingUp, label: "Statistiques", href: "/partner/stats" },
+  { Icon: BrainCircuit, label: "Intelligence IA", href: "/partner/ai" },
+  { Icon: Users, label: "Mon Équipe", href: "/partner/team" },
 ];
 
 const proItems = [
-  { icon: "📊", label: "Tableau de bord", href: "/partner/analytics" },
-  { icon: "🔴", label: "Commandes live", href: "/partner/analytics/orders" },
-  { icon: "🧾", label: "Menu professionnel", href: "/partner/analytics/menu" },
-  { icon: "🏪", label: "Profil restaurant", href: "/partner/analytics/profile" },
+  { Icon: LayoutDashboard, label: "Tableau de bord", href: "/partner/analytics" },
+  { Icon: Radio, label: "Commandes live", href: "/partner/analytics/orders" },
+  { Icon: FileText, label: "Menu professionnel", href: "/partner/analytics/menu" },
+  { Icon: CircleUser, label: "Profil restaurant", href: "/partner/analytics/profile" },
 ];
 
 export default function SideMenu({
@@ -75,19 +80,19 @@ export default function SideMenu({
             {/* Header */}
             <div className="p-4 border-b border-white/[0.07]" style={{ background: "linear-gradient(180deg, rgba(0,200,179,0.08), transparent)" }}>
               <div className="flex justify-between items-center mb-4">
-                <div className="font-bebas text-[18px] tracking-[4px] bg-gradient-to-br from-[#00c8b3] to-[#ff0066] bg-clip-text text-transparent">
-                  ⚡ FAST
+                <div className="font-bebas text-[18px] tracking-[4px] bg-gradient-to-br from-[#00c8b3] to-[#ff0066] bg-clip-text text-transparent flex items-center gap-1.5">
+                  <Zap className="w-5 h-5 fill-current" /> FAST
                 </div>
                 <button
                   onClick={onClose}
                   className="bg-white/[0.08] border border-white/10 text-slate-200 w-8 h-8 rounded-full cursor-pointer text-sm flex items-center justify-center hover:bg-white/15 transition-all active:scale-95"
                 >
-                  ✕
+                  <X className="w-4 h-4" />
                 </button>
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#00c8b3] to-[#ff0066] flex items-center justify-center text-2xl flex-shrink-0 shadow-lg shadow-[#00c8b3]/20">
-                  👨‍🍳
+                  <ChefHat className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <div className="text-sm font-black text-white">{settings?.name || "Mon Restaurant"}</div>
@@ -105,7 +110,7 @@ export default function SideMenu({
                   onClick={onClose}
                   className="group flex items-center gap-2.5 w-full bg-white/[0.04] border border-transparent text-slate-200 px-3 py-2.5 rounded-xl text-[13px] font-semibold cursor-pointer mb-1.5 transition-all hover:bg-[#00c8b3]/[0.12] hover:border-[#00c8b3]/20 hover:text-[#00c8b3] no-underline active:scale-[0.98]"
                 >
-                  <span className="text-lg group-hover:scale-110 transition-transform">{item.icon}</span>
+                  <item.Icon className="w-5 h-5 group-hover:scale-110 transition-transform" />
                   <span className="flex-1">{item.label}</span>
                   <span className="text-slate-600 group-hover:text-[#00c8b3] transition-colors">›</span>
                 </Link>
@@ -119,7 +124,7 @@ export default function SideMenu({
                   onClick={onClose}
                   className="group flex items-center gap-2.5 w-full bg-white/[0.04] border border-transparent text-slate-200 px-3 py-2.5 rounded-xl text-[13px] font-semibold cursor-pointer mb-1.5 transition-all hover:bg-[#00c8b3]/[0.12] hover:border-[#00c8b3]/20 hover:text-[#00c8b3] no-underline active:scale-[0.98]"
                 >
-                  <span className="text-lg group-hover:scale-110 transition-transform">{item.icon}</span>
+                  <item.Icon className="w-5 h-5 group-hover:scale-110 transition-transform" />
                   <span className="flex-1">{item.label}</span>
                   <span className="text-slate-600 group-hover:text-[#00c8b3] transition-colors">›</span>
                 </Link>
@@ -133,7 +138,7 @@ export default function SideMenu({
                   onClick={onClose}
                   className="group flex items-center gap-2.5 w-full bg-white/[0.04] border border-transparent text-slate-200 px-3 py-2.5 rounded-xl text-[13px] font-semibold cursor-pointer mb-1.5 transition-all hover:bg-[#00c8b3]/[0.12] hover:border-[#00c8b3]/20 hover:text-[#00c8b3] no-underline active:scale-[0.98]"
                 >
-                  <span className="text-lg group-hover:scale-110 transition-transform">{item.icon}</span>
+                  <item.Icon className="w-5 h-5 group-hover:scale-110 transition-transform" />
                   <span className="flex-1">{item.label}</span>
                   <span className="text-slate-600 group-hover:text-[#00c8b3] transition-colors">›</span>
                 </Link>
@@ -145,7 +150,7 @@ export default function SideMenu({
                 className="group flex items-center justify-between w-full bg-white/[0.04] border border-transparent text-slate-200 px-3 py-2.5 rounded-xl text-[13px] font-semibold cursor-pointer mb-1.5 transition-all hover:bg-[#00c8b3]/[0.12] hover:border-[#00c8b3]/20 hover:text-[#00c8b3] text-left active:scale-[0.98]"
               >
                 <span className="flex items-center gap-2.5">
-                  <span className="text-lg group-hover:scale-110 transition-transform">{theme === "dark" ? "🌙" : "☀️"}</span>
+                  <span className="group-hover:scale-110 transition-transform">{theme === "dark" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}</span>
                   <span>{theme === "dark" ? "Mode nuit" : "Mode jour"}</span>
                 </span>
                 <span className="text-[11px] font-bold text-slate-500 bg-white/[0.08] px-2 py-0.5 rounded-full group-hover:text-[#00c8b3] transition-colors">
@@ -161,8 +166,8 @@ export default function SideMenu({
                 }}
                 className="group flex items-center gap-2.5 w-full bg-white/[0.04] border border-transparent text-slate-200 px-3 py-2.5 rounded-xl text-[13px] font-semibold cursor-pointer mb-1.5 transition-all hover:bg-[#ff0066]/[0.12] hover:border-[#ff0066]/20 hover:text-[#ff0066] text-left active:scale-[0.98]"
               >
-                <span className="text-lg group-hover:scale-110 transition-transform">⚡</span>
-                <span>Mode Rush {rushActive ? "(Actif 🔥)" : ""}</span>
+                <span className="group-hover:scale-110 transition-transform"><Flame className={`w-5 h-5 ${rushActive ? "text-[#ff0066] fill-current" : ""}`} /></span>
+                <span>Mode Rush {rushActive ? "(Actif)" : ""}</span>
               </button>
               <button
                 onClick={() => {
@@ -171,7 +176,7 @@ export default function SideMenu({
                 }}
                 className="group flex items-center gap-2.5 w-full bg-white/[0.04] border border-transparent text-slate-200 px-3 py-2.5 rounded-xl text-[13px] font-semibold cursor-pointer mb-1.5 transition-all hover:bg-[#00c8b3]/[0.12] hover:border-[#00c8b3]/20 hover:text-[#00c8b3] text-left active:scale-[0.98]"
               >
-                <span className="text-lg group-hover:scale-110 transition-transform">🍳</span>
+                <span className="group-hover:scale-110 transition-transform"><ChefHat className="w-5 h-5" /></span>
                 <span>Écran cuisine</span>
               </button>
               <Link
@@ -179,7 +184,7 @@ export default function SideMenu({
                 onClick={onClose}
                 className="group flex items-center gap-2.5 w-full bg-white/[0.04] border border-transparent text-slate-200 px-3 py-2.5 rounded-xl text-[13px] font-semibold cursor-pointer mb-1.5 transition-all hover:bg-[#00c8b3]/[0.12] hover:border-[#00c8b3]/20 hover:text-[#00c8b3] no-underline active:scale-[0.98]"
               >
-                <span className="text-lg group-hover:scale-110 transition-transform">📡</span>
+                <span className="group-hover:scale-110 transition-transform"><Antenna className="w-5 h-5" /></span>
                 <span>Radar GPS — Suivi clients</span>
               </Link>
             </div>

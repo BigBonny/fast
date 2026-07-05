@@ -12,7 +12,7 @@ const STATUS_STEPS = [
   { key: "PLACED", label: "Commande reçue", icon: Circle, color: "#6b7280" },
   { key: "PREPARING", label: "En préparation", icon: ChefHat, color: "#8b5cf6" },
   { key: "READY_FOR_PICKUP", label: "Prête à récupérer", icon: Package, color: "#f59e0b" },
-  { key: "COMPLETED", label: "Récupérée ! 🎉", icon: PartyPopper, color: "#10b981" },
+  { key: "COMPLETED", label: "Récupérée !", icon: PartyPopper, color: "#10b981" },
 ];
 
 const STATUS_INDEX: Record<string, number> = {

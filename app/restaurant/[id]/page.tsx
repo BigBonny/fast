@@ -4,7 +4,7 @@ import { useState, useMemo, Suspense } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { restaurantApi, menuApi } from "@/api/fastBackend";
 import { addToCart, getCart, getCartCount, getCartTotal } from "@/lib/localCart";
-import { ArrowLeft, Star, Clock, Zap, ShoppingBag, MapPin, Phone, Info } from "lucide-react";
+import { ArrowLeft, Star, Clock, Zap, ShoppingBag, MapPin, Phone, Info, Flame, Gift } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -134,13 +134,13 @@ function RestaurantContent({ restaurantId }: { restaurantId: string }) {
               <span className="text-xs font-semibold">Commande rapide</span>
             </div>
             {restaurant.isRushMode && (
-              <Badge className="bg-red-50 text-red-500 border-red-100 text-xs">
-                🔥 Rush
+              <Badge className="bg-red-50 text-red-500 border-red-100 text-xs inline-flex items-center gap-1">
+                <Flame className="w-3 h-3" /> Rush
               </Badge>
             )}
             {restaurant.promotion && (
-              <Badge className="bg-red-50 text-red-500 border-red-100 text-xs">
-                {restaurant.promotion}
+              <Badge className="bg-amber-50 text-amber-600 border-amber-100 text-xs inline-flex items-center gap-1">
+                <Gift className="w-3 h-3" /> {restaurant.promotion}
               </Badge>
             )}
           </div>

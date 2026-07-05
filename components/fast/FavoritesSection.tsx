@@ -1,6 +1,6 @@
 "use client";
 
-import { Heart } from "lucide-react";
+import { Heart, UtensilsCrossed } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
@@ -48,7 +48,7 @@ export default function FavoritesSection({ favoriteIds, favorites, restaurants }
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-3xl opacity-30">🍽️</div>
+                    <div className="w-full h-full flex items-center justify-center bg-gray-100"><UtensilsCrossed className="w-7 h-7 text-gray-300" /></div>
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="absolute bottom-1.5 right-1.5 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-md">

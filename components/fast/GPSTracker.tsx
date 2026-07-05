@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X } from "lucide-react";
+import { X, UtensilsCrossed } from "lucide-react";
 import { authApi } from "@/api/fastBackend";
 
 const GROUP_NAMES = ["Alex", "Sofia", "Liam", "Emma", "Noah"];
@@ -66,7 +66,7 @@ export default function GPSTracker({ order, onClose }: GPSTrackerProps) {
       </div>
 
       <div className="flex items-center gap-3 mb-3">
-        <span className="text-2xl">🍽️</span>
+        <UtensilsCrossed className="w-7 h-7 text-[#00c8b3]" />
 
         <div className="flex-1 relative" style={{ height: groupCount > 1 ? 52 : 36 }}>
           <div
