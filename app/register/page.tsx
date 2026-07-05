@@ -1,28 +1,36 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, Phone, Zap } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, Phone, Zap, Store, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/lib/AuthContext";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { register, isLoadingAuth } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [role, setRole] = useState<"CLIENT" | "RESTAURANT">("CLIENT");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (searchParams.get("role") === "restaurant") {
+      setRole("RESTAURANT");
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     try {
-      const currentUser = await register({ name, email, password, phone, role: "CLIENT" });
-      const destination = currentUser?.role === "RESTAURANT" ? "/partner/orders" : "/";
+      const currentUser = await register({ name, email, password, phone, role });
+      const destination = currentUser?.role === "RESTAURANT" ? "/partner/onboarding" : "/";
       router.replace(destination);
     } catch (err: any) {
       setError(err.message || "Erreur lors de l'inscription");
@@ -52,6 +60,29 @@ export default function RegisterPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-3 p-1 rounded-2xl bg-white/5 border border-white/10">
+              <button
+                type="button"
+                onClick={() => setRole("CLIENT")}
+                className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all ${role === "CLIENT" ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/25" : "text-gray-400 hover:text-white"}`}
+              >
+                <ShoppingBag className="w-4 h-4" /> Client
+              </button>
+              <button
+                type="button"
+                onClick={() => setRole("RESTAURANT")}
+                className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all ${role === "RESTAURANT" ? "bg-violet-500 text-white shadow-lg shadow-violet-500/25" : "text-gray-400 hover:text-white"}`}
+              >
+                <Store className="w-4 h-4" /> Restaurateur
+              </button>
+            </div>
+
+            {role === "RESTAURANT" && (
+              <div className="p-3 rounded-xl bg-violet-500/10 border border-violet-500/20 text-violet-300 text-xs text-center">
+                Après l'inscription, vous pourrez créer la fiche de votre restaurant.
+              </div>
+            )}
+
             <div className="relative">
               <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
@@ -119,11 +150,11 @@ export default function RegisterPage() {
               disabled={isLoadingAuth}
               className="w-full h-14 rounded-2xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-black text-lg disabled:opacity-50"
             >
-              {isLoadingAuth ? "Inscription..." : "S'inscrire"}
+              {isLoadingAuth ? "Inscription..." : role === "RESTAURANT" ? "S'inscrire comme restaurateur" : "S'inscrire"}
             </motion.button>
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-6 text-center space-y-2">
             <p className="text-gray-400 text-sm">
               Déjà un compte ?{" "}
               <Link href="/login" className="text-emerald-400 font-bold">

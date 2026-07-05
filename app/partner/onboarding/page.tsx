@@ -77,7 +77,7 @@ export default function OnboardingPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "#020617" }}>
-        <div className="font-bebas text-3xl tracking-[8px] animate-pulse" style={{ color: "#00c8b3" }}> FAST</div>
+        <div className="font-bebas text-3xl tracking-[8px] animate-pulse" style={{ color: "#00c8b3" }}>FAST</div>
       </div>
     );
   }
@@ -86,9 +86,12 @@ export default function OnboardingPage() {
     <div className="min-h-screen p-4" style={{ background: "#020617" }}>
       <div className="max-w-md mx-auto pt-8 pb-12">
         <div className="text-center mb-8">
-          <div className="font-bebas text-4xl tracking-[8px] bg-gradient-to-br from-[#00c8b3] to-[#ff0066] bg-clip-text text-transparent mb-2"> FAST</div>
+          <div className="font-bebas text-4xl tracking-[8px] bg-gradient-to-br from-[#00c8b3] to-[#ff0066] bg-clip-text text-transparent mb-2">FAST</div>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-300 text-xs font-bold mb-3">
+            Étape 1 / 2 : Créer le compte restaurateur
+          </div>
           <h1 className="text-2xl font-black text-white mb-2">Créez votre restaurant</h1>
-          <p className="text-sm text-slate-400">Quelques informations pour commencer à recevoir des commandes.</p>
+          <p className="text-sm text-slate-400">Remplissez les informations ci-dessous pour ouvrir votre restaurant sur FAST et commencer à recevoir des commandes.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-[#0B1120] border border-white/[0.08] rounded-2xl p-5 space-y-4">

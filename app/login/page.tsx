@@ -108,11 +108,17 @@ export default function LoginPage() {
             </motion.button>
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-6 text-center space-y-2">
             <p className="text-gray-400 text-sm">
               Pas encore de compte ?{" "}
               <Link href="/register" className="text-emerald-400 font-bold">
                 S'inscrire
+              </Link>
+            </p>
+            <p className="text-gray-400 text-sm">
+              Vous êtes restaurateur ?{" "}
+              <Link href="/register?role=restaurant" className="text-violet-400 font-bold">
+                Créer un compte pro
               </Link>
             </p>
           </div>
