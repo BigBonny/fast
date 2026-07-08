@@ -175,6 +175,7 @@ export default function Home() {
     <div className="pb-6 min-h-screen" style={{ background: "#f8f9fa" }}>
       <SideMenu isOpen={showMenu} onClose={() => setShowMenu(false)} />
 
+
       {/* ── HERO HEADER ── */}
       <div className="relative overflow-hidden" style={{ background: "#08090f" }}>
         {/* Anneaux décoratifs */}
@@ -186,8 +187,8 @@ export default function Home() {
           <div className="absolute w-48 h-48 rounded-full blur-3xl opacity-20" style={{ background: "radial-gradient(circle, #7c3aed, transparent)" }} />
         </div>
 
-        {/* Top bar */}
-        <div className="relative z-10 flex items-center justify-between px-5 pt-5 pb-3 max-w-5xl mx-auto">
+        {/* Mobile top bar — hidden on desktop */}
+        <div className="md:hidden relative z-10 flex items-center justify-between px-5 pt-5 pb-3 max-w-5xl mx-auto">
           <button
             onClick={() => setShowMenu(true)}
             className="w-9 h-9 rounded-xl flex items-center justify-center"
@@ -220,8 +221,8 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Logo centré */}
-        <div className="relative z-10 flex flex-col items-center pb-6 pt-2">
+        {/* Logo centré — mobile only */}
+        <div className="md:hidden relative z-10 flex flex-col items-center pb-6 pt-2">
           <motion.div
             animate={{ filter: ["drop-shadow(0 0 8px #f59e0b80)", "drop-shadow(0 0 18px #f59e0bcc)", "drop-shadow(0 0 8px #f59e0b80)"] }}
             transition={{ repeat: Infinity, duration: 2.2, ease: "easeInOut" }}
@@ -238,6 +239,12 @@ export default function Home() {
             </div>
           </motion.div>
           <p className="text-gray-400 text-xs font-medium tracking-widest uppercase mt-1">Chaque minute compte.</p>
+        </div>
+
+        {/* Desktop hero headline */}
+        <div className="hidden md:flex relative z-10 flex-col items-center py-10">
+          <p className="text-gray-400 text-sm font-medium tracking-widest uppercase mb-3">Chaque minute compte.</p>
+          <h1 className="font-black text-4xl text-white tracking-tight">Commandez. Vite. Maintenant.</h1>
         </div>
 
         {/* Search avec autocomplétion */}
@@ -288,189 +295,235 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Active order card */}
-      <AnimatePresence>
-        {activeOrder && (
-          <motion.div
-            className="px-5 pt-4"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-          >
-            <Link href={`/order-tracking/${activeOrder.id}`}>
-              <div className="rounded-2xl p-4 border border-cyan-400/30" style={{ background: "rgba(6,182,212,0.08)" }}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    <span className="text-sm font-bold text-cyan-400">Commande en cours</span>
-                  </div>
-                  <span className="text-xs text-gray-400">#{activeOrder.id?.slice(-6).toUpperCase()}</span>
-                </div>
-                <p className="text-white text-sm mt-1">
-                  {activeOrder.restaurant?.name || activeOrder.restaurantName || "Restaurant"}
-                </p>
-              </div>
-            </Link>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* ── BODY ── */}
+      <div className="max-w-screen-xl mx-auto px-5 md:px-8 pt-5 pb-8 md:flex md:gap-8">
 
-      {/* Bannières défilantes avec liens */}
-      <div className="pt-5 pb-2 px-5 max-w-5xl mx-auto">
-        <div
-          className="relative overflow-hidden rounded-2xl border border-white/10"
-          style={{ height: 100, boxShadow: "0 12px 30px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.04) inset" }}
-        >
-          <AnimatePresence mode="wait">
-            {quickCategories.map((cat, i) =>
-              i === activeBanner ? (
-                <motion.button
-                  key={cat.id}
-                  initial={{ opacity: 0, x: 60, scale: 0.98 }}
-                  animate={{ opacity: 1, x: 0, scale: 1 }}
-                  exit={{ opacity: 0, x: -60, scale: 0.98 }}
-                  transition={{ duration: 0.4, ease: "easeInOut" }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => handleBannerClick(cat.action)}
-                  className="absolute inset-0 w-full flex items-center justify-between px-6 text-white shadow-lg rounded-2xl"
-                  style={{ background: cat.bg }}
-                >
-                  <div className="flex flex-col items-start gap-1">
-                    <span className="text-xl font-black tracking-wide">{cat.label}</span>
-                    <span className="text-xs text-white/80 font-medium">{cat.subtitle}</span>
-                  </div>
-                  <motion.span
-                    initial={{ scale: 0.8, rotate: -10 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    transition={{ type: "spring", stiffness: 300, delay: 0.1 }}
-                    className="drop-shadow-lg"
-                  >
-                    <cat.Icon className="w-12 h-12 text-white/90" strokeWidth={1.8} />
-                  </motion.span>
-                </motion.button>
-              ) : null
-            )}
-          </AnimatePresence>
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
-            {quickCategories.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setActiveBanner(i)}
-                className="rounded-full transition-all duration-300"
-                style={{
-                  width: i === activeBanner ? 18 : 6,
-                  height: 6,
-                  background: i === activeBanner ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.35)",
-                  boxShadow: i === activeBanner ? "0 0 8px rgba(255,255,255,0.5)" : "none",
-                }}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Quick filters */}
-      <div className="px-5 pt-4 mb-4 max-w-5xl mx-auto">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Explorer</span>
-          <div className="h-px flex-1 bg-gradient-to-r from-gray-200 to-transparent" />
-        </div>
-        <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide -mx-1 px-1">
-          {cuisineTypes.map((c) => (
-            <CuisineChip
-              key={c.type}
-              type={c.type}
-              label={c.label}
-              isActive={activeCuisine === c.type}
-              onClick={() => {
-                setSearch("");
-                setActiveCuisine(activeCuisine === c.type ? null : c.type);
-              }}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Favoris */}
-      {favorites.length > 0 && (
-        <div className="mb-4 max-w-5xl mx-auto">
-          <div className="px-5 flex items-center justify-between mb-2">
-            <h3 className="font-bold text-gray-900">Mes favoris</h3>
-            <Link href="/favorites" className="text-xs font-semibold text-violet-500">Voir tout</Link>
-          </div>
-          <FavoritesSection favoriteIds={favorites} restaurants={restaurants} />
-        </div>
-      )}
-
-      {/* Restaurants */}
-      <div className="px-5 max-w-5xl mx-auto">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <div className="w-1 h-5 rounded-full bg-gradient-to-b from-violet-500 to-cyan-400" />
-            <h3 className="font-black text-gray-900 text-lg">
-              {activeCuisine
-                ? cuisineTypes.find((c) => c.type === activeCuisine)?.label
-                : "Près de vous"}
-            </h3>
-          </div>
-          <span className="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-1 rounded-full">
-            {filtered.length} résultat{filtered.length > 1 ? "s" : ""}
-          </span>
-        </div>
-
-        {error ? (
-          <div className="text-center py-16 px-5 rounded-2xl bg-gray-50 border border-gray-100">
-            <AlertTriangle className="w-12 h-12 text-amber-400 mx-auto mb-3" />
-            <p className="text-gray-700 text-sm font-bold mb-1">Impossible de charger les restaurants</p>
-            <p className="text-gray-400 text-xs mb-4">Vérifie ta connexion et réessaie.</p>
-            <button
-              onClick={() => queryClient.invalidateQueries({ queryKey: ["restaurants"] })}
-              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white text-sm font-bold shadow-lg shadow-violet-200"
-            >
-              Réessayer
-            </button>
-          </div>
-        ) : isLoading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="bg-gray-100 rounded-2xl h-56 overflow-hidden">
-                <div className="h-40 bg-gray-200 animate-pulse" />
-                <div className="p-3 space-y-2">
-                  <div className="h-3 w-2/3 bg-gray-200 rounded animate-pulse" />
-                  <div className="h-2 w-1/2 bg-gray-200 rounded animate-pulse" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="text-center py-16 rounded-2xl bg-gray-50 border border-dashed border-gray-200">
-            <SearchX className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500 text-sm font-semibold">Aucun restaurant trouvé</p>
-            <p className="text-gray-400 text-xs mt-1">Essayez une autre recherche ou catégorie.</p>
-          </div>
-        ) : (
-          <motion.div
-            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4"
-            initial="hidden"
-            animate="visible"
-            variants={{ visible: { transition: { staggerChildren: 0.06 } } }}
-          >
-            {filtered.map((restaurant: any) => (
-              <motion.div
-                key={restaurant.id}
-                variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}
+        {/* ── DESKTOP SIDEBAR ── */}
+        <aside className="hidden md:flex flex-col gap-6 w-56 shrink-0">
+          {/* Banner cards (stacked on desktop) */}
+          <div className="space-y-3">
+            {quickCategories.map((cat) => (
+              <motion.button
+                key={cat.id}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => handleBannerClick(cat.action)}
+                className="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-white"
+                style={{ background: cat.bg }}
               >
-                <Link href={`/restaurant/${restaurant.id}`}>
-                  <RestaurantCard
-                    restaurant={restaurant}
-                    isFavorite={favorites.includes(restaurant.id)}
-                    onToggleFavorite={() => toggleFavoriteMutation.mutate(restaurant)}
-                  />
+                <div className="text-left">
+                  <p className="text-sm font-black">{cat.label}</p>
+                  <p className="text-[11px] text-white/75">{cat.subtitle}</p>
+                </div>
+                <cat.Icon className="w-7 h-7 text-white/80 shrink-0" strokeWidth={1.8} />
+              </motion.button>
+            ))}
+          </div>
+
+          {/* Cuisine filter sidebar */}
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Catégories</p>
+            <div className="space-y-1">
+              <button
+                onClick={() => { setSearch(""); setActiveCuisine(null); }}
+                className={`w-full text-left px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
+                  !activeCuisine ? "bg-violet-500 text-white" : "text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                Tous les restaurants
+              </button>
+              {cuisineTypes.map((c) => (
+                <button
+                  key={c.type}
+                  onClick={() => { setSearch(""); setActiveCuisine(activeCuisine === c.type ? null : c.type); }}
+                  className={`w-full text-left px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
+                    activeCuisine === c.type ? "bg-violet-500 text-white" : "text-gray-600 hover:bg-gray-100"
+                  }`}
+                >
+                  {c.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </aside>
+
+        {/* ── MAIN CONTENT ── */}
+        <div className="flex-1 min-w-0">
+
+          {/* Active order card */}
+          <AnimatePresence>
+            {activeOrder && (
+              <motion.div
+                className="mb-4"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+              >
+                <Link href={`/order-tracking/${activeOrder.id}`}>
+                  <div className="rounded-2xl p-4 border border-cyan-400/30" style={{ background: "rgba(6,182,212,0.08)" }}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                        <span className="text-sm font-bold text-cyan-400">Commande en cours</span>
+                      </div>
+                      <span className="text-xs text-gray-400">#{activeOrder.id?.slice(-6).toUpperCase()}</span>
+                    </div>
+                    <p className="text-gray-700 text-sm mt-1 font-semibold">
+                      {activeOrder.restaurant?.name || "Restaurant"}
+                    </p>
+                  </div>
                 </Link>
               </motion.div>
-            ))}
-          </motion.div>
-        )}
+            )}
+          </AnimatePresence>
+
+          {/* Mobile: scrollable banner */}
+          <div className="md:hidden mb-4">
+            <div
+              className="relative overflow-hidden rounded-2xl border border-white/10"
+              style={{ height: 100, boxShadow: "0 12px 30px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.04) inset" }}
+            >
+              <AnimatePresence mode="wait">
+                {quickCategories.map((cat, i) =>
+                  i === activeBanner ? (
+                    <motion.button
+                      key={cat.id}
+                      initial={{ opacity: 0, x: 60, scale: 0.98 }}
+                      animate={{ opacity: 1, x: 0, scale: 1 }}
+                      exit={{ opacity: 0, x: -60, scale: 0.98 }}
+                      transition={{ duration: 0.4, ease: "easeInOut" }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => handleBannerClick(cat.action)}
+                      className="absolute inset-0 w-full flex items-center justify-between px-6 text-white shadow-lg rounded-2xl"
+                      style={{ background: cat.bg }}
+                    >
+                      <div className="flex flex-col items-start gap-1">
+                        <span className="text-xl font-black tracking-wide">{cat.label}</span>
+                        <span className="text-xs text-white/80 font-medium">{cat.subtitle}</span>
+                      </div>
+                      <cat.Icon className="w-12 h-12 text-white/90" strokeWidth={1.8} />
+                    </motion.button>
+                  ) : null
+                )}
+              </AnimatePresence>
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+                {quickCategories.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setActiveBanner(i)}
+                    className="rounded-full transition-all duration-300"
+                    style={{
+                      width: i === activeBanner ? 18 : 6,
+                      height: 6,
+                      background: i === activeBanner ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.35)",
+                      boxShadow: i === activeBanner ? "0 0 8px rgba(255,255,255,0.5)" : "none",
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile: horizontal cuisine chips */}
+          <div className="md:hidden mb-4">
+            <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide -mx-1 px-1">
+              {cuisineTypes.map((c) => (
+                <CuisineChip
+                  key={c.type}
+                  type={c.type}
+                  label={c.label}
+                  isActive={activeCuisine === c.type}
+                  onClick={() => {
+                    setSearch("");
+                    setActiveCuisine(activeCuisine === c.type ? null : c.type);
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Favoris */}
+          {favorites.length > 0 && (
+            <div className="mb-5">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-bold text-gray-900">Mes favoris</h3>
+                <Link href="/favorites" className="text-xs font-semibold text-violet-500">Voir tout</Link>
+              </div>
+              <FavoritesSection favoriteIds={favorites} restaurants={restaurants} />
+            </div>
+          )}
+
+          {/* Restaurants */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-1 h-5 rounded-full bg-gradient-to-b from-violet-500 to-cyan-400" />
+                <h3 className="font-black text-gray-900 text-lg">
+                  {activeCuisine
+                    ? cuisineTypes.find((c) => c.type === activeCuisine)?.label
+                    : "Près de vous"}
+                </h3>
+              </div>
+              <span className="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-1 rounded-full">
+                {filtered.length} résultat{filtered.length > 1 ? "s" : ""}
+              </span>
+            </div>
+
+            {error ? (
+              <div className="text-center py-16 px-5 rounded-2xl bg-gray-50 border border-gray-100">
+                <AlertTriangle className="w-12 h-12 text-amber-400 mx-auto mb-3" />
+                <p className="text-gray-700 text-sm font-bold mb-1">Impossible de charger les restaurants</p>
+                <p className="text-gray-400 text-xs mb-4">Vérifie ta connexion et réessaie.</p>
+                <button
+                  onClick={() => queryClient.invalidateQueries({ queryKey: ["restaurants"] })}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white text-sm font-bold shadow-lg shadow-violet-200"
+                >
+                  Réessayer
+                </button>
+              </div>
+            ) : isLoading ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <div key={i} className="bg-gray-100 rounded-2xl h-56 overflow-hidden">
+                    <div className="h-40 bg-gray-200 animate-pulse" />
+                    <div className="p-3 space-y-2">
+                      <div className="h-3 w-2/3 bg-gray-200 rounded animate-pulse" />
+                      <div className="h-2 w-1/2 bg-gray-200 rounded animate-pulse" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="text-center py-16 rounded-2xl bg-gray-50 border border-dashed border-gray-200">
+                <SearchX className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-500 text-sm font-semibold">Aucun restaurant trouvé</p>
+                <p className="text-gray-400 text-xs mt-1">Essayez une autre recherche ou catégorie.</p>
+              </div>
+            ) : (
+              <motion.div
+                className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4"
+                initial="hidden"
+                animate="visible"
+                variants={{ visible: { transition: { staggerChildren: 0.06 } } }}
+              >
+                {filtered.map((restaurant: any) => (
+                  <motion.div
+                    key={restaurant.id}
+                    variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}
+                  >
+                    <Link href={`/restaurant/${restaurant.id}`}>
+                      <RestaurantCard
+                        restaurant={restaurant}
+                        isFavorite={favorites.includes(restaurant.id)}
+                        onToggleFavorite={() => toggleFavoriteMutation.mutate(restaurant)}
+                      />
+                    </Link>
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

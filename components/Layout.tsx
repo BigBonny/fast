@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { getCart, getCartCount } from "@/lib/localCart";
 import { Home, ClipboardList, ShoppingCart, Bike, Users } from "lucide-react";
+import Navbar from "@/components/Navbar";
 
 const applyTheme = (mode: string) => {
   const root = document.documentElement;
@@ -69,10 +70,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <main className={showNav ? "pb-20" : ""}>{children}</main>
+      <Navbar />
+
+      <main className={`${showNav ? "pb-20 md:pb-0" : ""} md:pt-16`}>{children}</main>
 
       {showNav && (
-        <nav className="fixed bottom-4 left-4 right-4 z-50 max-w-lg mx-auto">
+        <nav className="md:hidden fixed bottom-4 left-4 right-4 z-50 max-w-lg mx-auto">
           <div
             className="flex items-center justify-between px-2 py-2 rounded-3xl border border-white/10 shadow-2xl"
             style={{
