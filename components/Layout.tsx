@@ -28,7 +28,7 @@ const navItems = [
   { name: "Panier", path: "/cart", icon: ShoppingCart, color: "#10b981" },
 ];
 
-const hideNavPaths = ["/welcome", "/profile"];
+const hideNavPaths = ["/welcome", "/profile", "/login", "/register"];
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -70,9 +70,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <Navbar />
+      {showNav && <Navbar />}
 
-      <main className={`${showNav ? "pb-20 md:pb-0" : ""} md:pt-16`}>{children}</main>
+      <main className={showNav ? "pb-20 md:pb-0 md:pt-16" : ""}>{children}</main>
 
       {showNav && (
         <nav className="md:hidden fixed bottom-4 left-4 right-4 z-50 max-w-lg mx-auto">

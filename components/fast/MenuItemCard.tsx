@@ -22,7 +22,7 @@ export default function MenuItemCard({ item, onAdd }: MenuItemCardProps) {
   return (
     <motion.div
       whileTap={{ scale: 0.98 }}
-      className="flex items-center gap-3 bg-white rounded-xl p-3 border border-gray-50 hover:border-amber-100 transition-colors"
+      className="flex items-center gap-3 bg-white rounded-xl p-3 border border-gray-100 hover:border-amber-200 hover:shadow-md hover:shadow-amber-100/40 transition-all duration-200 h-full"
     >
       <div className="w-20 h-20 rounded-xl bg-gray-50 overflow-hidden flex-shrink-0">
         {item.image ? (

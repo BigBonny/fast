@@ -60,7 +60,7 @@ function OrderTrackingContent({ orderId }: { orderId: string }) {
   return (
     <div className="min-h-screen" style={{ background: "#0a0e1a" }}>
       {/* Header */}
-      <div className="px-5 pt-5 pb-4 flex items-center justify-between">
+      <div className="px-5 pt-5 pb-4 flex items-center justify-between max-w-2xl mx-auto">
         <Link href="/orders">
           <button className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
             <ArrowLeft className="w-4 h-4 text-white" />
@@ -77,7 +77,7 @@ function OrderTrackingContent({ orderId }: { orderId: string }) {
       </div>
 
       {/* Étapes de progression */}
-      <div className="mx-5 rounded-2xl p-5 mb-5" style={{ background: "#1a1f2e" }}>
+      <div className="mx-5 md:mx-auto md:max-w-2xl rounded-2xl p-5 mb-5" style={{ background: "#1a1f2e" }}>
         <p className="text-white font-black text-sm mb-4">Progression de ta commande</p>
 
         <div className="relative">
@@ -143,7 +143,7 @@ function OrderTrackingContent({ orderId }: { orderId: string }) {
       </div>
 
       {/* Récapitulatif commande */}
-      <div className="mx-5 rounded-2xl p-5 mb-6" style={{ background: "#1a1f2e" }}>
+      <div className="mx-5 md:mx-auto md:max-w-2xl rounded-2xl p-5 mb-6" style={{ background: "#1a1f2e" }}>
         <p className="text-white font-black text-sm mb-3">Récapitulatif</p>
         <div className="space-y-2">
           {(order.cartItems || order.items || []).map((item: any, i: number) => {

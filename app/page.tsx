@@ -242,9 +242,18 @@ export default function Home() {
         </div>
 
         {/* Desktop hero headline */}
-        <div className="hidden md:flex relative z-10 flex-col items-center py-10">
-          <p className="text-gray-400 text-sm font-medium tracking-widest uppercase mb-3">Chaque minute compte.</p>
-          <h1 className="font-black text-4xl text-white tracking-tight">Commandez. Vite. Maintenant.</h1>
+        <div className="hidden md:flex relative z-10 flex-col items-center pt-12 pb-8">
+          <p className="text-gray-400 text-xs font-bold tracking-[0.3em] uppercase mb-3">Chaque minute compte</p>
+          <h1 className="font-black text-5xl text-white tracking-tight text-center leading-tight">
+            Commandez.{" "}
+            <span style={{
+              background: "linear-gradient(90deg, #f59e0b, #f97316)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}>Vite.</span>{" "}
+            Maintenant.
+          </h1>
+          <p className="text-gray-500 text-sm mt-3">Vos restaurants préférés, sans attendre.</p>
         </div>
 
         {/* Search avec autocomplétion */}
@@ -256,7 +265,7 @@ export default function Home() {
               onChange={(e) => handleSearchChange(e.target.value)}
               onFocus={() => search && setShowSuggestions(suggestions.length > 0)}
               placeholder="Rechercher un plat ou restaurant..."
-              className="pl-10 h-11 border-0 rounded-2xl text-sm placeholder:text-gray-500 text-white"
+              className="pl-10 h-11 md:h-12 border border-white/5 rounded-2xl text-sm placeholder:text-gray-500 text-white focus:border-violet-500/50 transition-colors"
               style={{ background: "#1a1f2e" }}
             />
             {search && (
@@ -482,13 +491,13 @@ export default function Home() {
                 </button>
               </div>
             ) : isLoading ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-                {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <div key={i} className="bg-gray-100 rounded-2xl h-56 overflow-hidden">
-                    <div className="h-40 bg-gray-200 animate-pulse" />
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                  <div key={i} className="bg-white border border-gray-100 rounded-2xl h-56 overflow-hidden">
+                    <div className="h-40 skeleton-shimmer" />
                     <div className="p-3 space-y-2">
-                      <div className="h-3 w-2/3 bg-gray-200 rounded animate-pulse" />
-                      <div className="h-2 w-1/2 bg-gray-200 rounded animate-pulse" />
+                      <div className="h-3 w-2/3 rounded skeleton-shimmer" />
+                      <div className="h-2 w-1/2 rounded skeleton-shimmer" />
                     </div>
                   </div>
                 ))}

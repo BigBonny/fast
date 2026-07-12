@@ -41,9 +41,37 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "#020617" }}>
+    <div className="min-h-screen flex" style={{ background: "#020617" }}>
+      {/* Desktop branding panel */}
+      <div className="hidden lg:flex flex-col justify-between w-[45%] relative overflow-hidden p-12"
+        style={{ background: "linear-gradient(160deg, #1a0533 0%, #0a1628 60%, #020617 100%)" }}>
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute w-[420px] h-[420px] -top-24 -left-24 rounded-full blur-3xl opacity-25" style={{ background: "radial-gradient(circle, #7c3aed, transparent)" }} />
+          <div className="absolute w-[360px] h-[360px] -bottom-20 -right-20 rounded-full blur-3xl opacity-20" style={{ background: "radial-gradient(circle, #06b6d4, transparent)" }} />
+        </div>
+        <div className="relative z-10 flex items-center gap-1.5">
+          <Zap className="w-7 h-7 text-amber-400 fill-amber-400" />
+          <span className="font-black text-3xl italic tracking-tight" style={{
+            background: "linear-gradient(90deg, #f59e0b, #fbbf24, #f97316)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+          }}>FAST</span>
+        </div>
+        <div className="relative z-10">
+          <h2 className="text-4xl font-black text-white leading-tight mb-4">
+            Rejoins la<br />communauté.
+          </h2>
+          <p className="text-gray-400 text-base max-w-sm">
+            Client ou restaurateur, crée ton compte en quelques secondes et gagne du temps à chaque commande.
+          </p>
+        </div>
+        <p className="relative z-10 text-gray-600 text-xs">© {new Date().getFullYear()} FAST</p>
+      </div>
+
+      {/* Form side */}
+      <div className="flex-1 flex flex-col">
       <div className="px-5 py-4">
-        <Link href="/" className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
+        <Link href="/" className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors">
           <ArrowLeft className="w-5 h-5 text-white" />
         </Link>
       </div>
@@ -173,6 +201,7 @@ export default function RegisterPage() {
             </p>
           </div>
         </motion.div>
+      </div>
       </div>
     </div>
   );

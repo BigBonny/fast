@@ -91,15 +91,17 @@ export default function CartPage() {
   return (
     <div className="pb-32 min-h-screen bg-gray-50/50">
       {/* Header */}
-      <div className="bg-white px-5 py-4 flex items-center gap-3 border-b border-gray-100 sticky top-0 z-20">
-        <Link href="/" className="w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center">
-          <ArrowLeft className="w-4 h-4 text-gray-600" />
-        </Link>
-        <div>
-          <h1 className="font-bold text-gray-900">Mon panier</h1>
-          <p className="text-xs text-gray-400">
-            {cartItems.length} article{cartItems.length > 1 ? "s" : ""}
-          </p>
+      <div className="bg-white/90 backdrop-blur-md px-5 py-4 border-b border-gray-100 sticky top-0 md:top-16 z-20">
+        <div className="max-w-2xl mx-auto flex items-center gap-3">
+          <Link href="/" className="w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-colors">
+            <ArrowLeft className="w-4 h-4 text-gray-600" />
+          </Link>
+          <div>
+            <h1 className="font-bold text-gray-900">Mon panier</h1>
+            <p className="text-xs text-gray-400">
+              {cartItems.length} article{cartItems.length > 1 ? "s" : ""}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -121,7 +123,7 @@ export default function CartPage() {
       ) : (
         <>
           {/* Restaurant name */}
-          <div className="px-5 pt-4 pb-2">
+          <div className="px-5 pt-4 pb-2 max-w-2xl mx-auto">
             <div className="flex items-center gap-2 text-gray-500">
               <Zap className="w-3.5 h-3.5 text-teal-400" fill="currentColor" />
               <span className="text-xs font-semibold">{cartItems[0]?.restaurantName}</span>
@@ -129,7 +131,7 @@ export default function CartPage() {
           </div>
 
           {/* Items */}
-          <div className="px-5 space-y-2">
+          <div className="px-5 space-y-2 max-w-2xl mx-auto">
             <AnimatePresence>
               {cartItems.map((item: any) => (
                 <motion.div
@@ -181,7 +183,7 @@ export default function CartPage() {
           </div>
 
           {/* Notes */}
-          <div className="px-5 mt-4">
+          <div className="px-5 mt-4 max-w-2xl mx-auto">
             <Textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -191,7 +193,7 @@ export default function CartPage() {
           </div>
 
           {/* Summary */}
-          <div className="px-5 mt-5">
+          <div className="px-5 mt-5 max-w-2xl mx-auto">
             <div className="bg-white rounded-2xl p-4 border border-gray-100">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-gray-400">Sous-total</span>
@@ -210,10 +212,10 @@ export default function CartPage() {
           </div>
 
           {/* Order button */}
-          <div className="fixed bottom-20 left-0 right-0 px-5 z-50">
+          <div className="fixed bottom-20 md:bottom-6 left-0 right-0 px-5 z-50 max-w-2xl mx-auto">
             <Button
               onClick={() => setShowCheckout(true)}
-              className="w-full h-14 text-white font-bold text-base rounded-2xl shadow-xl flex items-center justify-center gap-2"
+              className="w-full h-14 text-white font-bold text-base rounded-2xl shadow-xl shadow-teal-500/25 flex items-center justify-center gap-2 hover:opacity-95 transition-opacity"
               style={{ background: "linear-gradient(135deg, #14b8a6, #06b6d4)" }}
             >
               <Zap className="w-5 h-5" fill="currentColor" />

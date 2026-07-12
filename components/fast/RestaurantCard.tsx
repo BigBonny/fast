@@ -67,8 +67,13 @@ export default function RestaurantCard({
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
+        {restaurant.cuisineType && (
+          <span className="absolute bottom-3 left-3 text-[10px] font-black uppercase tracking-wide text-white bg-slate-900/70 backdrop-blur-sm px-2 py-0.5 rounded-lg border border-white/10">
+            {restaurant.cuisineType}
+          </span>
+        )}
         {restaurant.isRushMode && (
-          <Badge className="absolute bottom-3 left-3 bg-slate-900/80 backdrop-blur-sm text-orange-400 font-black text-[10px] px-2 py-0.5 rounded-lg shadow-lg border border-orange-500/30">
+          <Badge className="absolute bottom-3 right-3 bg-slate-900/80 backdrop-blur-sm text-orange-400 font-black text-[10px] px-2 py-0.5 rounded-lg shadow-lg border border-orange-500/30">
             <Flame className="w-3 h-3 mr-0.5" /> Rush
           </Badge>
         )}

@@ -97,22 +97,22 @@ function RestaurantContent({ restaurantId }: { restaurantId: string }) {
   return (
     <div className="pb-28">
       {/* Hero */}
-      <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-50">
+      <div className="relative h-48 md:h-72 bg-gradient-to-br from-gray-100 to-gray-50">
         {restaurant.image && (
           <img src={restaurant.image} alt={restaurant.name} className="w-full h-full object-cover" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-        <Link href="/" className="absolute top-4 left-4 w-9 h-9 bg-white/90 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-sm">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+        <Link href="/" className="absolute top-4 left-4 md:top-6 md:left-8 w-9 h-9 bg-white/90 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-sm hover:bg-white transition-colors">
           <ArrowLeft className="w-4 h-4 text-gray-700" />
         </Link>
       </div>
 
       {/* Info */}
-      <div className="px-5 -mt-6 relative z-10">
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+      <div className="px-5 md:px-8 -mt-6 md:-mt-12 relative z-10 max-w-4xl mx-auto">
+        <div className="bg-white rounded-2xl p-4 md:p-6 shadow-lg shadow-gray-200/60 border border-gray-100">
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="font-black text-xl text-gray-900">{restaurant.name}</h1>
+              <h1 className="font-black text-xl md:text-3xl text-gray-900">{restaurant.name}</h1>
               {restaurant.description && (
                 <p className="text-xs text-gray-400 mt-1">{restaurant.description}</p>
               )}
@@ -145,7 +145,7 @@ function RestaurantContent({ restaurantId }: { restaurantId: string }) {
       </div>
 
       {/* Infos restaurant */}
-      <div className="px-5 mt-3">
+      <div className="px-5 md:px-8 mt-3 max-w-4xl mx-auto">
         <div className="bg-gray-50 rounded-2xl p-4 space-y-2.5">
           {restaurant.address && (
             <div className="flex items-center gap-3">
@@ -164,7 +164,7 @@ function RestaurantContent({ restaurantId }: { restaurantId: string }) {
 
       {/* Category Tabs */}
       {categories.length > 0 && (
-        <div className="px-5 mt-5">
+        <div className="px-5 md:px-8 mt-5 max-w-4xl mx-auto">
           <Tabs value={activeCategory} onValueChange={setActiveCategory}>
             <TabsList className="bg-gray-50 h-9 p-0.5 w-full overflow-x-auto flex justify-start">
               <TabsTrigger value="all" className="text-xs px-3 rounded-lg data-[state=active]:bg-emerald-500 data-[state=active]:text-white">
@@ -185,11 +185,13 @@ function RestaurantContent({ restaurantId }: { restaurantId: string }) {
       )}
 
       {/* Menu Items */}
-      <div className="px-5 mt-4 space-y-2.5">
+      <div className="px-5 md:px-8 mt-4 max-w-4xl mx-auto">
         {loadingMenu ? (
-          [1, 2, 3].map((i) => (
-            <div key={i} className="h-24 bg-gray-50 rounded-xl animate-pulse" />
-          ))
+          <div className="space-y-2.5 md:grid md:grid-cols-2 md:gap-3 md:space-y-0">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-24 rounded-xl skeleton-shimmer" />
+            ))}
+          </div>
         ) : filteredItems.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-3">
@@ -198,18 +200,20 @@ function RestaurantContent({ restaurantId }: { restaurantId: string }) {
             <p className="text-gray-400 text-sm">Aucun plat dans cette catégorie</p>
           </div>
         ) : (
-          <AnimatePresence>
-            {filteredItems.map((item: any) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-              >
-                <MenuItemCard item={item} onAdd={() => addToCartMutation.mutate(item)} />
-              </motion.div>
-            ))}
-          </AnimatePresence>
+          <div className="space-y-2.5 md:grid md:grid-cols-2 md:gap-3 md:space-y-0">
+            <AnimatePresence>
+              {filteredItems.map((item: any) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <MenuItemCard item={item} onAdd={() => addToCartMutation.mutate(item)} />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
         )}
       </div>
 
@@ -218,10 +222,10 @@ function RestaurantContent({ restaurantId }: { restaurantId: string }) {
         <motion.div
           initial={{ y: 80 }}
           animate={{ y: 0 }}
-          className="fixed bottom-20 left-0 right-0 px-5 z-50"
+          className="fixed bottom-20 md:bottom-6 left-0 right-0 px-5 z-50 max-w-xl mx-auto"
         >
           <Link href="/cart">
-            <div className="bg-emerald-500 hover:bg-emerald-600 transition-colors rounded-2xl p-4 shadow-xl shadow-emerald-200/40 flex items-center justify-between">
+            <div className="bg-emerald-500 hover:bg-emerald-600 transition-colors rounded-2xl p-4 shadow-xl shadow-emerald-500/25 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-white/25 rounded-xl flex items-center justify-center">
                   <ShoppingBag className="w-4 h-4 text-white" />

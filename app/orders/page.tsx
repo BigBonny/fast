@@ -32,13 +32,15 @@ export default function OrdersPage() {
   return (
     <div className="min-h-screen bg-gray-50/50 pb-20">
       {/* Header */}
-      <div className="bg-white px-5 py-4 flex items-center gap-3 border-b border-gray-100 sticky top-0 z-20">
-        <Link href="/" className="w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center">
-          <ArrowLeft className="w-4 h-4 text-gray-600" />
-        </Link>
-        <div>
-          <h1 className="font-bold text-gray-900">Mes commandes</h1>
-          <p className="text-xs text-gray-400">{orders.length} commande{orders.length > 1 ? "s" : ""}</p>
+      <div className="bg-white/90 backdrop-blur-md px-5 py-4 border-b border-gray-100 sticky top-0 md:top-16 z-20">
+        <div className="max-w-2xl mx-auto flex items-center gap-3">
+          <Link href="/" className="w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-colors">
+            <ArrowLeft className="w-4 h-4 text-gray-600" />
+          </Link>
+          <div>
+            <h1 className="font-bold text-gray-900">Mes commandes</h1>
+            <p className="text-xs text-gray-400">{orders.length} commande{orders.length > 1 ? "s" : ""}</p>
+          </div>
         </div>
       </div>
 
@@ -62,7 +64,7 @@ export default function OrdersPage() {
           </Link>
         </div>
       ) : (
-        <div className="px-5 pt-4 space-y-3">
+        <div className="px-5 pt-4 space-y-3 max-w-2xl mx-auto">
           {orders.map((order: any, index: number) => {
             const status = STATUS_CONFIG[order.status] || STATUS_CONFIG.PLACED;
             const Icon = status.icon;
@@ -76,7 +78,7 @@ export default function OrdersPage() {
                 transition={{ delay: index * 0.05 }}
               >
                 <Link href={`/order-tracking/${order.id}`}>
-                  <div className={`bg-white rounded-2xl p-4 border ${isActive ? "border-violet-200" : "border-gray-100"} hover:shadow-sm transition-shadow`}>
+                  <div className={`bg-white rounded-2xl p-4 border ${isActive ? "border-violet-200" : "border-gray-100"} card-lift cursor-pointer`}>
                     <div className="flex items-start justify-between">
                       <div>
                         <h3 className="font-bold text-gray-900">{order.restaurant?.name || order.restaurantName || "Restaurant"}</h3>
