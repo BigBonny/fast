@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Users, Star, ShoppingBag, Clock, Search, Plus, Trash2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { orderApi } from "@/api/fastBackend";
@@ -63,7 +63,7 @@ export default function ClientPage() {
       ) : (
         <div className="space-y-2">
           {filtered.map((c) => (
-            <motion.div key={c.id} layout className="bg-[#0B1120] border border-white/[0.08] rounded-2xl p-4">
+            <m.div key={c.id} layout className="bg-[#0B1120] border border-white/[0.08] rounded-2xl p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold text-white">{c.name}</p>
@@ -79,7 +79,7 @@ export default function ClientPage() {
                   <button onClick={() => remove(c.id)} className="w-8 h-8 rounded-lg bg-red-500/10 text-red-400 flex items-center justify-center hover:bg-red-500/20"><Trash2 className="w-4 h-4" /></button>
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           ))}
         </div>
       )}

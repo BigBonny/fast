@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { orderApi } from "@/api/fastBackend";
 import { ArrowLeft, Package, Clock, CheckCircle2, Bike, Inbox } from "lucide-react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import Link from "next/link";
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any }> = {
@@ -54,13 +54,13 @@ export default function OrdersPage() {
             Passez votre première commande dès maintenant
           </p>
           <Link href="/">
-            <motion.button
+            <m.button
               whileTap={{ scale: 0.98 }}
               className="px-6 py-3 rounded-xl font-bold text-white"
               style={{ background: "linear-gradient(135deg, #7c3aed, #06b6d4)" }}
             >
               Commander maintenant
-            </motion.button>
+            </m.button>
           </Link>
         </div>
       ) : (
@@ -71,7 +71,7 @@ export default function OrdersPage() {
             const isActive = order.status !== "COMPLETED" && order.status !== "CANCELLED";
 
             return (
-              <motion.div
+              <m.div
                 key={order.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -111,7 +111,7 @@ export default function OrdersPage() {
                     )}
                   </div>
                 </Link>
-              </motion.div>
+              </m.div>
             );
           })}
         </div>

@@ -7,7 +7,7 @@ import { getCart, updateCartQuantity, removeFromCart, clearCart, getCartTotal, C
 import { ArrowLeft, Minus, Plus, Trash2, Zap, ShoppingCart, PartyPopper, UtensilsCrossed } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import SafeImage from "@/components/SafeImage";
@@ -135,7 +135,7 @@ export default function CartPage() {
           <div className="px-5 space-y-2 max-w-2xl mx-auto">
             <AnimatePresence>
               {cartItems.map((item: any) => (
-                <motion.div
+                <m.div
                   key={item.id}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -177,7 +177,7 @@ export default function CartPage() {
                       <Plus className="w-3.5 h-3.5 text-white" />
                     </button>
                   </div>
-                </motion.div>
+                </m.div>
               ))}
             </AnimatePresence>
           </div>
@@ -228,14 +228,14 @@ export default function CartPage() {
       {/* Simple Checkout Modal */}
       <AnimatePresence>
         {showCheckout && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center"
             onClick={() => setShowCheckout(false)}
           >
-            <motion.div
+            <m.div
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
@@ -257,8 +257,8 @@ export default function CartPage() {
                   {placeOrderMutation.isPending ? "..." : "Confirmer"}
                 </Button>
               </div>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

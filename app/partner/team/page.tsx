@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Plus, Trash2, User, Mail, Phone, ChefHat, Shield, Bike } from "lucide-react";
 import { showToast } from "@/components/partner/Toast";
 
@@ -57,7 +57,7 @@ export default function TeamPage() {
             const role = ROLES.find((r) => r.value === m.role) || ROLES[3];
             const Icon = role.icon;
             return (
-              <motion.div key={m.id} layout className="bg-[#0B1120] border border-white/[0.08] rounded-2xl p-4 flex items-center gap-3">
+              <m.div key={m.id} layout className="bg-[#0B1120] border border-white/[0.08] rounded-2xl p-4 flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-[#00c8b3]/10 flex items-center justify-center text-[#00c8b3]"><Icon className="w-5 h-5" /></div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold text-white">{m.name}</p>
@@ -68,7 +68,7 @@ export default function TeamPage() {
                   </div>
                 </div>
                 <button onClick={() => remove(m.id)} className="w-8 h-8 rounded-lg bg-red-500/10 text-red-400 flex items-center justify-center hover:bg-red-500/20"><Trash2 className="w-4 h-4" /></button>
-              </motion.div>
+              </m.div>
             );
           })}
         </div>

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Zap, ShoppingBag, UtensilsCrossed, Settings, CircleUser, BarChart3, Menu, ChefHat, Flame, CheckCircle2, X } from "lucide-react";
 import { orderApi, restaurantApi } from "@/api/fastBackend";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -176,7 +176,7 @@ export default function PartnerLayout({ children }: { children: React.ReactNode 
               }}
             >
               {isActive && (
-                <motion.div
+                <m.div
                   layoutId="partner-tab"
                   className="absolute inset-0 rounded-lg bg-[#00c8b3]/8 border border-[#00c8b3]/10"
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}

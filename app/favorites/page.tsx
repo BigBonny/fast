@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { restaurantApi } from "@/api/fastBackend";
 import { getFavorites } from "@/lib/localCart";
 import { ArrowLeft, Heart, HeartOff, UtensilsCrossed, Star } from "lucide-react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import Link from "next/link";
 import SafeImage from "@/components/SafeImage";
 
@@ -50,19 +50,19 @@ export default function FavoritesPage() {
             Ajoutez des restaurants à vos favoris pour les retrouver ici
           </p>
           <Link href="/">
-            <motion.button
+            <m.button
               whileTap={{ scale: 0.98 }}
               className="px-6 py-3 rounded-xl font-bold text-white"
               style={{ background: "linear-gradient(135deg, #7c3aed, #06b6d4)" }}
             >
               Découvrir des restaurants
-            </motion.button>
+            </m.button>
           </Link>
         </div>
       ) : (
         <div className="px-5 pt-4 space-y-3">
           {favRestaurants.map((restaurant: any, index: number) => (
-            <motion.div
+            <m.div
               key={restaurant.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -85,7 +85,7 @@ export default function FavoritesPage() {
                   </div>
                 </div>
               </Link>
-            </motion.div>
+            </m.div>
           ))}
         </div>
       )}

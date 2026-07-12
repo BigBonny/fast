@@ -1,14 +1,14 @@
 "use client";
 
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { Flame } from "lucide-react";
 
 export default function RushBar({ active }: { active: boolean }) {
   return (
     <AnimatePresence>
       {active && (
-        <motion.div
+        <m.div
           initial={{ height: 0, opacity: 0, y: -10 }}
           animate={{ height: "auto", opacity: 1, y: 0 }}
           exit={{ height: 0, opacity: 0, y: -10 }}
@@ -22,15 +22,15 @@ export default function RushBar({ active }: { active: boolean }) {
             boxShadow: "0 4px 20px rgba(255,0,102,0.35)",
           }}
         >
-          <motion.span
+          <m.span
             animate={{ scale: [1, 1.2, 1] }}
             transition={{ repeat: Infinity, duration: 1.2 }}
             className="inline-block mr-1"
           >
             <Flame className="w-4 h-4 inline-block fill-white" />
-          </motion.span>
+          </m.span>
           MODE RUSH ACTIF — Clients alertés des délais allongés
-        </motion.div>
+        </m.div>
       )}
     </AnimatePresence>
   );

@@ -3,7 +3,7 @@
 import { memo } from "react";
 import { Heart, UtensilsCrossed } from "lucide-react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import SafeImage from "@/components/SafeImage";
 
 interface FavoritesSectionProps {
@@ -33,7 +33,7 @@ function FavoritesSection({ favoriteIds, favorites, restaurants }: FavoritesSect
 
       <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
         {favRestaurants.map((restaurant, idx) => (
-          <motion.div
+          <m.div
             key={restaurant.id}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -63,7 +63,7 @@ function FavoritesSection({ favoriteIds, favorites, restaurants }: FavoritesSect
                 <p className="text-[10px] font-semibold text-gray-500 px-0.5">{restaurant.normalPrepTime || 5} min</p>
               </div>
             </Link>
-          </motion.div>
+          </m.div>
         ))}
       </div>
     </div>

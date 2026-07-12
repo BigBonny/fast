@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { Plus, Pencil, Trash2, Save, X, ChevronDown, ChevronUp, AlertCircle } from "lucide-react";
 import { menuApi, restaurantApi } from "@/api/fastBackend";
 import { showToast } from "@/components/partner/Toast";
@@ -199,7 +199,7 @@ export default function MenuManager() {
             </button>
             <AnimatePresence>
               {expanded[category] !== false && (
-                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                <m.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                   <div className="p-2 space-y-2">
                     {catItems.map((item: any) => (
                       <div key={item.id} className={`flex items-center gap-3 p-3 rounded-xl border ${item.isAvailable === false ? "border-white/5 bg-white/[0.02] opacity-60" : "border-white/[0.06] bg-[#020617]"}`}>
@@ -223,7 +223,7 @@ export default function MenuManager() {
                       </div>
                     ))}
                   </div>
-                </motion.div>
+                </m.div>
               )}
             </AnimatePresence>
           </div>

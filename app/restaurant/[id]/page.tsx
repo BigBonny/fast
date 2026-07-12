@@ -8,7 +8,7 @@ import { ArrowLeft, Star, Clock, Zap, ShoppingBag, MapPin, Phone, Flame, Store, 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
@@ -208,14 +208,14 @@ function RestaurantContent({ restaurantId }: { restaurantId: string }) {
           <div className="space-y-2.5 md:grid md:grid-cols-2 md:gap-3 md:space-y-0">
             <AnimatePresence>
               {filteredItems.map((item: any) => (
-                <motion.div
+                <m.div
                   key={item.id}
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
                 >
                   <MenuItemCard item={item} onAdd={() => addToCartMutation.mutate(item)} />
-                </motion.div>
+                </m.div>
               ))}
             </AnimatePresence>
           </div>
@@ -224,7 +224,7 @@ function RestaurantContent({ restaurantId }: { restaurantId: string }) {
 
       {/* Cart Footer */}
       {cartCount > 0 && (
-        <motion.div
+        <m.div
           initial={{ y: 80 }}
           animate={{ y: 0 }}
           className="fixed bottom-20 md:bottom-6 left-0 right-0 px-5 z-50 max-w-xl mx-auto"
@@ -244,7 +244,7 @@ function RestaurantContent({ restaurantId }: { restaurantId: string }) {
               </span>
             </div>
           </Link>
-        </motion.div>
+        </m.div>
       )}
     </div>
   );

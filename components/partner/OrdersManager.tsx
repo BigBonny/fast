@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Clock, Package, CheckCircle, XCircle, ChefHat, Utensils, User, ChevronDown, ChevronUp } from "lucide-react";
 import { orderApi } from "@/api/fastBackend";
 import { showToast } from "@/components/partner/Toast";
@@ -87,7 +87,7 @@ export default function OrdersManager() {
       ) : (
         <div className="space-y-3">
           {filtered.map((order: any) => (
-            <motion.div key={order.id} layout className="bg-[#0B1120] border border-white/[0.08] rounded-2xl overflow-hidden">
+            <m.div key={order.id} layout className="bg-[#0B1120] border border-white/[0.08] rounded-2xl overflow-hidden">
               <button onClick={() => toggleExpand(order.id)} className="w-full px-4 py-3 flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-white/[0.06] flex items-center justify-center text-lg flex-shrink-0">{order.status === "COMPLETED" ? "" : order.status === "CANCELLED" ? "" : ""}</div>
                 <div className="flex-1 text-left">
@@ -133,7 +133,7 @@ export default function OrdersManager() {
                   </div>
                 </div>
               )}
-            </motion.div>
+            </m.div>
           ))}
         </div>
       )}

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { getCart, getCartCount } from "@/lib/localCart";
 import { Home, ClipboardList, ShoppingCart, Bike, Users } from "lucide-react";
 import Navbar from "@/components/Navbar";
@@ -99,7 +99,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   }}
                 >
                   {isActive && (
-                    <motion.div
+                    <m.div
                       layoutId="nav-indicator"
                       className="absolute inset-0 rounded-2xl border border-white/10"
                       style={{ background: `linear-gradient(180deg, ${item.color}22, transparent)` }}

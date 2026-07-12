@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import Link from "next/link";
 
 export default function PlaceholderPage({
@@ -16,7 +16,7 @@ export default function PlaceholderPage({
   action?: { label: string; href: string };
 }) {
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       className="min-h-[60vh] flex flex-col items-center justify-center text-center px-6"
@@ -51,6 +51,6 @@ export default function PlaceholderPage({
           {action.label}
         </Link>
       )}
-    </motion.div>
+    </m.div>
   );
 }

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import {
   Zap, Home, ClipboardList, Users, Bike, ShoppingCart,
   User, Store, Heart, Settings, LogOut, ChevronDown,
@@ -97,7 +97,7 @@ export default function Navbar() {
               />
               {label}
               {active && (
-                <motion.div
+                <m.div
                   layoutId="navbar-indicator"
                   className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full bg-cyan-400"
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}
@@ -171,7 +171,7 @@ export default function Navbar() {
 
             <AnimatePresence>
               {userMenuOpen && (
-                <motion.div
+                <m.div
                   initial={{ opacity: 0, y: -8, scale: 0.97 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -8, scale: 0.97 }}
@@ -218,7 +218,7 @@ export default function Navbar() {
                       </button>
                     </div>
                   </div>
-                </motion.div>
+                </m.div>
               )}
             </AnimatePresence>
           </div>

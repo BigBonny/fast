@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { ArrowLeft, Users, Plus, Link2, Copy, Check, PartyPopper } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -81,13 +81,13 @@ export default function GroupOrderPage() {
               <Link2 className="w-5 h-5 text-gray-400" />
               <span className="font-mono font-bold text-gray-900">{groupCode}</span>
             </div>
-            <motion.button
+            <m.button
               whileTap={{ scale: 0.95 }}
               onClick={copyCode}
               className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm"
             >
               {copied ? <Check className="w-5 h-5 text-emerald-500" /> : <Copy className="w-5 h-5 text-gray-500" />}
-            </motion.button>
+            </m.button>
           </div>
 
           {/* Members */}

@@ -6,7 +6,7 @@ import { restaurantApi, orderApi } from "@/api/fastBackend";
 import { getFavorites, toggleFavorite } from "@/lib/localCart";
 import { Search, Menu, X, Store, ShoppingCart, User, Zap, Users, Sparkles, AlertTriangle, SearchX, UtensilsCrossed, type LucideIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/AuthContext";
@@ -240,7 +240,7 @@ export default function Home() {
 
         {/* Logo centré — mobile only */}
         <div className="md:hidden relative z-10 flex flex-col items-center pb-6 pt-2">
-          <motion.div
+          <m.div
             animate={{ filter: ["drop-shadow(0 0 8px #f59e0b80)", "drop-shadow(0 0 18px #f59e0bcc)", "drop-shadow(0 0 8px #f59e0b80)"] }}
             transition={{ repeat: Infinity, duration: 2.2, ease: "easeInOut" }}
             className="flex flex-col items-center"
@@ -254,7 +254,7 @@ export default function Home() {
               }}>FAST</span>
               <Zap className="w-8 h-8 text-amber-400 fill-amber-400" />
             </div>
-          </motion.div>
+          </m.div>
           <p className="text-gray-400 text-xs font-medium tracking-widest uppercase mt-1">Chaque minute compte.</p>
         </div>
 
@@ -296,7 +296,7 @@ export default function Home() {
           {/* Suggestions dropdown */}
           <AnimatePresence>
             {showSuggestions && suggestions.length > 0 && (
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
@@ -315,7 +315,7 @@ export default function Home() {
                     </div>
                   </button>
                 ))}
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
         </div>
@@ -329,7 +329,7 @@ export default function Home() {
           {/* Banner cards (stacked on desktop) */}
           <div className="space-y-3">
             {quickCategories.map((cat) => (
-              <motion.button
+              <m.button
                 key={cat.id}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.97 }}
@@ -342,7 +342,7 @@ export default function Home() {
                   <p className="text-[11px] text-white/75">{cat.subtitle}</p>
                 </div>
                 <cat.Icon className="w-7 h-7 text-white/80 shrink-0" strokeWidth={1.8} />
-              </motion.button>
+              </m.button>
             ))}
           </div>
 
@@ -379,7 +379,7 @@ export default function Home() {
           {/* Active order card */}
           <AnimatePresence>
             {activeOrder && (
-              <motion.div
+              <m.div
                 className="mb-4"
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -399,7 +399,7 @@ export default function Home() {
                     </p>
                   </div>
                 </Link>
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
 
@@ -412,7 +412,7 @@ export default function Home() {
               <AnimatePresence mode="wait">
                 {quickCategories.map((cat, i) =>
                   i === activeBanner ? (
-                    <motion.button
+                    <m.button
                       key={cat.id}
                       initial={{ opacity: 0, x: 60, scale: 0.98 }}
                       animate={{ opacity: 1, x: 0, scale: 1 }}
@@ -428,7 +428,7 @@ export default function Home() {
                         <span className="text-xs text-white/80 font-medium">{cat.subtitle}</span>
                       </div>
                       <cat.Icon className="w-12 h-12 text-white/90" strokeWidth={1.8} />
-                    </motion.button>
+                    </m.button>
                   ) : null
                 )}
               </AnimatePresence>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, Phone, Zap, Store, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/lib/AuthContext";
@@ -77,7 +77,7 @@ export default function RegisterPage() {
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center px-6 pb-12">
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="w-full max-w-sm"
@@ -182,14 +182,14 @@ export default function RegisterPage() {
               </div>
             )}
 
-            <motion.button
+            <m.button
               whileTap={{ scale: 0.98 }}
               type="submit"
               disabled={isLoadingAuth}
               className="w-full h-14 rounded-2xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-black text-lg disabled:opacity-50"
             >
               {isLoadingAuth ? "Inscription..." : role === "RESTAURANT" ? "S'inscrire comme restaurateur" : "S'inscrire"}
-            </motion.button>
+            </m.button>
           </form>
 
           <div className="mt-6 text-center space-y-2">
@@ -200,7 +200,7 @@ export default function RegisterPage() {
               </Link>
             </p>
           </div>
-        </motion.div>
+        </m.div>
       </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { X, User, ShoppingBag, Heart, MapPin, Settings, Shield, FileText, LogOut, Store, LucideIcon, Zap, Star } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/lib/AuthContext";
@@ -51,7 +51,7 @@ export default function SideMenu({ isOpen, onClose }: SideMenuProps) {
       {isOpen && (
         <>
           {/* Overlay */}
-          <motion.div
+          <m.div
             className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -60,7 +60,7 @@ export default function SideMenu({ isOpen, onClose }: SideMenuProps) {
           />
 
           {/* Drawer */}
-          <motion.div
+          <m.div
             className="fixed top-0 left-0 bottom-0 z-50 w-72 flex flex-col"
             style={{ background: "#0d1117" }}
             initial={{ x: -288 }}
@@ -114,7 +114,7 @@ export default function SideMenu({ isOpen, onClose }: SideMenuProps) {
               {menuItems.map((item, idx) => {
                 const Icon = item.icon;
                 return (
-                  <motion.div
+                  <m.div
                     key={item.label}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -139,7 +139,7 @@ export default function SideMenu({ isOpen, onClose }: SideMenuProps) {
                         <span className="ml-auto text-gray-500 group-hover:text-white/70 transition-colors">›</span>
                       </div>
                     </Link>
-                  </motion.div>
+                  </m.div>
                 );
               })}
             </div>
@@ -177,7 +177,7 @@ export default function SideMenu({ isOpen, onClose }: SideMenuProps) {
                 </div>
               )}
             </div>
-          </motion.div>
+          </m.div>
         </>
       )}
     </AnimatePresence>

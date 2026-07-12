@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Zap, X, ChefHat, Armchair, Package, UtensilsCrossed } from "lucide-react";
 
 export default function KitchenScreen({ open, onClose, orders = [] }: { open: boolean; onClose: () => void; orders?: any[] }) {
@@ -56,7 +56,7 @@ export default function KitchenScreen({ open, onClose, orders = [] }: { open: bo
           </div>
         ) : (
           pending.map((o: any, idx: number) => (
-            <motion.div
+            <m.div
               key={o.id}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -86,7 +86,7 @@ export default function KitchenScreen({ open, onClose, orders = [] }: { open: bo
                   {item.name}
                 </div>
               ))}
-            </motion.div>
+            </m.div>
           ))
         )}
       </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { MapPin, Navigation, Bike, Zap, Wallet, Package, Star, Search, Moon } from "lucide-react";
 import { authApi } from "@/api/fastBackend";
 
@@ -61,13 +61,13 @@ export default function DeliverPage() {
           ))}
         </div>
 
-        <motion.button
+        <m.button
           whileTap={{ scale: 0.96 }}
           onClick={handleBecomeDeliverer}
           className="w-full max-w-xs bg-gradient-to-r from-amber-400 to-orange-400 text-white font-black text-lg py-4 rounded-2xl shadow-lg shadow-amber-200"
         >
           <span className="inline-flex items-center gap-2">Devenir livreur <Zap className="w-5 h-5 fill-white" /></span>
-        </motion.button>
+        </m.button>
       </div>
     );
   }
@@ -88,7 +88,7 @@ export default function DeliverPage() {
       </div>
 
       {/* Toggle actif */}
-      <motion.button
+      <m.button
         whileTap={{ scale: 0.97 }}
         onClick={toggleActive}
         className={`w-full py-5 rounded-3xl font-black text-lg mb-8 transition-all duration-300 shadow-lg ${
@@ -100,7 +100,7 @@ export default function DeliverPage() {
         <span className="inline-flex items-center justify-center gap-2">
           {isActive ? <><span className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" /> En ligne — Tap pour vous déconnecter</> : <><Zap className="w-5 h-5 fill-white" /> Me connecter comme livreur</>}
         </span>
-      </motion.button>
+      </m.button>
 
       {isActive ? (
         <div className="space-y-4">

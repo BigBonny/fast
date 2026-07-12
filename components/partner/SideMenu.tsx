@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import {
   Store, ShoppingBag, UtensilsCrossed, Settings, TrendingUp, BrainCircuit,
   Users, LayoutDashboard, Radio, FileText, CircleUser, Moon, Sun, Zap,
@@ -62,14 +62,14 @@ export default function SideMenu({
     <AnimatePresence>
       {open && (
         <>
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[8000] bg-black/55 backdrop-blur-[4px]"
             onClick={onClose}
           />
-          <motion.div
+          <m.div
             initial={{ x: -280 }}
             animate={{ x: 0 }}
             exit={{ x: -280 }}
@@ -188,7 +188,7 @@ export default function SideMenu({
                 <span>Radar GPS — Suivi clients</span>
               </Link>
             </div>
-          </motion.div>
+          </m.div>
         </>
       )}
     </AnimatePresence>

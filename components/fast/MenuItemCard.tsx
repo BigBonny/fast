@@ -1,7 +1,7 @@
 "use client";
 
 import { memo } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Plus, Flame, UtensilsCrossed } from "lucide-react";
 import SafeImage from "@/components/SafeImage";
 
@@ -22,7 +22,7 @@ interface MenuItemCardProps {
 
 function MenuItemCard({ item, onAdd }: MenuItemCardProps) {
   return (
-    <motion.div
+    <m.div
       whileTap={{ scale: 0.98 }}
       className="flex items-center gap-3 bg-white rounded-xl p-3 border border-gray-100 hover:border-amber-200 hover:shadow-md hover:shadow-amber-100/40 transition-all duration-200 h-full"
     >
@@ -60,7 +60,7 @@ function MenuItemCard({ item, onAdd }: MenuItemCardProps) {
           <span className="font-bold text-gray-900">
             {item.price?.toFixed(2)} €
           </span>
-          <motion.button
+          <m.button
             whileTap={{ scale: 0.9 }}
             onClick={(e) => {
               e.stopPropagation();
@@ -70,10 +70,10 @@ function MenuItemCard({ item, onAdd }: MenuItemCardProps) {
             style={{ background: "linear-gradient(135deg, #14b8a6, #06b6d4)" }}
           >
             <Plus className="w-4 h-4" strokeWidth={3} />
-          </motion.button>
+          </m.button>
         </div>
       </div>
-    </motion.div>
+    </m.div>
   );
 }
 

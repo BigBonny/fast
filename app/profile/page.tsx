@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/AuthContext";
 import { authApi } from "@/api/fastBackend";
 import { ArrowLeft, User, MapPin, Moon, Bell, Shield, LogOut, Store, ShoppingBag, BarChart3, Settings, ChevronRight, Utensils, Phone, Save, X, CheckCircle } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 
 export default function ProfilePage() {
@@ -75,13 +75,13 @@ export default function ProfilePage() {
       {isRestaurant && (
         <div className="px-5 mt-4">
           <Link href="/partner/orders">
-            <motion.div whileTap={{ scale: 0.98 }} className="w-full rounded-2xl p-4 flex items-center justify-between text-white" style={{ background: "linear-gradient(135deg, #00c8b3, #7c3aed)" }}>
+            <m.div whileTap={{ scale: 0.98 }} className="w-full rounded-2xl p-4 flex items-center justify-between text-white" style={{ background: "linear-gradient(135deg, #00c8b3, #7c3aed)" }}>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center"><Store className="w-5 h-5 text-white" /></div>
                 <div><p className="font-black text-sm">Accéder à l'Espace Pro</p><p className="text-white/80 text-xs">Commandes, menu, statistiques</p></div>
               </div>
               <ChevronRight className="w-5 h-5 text-white" />
-            </motion.div>
+            </m.div>
           </Link>
         </div>
       )}
@@ -97,7 +97,7 @@ export default function ProfilePage() {
       </div>
       <AnimatePresence>
         {isEditing && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="px-5 mt-4">
+          <m.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="px-5 mt-4">
             <div className={`rounded-2xl p-5 shadow-sm border ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"}`}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className={`font-bold ${darkMode ? "text-white" : "text-gray-900"}`}>Modifier le profil</h3>
@@ -109,17 +109,17 @@ export default function ProfilePage() {
                 <div><label className={`block text-sm font-medium mb-1 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Email</label><input type="email" value={user?.email || ""} disabled className={`w-full px-4 py-3 rounded-xl border cursor-not-allowed ${darkMode ? "bg-gray-900 border-gray-600 text-gray-500" : "bg-gray-50 border-gray-200 text-gray-500"}`} /><p className="text-xs text-gray-400 mt-1">L'email ne peut pas être modifié.</p></div>
                 {editError && <p className="text-sm text-red-500">{editError}</p>}
                 {editSuccess && <div className="flex items-center gap-2 text-sm text-emerald-600"><CheckCircle className="w-4 h-4" />Profil mis à jour</div>}
-                <motion.button whileTap={{ scale: 0.98 }} type="submit" disabled={editLoading} className="w-full bg-violet-600 text-white rounded-xl py-3 font-bold flex items-center justify-center gap-2 disabled:opacity-50">{editLoading ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save className="w-5 h-5" />}{editLoading ? "Enregistrement..." : "Enregistrer"}</motion.button>
+                <m.button whileTap={{ scale: 0.98 }} type="submit" disabled={editLoading} className="w-full bg-violet-600 text-white rounded-xl py-3 font-bold flex items-center justify-center gap-2 disabled:opacity-50">{editLoading ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save className="w-5 h-5" />}{editLoading ? "Enregistrement..." : "Enregistrer"}</m.button>
               </form>
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
       <div className="px-5 mt-6">
-        <motion.button whileTap={{ scale: 0.98 }} onClick={handleLogout} className="w-full bg-red-50 rounded-xl p-4 flex items-center gap-3 text-red-500">
+        <m.button whileTap={{ scale: 0.98 }} onClick={handleLogout} className="w-full bg-red-50 rounded-xl p-4 flex items-center gap-3 text-red-500">
           <LogOut className="w-5 h-5" />
           <span className="font-medium">Se déconnecter</span>
-        </motion.button>
+        </m.button>
       </div>
     </div>
   );

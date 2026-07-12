@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import {
   Beef, Pizza, Sandwich, Flame, Globe, Wheat, Fish, Soup, CookingPot,
   Drumstick, Salad, Leaf, CakeSlice, IceCreamCone, Croissant, Cookie,
@@ -46,7 +46,7 @@ export default function CuisineChip({ type, label, isActive, onClick }: CuisineC
   const config = cuisineConfig[type] || cuisineConfig.autre;
 
   return (
-    <motion.button
+    <m.button
       whileTap={{ scale: 0.88 }}
       whileHover={{ scale: 1.06 }}
       onClick={onClick}
@@ -97,6 +97,6 @@ export default function CuisineChip({ type, label, isActive, onClick }: CuisineC
           style={{ background: config.color, marginTop: -4, boxShadow: `0 0 6px ${config.color}` }}
         />
       )}
-    </motion.button>
+    </m.button>
   );
 }

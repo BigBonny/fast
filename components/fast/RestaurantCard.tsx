@@ -1,7 +1,7 @@
 "use client";
 
 import { memo } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Star, Clock, Heart, Flame, Beef, Pizza, Fish, Utensils, Leaf, Sandwich, type LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import SafeImage from "@/components/SafeImage";
@@ -48,7 +48,7 @@ function RestaurantCard({
   onToggleFavorite 
 }: RestaurantCardProps) {
   return (
-    <motion.div
+    <m.div
       whileTap={{ scale: 0.97 }}
       whileHover={{ y: -4, scale: 1.01 }}
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
@@ -89,7 +89,7 @@ function RestaurantCard({
           </div>
         )}
         {onToggleFavorite && (
-          <motion.button
+          <m.button
             whileTap={{ scale: 0.75 }}
             onClick={(e) => { e.stopPropagation(); e.preventDefault(); onToggleFavorite?.(restaurant); }}
             className="absolute top-2.5 right-2.5 w-8 h-8 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-all hover:scale-110 border border-gray-100 dark:border-slate-700"
@@ -97,7 +97,7 @@ function RestaurantCard({
             <Heart
               className={`w-4 h-4 transition-all duration-300 ${isFavorite ? "text-red-500 fill-red-500 scale-110" : "text-gray-400 hover:text-red-400"}`}
             />
-          </motion.button>
+          </m.button>
         )}
       </div>
 
@@ -138,7 +138,7 @@ function RestaurantCard({
           </div>
         </div>
       </div>
-    </motion.div>
+    </m.div>
   );
 }
 

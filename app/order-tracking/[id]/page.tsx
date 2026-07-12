@@ -3,7 +3,7 @@
 import { Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { orderApi } from "@/api/fastBackend";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Star, Clock, CheckCircle2, Circle, ChefHat, Package, Bike, PartyPopper, Inbox } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -97,7 +97,7 @@ function OrderTrackingContent({ orderId }: { orderId: string }) {
               const Icon = step.icon;
 
               return (
-                <motion.div
+                <m.div
                   key={step.key}
                   className="flex items-center gap-4 relative"
                   initial={{ opacity: 0, x: -10 }}
@@ -118,14 +118,14 @@ function OrderTrackingContent({ orderId }: { orderId: string }) {
                       {step.label}
                     </p>
                     {isCurrent && (
-                      <motion.p
+                      <m.p
                         className="text-xs mt-0.5"
                         style={{ color: step.color }}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                       >
                         Étape en cours...
-                      </motion.p>
+                      </m.p>
                     )}
                   </div>
 
@@ -135,7 +135,7 @@ function OrderTrackingContent({ orderId }: { orderId: string }) {
                   {isDone && index < currentStep && (
                     <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                   )}
-                </motion.div>
+                </m.div>
               );
             })}
           </div>
