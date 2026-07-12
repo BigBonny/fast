@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/AuthContext";
 import { authApi } from "@/api/fastBackend";
-import { ArrowLeft, User, MapPin, Moon, Bell, Shield, LogOut, Store, ShoppingBag, BarChart3, Settings, ChevronRight, Utensils, Phone, Save, X, CheckCircle } from "lucide-react";
+import { ArrowLeft, User, MapPin, Moon, Bell, Shield, LogOut, Store, ShoppingBag, BarChart3, Settings, ChevronRight, Utensils, Phone, Save, X, CheckCircle, Star, Pencil, Zap } from "lucide-react";
 import { m, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 
@@ -47,55 +47,86 @@ export default function ProfilePage() {
 
   return (
     <div className={`min-h-screen pb-20 transition-colors ${darkMode ? "bg-gray-900" : "bg-gray-50"}`}>
-      <div className={`px-5 py-4 flex items-center gap-3 border-b sticky top-0 z-20 ${darkMode ? "bg-gray-900 border-gray-800" : "bg-white border-gray-100"}`}>
-        <Link href="/" className={`w-9 h-9 rounded-xl flex items-center justify-center ${darkMode ? "bg-gray-800" : "bg-gray-50"}`}><ArrowLeft className={`w-4 h-4 ${darkMode ? "text-gray-200" : "text-gray-600"}`} /></Link>
-        <h1 className={`font-bold ${darkMode ? "text-white" : "text-gray-900"}`}>Mon compte</h1>
-        <span className={`ml-auto px-2.5 py-1 rounded-full text-[10px] font-black text-white ${roleColor}`}>{roleLabel}</span>
-      </div>
-      <div className="px-5 pt-5">
-        <div className="bg-gradient-to-br from-violet-500 to-cyan-500 rounded-2xl p-6 text-white relative overflow-hidden">
-          <div className="relative z-10">
-            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-2xl font-black mb-4">{user?.name ? user.name[0].toUpperCase() : ""}</div>
-            <h2 className="text-xl font-black">{user?.name || "Mon compte"}</h2>
-            <p className="text-white/80 text-sm">{user?.email || ""}</p>
-          </div>
-          <div className="absolute -right-4 -bottom-4 w-32 h-32 bg-white/10 rounded-full" />
-          <div className="absolute -right-8 -top-8 w-24 h-24 bg-white/5 rounded-full" />
+      {/* Header */}
+      <div className={`px-5 py-4 border-b sticky top-0 z-20 backdrop-blur-md ${darkMode ? "bg-gray-900/90 border-gray-800" : "bg-white/90 border-gray-100"}`}>
+        <div className="max-w-2xl mx-auto flex items-center gap-3">
+          <Link href="/" className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${darkMode ? "bg-gray-800 hover:bg-gray-700" : "bg-gray-50 hover:bg-gray-100"}`}><ArrowLeft className={`w-4 h-4 ${darkMode ? "text-gray-200" : "text-gray-600"}`} /></Link>
+          <h1 className={`font-bold ${darkMode ? "text-white" : "text-gray-900"}`}>Mon compte</h1>
+          <span className={`ml-auto px-2.5 py-1 rounded-full text-[10px] font-black text-white ${roleColor}`}>{roleLabel}</span>
         </div>
       </div>
-      <div className="px-5 mt-4">
-        <div className={`rounded-2xl p-4 flex items-center gap-4 shadow-sm ${darkMode ? "bg-gray-800 border border-gray-700" : "bg-white"}`}>
-          <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${isRestaurant ? "bg-emerald-100" : "bg-yellow-100"}`}>{isRestaurant ? "" : ""}</div>
-          <div>
-            <p className={`font-black text-lg ${darkMode ? "text-white" : "text-gray-900"}`}>{isRestaurant ? "Espace Restaurateur" : "85 Points"}</p>
-            <p className="text-xs text-gray-400">{isRestaurant ? "Gère ton restaurant en un clic" : "Portefeuille FAST"}</p>
-          </div>
-        </div>
-      </div>
-      {isRestaurant && (
-        <div className="px-5 mt-4">
-          <Link href="/partner/orders">
-            <m.div whileTap={{ scale: 0.98 }} className="w-full rounded-2xl p-4 flex items-center justify-between text-white" style={{ background: "linear-gradient(135deg, #00c8b3, #7c3aed)" }}>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center"><Store className="w-5 h-5 text-white" /></div>
-                <div><p className="font-black text-sm">Accéder à l'Espace Pro</p><p className="text-white/80 text-xs">Commandes, menu, statistiques</p></div>
+
+      <div className="max-w-2xl mx-auto">
+        {/* Hero card */}
+        <div className="px-5 pt-5">
+          <div className="rounded-3xl p-6 md:p-8 text-white relative overflow-hidden shadow-xl shadow-violet-500/20" style={{ background: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 40%, #0891b2 100%)" }}>
+            <div className="relative z-10 flex items-center gap-5">
+              <div className="w-20 h-20 md:w-24 md:h-24 bg-white/15 backdrop-blur-sm border border-white/20 rounded-3xl flex items-center justify-center text-3xl md:text-4xl font-black shadow-lg shrink-0">{user?.name ? user.name[0].toUpperCase() : <User className="w-8 h-8" />}</div>
+              <div className="min-w-0">
+                <h2 className="text-xl md:text-2xl font-black truncate">{user?.name || "Mon compte"}</h2>
+                <p className="text-white/70 text-sm truncate">{user?.email || ""}</p>
+                {user?.phone && <p className="text-white/60 text-xs mt-0.5 flex items-center gap-1"><Phone className="w-3 h-3" />{user.phone}</p>}
+                <button onClick={openEdit} className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold bg-white/15 hover:bg-white/25 border border-white/20 rounded-full px-3 py-1.5 transition-colors">
+                  <Pencil className="w-3 h-3" /> Modifier le profil
+                </button>
               </div>
-              <ChevronRight className="w-5 h-5 text-white" />
-            </m.div>
-          </Link>
+            </div>
+            <div className="absolute -right-6 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-sm" />
+            <div className="absolute -right-10 -top-10 w-28 h-28 bg-white/5 rounded-full" />
+            <div className="absolute left-1/3 -bottom-14 w-32 h-32 bg-cyan-400/20 rounded-full blur-2xl" />
+          </div>
         </div>
-      )}
-      <div className="px-5 mt-4 space-y-2">
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-1">{isRestaurant ? "Restaurant" : "Paramètres"}</p>
-        {menuItems.map((item: any) => (
-          <button key={item.label} onClick={item.action} className={`w-full rounded-xl p-4 flex items-center gap-3 transition-colors text-left cursor-pointer ${darkMode ? `bg-gray-800 hover:bg-gray-750 border border-gray-700 ${item.highlight ? "border-emerald-500/30" : ""}` : `bg-white hover:bg-gray-50 ${item.highlight ? "border-2 border-emerald-500/30" : ""}`}`}>
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${item.highlight ? "bg-emerald-100" : darkMode ? "bg-gray-700" : "bg-gray-100"}`}><item.icon className={`w-5 h-5 ${item.highlight ? "text-emerald-600" : darkMode ? "text-gray-300" : "text-gray-600"}`} /></div>
-            <span className={`font-medium flex-1 ${item.highlight ? "text-emerald-900" : darkMode ? "text-gray-100" : "text-gray-900"}`}>{item.label}</span>
-            {item.value !== undefined ? <div className={`w-10 h-6 rounded-full p-1 transition-colors ${item.value ? "bg-emerald-500" : darkMode ? "bg-gray-600" : "bg-gray-300"}`}><div className={`w-4 h-4 rounded-full bg-white transition-transform ${item.value ? "translate-x-4" : "translate-x-0"}`} /></div> : <span className="text-gray-400"></span>}
-          </button>
-        ))}
-      </div>
-      <AnimatePresence>
+
+        {/* Stats row */}
+        <div className="px-5 mt-4 grid grid-cols-2 gap-3">
+          <div className={`rounded-2xl p-4 flex items-center gap-3 border transition-shadow hover:shadow-md ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100 shadow-sm"}`}>
+            <div className="w-11 h-11 rounded-xl bg-yellow-100 flex items-center justify-center shrink-0"><Star className="w-5 h-5 text-yellow-500 fill-yellow-400" /></div>
+            <div className="min-w-0">
+              <p className={`font-black text-lg leading-tight ${darkMode ? "text-white" : "text-gray-900"}`}>{user?.points ?? 85}</p>
+              <p className="text-[11px] text-gray-400 font-semibold">Points FAST</p>
+            </div>
+          </div>
+          <div className={`rounded-2xl p-4 flex items-center gap-3 border transition-shadow hover:shadow-md ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100 shadow-sm"}`}>
+            <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${isRestaurant ? "bg-emerald-100" : "bg-violet-100"}`}>{isRestaurant ? <Store className="w-5 h-5 text-emerald-600" /> : <Zap className="w-5 h-5 text-violet-600 fill-violet-400" />}</div>
+            <div className="min-w-0">
+              <p className={`font-black text-lg leading-tight ${darkMode ? "text-white" : "text-gray-900"}`}>{roleLabel}</p>
+              <p className="text-[11px] text-gray-400 font-semibold">{isRestaurant ? "Compte pro" : "Membre actif"}</p>
+            </div>
+          </div>
+        </div>
+
+        {isRestaurant && (
+          <div className="px-5 mt-4">
+            <Link href="/partner/orders">
+              <m.div whileTap={{ scale: 0.98 }} whileHover={{ y: -2 }} className="w-full rounded-2xl p-4 flex items-center justify-between text-white shadow-lg shadow-teal-500/20" style={{ background: "linear-gradient(135deg, #00c8b3, #7c3aed)" }}>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center"><Store className="w-5 h-5 text-white" /></div>
+                  <div><p className="font-black text-sm">Accéder à l'Espace Pro</p><p className="text-white/80 text-xs">Commandes, menu, statistiques</p></div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-white" />
+              </m.div>
+            </Link>
+          </div>
+        )}
+
+        {/* Menu */}
+        <div className="px-5 mt-6 space-y-2">
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider px-1 mb-3">{isRestaurant ? "Restaurant" : "Paramètres"}</p>
+          <div className={`rounded-2xl overflow-hidden border divide-y ${darkMode ? "bg-gray-800 border-gray-700 divide-gray-700/60" : "bg-white border-gray-100 divide-gray-50 shadow-sm"}`}>
+            {menuItems.map((item: any) => (
+              <button key={item.label} onClick={item.action} className={`w-full p-4 flex items-center gap-3 transition-colors text-left cursor-pointer group ${darkMode ? "hover:bg-gray-700/50" : "hover:bg-gray-50"}`}>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105 ${item.highlight ? "bg-emerald-100" : darkMode ? "bg-gray-700" : "bg-gray-100"}`}><item.icon className={`w-5 h-5 ${item.highlight ? "text-emerald-600" : darkMode ? "text-gray-300" : "text-gray-600"}`} /></div>
+                <span className={`font-semibold text-sm flex-1 ${item.highlight ? "text-emerald-600" : darkMode ? "text-gray-100" : "text-gray-900"}`}>{item.label}</span>
+                {item.value !== undefined ? (
+                  <div className={`w-10 h-6 rounded-full p-1 transition-colors ${item.value ? "bg-emerald-500" : darkMode ? "bg-gray-600" : "bg-gray-300"}`}><div className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${item.value ? "translate-x-4" : "translate-x-0"}`} /></div>
+                ) : (
+                  <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 group-hover:translate-x-0.5 transition-all" />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+        <AnimatePresence>
         {isEditing && (
           <m.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="px-5 mt-4">
             <div className={`rounded-2xl p-5 shadow-sm border ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"}`}>
@@ -114,12 +145,16 @@ export default function ProfilePage() {
             </div>
           </m.div>
         )}
-      </AnimatePresence>
-      <div className="px-5 mt-6">
-        <m.button whileTap={{ scale: 0.98 }} onClick={handleLogout} className="w-full bg-red-50 rounded-xl p-4 flex items-center gap-3 text-red-500">
-          <LogOut className="w-5 h-5" />
-          <span className="font-medium">Se déconnecter</span>
-        </m.button>
+        </AnimatePresence>
+
+        {/* Logout */}
+        <div className="px-5 mt-6">
+          <m.button whileTap={{ scale: 0.98 }} onClick={handleLogout} className={`w-full rounded-2xl p-4 flex items-center justify-center gap-2.5 font-bold text-sm border transition-colors ${darkMode ? "bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20" : "bg-red-50 border-red-100 text-red-500 hover:bg-red-100"}`}>
+            <LogOut className="w-4 h-4" />
+            Se déconnecter
+          </m.button>
+          <p className="text-center text-[11px] text-gray-400 mt-4 font-medium">FAST — Chaque minute compte</p>
+        </div>
       </div>
     </div>
   );
