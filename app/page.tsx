@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { restaurantApi, orderApi } from "@/api/fastBackend";
 import { getFavorites, toggleFavorite } from "@/lib/localCart";
@@ -14,6 +14,15 @@ import CuisineChip from "@/components/fast/CuisineChip";
 import RestaurantCard from "@/components/fast/RestaurantCard";
 import FavoritesSection from "@/components/fast/FavoritesSection";
 import SideMenu from "@/components/fast/SideMenu";
+
+function useDebounce<T>(value: T, delay = 200) {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+  return debounced;
+}
 
 const cuisineTypes = [
   { type: "burger", label: "Burger" },
@@ -50,7 +59,6 @@ export default function Home() {
   const { user, isAuthenticated } = useAuth();
   const [activeCuisine, setActiveCuisine] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [suggestions, setSuggestions] = useState<{ type: string; label: string; id?: string; cuisine?: string }[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [activeBanner, setActiveBanner] = useState(0);
   const [showMenu, setShowMenu] = useState(false);
@@ -84,6 +92,8 @@ export default function Home() {
     queryKey: ["restaurants"],
     queryFn: () => restaurantApi.list(),
     enabled: mounted,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 
   const [favorites, setFavorites] = useState<string[]>([]);
@@ -94,8 +104,10 @@ export default function Home() {
   const { data: orders = [] } = useQuery({
     queryKey: ["orders"],
     queryFn: () => orderApi.mine(),
-    refetchInterval: 10000,
+    refetchInterval: 15000,
     enabled: mounted && isAuthenticated,
+    staleTime: 30 * 1000,
+    gcTime: 5 * 60 * 1000,
   });
 
   const activeOrder = orders.find(
@@ -103,37 +115,39 @@ export default function Home() {
   );
 
   const toggleFavoriteMutation = useMutation({
-    mutationFn: async (restaurant: any) => {
+    mutationFn: useCallback(async (restaurant: any) => {
       const next = toggleFavorite(restaurant.id);
       setFavorites(next);
       return next;
-    },
+    }, []),
   });
 
-  const handleSearchChange = (value: string) => {
-    setSearch(value);
-    if (!value.trim()) {
-      setSuggestions([]);
-      setShowSuggestions(false);
-      return;
-    }
-    const q = value.toLowerCase();
+  const handleToggleFavorite = useCallback((restaurant: any) => {
+    toggleFavoriteMutation.mutate(restaurant);
+  }, [toggleFavoriteMutation]);
 
+  const debouncedSearch = useDebounce(search, 200);
+
+  const suggestions = useMemo(() => {
+    if (!debouncedSearch.trim()) return [];
+    const q = debouncedSearch.toLowerCase();
     const restSuggestions = restaurants
       .filter((r: any) => r.name?.toLowerCase().includes(q))
       .slice(0, 4)
       .map((r: any) => ({ type: "restaurant", label: r.name, id: r.id }));
-
     const cuisineSuggestions = cuisineTypes
       .filter((c) => c.label.toLowerCase().includes(q))
       .slice(0, 3)
       .map((c) => ({ type: "cuisine", label: c.label, cuisine: c.type }));
+    return [...cuisineSuggestions, ...restSuggestions];
+  }, [debouncedSearch, restaurants]);
 
-    setSuggestions([...cuisineSuggestions, ...restSuggestions]);
-    setShowSuggestions(true);
-  };
+  const handleSearchChange = useCallback((value: string) => {
+    setSearch(value);
+    setShowSuggestions(value.trim().length > 0);
+  }, []);
 
-  const handleSuggestionClick = (suggestion: any) => {
+  const handleSuggestionClick = useCallback((suggestion: any) => {
     setShowSuggestions(false);
     setSearch("");
     if (suggestion.type === "restaurant" && suggestion.id) {
@@ -141,9 +155,9 @@ export default function Home() {
     } else if (suggestion.type === "cuisine" && suggestion.cuisine) {
       setActiveCuisine(suggestion.cuisine);
     }
-  };
+  }, [router]);
 
-  const handleBannerClick = (action: string) => {
+  const handleBannerClick = useCallback((action: string) => {
     if (action === "orders") {
       router.push("/orders");
     } else if (action === "group") {
@@ -155,17 +169,20 @@ export default function Home() {
         router.push(`/restaurant/${rand.id}`);
       }
     }
-  };
+  }, [router, restaurants]);
 
-  const filtered = restaurants.filter((r: any) => {
-    const matchCuisine = !activeCuisine || r.cuisineType === activeCuisine;
-    const matchSearch =
-      !search ||
-      r.name?.toLowerCase().includes(search.toLowerCase()) ||
-      r.description?.toLowerCase().includes(search.toLowerCase()) ||
-      r.cuisineType?.toLowerCase().includes(search.toLowerCase());
-    return matchCuisine && matchSearch;
-  });
+  const filtered = useMemo(() => {
+    const term = debouncedSearch.toLowerCase();
+    return restaurants.filter((r: any) => {
+      const matchCuisine = !activeCuisine || r.cuisineType === activeCuisine;
+      const matchSearch =
+        !term ||
+        r.name?.toLowerCase().includes(term) ||
+        r.description?.toLowerCase().includes(term) ||
+        r.cuisineType?.toLowerCase().includes(term);
+      return matchCuisine && matchSearch;
+    });
+  }, [activeCuisine, debouncedSearch, restaurants]);
 
   if (!mounted) {
     return <div className="pb-6 min-h-screen" style={{ background: "#f8f9fa" }} />;
@@ -269,7 +286,7 @@ export default function Home() {
               style={{ background: "#1a1f2e" }}
             />
             {search && (
-              <button onClick={() => { setSearch(""); setSuggestions([]); setShowSuggestions(false); }}
+              <button onClick={() => { setSearch(""); setShowSuggestions(false); }}
                 className="absolute right-3 top-1/2 -translate-y-1/2">
                 <X className="w-4 h-4 text-gray-400" />
               </button>
@@ -509,27 +526,17 @@ export default function Home() {
                 <p className="text-gray-400 text-xs mt-1">Essayez une autre recherche ou catégorie.</p>
               </div>
             ) : (
-              <motion.div
-                className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4"
-                initial="hidden"
-                animate="visible"
-                variants={{ visible: { transition: { staggerChildren: 0.06 } } }}
-              >
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                 {filtered.map((restaurant: any) => (
-                  <motion.div
-                    key={restaurant.id}
-                    variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}
-                  >
-                    <Link href={`/restaurant/${restaurant.id}`}>
-                      <RestaurantCard
-                        restaurant={restaurant}
-                        isFavorite={favorites.includes(restaurant.id)}
-                        onToggleFavorite={() => toggleFavoriteMutation.mutate(restaurant)}
-                      />
-                    </Link>
-                  </motion.div>
+                  <Link key={restaurant.id} href={`/restaurant/${restaurant.id}`}>
+                    <RestaurantCard
+                      restaurant={restaurant}
+                      isFavorite={favorites.includes(restaurant.id)}
+                      onToggleFavorite={handleToggleFavorite}
+                    />
+                  </Link>
                 ))}
-              </motion.div>
+              </div>
             )}
           </div>
         </div>

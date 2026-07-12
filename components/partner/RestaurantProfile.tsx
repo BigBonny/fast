@@ -5,6 +5,7 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { Save, Store, MapPin, Utensils, FileText, Image, Star, Clock } from "lucide-react";
 import { restaurantApi } from "@/api/fastBackend";
 import { showToast } from "@/components/partner/Toast";
+import SafeImage from "@/components/SafeImage";
 
 export default function RestaurantProfile() {
   const queryClient = useQueryClient();
@@ -63,7 +64,7 @@ export default function RestaurantProfile() {
 
       <div className="bg-[#0B1120] border border-white/[0.08] rounded-2xl p-4 flex items-center gap-4">
         <div className="w-16 h-16 rounded-2xl bg-white/[0.06] flex items-center justify-center text-3xl overflow-hidden flex-shrink-0">
-          {restaurant?.image ? <img src={restaurant.image} alt="" className="w-full h-full object-cover" /> : ""}
+          {restaurant?.image ? <SafeImage src={restaurant.image} alt="" width={64} height={64} className="w-full h-full object-cover" /> : ""}
         </div>
         <div>
           <p className="text-lg font-black text-white">{restaurant?.name || "Mon restaurant"}</p>

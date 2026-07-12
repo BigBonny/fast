@@ -29,5 +29,6 @@ backend/dist
 *.njsproj
 *.sln
 *.sw?
+*.tsbuildinfo
 
 .env

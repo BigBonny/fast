@@ -1,7 +1,9 @@
 "use client";
 
+import { memo } from "react";
 import { motion } from "framer-motion";
 import { Plus, Flame, UtensilsCrossed } from "lucide-react";
+import SafeImage from "@/components/SafeImage";
 
 interface MenuItem {
   id: string;
@@ -18,7 +20,7 @@ interface MenuItemCardProps {
   onAdd: () => void;
 }
 
-export default function MenuItemCard({ item, onAdd }: MenuItemCardProps) {
+function MenuItemCard({ item, onAdd }: MenuItemCardProps) {
   return (
     <motion.div
       whileTap={{ scale: 0.98 }}
@@ -26,9 +28,11 @@ export default function MenuItemCard({ item, onAdd }: MenuItemCardProps) {
     >
       <div className="w-20 h-20 rounded-xl bg-gray-50 overflow-hidden flex-shrink-0">
         {item.image ? (
-          <img
+          <SafeImage
             src={item.image}
             alt={item.name}
+            width={80}
+            height={80}
             className="w-full h-full object-cover"
           />
         ) : (
@@ -72,3 +76,5 @@ export default function MenuItemCard({ item, onAdd }: MenuItemCardProps) {
     </motion.div>
   );
 }
+
+export default memo(MenuItemCard);

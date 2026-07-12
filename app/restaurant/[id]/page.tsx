@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, Suspense } from "react";
+import { useState, useMemo, Suspense, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { restaurantApi, menuApi } from "@/api/fastBackend";
 import { addToCart, getCart, getCartCount, getCartTotal } from "@/lib/localCart";
@@ -13,6 +13,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 
 import MenuItemCard from "@/components/fast/MenuItemCard";
+import SafeImage from "@/components/SafeImage";
 
 const categoryLabels: Record<string, string> = {
   entree: "Entrées",
@@ -31,12 +32,16 @@ function RestaurantContent({ restaurantId }: { restaurantId: string }) {
     queryKey: ["restaurant", restaurantId],
     queryFn: () => restaurantApi.get(restaurantId),
     enabled: !!restaurantId,
+    staleTime: 3 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 
   const { data: menuItems = [], isLoading: loadingMenu } = useQuery({
     queryKey: ["menuItems", restaurantId],
     queryFn: () => menuApi.byRestaurant(restaurantId),
     enabled: !!restaurantId,
+    staleTime: 3 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 
   const restaurantMenuItems = restaurant?.menuItems || menuItems;
@@ -46,7 +51,7 @@ function RestaurantContent({ restaurantId }: { restaurantId: string }) {
   const cartTotal = getCartTotal(cartItems);
 
   const addToCartMutation = useMutation({
-    mutationFn: async (item: any) => {
+    mutationFn: useCallback(async (item: any) => {
       const next = addToCart({
         menuItemId: item.id,
         restaurantId,
@@ -57,7 +62,7 @@ function RestaurantContent({ restaurantId }: { restaurantId: string }) {
       });
       setCartItems(next);
       return next;
-    },
+    }, [restaurantId, restaurant?.name]),
   });
 
   const categories = useMemo(() => {
@@ -99,7 +104,7 @@ function RestaurantContent({ restaurantId }: { restaurantId: string }) {
       {/* Hero */}
       <div className="relative h-48 md:h-72 bg-gradient-to-br from-gray-100 to-gray-50">
         {restaurant.image && (
-          <img src={restaurant.image} alt={restaurant.name} className="w-full h-full object-cover" />
+          <SafeImage src={restaurant.image} alt={restaurant.name} fill sizes="100vw" className="object-cover" priority />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
         <Link href="/" className="absolute top-4 left-4 md:top-6 md:left-8 w-9 h-9 bg-white/90 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-sm hover:bg-white transition-colors">

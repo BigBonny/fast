@@ -1,8 +1,10 @@
 "use client";
 
+import { memo } from "react";
 import { Heart, UtensilsCrossed } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import SafeImage from "@/components/SafeImage";
 
 interface FavoritesSectionProps {
   favoriteIds?: string[];
@@ -10,7 +12,7 @@ interface FavoritesSectionProps {
   restaurants: any[];
 }
 
-export default function FavoritesSection({ favoriteIds, favorites, restaurants }: FavoritesSectionProps) {
+function FavoritesSection({ favoriteIds, favorites, restaurants }: FavoritesSectionProps) {
   const ids = favoriteIds || favorites?.filter((f) => f.type === "restaurant").map((f) => f.reference_id) || [];
   if (!ids.length) return null;
 
@@ -42,9 +44,11 @@ export default function FavoritesSection({ favoriteIds, favorites, restaurants }
               <div className="flex-shrink-0 w-28 group">
                 <div className="relative w-28 h-20 rounded-2xl overflow-hidden bg-gray-100 shadow-sm group-hover:shadow-md transition-all">
                   {restaurant.image ? (
-                    <img
+                    <SafeImage
                       src={restaurant.image}
                       alt={restaurant.name}
+                      width={112}
+                      height={80}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
                   ) : (
@@ -65,3 +69,5 @@ export default function FavoritesSection({ favoriteIds, favorites, restaurants }
     </div>
   );
 }
+
+export default memo(FavoritesSection);

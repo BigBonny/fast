@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { restaurantApi } from "@/api/fastBackend";
 import { getFavorites } from "@/lib/localCart";
 import { ArrowLeft, Heart, HeartOff, UtensilsCrossed, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import SafeImage from "@/components/SafeImage";
 
 export default function FavoritesPage() {
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
@@ -17,11 +18,14 @@ export default function FavoritesPage() {
   const { data: restaurants = [] } = useQuery({
     queryKey: ["restaurants"],
     queryFn: () => restaurantApi.list(),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 
-  const favRestaurants = favoriteIds
-    .map((id) => restaurants.find((r: any) => r.id === id))
-    .filter((r): r is any => r !== undefined);
+  const favRestaurants = useMemo(() => {
+    const map = new Map(restaurants.map((r: any) => [r.id, r]));
+    return favoriteIds.map((id) => map.get(id)).filter((r): r is any => r !== undefined);
+  }, [favoriteIds, restaurants]);
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
@@ -68,7 +72,7 @@ export default function FavoritesPage() {
                 <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex">
                   <div className="w-28 h-28 bg-gray-50 flex-shrink-0">
                     {restaurant.image ? (
-                      <img src={restaurant.image} alt={restaurant.name} className="w-full h-full object-cover" />
+                      <SafeImage src={restaurant.image} alt={restaurant.name} width={112} height={112} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gray-100"><UtensilsCrossed className="w-7 h-7 text-gray-300" /></div>
                     )}

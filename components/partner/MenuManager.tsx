@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Pencil, Trash2, Save, X, ChevronDown, ChevronUp, AlertCircle } from "lucide-react";
 import { menuApi, restaurantApi } from "@/api/fastBackend";
 import { showToast } from "@/components/partner/Toast";
+import SafeImage from "@/components/SafeImage";
 
 const DIETARY_OPTIONS = [
   { value: "VEGAN", label: "Vegan", color: "bg-green-500" },
@@ -202,7 +203,7 @@ export default function MenuManager() {
                   <div className="p-2 space-y-2">
                     {catItems.map((item: any) => (
                       <div key={item.id} className={`flex items-center gap-3 p-3 rounded-xl border ${item.isAvailable === false ? "border-white/5 bg-white/[0.02] opacity-60" : "border-white/[0.06] bg-[#020617]"}`}>
-                        <div className="w-12 h-12 rounded-xl bg-white/[0.06] flex items-center justify-center text-lg flex-shrink-0 overflow-hidden">{item.image ? <img src={item.image} alt="" className="w-full h-full object-cover" /> : ""}</div>
+                        <div className="w-12 h-12 rounded-xl bg-white/[0.06] flex items-center justify-center text-lg flex-shrink-0 overflow-hidden">{item.image ? <SafeImage src={item.image} alt="" width={48} height={48} className="w-full h-full object-cover" /> : ""}</div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-sm font-bold text-white truncate">{item.name}</span>

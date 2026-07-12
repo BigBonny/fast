@@ -1,8 +1,10 @@
 "use client";
 
+import { memo } from "react";
 import { motion } from "framer-motion";
-import { Star, Clock, Heart, Gift, Flame, Beef, Pizza, Fish, Utensils, Leaf, Sandwich, type LucideIcon } from "lucide-react";
+import { Star, Clock, Heart, Flame, Beef, Pizza, Fish, Utensils, Leaf, Sandwich, type LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import SafeImage from "@/components/SafeImage";
 
 interface Restaurant {
   id: string;
@@ -36,10 +38,10 @@ interface RestaurantCardProps {
   restaurant: Restaurant;
   onClick?: () => void;
   isFavorite?: boolean;
-  onToggleFavorite?: () => void;
+  onToggleFavorite?: (restaurant: Restaurant) => void;
 }
 
-export default function RestaurantCard({ 
+function RestaurantCard({ 
   restaurant, 
   onClick, 
   isFavorite, 
@@ -55,10 +57,12 @@ export default function RestaurantCard({
     >
       <div className="relative h-40 bg-gradient-to-br from-gray-100 to-gray-50 dark:from-slate-800 dark:to-slate-900 overflow-hidden">
         {restaurant.image ? (
-          <img
+          <SafeImage
             src={restaurant.image}
             alt={restaurant.name}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-110"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center" style={{ background: getCuisineVisual(restaurant.cuisineType).bg }}>
@@ -87,7 +91,7 @@ export default function RestaurantCard({
         {onToggleFavorite && (
           <motion.button
             whileTap={{ scale: 0.75 }}
-            onClick={(e) => { e.stopPropagation(); e.preventDefault(); onToggleFavorite(); }}
+            onClick={(e) => { e.stopPropagation(); e.preventDefault(); onToggleFavorite?.(restaurant); }}
             className="absolute top-2.5 right-2.5 w-8 h-8 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-all hover:scale-110 border border-gray-100 dark:border-slate-700"
           >
             <Heart
@@ -137,3 +141,5 @@ export default function RestaurantCard({
     </motion.div>
   );
 }
+
+export default memo(RestaurantCard);

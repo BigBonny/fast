@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import SafeImage from "@/components/SafeImage";
 
 export default function CartPage() {
   const [notes, setNotes] = useState("");
@@ -136,7 +137,6 @@ export default function CartPage() {
               {cartItems.map((item: any) => (
                 <motion.div
                   key={item.id}
-                  layout
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
@@ -144,7 +144,7 @@ export default function CartPage() {
                 >
                   <div className="w-14 h-14 rounded-xl bg-gray-50 overflow-hidden flex-shrink-0">
                     {item.imageUrl ? (
-                      <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                      <SafeImage src={item.imageUrl} alt={item.name} width={56} height={56} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gray-100"><UtensilsCrossed className="w-6 h-6 text-gray-300" /></div>
                     )}
