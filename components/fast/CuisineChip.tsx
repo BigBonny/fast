@@ -54,15 +54,15 @@ export default function CuisineChip({ type, label, isActive, onClick }: CuisineC
       style={{ width: 64 }}
     >
       <div
-        className="relative flex items-center justify-center transition-all duration-200"
+        className={`relative flex items-center justify-center transition-all duration-200 ${!isActive ? "bg-slate-50 dark:bg-gray-800" : ""}`}
         style={{
           width: 54,
           height: 54,
           borderRadius: 18,
-          background: isActive ? config.bg : "#f8fafc",
+          background: isActive ? config.bg : undefined,
           boxShadow: isActive
             ? `0 6px 22px ${config.color}50, 0 2px 8px ${config.color}30, inset 0 1px 0 rgba(255,255,255,0.25)`
-            : "0 2px 6px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.8)",
+            : "0 2px 6px rgba(0,0,0,0.05)",
           transform: isActive ? "translateY(-4px)" : "none",
           border: isActive ? `2px solid ${config.color}77` : "2px solid transparent",
         }}

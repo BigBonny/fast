@@ -30,15 +30,15 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/50 pb-20">
+    <div className="min-h-screen bg-gray-50/50 dark:bg-gray-950 pb-20">
       {/* Header */}
-      <div className="bg-white/90 backdrop-blur-md px-5 py-4 border-b border-gray-100 sticky top-0 md:top-16 z-20">
+      <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-md px-5 py-4 border-b border-gray-100 dark:border-gray-800 sticky top-0 md:top-16 z-20">
         <div className="max-w-2xl mx-auto flex items-center gap-3">
-          <Link href="/" className="w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-colors">
-            <ArrowLeft className="w-4 h-4 text-gray-600" />
+          <Link href="/" className="w-9 h-9 bg-gray-50 dark:bg-gray-800 rounded-xl flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+            <ArrowLeft className="w-4 h-4 text-gray-600 dark:text-gray-300" />
           </Link>
           <div>
-            <h1 className="font-bold text-gray-900">Mes commandes</h1>
+            <h1 className="font-bold text-gray-900 dark:text-white">Mes commandes</h1>
             <p className="text-xs text-gray-400">{orders.length} commande{orders.length > 1 ? "s" : ""}</p>
           </div>
         </div>
@@ -46,10 +46,10 @@ export default function OrdersPage() {
 
       {orders.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 px-5">
-          <div className="w-20 h-20 rounded-3xl bg-gray-100 flex items-center justify-center mb-4">
-            <Inbox className="w-10 h-10 text-gray-300" />
+          <div className="w-20 h-20 rounded-3xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+            <Inbox className="w-10 h-10 text-gray-300 dark:text-gray-600" />
           </div>
-          <h2 className="font-bold text-gray-900 text-lg mb-1">Aucune commande</h2>
+          <h2 className="font-bold text-gray-900 dark:text-white text-lg mb-1">Aucune commande</h2>
           <p className="text-sm text-gray-400 text-center mb-6">
             Passez votre première commande dès maintenant
           </p>
@@ -78,10 +78,10 @@ export default function OrdersPage() {
                 transition={{ delay: index * 0.05 }}
               >
                 <Link href={`/order-tracking/${order.id}`}>
-                  <div className={`bg-white rounded-2xl p-4 border ${isActive ? "border-violet-200" : "border-gray-100"} card-lift cursor-pointer`}>
+                  <div className={`bg-white dark:bg-gray-900 rounded-2xl p-4 border ${isActive ? "border-violet-200 dark:border-violet-500/30" : "border-gray-100 dark:border-gray-800"} card-lift cursor-pointer`}>
                     <div className="flex items-start justify-between">
                       <div>
-                        <h3 className="font-bold text-gray-900">{order.restaurant?.name || order.restaurantName || "Restaurant"}</h3>
+                        <h3 className="font-bold text-gray-900 dark:text-white">{order.restaurant?.name || order.restaurantName || "Restaurant"}</h3>
                         <p className="text-xs text-gray-400 mt-0.5">#{order.id?.slice(-6).toUpperCase()}</p>
                       </div>
                       <div
@@ -95,10 +95,10 @@ export default function OrdersPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
+                    <div className="flex items-center gap-4 mt-3 text-xs text-gray-500 dark:text-gray-400">
                       <span>{order.cartItems?.length || order.items?.length || 0} article{(order.cartItems?.length || order.items?.length || 0) > 1 ? "s" : ""}</span>
                       <span>•</span>
-                      <span className="font-bold text-gray-900">{order.total?.toFixed(2)} €</span>
+                      <span className="font-bold text-gray-900 dark:text-white">{order.total?.toFixed(2)} €</span>
                       <span>•</span>
                       <span>{new Date(order.createdAt || order.created_date).toLocaleDateString("fr-FR")}</span>
                     </div>

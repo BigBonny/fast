@@ -28,24 +28,24 @@ export default function FavoritesPage() {
   }, [favoriteIds, restaurants]);
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-20">
       {/* Header */}
-      <div className="bg-white px-5 py-4 flex items-center gap-3 border-b border-gray-100 sticky top-0 z-20">
-        <Link href="/" className="w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center">
-          <ArrowLeft className="w-4 h-4 text-gray-600" />
+      <div className="bg-white dark:bg-gray-900 px-5 py-4 flex items-center gap-3 border-b border-gray-100 dark:border-gray-800 sticky top-0 z-20">
+        <Link href="/" className="w-9 h-9 bg-gray-50 dark:bg-gray-800 rounded-xl flex items-center justify-center">
+          <ArrowLeft className="w-4 h-4 text-gray-600 dark:text-gray-300" />
         </Link>
         <div className="flex items-center gap-2">
           <Heart className="w-5 h-5 text-red-400 fill-red-400" />
-          <h1 className="font-bold text-gray-900">Mes favoris</h1>
+          <h1 className="font-bold text-gray-900 dark:text-white">Mes favoris</h1>
         </div>
       </div>
 
       {favRestaurants.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 px-5">
-          <div className="w-20 h-20 rounded-3xl bg-red-50 flex items-center justify-center mb-4">
-            <HeartOff className="w-9 h-9 text-red-300" />
+          <div className="w-20 h-20 rounded-3xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center mb-4">
+            <HeartOff className="w-9 h-9 text-red-300 dark:text-red-400/60" />
           </div>
-          <h2 className="font-bold text-gray-900 text-lg mb-1">Aucun favori</h2>
+          <h2 className="font-bold text-gray-900 dark:text-white text-lg mb-1">Aucun favori</h2>
           <p className="text-sm text-gray-400 text-center mb-6">
             Ajoutez des restaurants à vos favoris pour les retrouver ici
           </p>
@@ -69,16 +69,16 @@ export default function FavoritesPage() {
               transition={{ delay: index * 0.05 }}
             >
               <Link href={`/restaurant/${restaurant.id}`}>
-                <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex">
-                  <div className="w-28 h-28 bg-gray-50 flex-shrink-0">
+                <div className="bg-white dark:bg-gray-900 rounded-2xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800 flex">
+                  <div className="w-28 h-28 bg-gray-50 dark:bg-gray-800 flex-shrink-0">
                     {restaurant.image ? (
                       <SafeImage src={restaurant.image} alt={restaurant.name} width={112} height={112} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gray-100"><UtensilsCrossed className="w-7 h-7 text-gray-300" /></div>
+                      <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800"><UtensilsCrossed className="w-7 h-7 text-gray-300 dark:text-gray-600" /></div>
                     )}
                   </div>
                   <div className="p-4 flex-1">
-                    <h3 className="font-bold text-gray-900">{restaurant.name}</h3>
+                    <h3 className="font-bold text-gray-900 dark:text-white">{restaurant.name}</h3>
                     <p className="flex items-center gap-1 text-xs text-gray-400 mt-1">
                       {restaurant.normalPrepTime || 5} min • {restaurant.rating || "4.5"} <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
                     </p>

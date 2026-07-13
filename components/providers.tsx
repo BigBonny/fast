@@ -2,7 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
-import { LazyMotion, domAnimation } from "framer-motion";
+import { LazyMotion, domMax } from "framer-motion";
 import { AuthProvider } from "@/lib/AuthContext";
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -21,7 +21,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <LazyMotion features={domAnimation} strict>
+        <LazyMotion features={domMax} strict>
           {children}
         </LazyMotion>
       </AuthProvider>

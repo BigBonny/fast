@@ -185,11 +185,11 @@ export default function Home() {
   }, [activeCuisine, debouncedSearch, restaurants]);
 
   if (!mounted) {
-    return <div className="pb-6 min-h-screen" style={{ background: "#f8f9fa" }} />;
+    return <div className="pb-6 min-h-screen bg-[#f8f9fa] dark:bg-gray-950" />;
   }
 
   return (
-    <div className="pb-6 min-h-screen" style={{ background: "#f8f9fa" }}>
+    <div className="pb-6 min-h-screen bg-[#f8f9fa] dark:bg-gray-950">
       <SideMenu isOpen={showMenu} onClose={() => setShowMenu(false)} />
 
 
@@ -353,7 +353,7 @@ export default function Home() {
               <button
                 onClick={() => { setSearch(""); setActiveCuisine(null); }}
                 className={`w-full text-left px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
-                  !activeCuisine ? "bg-violet-500 text-white" : "text-gray-600 hover:bg-gray-100"
+                  !activeCuisine ? "bg-violet-500 text-white" : "text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
                 }`}
               >
                 Tous les restaurants
@@ -363,7 +363,7 @@ export default function Home() {
                   key={c.type}
                   onClick={() => { setSearch(""); setActiveCuisine(activeCuisine === c.type ? null : c.type); }}
                   className={`w-full text-left px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
-                    activeCuisine === c.type ? "bg-violet-500 text-white" : "text-gray-600 hover:bg-gray-100"
+                    activeCuisine === c.type ? "bg-violet-500 text-white" : "text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
                   }`}
                 >
                   {c.label}
@@ -394,7 +394,7 @@ export default function Home() {
                       </div>
                       <span className="text-xs text-gray-400">#{activeOrder.id?.slice(-6).toUpperCase()}</span>
                     </div>
-                    <p className="text-gray-700 text-sm mt-1 font-semibold">
+                    <p className="text-gray-700 dark:text-gray-300 text-sm mt-1 font-semibold">
                       {activeOrder.restaurant?.name || "Restaurant"}
                     </p>
                   </div>
@@ -472,7 +472,7 @@ export default function Home() {
           {favorites.length > 0 && (
             <div className="mb-5">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="font-bold text-gray-900">Mes favoris</h3>
+                <h3 className="font-bold text-gray-900 dark:text-white">Mes favoris</h3>
                 <Link href="/favorites" className="text-xs font-semibold text-violet-500">Voir tout</Link>
               </div>
               <FavoritesSection favoriteIds={favorites} restaurants={restaurants} />
@@ -484,21 +484,21 @@ export default function Home() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <div className="w-1 h-5 rounded-full bg-gradient-to-b from-violet-500 to-cyan-400" />
-                <h3 className="font-black text-gray-900 text-lg">
+                <h3 className="font-black text-gray-900 dark:text-white text-lg">
                   {activeCuisine
                     ? cuisineTypes.find((c) => c.type === activeCuisine)?.label
                     : "Près de vous"}
                 </h3>
               </div>
-              <span className="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-1 rounded-full">
+              <span className="text-xs font-bold text-gray-400 bg-gray-100 dark:bg-gray-800 dark:text-gray-400 px-2 py-1 rounded-full">
                 {filtered.length} résultat{filtered.length > 1 ? "s" : ""}
               </span>
             </div>
 
             {error ? (
-              <div className="text-center py-16 px-5 rounded-2xl bg-gray-50 border border-gray-100">
+              <div className="text-center py-16 px-5 rounded-2xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800">
                 <AlertTriangle className="w-12 h-12 text-amber-400 mx-auto mb-3" />
-                <p className="text-gray-700 text-sm font-bold mb-1">Impossible de charger les restaurants</p>
+                <p className="text-gray-700 dark:text-gray-300 text-sm font-bold mb-1">Impossible de charger les restaurants</p>
                 <p className="text-gray-400 text-xs mb-4">Vérifie ta connexion et réessaie.</p>
                 <button
                   onClick={() => queryClient.invalidateQueries({ queryKey: ["restaurants"] })}
@@ -510,7 +510,7 @@ export default function Home() {
             ) : isLoading ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                 {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                  <div key={i} className="bg-white border border-gray-100 rounded-2xl h-56 overflow-hidden">
+                  <div key={i} className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl h-56 overflow-hidden">
                     <div className="h-40 skeleton-shimmer" />
                     <div className="p-3 space-y-2">
                       <div className="h-3 w-2/3 rounded skeleton-shimmer" />
@@ -520,9 +520,9 @@ export default function Home() {
                 ))}
               </div>
             ) : filtered.length === 0 ? (
-              <div className="text-center py-16 rounded-2xl bg-gray-50 border border-dashed border-gray-200">
-                <SearchX className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500 text-sm font-semibold">Aucun restaurant trouvé</p>
+              <div className="text-center py-16 rounded-2xl bg-gray-50 dark:bg-gray-900 border border-dashed border-gray-200 dark:border-gray-700">
+                <SearchX className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                <p className="text-gray-500 dark:text-gray-400 text-sm font-semibold">Aucun restaurant trouvé</p>
                 <p className="text-gray-400 text-xs mt-1">Essayez une autre recherche ou catégorie.</p>
               </div>
             ) : (

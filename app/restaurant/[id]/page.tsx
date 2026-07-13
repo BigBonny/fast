@@ -88,7 +88,7 @@ function RestaurantContent({ restaurantId }: { restaurantId: string }) {
   if (!restaurant) {
     return (
       <div className="flex flex-col items-center justify-center h-screen gap-4">
-        <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center">
+        <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
           <Store className="w-8 h-8 text-gray-400" />
         </div>
         <p className="text-gray-400">Restaurant introuvable</p>
@@ -100,9 +100,9 @@ function RestaurantContent({ restaurantId }: { restaurantId: string }) {
   }
 
   return (
-    <div className="pb-28">
+    <div className="pb-28 min-h-screen bg-white dark:bg-gray-950">
       {/* Hero */}
-      <div className="relative h-48 md:h-72 bg-gradient-to-br from-gray-100 to-gray-50">
+      <div className="relative h-48 md:h-72 bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900">
         {restaurant.image && (
           <SafeImage src={restaurant.image} alt={restaurant.name} fill sizes="100vw" className="object-cover" priority />
         )}
@@ -114,18 +114,18 @@ function RestaurantContent({ restaurantId }: { restaurantId: string }) {
 
       {/* Info */}
       <div className="px-5 md:px-8 -mt-6 md:-mt-12 relative z-10 max-w-4xl mx-auto">
-        <div className="bg-white rounded-2xl p-4 md:p-6 shadow-lg shadow-gray-200/60 border border-gray-100">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 md:p-6 shadow-lg shadow-gray-200/60 dark:shadow-black/40 border border-gray-100 dark:border-gray-800">
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="font-black text-xl md:text-3xl text-gray-900">{restaurant.name}</h1>
+              <h1 className="font-black text-xl md:text-3xl text-gray-900 dark:text-white">{restaurant.name}</h1>
               {restaurant.description && (
                 <p className="text-xs text-gray-400 mt-1">{restaurant.description}</p>
               )}
             </div>
             {restaurant.rating && (
-              <div className="flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-lg">
+              <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-500/10 px-2 py-1 rounded-lg">
                 <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                <span className="text-sm font-bold text-amber-700">{restaurant.rating}</span>
+                <span className="text-sm font-bold text-amber-700 dark:text-amber-400">{restaurant.rating}</span>
               </div>
             )}
           </div>
@@ -151,17 +151,17 @@ function RestaurantContent({ restaurantId }: { restaurantId: string }) {
 
       {/* Infos restaurant */}
       <div className="px-5 md:px-8 mt-3 max-w-4xl mx-auto">
-        <div className="bg-gray-50 rounded-2xl p-4 space-y-2.5">
+        <div className="bg-gray-50 dark:bg-gray-900 dark:border dark:border-gray-800 rounded-2xl p-4 space-y-2.5">
           {restaurant.address && (
             <div className="flex items-center gap-3">
               <MapPin className="w-4 h-4 text-amber-500 flex-shrink-0" />
-              <span className="text-xs text-gray-600">{restaurant.address}</span>
+              <span className="text-xs text-gray-600 dark:text-gray-300">{restaurant.address}</span>
             </div>
           )}
           {restaurant.phone && (
             <div className="flex items-center gap-3">
               <Phone className="w-4 h-4 text-amber-500 flex-shrink-0" />
-              <span className="text-xs text-gray-600">{restaurant.phone}</span>
+              <span className="text-xs text-gray-600 dark:text-gray-300">{restaurant.phone}</span>
             </div>
           )}
         </div>
@@ -171,7 +171,7 @@ function RestaurantContent({ restaurantId }: { restaurantId: string }) {
       {categories.length > 0 && (
         <div className="px-5 md:px-8 mt-5 max-w-4xl mx-auto">
           <Tabs value={activeCategory} onValueChange={setActiveCategory}>
-            <TabsList className="bg-gray-50 h-9 p-0.5 w-full overflow-x-auto flex justify-start">
+            <TabsList className="bg-gray-50 dark:bg-gray-900 h-9 p-0.5 w-full overflow-x-auto flex justify-start">
               <TabsTrigger value="all" className="text-xs px-3 rounded-lg data-[state=active]:bg-emerald-500 data-[state=active]:text-white">
                 Tout
               </TabsTrigger>
@@ -199,7 +199,7 @@ function RestaurantContent({ restaurantId }: { restaurantId: string }) {
           </div>
         ) : filteredItems.length === 0 ? (
           <div className="text-center py-12">
-            <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-3">
+            <div className="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-3">
               <ClipboardList className="w-7 h-7 text-gray-400" />
             </div>
             <p className="text-gray-400 text-sm">Aucun plat dans cette catégorie</p>

@@ -24,9 +24,9 @@ function MenuItemCard({ item, onAdd }: MenuItemCardProps) {
   return (
     <m.div
       whileTap={{ scale: 0.98 }}
-      className="flex items-center gap-3 bg-white rounded-xl p-3 border border-gray-100 hover:border-amber-200 hover:shadow-md hover:shadow-amber-100/40 transition-all duration-200 h-full"
+      className="flex items-center gap-3 bg-white dark:bg-gray-900 rounded-xl p-3 border border-gray-100 dark:border-gray-800 hover:border-amber-200 dark:hover:border-amber-500/30 hover:shadow-md hover:shadow-amber-100/40 dark:hover:shadow-none transition-all duration-200 h-full"
     >
-      <div className="w-20 h-20 rounded-xl bg-gray-50 overflow-hidden flex-shrink-0">
+      <div className="w-20 h-20 rounded-xl bg-gray-50 dark:bg-gray-800 overflow-hidden flex-shrink-0">
         {item.image ? (
           <SafeImage
             src={item.image}
@@ -36,15 +36,15 @@ function MenuItemCard({ item, onAdd }: MenuItemCardProps) {
             className="w-full h-full object-cover"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-100">
-            <UtensilsCrossed className="w-7 h-7 text-gray-300" />
+          <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800">
+            <UtensilsCrossed className="w-7 h-7 text-gray-300 dark:text-gray-600" />
           </div>
         )}
       </div>
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5">
-          <h4 className="font-semibold text-sm text-gray-900 truncate">
+          <h4 className="font-semibold text-sm text-gray-900 dark:text-white truncate">
             {item.name}
           </h4>
           {(item.isPopular || (item.rating && item.rating >= 4.5)) && (
@@ -57,7 +57,7 @@ function MenuItemCard({ item, onAdd }: MenuItemCardProps) {
           </p>
         )}
         <div className="flex items-center justify-between mt-2">
-          <span className="font-bold text-gray-900">
+          <span className="font-bold text-gray-900 dark:text-white">
             {item.price?.toFixed(2)} €
           </span>
           <m.button

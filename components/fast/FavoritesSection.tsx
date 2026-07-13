@@ -27,7 +27,7 @@ function FavoritesSection({ favoriteIds, favorites, restaurants }: FavoritesSect
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-1.5">
           <Heart className="w-4 h-4 text-red-400 fill-red-400" />
-          <h3 className="font-bold text-gray-900">Mes Favoris</h3>
+          <h3 className="font-bold text-gray-900 dark:text-white">Mes Favoris</h3>
         </div>
       </div>
 
@@ -42,7 +42,7 @@ function FavoritesSection({ favoriteIds, favorites, restaurants }: FavoritesSect
           >
             <Link href={`/restaurant/${restaurant.id}`}>
               <div className="flex-shrink-0 w-28 group">
-                <div className="relative w-28 h-20 rounded-2xl overflow-hidden bg-gray-100 shadow-sm group-hover:shadow-md transition-all">
+                <div className="relative w-28 h-20 rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-800 shadow-sm group-hover:shadow-md transition-all">
                   {restaurant.image ? (
                     <SafeImage
                       src={restaurant.image}
@@ -52,15 +52,15 @@ function FavoritesSection({ favoriteIds, favorites, restaurants }: FavoritesSect
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gray-100"><UtensilsCrossed className="w-7 h-7 text-gray-300" /></div>
+                    <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800"><UtensilsCrossed className="w-7 h-7 text-gray-300 dark:text-gray-600" /></div>
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="absolute bottom-1.5 right-1.5 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-md">
                     <Heart className="w-2.5 h-2.5 text-red-500 fill-red-500" />
                   </div>
                 </div>
-                <p className="text-xs font-extrabold text-gray-900 mt-1.5 truncate px-0.5">{restaurant.name}</p>
-                <p className="text-[10px] font-semibold text-gray-500 px-0.5">{restaurant.normalPrepTime || 5} min</p>
+                <p className="text-xs font-extrabold text-gray-900 dark:text-white mt-1.5 truncate px-0.5">{restaurant.name}</p>
+                <p className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 px-0.5">{restaurant.normalPrepTime || 5} min</p>
               </div>
             </Link>
           </m.div>
