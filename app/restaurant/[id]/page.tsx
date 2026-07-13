@@ -79,7 +79,7 @@ function RestaurantContent({ restaurantId }: { restaurantId: string }) {
 
   if (loadingRestaurant) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-screen bg-white dark:bg-gray-950">
         <div className="w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -87,7 +87,7 @@ function RestaurantContent({ restaurantId }: { restaurantId: string }) {
 
   if (!restaurant) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen gap-4">
+      <div className="flex flex-col items-center justify-center h-screen gap-4 bg-white dark:bg-gray-950">
         <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
           <Store className="w-8 h-8 text-gray-400" />
         </div>
@@ -227,7 +227,7 @@ function RestaurantContent({ restaurantId }: { restaurantId: string }) {
         <m.div
           initial={{ y: 80 }}
           animate={{ y: 0 }}
-          className="fixed bottom-20 md:bottom-6 left-0 right-0 px-5 z-50 max-w-xl mx-auto"
+          className="fixed left-0 right-0 px-5 z-50 max-w-xl mx-auto bottom-[calc(5rem+env(safe-area-inset-bottom))] md:bottom-6"
         >
           <Link href="/cart">
             <div className="bg-emerald-500 hover:bg-emerald-600 transition-colors rounded-2xl p-4 shadow-xl shadow-emerald-500/25 flex items-center justify-between">
@@ -252,7 +252,7 @@ function RestaurantContent({ restaurantId }: { restaurantId: string }) {
 
 export default function RestaurantPage({ params }: { params: { id: string } }) {
   return (
-    <Suspense fallback={<div className="flex items-center justify-center h-screen">
+    <Suspense fallback={<div className="flex items-center justify-center h-screen bg-white dark:bg-gray-950">
       <div className="w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
     </div>}>
       <RestaurantContent restaurantId={params.id} />

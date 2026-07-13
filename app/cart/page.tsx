@@ -212,7 +212,7 @@ export default function CartPage() {
           </div>
 
           {/* Order button */}
-          <div className="fixed bottom-20 md:bottom-6 left-0 right-0 px-5 z-50 max-w-2xl mx-auto">
+          <div className="fixed left-0 right-0 px-5 z-50 max-w-2xl mx-auto bottom-[calc(5rem+env(safe-area-inset-bottom))] md:bottom-6">
             <Button
               onClick={() => setShowCheckout(true)}
               className="w-full h-14 text-white font-bold text-base rounded-2xl shadow-xl shadow-teal-500/25 flex items-center justify-center gap-2 hover:opacity-95 transition-opacity"
@@ -239,7 +239,7 @@ export default function CartPage() {
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
-              className="bg-white dark:bg-gray-900 w-full sm:w-[400px] sm:rounded-2xl rounded-t-2xl p-6"
+              className="bg-white dark:bg-gray-900 w-full sm:w-[400px] sm:rounded-2xl rounded-t-2xl p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:pb-6"
               onClick={(e) => e.stopPropagation()}
             >
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Confirmer la commande</h2>

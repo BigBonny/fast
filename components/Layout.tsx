@@ -75,7 +75,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <main className={showNav ? "pb-20 md:pb-0 md:pt-16" : ""}>{children}</main>
 
       {showNav && (
-        <nav className="md:hidden fixed bottom-4 left-4 right-4 z-50 max-w-lg mx-auto">
+        <nav
+          className="md:hidden fixed left-4 right-4 z-50 max-w-lg mx-auto"
+          style={{ bottom: "calc(1rem + env(safe-area-inset-bottom))" }}
+        >
           <div
             className="flex items-center justify-between px-2 py-2 rounded-3xl border border-white/10 shadow-2xl"
             style={{
