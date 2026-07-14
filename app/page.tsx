@@ -386,17 +386,23 @@ export default function Home() {
                 exit={{ opacity: 0, y: -10 }}
               >
                 <Link href={`/order-tracking/${activeOrder.id}`}>
-                  <div className="rounded-2xl p-4 border border-cyan-400/30" style={{ background: "rgba(6,182,212,0.08)" }}>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                        <span className="text-sm font-bold text-cyan-400">Commande en cours</span>
+                  <div className="rounded-3xl p-[1.5px] bg-gradient-to-r from-cyan-400/60 via-violet-400/50 to-emerald-400/60 card-lift cursor-pointer active:scale-[0.98] transition-transform">
+                    <div className="bg-white dark:bg-gray-900 rounded-[calc(1.5rem-1.5px)] p-4 flex items-center gap-3">
+                      <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-cyan-500 to-violet-500 flex items-center justify-center shrink-0 shadow-md shadow-cyan-500/20">
+                        <Zap className="w-5 h-5 text-white fill-white" />
                       </div>
-                      <span className="text-xs text-gray-400">#{activeOrder.id?.slice(-6).toUpperCase()}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                          <span className="text-xs font-black uppercase tracking-wide text-cyan-500 dark:text-cyan-400">Commande en cours</span>
+                        </div>
+                        <p className="text-gray-900 dark:text-white text-sm mt-0.5 font-bold truncate">
+                          {activeOrder.restaurant?.name || "Restaurant"}
+                          <span className="text-gray-400 dark:text-gray-500 font-semibold text-xs ml-2">#{activeOrder.id?.slice(-6).toUpperCase()}</span>
+                        </p>
+                      </div>
+                      <span className="text-xs font-bold text-violet-500 dark:text-violet-400 shrink-0">Suivre →</span>
                     </div>
-                    <p className="text-gray-700 dark:text-gray-300 text-sm mt-1 font-semibold">
-                      {activeOrder.restaurant?.name || "Restaurant"}
-                    </p>
                   </div>
                 </Link>
               </m.div>
