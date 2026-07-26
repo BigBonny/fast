@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/AuthContext";
-import { authApi } from "@/api/fastBackend";
+import { useTheme } from "@/lib/useTheme";
+import { authApi, getErrorMessage } from "@/api/fastBackend";
 import { ArrowLeft, User, MapPin, Moon, Bell, Shield, LogOut, Store, ShoppingBag, BarChart3, Settings, ChevronRight, Utensils, Phone, Save, X, CheckCircle, Star, Pencil, Zap } from "lucide-react";
 import { m, AnimatePresence } from "framer-motion";
 import Link from "next/link";
@@ -11,7 +12,7 @@ import Link from "next/link";
 export default function ProfilePage() {
   const router = useRouter();
   const { user, isAuthenticated, logout, refreshUser } = useAuth();
-  const [darkMode, setDarkMode] = useState(false);
+  const { isDark: darkMode, toggleTheme } = useTheme();
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState("");
   const [editPhone, setEditPhone] = useState("");
@@ -23,25 +24,16 @@ export default function ProfilePage() {
     if (!isAuthenticated) router.replace("/login");
   }, [isAuthenticated, router]);
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("fast_theme");
-      const isDark = saved ? saved === "dark" : document.documentElement.classList.contains("dark");
-      setDarkMode(isDark);
-    }
-  }, []);
-
   if (!isAuthenticated) return null;
 
-  const handleLogout = () => { logout(); window.location.href = "/"; };
-  const toggleDarkMode = () => { const next = !darkMode; setDarkMode(next); if (typeof window !== "undefined") { document.documentElement.classList.toggle("dark", next); localStorage.setItem("fast_theme", next ? "dark" : "light"); } };
+  const handleLogout = () => { void logout(true); };
   const openEdit = () => { setEditName(user?.name || ""); setEditPhone(user?.phone || ""); setEditError(""); setEditSuccess(false); setIsEditing(true); };
-  const saveProfile = async (e: React.FormEvent) => { e.preventDefault(); setEditLoading(true); setEditError(""); setEditSuccess(false); try { await authApi.updateProfile({ name: editName, phone: editPhone }); await refreshUser(); setEditSuccess(true); setTimeout(() => { setEditSuccess(false); setIsEditing(false); }, 1200); } catch (err: any) { setEditError(err.message || "Erreur lors de la mise à jour"); } finally { setEditLoading(false); } };
+  const saveProfile = async (e: React.FormEvent) => { e.preventDefault(); setEditLoading(true); setEditError(""); setEditSuccess(false); try { await authApi.updateProfile({ name: editName, phone: editPhone }); await refreshUser(); setEditSuccess(true); setTimeout(() => { setEditSuccess(false); setIsEditing(false); }, 1200); } catch (err) { setEditError(getErrorMessage(err, "Erreur lors de la mise à jour")); } finally { setEditLoading(false); } };
 
   const isRestaurant = user?.role === "RESTAURANT";
   const roleLabel = isRestaurant ? "Restaurateur" : "Client";
   const roleColor = isRestaurant ? "bg-emerald-500" : "bg-violet-500";
-  const clientMenu = [{ icon: User, label: "Informations personnelles", action: openEdit }, { icon: MapPin, label: "Mes adresses", action: () => router.push("/profile/addresses") }, { icon: Bell, label: "Notifications", action: () => router.push("/profile/notifications") }, { icon: Moon, label: "Mode sombre", action: toggleDarkMode, value: darkMode }, { icon: Shield, label: "Confidentialité", action: () => router.push("/privacy-policy") }];
+  const clientMenu = [{ icon: User, label: "Informations personnelles", action: openEdit }, { icon: MapPin, label: "Mes adresses", action: () => router.push("/profile/addresses") }, { icon: Bell, label: "Notifications", action: () => router.push("/profile/notifications") }, { icon: Moon, label: "Mode sombre", action: toggleTheme, value: darkMode }, { icon: Shield, label: "Confidentialité", action: () => router.push("/privacy-policy") }];
   const restaurantMenu = [{ icon: Store, label: "Tableau de bord", action: () => router.push("/partner/orders"), highlight: true }, { icon: ShoppingBag, label: "Commandes restaurant", action: () => router.push("/partner/orders") }, { icon: BarChart3, label: "Statistiques", action: () => router.push("/partner/analytics") }, { icon: Settings, label: "Réglages restaurant", action: () => router.push("/partner/settings") }, { icon: Utensils, label: "Mon menu", action: () => router.push("/partner/menu") }, { icon: User, label: "Profil restaurant", action: () => router.push("/partner/analytics/profile") }, { icon: Shield, label: "Confidentialité", action: () => router.push("/privacy-policy") }];
   const menuItems = isRestaurant ? restaurantMenu : clientMenu;
 
@@ -82,7 +74,7 @@ export default function ProfilePage() {
           <div className={`rounded-2xl p-4 flex items-center gap-3 border transition-shadow hover:shadow-md ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100 shadow-sm"}`}>
             <div className="w-11 h-11 rounded-xl bg-yellow-100 flex items-center justify-center shrink-0"><Star className="w-5 h-5 text-yellow-500 fill-yellow-400" /></div>
             <div className="min-w-0">
-              <p className={`font-black text-lg leading-tight ${darkMode ? "text-white" : "text-gray-900"}`}>{user?.points ?? 85}</p>
+              <p className={`font-black text-lg leading-tight ${darkMode ? "text-white" : "text-gray-900"}`}>{user?.points ?? 0}</p>
               <p className="text-[11px] text-gray-400 font-semibold">Points FAST</p>
             </div>
           </div>

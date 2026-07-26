@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { m } from "framer-motion";
-import { Clock, Package, CheckCircle, XCircle, ChefHat, Utensils, User, ChevronDown, ChevronUp } from "lucide-react";
-import { orderApi } from "@/api/fastBackend";
+import { Clock, Package, CheckCircle, XCircle, ChefHat, Utensils, User, ChevronDown, ChevronUp, type LucideIcon } from "lucide-react";
+import { orderApi, getErrorMessage } from "@/api/fastBackend";
+import type { Order, OrderStatus } from "@/lib/types";
 import { showToast } from "@/components/partner/Toast";
 
 const STATUS_TABS = [
@@ -16,7 +17,7 @@ const STATUS_TABS = [
   { id: "CANCELLED", label: "Annulées", color: "text-red-400" },
 ];
 
-const STATUS_LABELS: Record<string, string> = {
+const STATUS_LABELS: Record<OrderStatus, string> = {
   PLACED: "Reçue",
   PREPARING: "En préparation",
   READY_FOR_PICKUP: "Prête à récupérer",
@@ -24,7 +25,9 @@ const STATUS_LABELS: Record<string, string> = {
   CANCELLED: "Annulée",
 };
 
-const STATUS_ACTIONS: Record<string, { next: string; label: string; icon: any; color: string }[]> = {
+const STATUS_ACTIONS: Partial<
+  Record<OrderStatus, { next: OrderStatus; label: string; icon: LucideIcon; color: string }[]>
+> = {
   PLACED: [{ next: "PREPARING", label: "Préparer", icon: ChefHat, color: "bg-yellow-500" }],
   PREPARING: [{ next: "READY_FOR_PICKUP", label: "Prête", icon: Utensils, color: "bg-orange-500" }],
   READY_FOR_PICKUP: [{ next: "COMPLETED", label: "Récupérée", icon: CheckCircle, color: "bg-green-500" }],
@@ -41,15 +44,15 @@ export default function OrdersManager() {
     refetchInterval: 10000,
   });
 
-  const filtered = activeTab === "ALL" ? orders : orders.filter((o: any) => o.status === activeTab);
+  const filtered = activeTab === "ALL" ? orders : orders.filter((o: Order) => o.status === activeTab);
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: string }) => orderApi.updateStatus(id, status),
+    mutationFn: ({ id, status }: { id: string; status: OrderStatus }) => orderApi.updateStatus(id, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
-      showToast(" Statut mis à jour");
+      showToast("Statut mis à jour");
     },
-    onError: (err: any) => showToast(err?.message || " Erreur"),
+    onError: (err: unknown) => showToast(getErrorMessage(err)),
   });
 
   const formatTime = (date: string) => {

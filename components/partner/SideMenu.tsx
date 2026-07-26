@@ -1,8 +1,10 @@
 ﻿"use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { m, AnimatePresence } from "framer-motion";
+import { useTheme } from "@/lib/useTheme";
+import type { Restaurant } from "@/lib/types";
 import {
   Store, ShoppingBag, UtensilsCrossed, Settings, TrendingUp, BrainCircuit,
   Users, LayoutDashboard, Radio, FileText, CircleUser, Moon, Sun, Zap,
@@ -39,24 +41,12 @@ export default function SideMenu({
 }: {
   open: boolean;
   onClose: () => void;
-  settings: any;
+  settings: Partial<Restaurant>;
   onToggleRush: () => void;
   rushActive: boolean;
   onOpenKitchen: () => void;
 }) {
-  const [theme, setTheme] = useState(() => {
-    if (typeof document !== "undefined") {
-      return document.documentElement.getAttribute("data-theme") || "dark";
-    }
-    return "dark";
-  });
-
-  const toggleTheme = () => {
-    const next = theme === "dark" ? "light" : "dark";
-    setTheme(next);
-    document.documentElement.setAttribute("data-theme", next);
-    localStorage.setItem("fast_r_theme", next);
-  };
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <AnimatePresence>

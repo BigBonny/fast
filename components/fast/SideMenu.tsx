@@ -20,11 +20,8 @@ interface SideMenuProps {
 export default function SideMenu({ isOpen, onClose }: SideMenuProps) {
   const { user, isAuthenticated, logout } = useAuth();
 
-  const handleLogout = () => {
-    logout();
-    if (typeof window !== "undefined") {
-      window.location.href = "/";
-    }
+  const handleLogout = async () => {
+    await logout(true);
   };
 
   const isRestaurant = user?.role === "RESTAURANT";
@@ -103,7 +100,7 @@ export default function SideMenu({ isOpen, onClose }: SideMenuProps) {
               <div className="mt-4 flex items-center gap-2 bg-yellow-400/10 rounded-xl px-3 py-2">
                 <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
                 <div>
-                  <p className="text-yellow-400 font-black text-sm">85 Points</p>
+                  <p className="text-yellow-400 font-black text-sm">{user?.points ?? 0} Points</p>
                   <p className="text-gray-400 text-xs">Portefeuille FAST</p>
                 </div>
               </div>

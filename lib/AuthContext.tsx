@@ -1,7 +1,9 @@
 "use client";
 
-import React, { createContext, useState, useContext, useEffect, ReactNode } from "react";
-import { authApi } from "@/api/fastBackend";
+import React, { createContext, useState, useContext, useEffect, useCallback, ReactNode } from "react";
+import { authApi, getToken, setToken, UNAUTHORIZED_EVENT, type RegisterPayload } from "@/api/fastBackend";
+import { clearCart } from "@/lib/localCart";
+import type { ApiError, User } from "@/lib/types";
 
 interface AuthError {
   type: string;
@@ -9,15 +11,13 @@ interface AuthError {
 }
 
 interface AuthContextType {
-  user: any;
+  user: User | null;
   isAuthenticated: boolean;
   isLoadingAuth: boolean;
-  isLoadingPublicSettings: boolean;
   authError: AuthError | null;
-  appPublicSettings: any;
-  login: (email: string, password: string) => Promise<any>;
-  register: (data: { email: string; password: string; name: string; phone?: string; role?: string }) => Promise<any>;
-  logout: (shouldRedirect?: boolean) => void;
+  login: (email: string, password: string) => Promise<User>;
+  register: (data: RegisterPayload) => Promise<User>;
+  logout: (shouldRedirect?: boolean) => Promise<void>;
   navigateToLogin: () => void;
   checkAppState: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -26,116 +26,110 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
-  const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(false);
   const [authError, setAuthError] = useState<AuthError | null>(null);
 
-  useEffect(() => {
-    checkAppState();
-  }, []);
-
-  const checkAppState = async () => {
-    try {
-      setAuthError(null);
-      const token = typeof window !== "undefined" ? localStorage.getItem("fast_token") : null;
-      if (!token) {
-        setIsAuthenticated(false);
-        setIsLoadingAuth(false);
-        return;
-      }
-      await checkUserAuth();
-    } catch (error: any) {
-      console.error("Unexpected error:", error);
-      setAuthError({
-        type: "unknown",
-        message: error.message || "An unexpected error occurred",
-      });
-      setIsLoadingAuth(false);
-    }
-  };
-
-  const checkUserAuth = async () => {
+  const checkUserAuth = useCallback(async () => {
     try {
       setIsLoadingAuth(true);
       const currentUser = await authApi.me();
       setUser(currentUser);
       setIsAuthenticated(true);
-      setIsLoadingAuth(false);
-    } catch (error: any) {
-      console.error("User auth check failed:", error);
-      setIsLoadingAuth(false);
+    } catch (error) {
+      const status = (error as ApiError)?.status;
       setIsAuthenticated(false);
-      if (error?.status === 401 || error?.status === 403) {
-        setAuthError({
-          type: "auth_required",
-          message: "Authentication required",
-        });
+      setUser(null);
+      if (status === 401 || status === 403) {
+        setToken(null);
+        setAuthError({ type: "auth_required", message: "Authentication required" });
       }
+    } finally {
+      setIsLoadingAuth(false);
     }
-  };
+  }, []);
 
-  const login = async (email: string, password: string) => {
+  const checkAppState = useCallback(async () => {
+    setAuthError(null);
+    if (!getToken()) {
+      setIsAuthenticated(false);
+      setUser(null);
+      setIsLoadingAuth(false);
+      return;
+    }
+    await checkUserAuth();
+  }, [checkUserAuth]);
+
+  useEffect(() => {
+    void checkAppState();
+  }, [checkAppState]);
+
+  // Any 401 from the API client invalidates the session app-wide.
+  useEffect(() => {
+    const onUnauthorized = () => {
+      setUser(null);
+      setIsAuthenticated(false);
+      setAuthError({ type: "auth_required", message: "Session expirée" });
+    };
+    window.addEventListener(UNAUTHORIZED_EVENT, onUnauthorized);
+    return () => window.removeEventListener(UNAUTHORIZED_EVENT, onUnauthorized);
+  }, []);
+
+  const login = useCallback(async (email: string, password: string) => {
     setAuthError(null);
     setIsLoadingAuth(true);
     try {
-      const res = await authApi.login({ email, password });
-      if (res.token && typeof window !== "undefined") {
-        localStorage.setItem("fast_token", res.token);
-      }
+      await authApi.login({ email, password });
       const currentUser = await authApi.me();
       setUser(currentUser);
       setIsAuthenticated(true);
-      setIsLoadingAuth(false);
       return currentUser;
-    } catch (error: any) {
+    } finally {
       setIsLoadingAuth(false);
-      throw error;
     }
-  };
+  }, []);
 
-  const register = async (data: { email: string; password: string; name: string; phone?: string; role?: string }) => {
+  const register = useCallback(async (data: RegisterPayload) => {
     setAuthError(null);
     setIsLoadingAuth(true);
     try {
-      const res = await authApi.register(data);
-      if (res.token && typeof window !== "undefined") {
-        localStorage.setItem("fast_token", res.token);
-      }
+      await authApi.register(data);
       const currentUser = await authApi.me();
       setUser(currentUser);
       setIsAuthenticated(true);
-      setIsLoadingAuth(false);
       return currentUser;
-    } catch (error: any) {
+    } finally {
       setIsLoadingAuth(false);
-      throw error;
     }
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(async (shouldRedirect = false) => {
+    // Revoke the session server-side, then wipe every trace of it locally.
+    await authApi.logout().catch(() => setToken(null));
+    clearCart();
     setUser(null);
     setIsAuthenticated(false);
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("fast_token");
+    setAuthError(null);
+    if (shouldRedirect && typeof window !== "undefined") {
+      window.location.href = "/";
     }
-  };
+  }, []);
 
-  const navigateToLogin = () => {
+  const navigateToLogin = useCallback(() => {
     if (typeof window !== "undefined") {
       window.location.href = "/login";
     }
-  };
+  }, []);
 
-  const refreshUser = async () => {
+  const refreshUser = useCallback(async () => {
     try {
       const currentUser = await authApi.me();
       setUser(currentUser);
-    } catch (error: any) {
-      console.error("refreshUser failed:", error);
+    } catch {
+      // Keep the previous user; a 401 is already handled by the global listener.
     }
-  };
+  }, []);
 
   return (
     <AuthContext.Provider
@@ -143,9 +137,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         user,
         isAuthenticated,
         isLoadingAuth,
-        isLoadingPublicSettings,
         authError,
-        appPublicSettings: null,
         login,
         register,
         logout,

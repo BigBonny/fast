@@ -35,20 +35,55 @@ export function saveCart(cart: CartItem[]) {
   storage.setItem(CART_KEY, JSON.stringify(cart));
 }
 
+/**
+ * Two lines are only mergeable when they are the same dish *and* carry the same
+ * options and notes — otherwise a "no onions" line would silently absorb a
+ * regular one.
+ */
+function lineSignature(item: Pick<CartItem, "menuItemId" | "restaurantId" | "options" | "notes">) {
+  const options = [...(item.options || [])].sort().join("|");
+  return `${item.restaurantId}::${item.menuItemId}::${options}::${item.notes || ""}`;
+}
+
 export function addToCart(item: Omit<CartItem, "id" | "quantity"> & { quantity?: number }) {
   const cart = getCart();
-  const existing = cart.find(
-    (c) => c.menuItemId === item.menuItemId && c.restaurantId === item.restaurantId
-  );
+  const signature = lineSignature(item);
+  const existing = cart.find((c) => lineSignature(c) === signature);
   if (existing) {
     existing.quantity += item.quantity || 1;
   } else {
     cart.push({
       ...item,
-      id: `${item.menuItemId}-${Date.now()}`,
+      options: item.options || [],
+      notes: item.notes || "",
+      id: `${item.menuItemId}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       quantity: item.quantity || 1,
-    } as CartItem);
+    });
   }
+  saveCart(cart);
+  return cart;
+}
+
+export function updateCartItemNotes(id: string, notes: string) {
+  const cart = getCart();
+  const item = cart.find((c) => c.id === id);
+  if (item) item.notes = notes;
+  saveCart(cart);
+  return cart;
+}
+
+/** Distinct restaurants currently represented in the cart. */
+export function getCartRestaurants(cart: CartItem[]): { id: string; name: string }[] {
+  const seen = new Map<string, string>();
+  for (const item of cart) {
+    if (!seen.has(item.restaurantId)) seen.set(item.restaurantId, item.restaurantName);
+  }
+  return Array.from(seen, ([id, name]) => ({ id, name }));
+}
+
+/** Drops every line that does not belong to `restaurantId`. */
+export function keepOnlyRestaurant(restaurantId: string) {
+  const cart = getCart().filter((c) => c.restaurantId === restaurantId);
   saveCart(cart);
   return cart;
 }

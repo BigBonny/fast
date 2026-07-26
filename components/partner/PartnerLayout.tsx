@@ -8,6 +8,7 @@ import { Zap, ShoppingBag, UtensilsCrossed, Settings, CircleUser, BarChart3, Men
 import { orderApi, restaurantApi } from "@/api/fastBackend";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/AuthContext";
+import type { Order } from "@/lib/types";
 import Toast, { showToast } from "./Toast";
 import KitchenScreen from "./KitchenScreen";
 import SideMenu from "./SideMenu";
@@ -29,13 +30,8 @@ function currentTabId(pathname: string) {
 export default function PartnerLayout({ children }: { children: React.ReactNode }) {
   const [kitchenOpen, setKitchenOpen] = useState(false);
   const [sideOpen, setSideOpen] = useState(false);
-  const [rushActive, setRushActive] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("fast_rush") || "false");
-    } catch {
-      return false;
-    }
-  });
+  // Server-authoritative; the local value below is only an optimistic first paint.
+  const [rushActive, setRushActive] = useState(false);
   const queryClient = useQueryClient();
   const router = useRouter();
   const pathname = usePathname();
@@ -71,8 +67,11 @@ export default function PartnerLayout({ children }: { children: React.ReactNode 
   }, [settingsError, isOnboarding, router]);
 
   useEffect(() => {
-    const theme = localStorage.getItem("fast_r_theme") || "dark";
-    document.documentElement.setAttribute("data-theme", theme);
+    try {
+      setRushActive(JSON.parse(localStorage.getItem("fast_rush") || "false"));
+    } catch {
+      setRushActive(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -82,7 +81,7 @@ export default function PartnerLayout({ children }: { children: React.ReactNode 
     }
   }, [settings]);
 
-  const pendingCount = orders.filter((o: any) => o.status === "PLACED").length;
+  const pendingCount = orders.filter((o: Order) => o.status === "PLACED").length;
   const s = settings || {};
 
   const toggleRush = async () => {

@@ -42,7 +42,7 @@ export default function AIPage() {
       let reply = "Je n'ai pas compris. Essayez une suggestion ci-dessus.";
       const lower = text.toLowerCase();
       if (lower.includes("vente") || lower.includes("chiffre") || lower.includes("commande")) {
-        reply = `Vous avez ${stats?.totalOrders ?? 0} commandes au total, ${stats?.monthOrders ?? 0} ce mois-ci, et un chiffre d'affaires de ${(stats?.revenue ?? 0).toFixed(2)} . Taux d'annulation : ${stats?.cancellationRate ?? 0}%.`;
+        reply = `Vous avez ${stats?.totalOrders ?? 0} commandes au total, ${stats?.monthOrders ?? 0} ce mois-ci, et un chiffre d'affaires de ${(stats?.totalRevenue ?? 0).toFixed(2)} . Taux d'annulation : ${stats?.cancellationRate ?? 0}%.`;
       } else if (lower.includes("populaire") || lower.includes("plat")) {
         const top = stats?.popularItems?.slice(0, 3)?.map((i: any) => i.name).join(", ") || "pas assez de données";
         reply = `Vos plats les plus populaires : ${top}. Vous proposez ${items.length} articles au total.`;

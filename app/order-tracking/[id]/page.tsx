@@ -67,7 +67,7 @@ function OrderTrackingContent({ orderId }: { orderId: string }) {
           </button>
         </Link>
         <div className="text-center">
-          <p className="text-white font-black text-base">{order.restaurant?.name || order.restaurantName || "Restaurant"}</p>
+          <p className="text-white font-black text-base">{order.restaurant?.name || "Restaurant"}</p>
           <p className="text-gray-400 text-xs">#{order.id?.slice(-6).toUpperCase()}</p>
         </div>
         <div className="flex items-center gap-1.5 bg-emerald-500/20 rounded-full px-3 py-1">
@@ -146,10 +146,10 @@ function OrderTrackingContent({ orderId }: { orderId: string }) {
       <div className="mx-5 md:mx-auto md:max-w-2xl rounded-2xl p-5 mb-6" style={{ background: "#1a1f2e" }}>
         <p className="text-white font-black text-sm mb-3">Récapitulatif</p>
         <div className="space-y-2">
-          {(order.cartItems || order.items || []).map((item: any, i: number) => {
-            const qty = item.quantity || item.qty || 1;
-            const name = item.menuItem?.name || item.name || "Article";
-            const price = item.menuItem?.price || item.price || 0;
+          {(order.items || []).map((item, i) => {
+            const qty = item.quantity || 1;
+            const name = item.menuItem?.name || "Article";
+            const price = item.menuItem?.price ?? item.price ?? 0;
             return (
               <div key={i} className="flex items-center justify-between">
                 <span className="text-gray-300 text-sm">

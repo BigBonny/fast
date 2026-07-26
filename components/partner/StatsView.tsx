@@ -14,7 +14,7 @@ export default function StatsView() {
     { label: "Commandes totales", value: stats?.totalOrders ?? 0, icon: ShoppingBag, color: "bg-blue-500" },
     { label: "Ce mois", value: stats?.monthOrders ?? 0, icon: TrendingUp, color: "bg-[#00c8b3]" },
     { label: "Terminées", value: stats?.completedOrders ?? 0, icon: Activity, color: "bg-green-500" },
-    { label: "Chiffre d'affaires", value: `${(stats?.revenue ?? 0).toFixed(2)} `, icon: DollarSign, color: "bg-violet-500" },
+    { label: "Chiffre d'affaires", value: `${(stats?.totalRevenue ?? 0).toFixed(2)} `, icon: DollarSign, color: "bg-violet-500" },
     { label: "Note moyenne", value: stats?.averageRating ?? 0, icon: Star, color: "bg-yellow-500" },
     { label: "Taux d'annulation", value: `${stats?.cancellationRate ?? 0}%`, icon: AlertCircle, color: "bg-red-500" },
   ];

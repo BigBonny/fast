@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useMemo, Suspense, useCallback } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect, useMemo, Suspense, useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { restaurantApi, menuApi } from "@/api/fastBackend";
-import { addToCart, getCart, getCartCount, getCartTotal } from "@/lib/localCart";
-import { ArrowLeft, Star, Clock, Zap, ShoppingBag, MapPin, Phone, Flame, Store, ClipboardList } from "lucide-react";
+import { addToCart, getCart, getCartCount, getCartTotal, keepOnlyRestaurant, CartItem } from "@/lib/localCart";
+import type { MenuItem } from "@/lib/types";
+import { ArrowLeft, Star, Clock, Zap, ShoppingBag, MapPin, Phone, Flame, Store, ClipboardList, AlertTriangle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { m, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { useParams } from "next/navigation";
 
 import MenuItemCard from "@/components/fast/MenuItemCard";
 import SafeImage from "@/components/SafeImage";
@@ -26,7 +26,6 @@ const categoryLabels: Record<string, string> = {
 
 function RestaurantContent({ restaurantId }: { restaurantId: string }) {
   const [activeCategory, setActiveCategory] = useState("all");
-  const queryClient = useQueryClient();
 
   const { data: restaurant, isLoading: loadingRestaurant } = useQuery({
     queryKey: ["restaurant", restaurantId],
@@ -44,38 +43,65 @@ function RestaurantContent({ restaurantId }: { restaurantId: string }) {
     gcTime: 10 * 60 * 1000,
   });
 
-  const restaurantMenuItems = restaurant?.menuItems || menuItems;
+  const restaurantMenuItems: MenuItem[] = restaurant?.menuItems?.length ? restaurant.menuItems : menuItems;
 
-  const [cartItems, setCartItems] = useState(getCart());
+  // Read localStorage after mount so server and client render the same markup.
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [pendingItem, setPendingItem] = useState<MenuItem | null>(null);
+
+  useEffect(() => {
+    setCartItems(getCart());
+  }, []);
+
   const cartCount = getCartCount(cartItems);
   const cartTotal = getCartTotal(cartItems);
 
-  const addToCartMutation = useMutation({
-    mutationFn: useCallback(async (item: any) => {
-      const next = addToCart({
-        menuItemId: item.id,
-        restaurantId,
-        restaurantName: restaurant?.name || "",
-        name: item.name,
-        price: item.price,
-        imageUrl: item.imageUrl || item.image_url || "",
-      });
-      setCartItems(next);
-      return next;
-    }, [restaurantId, restaurant?.name]),
-  });
+  const otherRestaurantInCart = cartItems.find((c) => c.restaurantId !== restaurantId);
+
+  const commitAdd = useCallback(
+    (item: MenuItem) => {
+      setCartItems(
+        addToCart({
+          menuItemId: item.id,
+          restaurantId,
+          restaurantName: restaurant?.name || "",
+          name: item.name,
+          price: item.price,
+          imageUrl: item.image || "",
+        })
+      );
+    },
+    [restaurantId, restaurant?.name]
+  );
+
+  // A cart can only ever target one restaurant, so ask before discarding the other one.
+  const handleAdd = useCallback(
+    (item: MenuItem) => {
+      if (otherRestaurantInCart) {
+        setPendingItem(item);
+        return;
+      }
+      commitAdd(item);
+    },
+    [otherRestaurantInCart, commitAdd]
+  );
+
+  const confirmReplaceCart = useCallback(() => {
+    if (!pendingItem) return;
+    keepOnlyRestaurant(restaurantId);
+    commitAdd(pendingItem);
+    setPendingItem(null);
+  }, [pendingItem, restaurantId, commitAdd]);
 
   const categories = useMemo(() => {
-    const cats = new Set(restaurantMenuItems.map((item: any) => item.category).filter(Boolean));
+    const cats = new Set(restaurantMenuItems.map((item) => item.category).filter(Boolean));
     return Array.from(cats) as string[];
   }, [restaurantMenuItems]);
 
   const filteredItems =
     activeCategory === "all"
       ? restaurantMenuItems
-      : restaurantMenuItems.filter((item: any) => item.category === activeCategory);
-
-  // cartTotal and cartCount already computed above
+      : restaurantMenuItems.filter((item) => item.category === activeCategory);
 
   if (loadingRestaurant) {
     return (
@@ -207,14 +233,14 @@ function RestaurantContent({ restaurantId }: { restaurantId: string }) {
         ) : (
           <div className="space-y-2.5 md:grid md:grid-cols-2 md:gap-3 md:space-y-0">
             <AnimatePresence>
-              {filteredItems.map((item: any) => (
+              {filteredItems.map((item) => (
                 <m.div
                   key={item.id}
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
                 >
-                  <MenuItemCard item={item} onAdd={() => addToCartMutation.mutate(item)} />
+                  <MenuItemCard item={item} onAdd={() => handleAdd(item)} />
                 </m.div>
               ))}
             </AnimatePresence>
@@ -246,6 +272,51 @@ function RestaurantContent({ restaurantId }: { restaurantId: string }) {
           </Link>
         </m.div>
       )}
+
+      {/* Switch-restaurant confirmation */}
+      <AnimatePresence>
+        {pendingItem && (
+          <m.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Changer de restaurant"
+            className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center"
+            onClick={() => setPendingItem(null)}
+          >
+            <m.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white dark:bg-gray-900 w-full sm:w-[400px] sm:rounded-2xl rounded-t-2xl p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:pb-6"
+            >
+              <div className="flex items-center gap-2.5 mb-3">
+                <AlertTriangle className="w-5 h-5 text-amber-500" />
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white">Vider votre panier ?</h2>
+              </div>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                Votre panier contient déjà des plats de {otherRestaurantInCart?.restaurantName}. Une
+                commande ne peut concerner qu&apos;un seul restaurant.
+              </p>
+              <div className="flex gap-3">
+                <Button variant="outline" className="flex-1" onClick={() => setPendingItem(null)}>
+                  Annuler
+                </Button>
+                <Button
+                  className="flex-1 text-white"
+                  style={{ background: "linear-gradient(135deg, #14b8a6, #06b6d4)" }}
+                  onClick={confirmReplaceCart}
+                >
+                  Vider et ajouter
+                </Button>
+              </div>
+            </m.div>
+          </m.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

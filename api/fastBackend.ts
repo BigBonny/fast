@@ -1,9 +1,28 @@
 // ─── REAL BACKEND API CLIENT ───────────────────────────────────────────────────
+import type {
+  ApiError,
+  AppNotification,
+  Delivery,
+  DietaryOption,
+  GroupOrder,
+  MenuItem,
+  Order,
+  OrderStatus,
+  Restaurant,
+  RestaurantStats,
+  Review,
+  User,
+} from "@/lib/types";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://backend-lovat-xi-0axv990rct.vercel.app/api";
 
-const TOKEN_KEY = "fast_token";
+export const TOKEN_KEY = "fast_token";
 
-function getToken(): string | null {
+const DEFAULT_TIMEOUT_MS = 20000;
+
+export const UNAUTHORIZED_EVENT = "fast:unauthorized";
+
+export function getToken(): string | null {
   if (typeof window === "undefined") return null;
   return localStorage.getItem(TOKEN_KEY);
 }
@@ -24,83 +43,133 @@ function buildHeaders(extra: Record<string, string> = {}): Record<string, string
   return headers;
 }
 
-async function apiFetch(path: string, options: RequestInit = {}): Promise<any> {
+function isApiError(value: unknown): value is ApiError {
+  return typeof value === "object" && value !== null && "status" in value && "message" in value;
+}
+
+export function getErrorMessage(error: unknown, fallback = "Une erreur est survenue"): string {
+  if (isApiError(error)) return error.message;
+  if (error instanceof Error) return error.message;
+  return fallback;
+}
+
+async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_URL}${path}`;
   const headers = buildHeaders(options.body ? { "Content-Type": "application/json" } : {});
 
-  const res = await fetch(url, {
-    ...options,
-    headers,
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
+
+  let res: Response;
+  try {
+    res = await fetch(url, { ...options, headers, signal: options.signal ?? controller.signal });
+  } catch (err) {
+    clearTimeout(timeout);
+    const aborted = err instanceof DOMException && err.name === "AbortError";
+    const apiError: ApiError = {
+      status: 0,
+      message: aborted ? "La requête a expiré. Réessayez." : "Impossible de joindre le serveur.",
+    };
+    throw apiError;
+  }
+  clearTimeout(timeout);
 
   const data = await res.json().catch(() => null);
 
   if (!res.ok) {
     const message = data?.error || data?.message || `Erreur ${res.status}`;
-    throw { status: res.status, message };
+    if (res.status === 401 && typeof window !== "undefined") {
+      setToken(null);
+      window.dispatchEvent(new CustomEvent(UNAUTHORIZED_EVENT));
+    }
+    const apiError: ApiError = { status: res.status, message };
+    throw apiError;
   }
 
-  return data;
+  return data as T;
 }
 
-function normalizeRestaurant(r: any): any {
+function toDietaryOptions(values: unknown): DietaryOption[] {
+  if (!Array.isArray(values)) return [];
+  return values.map((o) => (typeof o === "string" ? { option: o } : (o as DietaryOption)));
+}
+
+function fromDietaryOptions(values: unknown): string[] | undefined {
+  if (!Array.isArray(values)) return undefined;
+  return values.map((o) => (typeof o === "object" && o !== null ? (o as DietaryOption).option : String(o)));
+}
+
+function normalizeRestaurant(r: Restaurant): Restaurant {
   if (!r) return r;
   return {
     ...r,
-    dietaryOptions: (r.dietaryOptions || []).map((o: any) => (typeof o === "string" ? { option: o } : o)),
+    dietaryOptions: toDietaryOptions(r.dietaryOptions),
     menuItems: r.menuItems || [],
   };
 }
 
-function normalizeMenuItem(m: any): any {
+function normalizeMenuItem(m: MenuItem): MenuItem {
   if (!m) return m;
   return {
     ...m,
-    dietaryTags: (m.dietaryTags || []).map((t: any) => (typeof t === "string" ? { option: t } : t)),
+    dietaryTags: toDietaryOptions(m.dietaryTags),
   };
 }
 
-function normalizeOrder(o: any): any {
+function normalizeOrder(o: Order): Order {
   if (!o) return o;
   return {
     ...o,
-    items: (o.items || []).map((item: any) => ({
+    items: (o.items || []).map((item) => ({
       ...item,
-      menuItem: item.menuItem || { name: item.name || "Article", price: item.price || 0 },
+      menuItem: item.menuItem || { name: "Article", price: item.price || 0 },
     })),
   };
 }
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
+export interface AuthResponse {
+  token: string;
+  user?: User;
+}
+
+export interface RegisterPayload {
+  email: string;
+  password: string;
+  name: string;
+  phone?: string;
+  role?: string;
+}
+
 export const authApi = {
-  register: async (data: { email: string; password: string; name: string; phone?: string; role?: string }) => {
-    const res = await apiFetch("/auth/register", {
+  register: async (data: RegisterPayload): Promise<AuthResponse> => {
+    const res = await apiFetch<AuthResponse>("/auth/register", {
       method: "POST",
       body: JSON.stringify(data),
     });
-    if (res.token) setToken(res.token);
+    if (res?.token) setToken(res.token);
     return res;
   },
-  login: async (data: { email: string; password: string }) => {
-    const res = await apiFetch("/auth/login", {
+  login: async (data: { email: string; password: string }): Promise<AuthResponse> => {
+    const res = await apiFetch<AuthResponse>("/auth/login", {
       method: "POST",
       body: JSON.stringify(data),
     });
-    if (res.token) setToken(res.token);
+    if (res?.token) setToken(res.token);
     return res;
   },
-  me: async () => {
-    return apiFetch("/auth/me");
+  me: async (): Promise<User> => {
+    return apiFetch<User>("/auth/me");
   },
-  updateProfile: async (data: { name?: string; phone?: string }) => {
-    return apiFetch("/auth/profile", {
+  updateProfile: async (data: { name?: string; phone?: string }): Promise<User> => {
+    return apiFetch<User>("/auth/profile", {
       method: "PATCH",
       body: JSON.stringify(data),
     });
   },
-  logout: async () => {
-    await apiFetch("/auth/logout", { method: "POST" }).catch(() => {});
+  logout: async (): Promise<null> => {
+    await apiFetch<unknown>("/auth/logout", { method: "POST" }).catch(() => {});
     setToken(null);
     return null;
   },
@@ -108,108 +177,108 @@ export const authApi = {
 
 // ─── Restaurants ──────────────────────────────────────────────────────────────
 
+export type RestaurantPayload = Partial<Omit<Restaurant, "dietaryOptions">> & {
+  dietaryOptions?: (DietaryOption | string)[];
+};
+
 export const restaurantApi = {
-  list: async (params?: { category?: string; search?: string; dietary?: string }) => {
+  list: async (params?: { category?: string; search?: string; dietary?: string }): Promise<Restaurant[]> => {
     const qs = new URLSearchParams();
     if (params?.category && params.category !== "all") qs.set("category", params.category);
     if (params?.search) qs.set("search", params.search);
     if (params?.dietary) qs.set("dietary", params.dietary);
-    const list = await apiFetch(`/restaurants?${qs.toString()}`);
+    const list = await apiFetch<Restaurant[]>(`/restaurants?${qs.toString()}`);
     return (list || []).map(normalizeRestaurant);
   },
-  get: async (id: string) => {
-    const r = await apiFetch(`/restaurants/${id}`);
+  get: async (id: string): Promise<Restaurant> => {
+    const r = await apiFetch<Restaurant>(`/restaurants/${id}`);
     return normalizeRestaurant(r);
   },
-  create: async (data: any) => {
-    const payload = {
-      ...data,
-      dietaryOptions: (data.dietaryOptions || []).map((o: any) => (typeof o === "object" ? o.option : o)),
-    };
-    return apiFetch("/restaurants", {
+  create: async (data: RestaurantPayload): Promise<Restaurant> => {
+    return apiFetch<Restaurant>("/restaurants", {
       method: "POST",
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ ...data, dietaryOptions: fromDietaryOptions(data.dietaryOptions) ?? [] }),
     });
   },
-  update: async (id: string, data: any) => {
-    const payload = {
-      ...data,
-      dietaryOptions: data.dietaryOptions
-        ? data.dietaryOptions.map((o: any) => (typeof o === "object" ? o.option : o))
-        : undefined,
-    };
-    return apiFetch(`/restaurants/${id}`, {
+  update: async (id: string, data: RestaurantPayload): Promise<Restaurant> => {
+    return apiFetch<Restaurant>(`/restaurants/${id}`, {
       method: "PATCH",
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ ...data, dietaryOptions: fromDietaryOptions(data.dietaryOptions) }),
     });
   },
-  mine: async () => {
-    return apiFetch("/restaurants/account/mine");
+  mine: async (): Promise<Restaurant | null> => {
+    return apiFetch<Restaurant | null>("/restaurants/account/mine");
   },
-  toggleRush: async () => {
-    return apiFetch("/restaurants/toggle-rush", { method: "POST" });
+  toggleRush: async (): Promise<Restaurant> => {
+    return apiFetch<Restaurant>("/restaurants/toggle-rush", { method: "POST" });
   },
 };
 
 // ─── Menu ─────────────────────────────────────────────────────────────────────
 
+export type MenuItemPayload = Partial<Omit<MenuItem, "dietaryTags">> & {
+  dietaryTags?: (DietaryOption | string)[];
+};
+
 export const menuApi = {
-  byRestaurant: async (restaurantId: string) => {
-    const items = await apiFetch(`/menu/restaurant/${restaurantId}`);
+  byRestaurant: async (restaurantId: string): Promise<MenuItem[]> => {
+    const items = await apiFetch<MenuItem[]>(`/menu/restaurant/${restaurantId}`);
     return (items || []).map(normalizeMenuItem);
   },
-  create: async (restaurantId: string, data: any) => {
-    const payload = {
-      ...data,
-      dietaryTags: (data.dietaryTags || []).map((t: any) => (typeof t === "object" ? t.option : t)),
-    };
-    return apiFetch(`/menu/restaurant/${restaurantId}`, {
+  create: async (restaurantId: string, data: MenuItemPayload): Promise<MenuItem> => {
+    return apiFetch<MenuItem>(`/menu/restaurant/${restaurantId}`, {
       method: "POST",
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ ...data, dietaryTags: fromDietaryOptions(data.dietaryTags) ?? [] }),
     });
   },
-  update: async (id: string, data: any) => {
-    const payload = {
-      ...data,
-      dietaryTags: data.dietaryTags
-        ? data.dietaryTags.map((t: any) => (typeof t === "object" ? t.option : t))
-        : undefined,
-    };
-    return apiFetch(`/menu/${id}`, {
+  update: async (id: string, data: MenuItemPayload): Promise<MenuItem> => {
+    return apiFetch<MenuItem>(`/menu/${id}`, {
       method: "PATCH",
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ ...data, dietaryTags: fromDietaryOptions(data.dietaryTags) }),
     });
   },
-  delete: async (id: string) => {
-    return apiFetch(`/menu/${id}`, { method: "DELETE" });
+  delete: async (id: string): Promise<void> => {
+    return apiFetch<void>(`/menu/${id}`, { method: "DELETE" });
   },
 };
 
 // ─── Orders ─────────────────────────────────────────────────────────────────────
 
+export interface CreateOrderPayload {
+  restaurantId: string;
+  items: {
+    menuItemId: string;
+    quantity: number;
+    selectedOptions?: string[];
+    allergyNotes?: string;
+  }[];
+  userWalkTimeMin?: number;
+  allergyNotes?: string;
+}
+
 export const orderApi = {
-  create: async (data: any) => {
-    const order = await apiFetch("/orders", {
+  create: async (data: CreateOrderPayload): Promise<Order> => {
+    const order = await apiFetch<Order>("/orders", {
       method: "POST",
       body: JSON.stringify(data),
     });
     return normalizeOrder(order);
   },
-  mine: async (status?: string) => {
+  mine: async (status?: OrderStatus): Promise<Order[]> => {
     const qs = status ? `?status=${status}` : "";
-    const orders = await apiFetch(`/orders/mine${qs}`);
+    const orders = await apiFetch<Order[]>(`/orders/mine${qs}`);
     return (orders || []).map(normalizeOrder);
   },
-  cancel: async (id: string) => {
-    return apiFetch(`/orders/${id}/cancel`, { method: "POST" });
+  cancel: async (id: string): Promise<Order> => {
+    return apiFetch<Order>(`/orders/${id}/cancel`, { method: "POST" });
   },
-  restaurantOrders: async (status?: string) => {
+  restaurantOrders: async (status?: OrderStatus): Promise<Order[]> => {
     const qs = status ? `?status=${status}` : "";
-    const orders = await apiFetch(`/orders/restaurant${qs}`);
+    const orders = await apiFetch<Order[]>(`/orders/restaurant${qs}`);
     return (orders || []).map(normalizeOrder);
   },
-  updateStatus: async (id: string, status: string) => {
-    const order = await apiFetch(`/orders/${id}/status`, {
+  updateStatus: async (id: string, status: OrderStatus): Promise<Order> => {
+    const order = await apiFetch<Order>(`/orders/${id}/status`, {
       method: "PATCH",
       body: JSON.stringify({ status }),
     });
@@ -220,12 +289,15 @@ export const orderApi = {
 // ─── Reviews ────────────────────────────────────────────────────────────────────
 
 export const reviewApi = {
-  byRestaurant: async (restaurantId: string) => {
-    return apiFetch(`/reviews/restaurant/${restaurantId}`);
+  byRestaurant: async (restaurantId: string): Promise<Review[]> => {
+    return apiFetch<Review[]>(`/reviews/restaurant/${restaurantId}`);
   },
-  create: async (restaurantId: string, data: any) => {
+  create: async (
+    restaurantId: string,
+    data: { rating: number; comment?: string; orderId?: string }
+  ): Promise<Review> => {
     const qs = data.orderId ? `?orderId=${data.orderId}` : "";
-    return apiFetch(`/reviews/restaurant/${restaurantId}${qs}`, {
+    return apiFetch<Review>(`/reviews/restaurant/${restaurantId}${qs}`, {
       method: "POST",
       body: JSON.stringify({ rating: data.rating, comment: data.comment }),
     });
@@ -235,83 +307,83 @@ export const reviewApi = {
 // ─── Notifications ──────────────────────────────────────────────────────────────
 
 export const notificationApi = {
-  list: async () => {
-    return apiFetch("/notifications");
+  list: async (): Promise<AppNotification[]> => {
+    return apiFetch<AppNotification[]>("/notifications");
   },
-  create: async (data: any) => {
-    return apiFetch("/notifications", {
+  create: async (data: { title: string; body?: string }): Promise<AppNotification> => {
+    return apiFetch<AppNotification>("/notifications", {
       method: "POST",
       body: JSON.stringify(data),
     });
   },
-  readAll: async () => {
-    return apiFetch("/notifications/read-all", { method: "POST" });
+  readAll: async (): Promise<void> => {
+    return apiFetch<void>("/notifications/read-all", { method: "POST" });
   },
-  read: async (id: string) => {
-    return apiFetch(`/notifications/${id}/read`, { method: "PATCH" });
+  read: async (id: string): Promise<AppNotification> => {
+    return apiFetch<AppNotification>(`/notifications/${id}/read`, { method: "PATCH" });
   },
-  delete: async (id: string) => {
-    return apiFetch(`/notifications/${id}`, { method: "DELETE" });
+  delete: async (id: string): Promise<void> => {
+    return apiFetch<void>(`/notifications/${id}`, { method: "DELETE" });
   },
-  deleteAll: async () => {
-    return apiFetch("/notifications", { method: "DELETE" });
+  deleteAll: async (): Promise<void> => {
+    return apiFetch<void>("/notifications", { method: "DELETE" });
   },
 };
 
 // ─── Stats ─────────────────────────────────────────────────────────────────────
 
 export const statsApi = {
-  get: async () => {
-    return apiFetch("/stats");
+  get: async (): Promise<RestaurantStats> => {
+    return apiFetch<RestaurantStats>("/stats");
   },
 };
 
 // ─── Groups ─────────────────────────────────────────────────────────────────────
 
 export const groupApi = {
-  create: async (data: any) => {
-    return apiFetch("/groups", {
+  create: async (data: { restaurantId?: string; name?: string } = {}): Promise<GroupOrder> => {
+    return apiFetch<GroupOrder>("/groups", {
       method: "POST",
       body: JSON.stringify(data),
     });
   },
-  join: async (code: string) => {
-    return apiFetch("/groups/join", {
+  join: async (code: string): Promise<GroupOrder> => {
+    return apiFetch<GroupOrder>("/groups/join", {
       method: "POST",
       body: JSON.stringify({ code }),
     });
   },
-  mine: async () => {
-    return apiFetch("/groups/mine");
+  mine: async (): Promise<GroupOrder | null> => {
+    return apiFetch<GroupOrder | null>("/groups/mine");
   },
-  get: async (id: string) => {
-    return apiFetch(`/groups/${id}`);
+  get: async (id: string): Promise<GroupOrder> => {
+    return apiFetch<GroupOrder>(`/groups/${id}`);
   },
-  leave: async (id: string) => {
-    return apiFetch(`/groups/${id}/leave`, { method: "POST" });
+  leave: async (id: string): Promise<void> => {
+    return apiFetch<void>(`/groups/${id}/leave`, { method: "POST" });
   },
 };
 
 // ─── Deliveries ─────────────────────────────────────────────────────────────────
 
 export const deliveryApi = {
-  available: async () => {
-    return apiFetch("/deliveries/available");
+  available: async (): Promise<Delivery[]> => {
+    return apiFetch<Delivery[]>("/deliveries/available");
   },
-  active: async () => {
-    return apiFetch("/deliveries/active");
+  active: async (): Promise<Delivery[]> => {
+    return apiFetch<Delivery[]>("/deliveries/active");
   },
-  accept: async (id: string) => {
-    return apiFetch(`/deliveries/${id}/accept`, { method: "POST" });
+  accept: async (id: string): Promise<Delivery> => {
+    return apiFetch<Delivery>(`/deliveries/${id}/accept`, { method: "POST" });
   },
-  updateStatus: async (id: string, status: string) => {
-    return apiFetch(`/deliveries/${id}/status`, {
+  updateStatus: async (id: string, status: string): Promise<Delivery> => {
+    return apiFetch<Delivery>(`/deliveries/${id}/status`, {
       method: "PATCH",
       body: JSON.stringify({ status }),
     });
   },
-  generate: async (data: any) => {
-    return apiFetch("/deliveries/generate", {
+  generate: async (data: { orderId: string }): Promise<Delivery> => {
+    return apiFetch<Delivery>("/deliveries/generate", {
       method: "POST",
       body: JSON.stringify(data),
     });
@@ -321,8 +393,8 @@ export const deliveryApi = {
 // ─── Health ─────────────────────────────────────────────────────────────────────
 
 export const healthApi = {
-  check: async () => {
-    return apiFetch("/health");
+  check: async (): Promise<{ status: string }> => {
+    return apiFetch<{ status: string }>("/health");
   },
 };
 

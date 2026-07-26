@@ -1,26 +1,46 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/AuthContext";
+import {
+  NotificationPreferences,
+  defaultNotificationPreferences,
+  getNotificationPreferences,
+  setNotificationPreference,
+} from "@/lib/localPreferences";
 import { ArrowLeft, Bell, Package, Tag, Info } from "lucide-react";
 import Link from "next/link";
+
+const OPTIONS: {
+  key: keyof NotificationPreferences;
+  icon: typeof Package;
+  label: string;
+  desc: string;
+}[] = [
+  { key: "orderStatus", icon: Package, label: "Statut des commandes", desc: "Recevoir des notifications sur mes commandes" },
+  { key: "promotions", icon: Tag, label: "Promotions", desc: "Offres et réductions personnalisées" },
+  { key: "news", icon: Info, label: "Actualités FAST", desc: "Nouvelles fonctionnalités et mises à jour" },
+];
 
 export default function NotificationsPage() {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
+  const [prefs, setPrefs] = useState<NotificationPreferences>(defaultNotificationPreferences);
 
   useEffect(() => {
     if (!isAuthenticated) router.replace("/login");
   }, [isAuthenticated, router]);
 
+  useEffect(() => {
+    setPrefs(getNotificationPreferences());
+  }, []);
+
   if (!isAuthenticated) return null;
 
-  const options = [
-    { icon: Package, label: "Statut des commandes", desc: "Recevoir des notifications sur mes commandes", value: true },
-    { icon: Tag, label: "Promotions", desc: "Offres et réductions personnalisées", value: false },
-    { icon: Info, label: "Actualités FAST", desc: "Nouvelles fonctionnalités et mises à jour", value: true },
-  ];
+  const toggle = (key: keyof NotificationPreferences) => {
+    setPrefs(setNotificationPreference(key, !prefs[key]));
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-20">
@@ -43,20 +63,30 @@ export default function NotificationsPage() {
         </div>
 
         <div className="space-y-2">
-          {options.map((opt) => (
-            <div key={opt.label} className="bg-white dark:bg-gray-900 rounded-2xl p-4 flex items-center gap-3 shadow-sm border border-gray-100 dark:border-gray-800">
-              <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center">
-                <opt.icon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-gray-900 dark:text-white">{opt.label}</p>
-                <p className="text-xs text-gray-400">{opt.desc}</p>
-              </div>
-              <div className={`w-10 h-6 rounded-full p-1 transition-colors ${opt.value ? "bg-emerald-500" : "bg-gray-300 dark:bg-gray-600"}`}>
-                <div className={`w-4 h-4 rounded-full bg-white transition-transform ${opt.value ? "translate-x-4" : "translate-x-0"}`} />
-              </div>
-            </div>
-          ))}
+          {OPTIONS.map((opt) => {
+            const value = prefs[opt.key];
+            return (
+              <button
+                key={opt.key}
+                type="button"
+                role="switch"
+                aria-checked={value}
+                onClick={() => toggle(opt.key)}
+                className="w-full text-left bg-white dark:bg-gray-900 rounded-2xl p-4 flex items-center gap-3 shadow-sm border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+              >
+                <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center shrink-0">
+                  <opt.icon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-gray-900 dark:text-white">{opt.label}</p>
+                  <p className="text-xs text-gray-400">{opt.desc}</p>
+                </div>
+                <div className={`w-10 h-6 rounded-full p-1 transition-colors shrink-0 ${value ? "bg-emerald-500" : "bg-gray-300 dark:bg-gray-600"}`}>
+                  <div className={`w-4 h-4 rounded-full bg-white transition-transform ${value ? "translate-x-4" : "translate-x-0"}`} />
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>

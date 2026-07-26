@@ -5,20 +5,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { m } from "framer-motion";
 import { getCart, getCartCount } from "@/lib/localCart";
+import { useTheme } from "@/lib/useTheme";
 import { Home, ClipboardList, ShoppingCart, Bike, Users } from "lucide-react";
 import Navbar from "@/components/Navbar";
-
-const applyTheme = (mode: string) => {
-  const root = document.documentElement;
-  if (mode === "dark") {
-    root.classList.add("dark");
-  } else if (mode === "light") {
-    root.classList.remove("dark");
-  } else {
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    prefersDark ? root.classList.add("dark") : root.classList.remove("dark");
-  }
-};
 
 const navItems = [
   { name: "Accueil", path: "/", icon: Home, color: "#06b6d4" },
@@ -35,27 +24,23 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
   const [cartCount, setCartCount] = useState(0);
 
+  // Theme is owned by useTheme so the client and partner shells stay in sync.
+  useTheme();
+
   useEffect(() => {
     setMounted(true);
     setCartCount(getCartCount(getCart()));
-    const savedMode = localStorage.getItem("fast_theme") || "system";
-    applyTheme(savedMode);
-
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = () => {
-      if ((localStorage.getItem("fast_theme") || "system") === "system") {
-        applyTheme("system");
-      }
-    };
-    mq.addEventListener("change", handler);
 
     const onStorage = () => setCartCount(getCartCount(getCart()));
     window.addEventListener("storage", onStorage);
-    return () => {
-      mq.removeEventListener("change", handler);
-      window.removeEventListener("storage", onStorage);
-    };
+    return () => window.removeEventListener("storage", onStorage);
   }, []);
+
+  // localStorage writes in this tab don't fire `storage`, so re-read on navigation.
+  useEffect(() => {
+    setCartCount(getCartCount(getCart()));
+  }, [pathname]);
+
   const showNav = !hideNavPaths.some((path) => pathname?.startsWith(path));
 
   if (!mounted) {

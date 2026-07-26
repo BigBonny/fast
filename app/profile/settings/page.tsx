@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/AuthContext";
-import { ArrowLeft, Settings, Globe, Lock, HelpCircle } from "lucide-react";
+import { ArrowLeft, Settings, Globe, Lock, HelpCircle, Shield, FileText } from "lucide-react";
 import Link from "next/link";
 
 export default function SettingsPage() {
@@ -16,10 +16,14 @@ export default function SettingsPage() {
 
   if (!isAuthenticated) return null;
 
+  // Password reset has no backend endpoint yet, so it routes to support rather
+  // than a dead "#" link.
   const items = [
     { icon: Globe, label: "Langue", value: "Français" },
-    { icon: Lock, label: "Changer le mot de passe", href: "#" },
-    { icon: HelpCircle, label: "Aide & support", href: "#" },
+    { icon: Lock, label: "Changer le mot de passe", href: "mailto:support@fast.app?subject=Changement%20de%20mot%20de%20passe" },
+    { icon: HelpCircle, label: "Aide & support", href: "mailto:support@fast.app?subject=Aide%20FAST" },
+    { icon: Shield, label: "Confidentialité", href: "/privacy-policy" },
+    { icon: FileText, label: "CGU", href: "/terms-of-service" },
   ];
 
   return (
@@ -43,19 +47,33 @@ export default function SettingsPage() {
         </div>
 
         <div className="space-y-2">
-          {items.map((item) => (
-            <div key={item.label} className="bg-white dark:bg-gray-900 rounded-2xl p-4 flex items-center gap-3 shadow-sm border border-gray-100 dark:border-gray-800">
-              <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center">
-                <item.icon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+          {items.map((item) => {
+            const row = (
+              <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 flex items-center gap-3 shadow-sm border border-gray-100 dark:border-gray-800">
+                <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center">
+                  <item.icon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                </div>
+                <span className="font-medium text-gray-900 dark:text-white flex-1">{item.label}</span>
+                {item.value ? (
+                  <span className="text-sm text-gray-500 dark:text-gray-400">{item.value}</span>
+                ) : (
+                  <span className="text-gray-400" aria-hidden="true">›</span>
+                )}
               </div>
-              <span className="font-medium text-gray-900 dark:text-white flex-1">{item.label}</span>
-              {item.value ? (
-                <span className="text-sm text-gray-500 dark:text-gray-400">{item.value}</span>
-              ) : (
-                <span className="text-gray-400">›</span>
-              )}
-            </div>
-          ))}
+            );
+
+            if (!item.href) return <div key={item.label}>{row}</div>;
+
+            return item.href.startsWith("mailto:") ? (
+              <a key={item.label} href={item.href} className="block">
+                {row}
+              </a>
+            ) : (
+              <Link key={item.label} href={item.href} className="block">
+                {row}
+              </Link>
+            );
+          })}
         </div>
       </div>
     </div>

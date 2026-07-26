@@ -2,36 +2,63 @@
 
 import { useState, useEffect } from "react";
 import { m } from "framer-motion";
-import { MapPin, Navigation, Bike, Zap, Wallet, Package, Star, Search, Moon } from "lucide-react";
-import { authApi } from "@/api/fastBackend";
+import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
+import { MapPin, Navigation, Bike, Zap, Wallet, Package, Star, Search, Moon, Mail } from "lucide-react";
+import { deliveryApi } from "@/api/fastBackend";
+import { useAuth } from "@/lib/AuthContext";
 
 export default function DeliverPage() {
+  const { user, isAuthenticated, isLoadingAuth } = useAuth();
   const [isActive, setIsActive] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  const [isDeliverer, setIsDeliverer] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    if (typeof window !== "undefined") {
-      authApi.me().then((u: any) => {
-        setUser(u);
-        setIsDeliverer(u?.role === "ADMIN" || u?.role === "DELIVERER" || false);
-      }).catch(() => {});
-    }
   }, []);
 
-  const handleBecomeDeliverer = async () => {
-    await authApi.updateProfile({ name: user?.name });
-    setIsDeliverer(true);
-  };
+  // The deliverer role is granted server-side only — never inferred client-side.
+  const isDeliverer = user?.role === "DELIVERER" || user?.role === "ADMIN";
+
+  const { data: availableDeliveries = [] } = useQuery({
+    queryKey: ["deliveries", "available"],
+    queryFn: () => deliveryApi.available(),
+    enabled: isDeliverer && isActive,
+    refetchInterval: isActive ? 15000 : false,
+  });
+
+  const { data: activeDeliveries = [] } = useQuery({
+    queryKey: ["deliveries", "active"],
+    queryFn: () => deliveryApi.active(),
+    enabled: isDeliverer,
+  });
 
   const toggleActive = () => {
-    setIsActive(!isActive);
+    setIsActive((prev) => !prev);
   };
 
-  if (!mounted) {
+  if (!mounted || isLoadingAuth) {
     return <div className="min-h-screen bg-white dark:bg-gray-950" />;
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-gray-950 flex flex-col items-center justify-center px-8 text-center">
+        <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-500/15 dark:to-orange-500/15 flex items-center justify-center mb-6">
+          <Bike className="w-12 h-12 text-orange-500" />
+        </div>
+        <h1 className="text-2xl font-black text-gray-900 dark:text-white mb-2">Espace livreur</h1>
+        <p className="text-gray-400 text-sm leading-relaxed mb-8 max-w-xs">
+          Connectez-vous pour accéder à votre espace livreur.
+        </p>
+        <Link
+          href="/login"
+          className="w-full max-w-xs bg-gradient-to-r from-amber-400 to-orange-400 text-white font-black text-lg py-4 rounded-2xl shadow-lg shadow-amber-200 text-center"
+        >
+          Se connecter
+        </Link>
+      </div>
+    );
   }
 
   if (!isDeliverer) {
@@ -61,13 +88,18 @@ export default function DeliverPage() {
           ))}
         </div>
 
-        <m.button
-          whileTap={{ scale: 0.96 }}
-          onClick={handleBecomeDeliverer}
-          className="w-full max-w-xs bg-gradient-to-r from-amber-400 to-orange-400 text-white font-black text-lg py-4 rounded-2xl shadow-lg shadow-amber-200"
+        {/* Becoming a deliverer requires a server-side role change (identity and
+            document checks), so we point the user at the onboarding contact
+            instead of silently flipping a local flag. */}
+        <a
+          href="mailto:livreurs@fast.app?subject=Candidature%20livreur%20FAST"
+          className="w-full max-w-xs bg-gradient-to-r from-amber-400 to-orange-400 text-white font-black text-lg py-4 rounded-2xl shadow-lg shadow-amber-200 inline-flex items-center justify-center gap-2"
         >
-          <span className="inline-flex items-center gap-2">Devenir livreur <Zap className="w-5 h-5 fill-white" /></span>
-        </m.button>
+          Postuler comme livreur <Mail className="w-5 h-5" />
+        </a>
+        <p className="text-xs text-gray-400 mt-4 max-w-xs">
+          Votre compte sera activé par notre équipe après vérification de vos documents.
+        </p>
       </div>
     );
   }
@@ -120,9 +152,14 @@ export default function DeliverPage() {
           {/* Stats */}
           <div className="grid grid-cols-3 gap-3">
             {[
-              { label: "Livraisons", value: "0", Icon: Package, color: "text-violet-500" },
-              { label: "Revenus", value: "0€", Icon: Wallet, color: "text-emerald-500" },
-              { label: "Note", value: "—", Icon: Star, color: "text-amber-500" },
+              { label: "En cours", value: String(activeDeliveries.length), Icon: Package, color: "text-violet-500" },
+              {
+                label: "Revenus",
+                value: `${activeDeliveries.reduce((sum, d) => sum + (d.earnings || 0), 0).toFixed(2)}€`,
+                Icon: Wallet,
+                color: "text-emerald-500",
+              },
+              { label: "Disponibles", value: String(availableDeliveries.length), Icon: Star, color: "text-amber-500" },
             ].map((s) => (
               <div key={s.label} className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-3 text-center">
                 <s.Icon className={`w-5 h-5 mx-auto ${s.color}`} />
@@ -132,12 +169,33 @@ export default function DeliverPage() {
             ))}
           </div>
 
-          {/* En attente */}
-          <div className="bg-gray-50 dark:bg-gray-900 rounded-3xl p-6 text-center mt-2">
-            <Search className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-            <p className="font-bold text-gray-700 dark:text-gray-200">En attente de commandes</p>
-            <p className="text-sm text-gray-400 mt-1">Vous recevrez une notification dès qu'une commande proche est disponible.</p>
-          </div>
+          {/* Available deliveries */}
+          {availableDeliveries.length === 0 ? (
+            <div className="bg-gray-50 dark:bg-gray-900 rounded-3xl p-6 text-center mt-2">
+              <Search className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+              <p className="font-bold text-gray-700 dark:text-gray-200">En attente de commandes</p>
+              <p className="text-sm text-gray-400 mt-1">Vous recevrez une notification dès qu&apos;une commande proche est disponible.</p>
+            </div>
+          ) : (
+            <div className="space-y-2 mt-2">
+              {availableDeliveries.map((delivery) => (
+                <div
+                  key={delivery.id}
+                  className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4 flex items-center justify-between"
+                >
+                  <div className="min-w-0">
+                    <p className="font-bold text-sm text-gray-800 dark:text-gray-100 truncate">
+                      {delivery.order?.restaurant?.name || "Commande"}
+                    </p>
+                    <p className="text-xs text-gray-400 truncate">{delivery.dropoffAddress}</p>
+                  </div>
+                  <span className="text-sm font-black text-emerald-500 shrink-0 ml-3">
+                    {(delivery.earnings || 0).toFixed(2)}€
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       ) : (
         <div className="bg-gray-50 dark:bg-gray-900 rounded-3xl p-6 text-center">
