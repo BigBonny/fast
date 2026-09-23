@@ -34,20 +34,31 @@ workflows:
         script: |
           cd "fastMobileApp/fastRestoBigbonney"
           flutter packages pub get
-      - name: Set up code signing
+      - name: Flutter build (no codesign)
         script: |
-          cd "fastMobileApp/fastRestoBigbonney/ios"
+          cd "fastMobileApp/fastRestoBigbonney"
+          flutter build ios --release --no-codesign
+      - name: Set up keychain
+        script: |
           keychain initialize
+      - name: Fetch signing files
+        script: |
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
             --create
+      - name: Add certificates to keychain
+        script: |
           keychain add-certificates
-      - name: Build IPA
+      - name: Apply fetched profiles to Xcode project
+        script: |
+          cd "fastMobileApp/fastRestoBigbonney/ios"
+          xcode-project use-profiles
+      - name: Build and export IPA
         script: |
           cd "fastMobileApp/fastRestoBigbonney"
-          flutter build ipa \
-            --release \
-            --export-options-plist=ios/ExportOptions.plist
+          xcode-project build-ipa \
+            --workspace "ios/Runner.xcworkspace" \
+            --scheme "Runner"
     artifacts:
       - "fastMobileApp/fastRestoBigbonney/build/ios/ipa/*.ipa"
       - "fastMobileApp/fastRestoBigbonney/build/ios/ipa/*.dSYM.zip"
