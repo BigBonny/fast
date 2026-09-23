@@ -32,11 +32,11 @@ workflows:
     scripts:
       - name: Install dependencies
         script: |
-          cd "fastMobileApp/fast resto bigbonney"
+          cd "fastMobileApp/fastRestoBigbonney"
           flutter packages pub get
       - name: Set up code signing
         script: |
-          cd "fastMobileApp/fast resto bigbonney/ios"
+          cd "fastMobileApp/fastRestoBigbonney/ios"
           keychain initialize
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
@@ -44,13 +44,13 @@ workflows:
           keychain add-certificates
       - name: Build IPA
         script: |
-          cd "fastMobileApp/fast resto bigbonney"
+          cd "fastMobileApp/fastRestoBigbonney"
           flutter build ipa \
             --release \
             --export-options-plist=ios/ExportOptions.plist
     artifacts:
-      - "fastMobileApp/fast resto bigbonney/build/ios/ipa/*.ipa"
-      - "fastMobileApp/fast resto bigbonney/build/ios/ipa/*.dSYM.zip"
+      - "fastMobileApp/fastRestoBigbonney/build/ios/ipa/*.ipa"
+      - "fastMobileApp/fastRestoBigbonney/build/ios/ipa/*.dSYM.zip"
     publishing:
       app_store_connect:
         api_key: $APP_STORE_CONNECT_PRIVATE_KEY
