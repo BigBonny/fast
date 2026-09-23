@@ -55,3 +55,7 @@ backend/uploads/
 .vscode/
 *.keystore
 *.jks
+
+# Apple signing keys — never commit private keys
+*.p8
+AuthKey_*.p8
