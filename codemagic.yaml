@@ -1,0 +1,65 @@
+# codemagic.yaml — FAST iOS App Store deployment
+# Docs: https://docs.codemagic.io/yaml-quick-start/building-a-flutter-app/
+#
+# PREREQUISITES (set these in Codemagic UI → App settings → Environment variables):
+#   APP_STORE_CONNECT_APPLE_ID  — your Apple ID email (dylanfrancillette@gmail.com)
+#   APP_STORE_CONNECT_APP_SPECIFIC_PASSWORD  — app-specific password from appleid.apple.com
+#   CERTIFICATE_PRIVATE_KEY  — .p8 content of your Apple Distribution signing key (from developer.apple.com → Certificates)
+#   TEAM_ID  — MY75M2HKJL
+#
+# The app will be built, signed, and uploaded to App Store Connect automatically.
+
+workflows:
+  ios-app-store:
+    name: FAST iOS App Store
+    max_build_duration: 30
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+      groups:
+        - appstore_credentials
+      vars:
+        BUNDLE_ID: "com.fast.resto.fastRestoBigbonney"
+        APP_NAME: "FAST"
+        TEAM_ID: "MY75M2HKJL"
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: master
+          include: true
+      cancel_previous_builds: true
+    scripts:
+      - name: Install dependencies
+        script: |
+          cd "fastMobileApp/fast resto bigbonney"
+          flutter packages pub get
+      - name: Flutter analyze
+        script: |
+          cd "fastMobileApp/fast resto bigbonney"
+          flutter analyze --no-fatal-infos
+      - name: Set up code signing
+        script: |
+          cd "fastMobileApp/fast resto bigbonney/ios"
+          keychain initialize
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --create
+          keychain add-certificates
+      - name: Build IPA
+        script: |
+          cd "fastMobileApp/fast resto bigbonney"
+          flutter build ipa \
+            --release \
+            --export-options-plist=ios/ExportOptions.plist
+    artifacts:
+      - "fastMobileApp/fast resto bigbonney/build/ios/ipa/*.ipa"
+      - "fastMobileApp/fast resto bigbonney/build/ios/ipa/*.dSYM.zip"
+    publishing:
+      app_store_connect:
+        apple_id: $APP_STORE_CONNECT_APPLE_ID
+        password: $APP_STORE_CONNECT_APP_SPECIFIC_PASSWORD
+        team_id: $TEAM_ID
+        submit_to_testflight: true
+        expire_builds: true

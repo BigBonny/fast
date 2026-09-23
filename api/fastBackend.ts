@@ -14,7 +14,7 @@ import type {
   User,
 } from "@/lib/types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://backend-lovat-xi-0axv990rct.vercel.app/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://backend-six-iota-69.vercel.app/api";
 
 export const TOKEN_KEY = "fast_token";
 
