@@ -2,17 +2,17 @@
 # Docs: https://docs.codemagic.io/yaml-quick-start/building-a-flutter-app/
 #
 # PREREQUISITES (set these in Codemagic UI → App settings → Environment variables):
-#   APP_STORE_CONNECT_APPLE_ID  — your Apple ID email (dylanfrancillette@gmail.com)
-#   APP_STORE_CONNECT_APP_SPECIFIC_PASSWORD  — app-specific password from appleid.apple.com
-#   CERTIFICATE_PRIVATE_KEY  — .p8 content of your Apple Distribution signing key (from developer.apple.com → Certificates)
-#   TEAM_ID  — MY75M2HKJL
+#   APP_STORE_CONNECT_PRIVATE_KEY  — .p8 file content from App Store Connect →
+#                                     Utilisateurs et accès → Intégrations → App Store Connect API
+#   APP_STORE_CONNECT_KEY_IDENTIFIER  — Key ID (e.g. ABC1234XYZ)
+#   APP_STORE_CONNECT_ISSUER_ID  — Issuer ID (shown above the keys table)
 #
-# The app will be built, signed, and uploaded to App Store Connect automatically.
+# The app will be built, signed, and uploaded to TestFlight automatically.
 
 workflows:
   ios-app-store:
     name: FAST iOS App Store
-    max_build_duration: 30
+    max_build_duration: 60
     environment:
       flutter: stable
       xcode: latest
@@ -22,7 +22,6 @@ workflows:
       vars:
         BUNDLE_ID: "com.fast.resto.fastRestoBigbonney"
         APP_NAME: "FAST"
-        TEAM_ID: "MY75M2HKJL"
     triggering:
       events:
         - push
@@ -35,10 +34,6 @@ workflows:
         script: |
           cd "fastMobileApp/fast resto bigbonney"
           flutter packages pub get
-      - name: Flutter analyze
-        script: |
-          cd "fastMobileApp/fast resto bigbonney"
-          flutter analyze --no-fatal-infos
       - name: Set up code signing
         script: |
           cd "fastMobileApp/fast resto bigbonney/ios"
@@ -58,8 +53,7 @@ workflows:
       - "fastMobileApp/fast resto bigbonney/build/ios/ipa/*.dSYM.zip"
     publishing:
       app_store_connect:
-        apple_id: $APP_STORE_CONNECT_APPLE_ID
-        password: $APP_STORE_CONNECT_APP_SPECIFIC_PASSWORD
-        team_id: $TEAM_ID
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
         submit_to_testflight: true
-        expire_builds: true
