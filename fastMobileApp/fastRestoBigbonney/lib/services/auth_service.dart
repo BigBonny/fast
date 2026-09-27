@@ -40,4 +40,14 @@ class AuthService {
     }
     return UserData.fromJson(data['user'] as Map<String, dynamic>);
   }
+
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    await _api.post(ApiConfig.changePassword, body: {
+      'currentPassword': currentPassword,
+      'newPassword': newPassword,
+    });
+  }
 }

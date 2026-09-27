@@ -399,7 +399,7 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
                     ),
                   ),
                   const Text(
-                    'Chaque minute conte',
+                    'Chaque minute compte',
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,

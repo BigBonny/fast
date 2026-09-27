@@ -265,15 +265,34 @@ class FASTProvider extends ChangeNotifier {
     } catch (_) {}
   }
 
-  // Categories definition
+  // Categories definition — matches the cuisine types used across web/backend
   final List<CategoryItem> categories = [
     CategoryItem(id: 'all', name: 'Tous', icon: '🍽️'),
-    CategoryItem(id: 'burger', name: 'Burgers', icon: '🍔'),
-    CategoryItem(id: 'pizza', name: 'Italien', icon: '🍕'),
-    CategoryItem(id: 'sushi', name: 'Asiatique', icon: '🍣'),
-    CategoryItem(id: 'healthy', name: 'Bols', icon: '🥗'),
-    CategoryItem(id: 'halal', name: 'Kebab', icon: '🥙'),
-    CategoryItem(id: 'dessert', name: 'Desserts', icon: '🍰'),
+    CategoryItem(id: 'burger', name: 'Burger', icon: '🍔'),
+    CategoryItem(id: 'pizza', name: 'Pizza', icon: '🍕'),
+    CategoryItem(id: 'kebab', name: 'Kebab', icon: '🥙'),
+    CategoryItem(id: 'tacos', name: 'Tacos', icon: '�'),
+    CategoryItem(id: 'mexicain', name: 'Mexicain', icon: '🌯'),
+    CategoryItem(id: 'africain', name: 'Africain', icon: '🥘'),
+    CategoryItem(id: 'arabe', name: 'Arabe', icon: '🧆'),
+    CategoryItem(id: 'sushi', name: 'Sushi', icon: '🍣'),
+    CategoryItem(id: 'indien', name: 'Indien', icon: '�'),
+    CategoryItem(id: 'chinois', name: 'Chinois', icon: '🥡'),
+    CategoryItem(id: 'thai', name: 'Thaï', icon: '🍜'),
+    CategoryItem(id: 'poulet', name: 'Poulet', icon: '🍗'),
+    CategoryItem(id: 'sandwich', name: 'Sandwich', icon: '�'),
+    CategoryItem(id: 'hotdog', name: 'Hot-dog', icon: '🌭'),
+    CategoryItem(id: 'pates', name: 'Pâtes', icon: '🍝'),
+    CategoryItem(id: 'salade', name: 'Salade', icon: '🥗'),
+    CategoryItem(id: 'fruits_de_mer', name: 'Fruits de mer', icon: '🦐'),
+    CategoryItem(id: 'vegan', name: 'Vegan', icon: '🌱'),
+    CategoryItem(id: 'dessert', name: 'Dessert', icon: '🍰'),
+    CategoryItem(id: 'glaces', name: 'Glaces', icon: '🍦'),
+    CategoryItem(id: 'crepes', name: 'Crêpes', icon: '🥞'),
+    CategoryItem(id: 'waffle', name: 'Waffle', icon: '🧇'),
+    CategoryItem(id: 'cafe', name: 'Café', icon: '☕'),
+    CategoryItem(id: 'smoothie', name: 'Smoothie', icon: '🥤'),
+    CategoryItem(id: 'autre', name: 'Autre', icon: '�'),
   ];
 
   FASTProvider() {
@@ -499,7 +518,9 @@ class FASTProvider extends ChangeNotifier {
     }
     _cachedFilterKey = filterKey;
     _cachedFiltered = _restaurants.where((rest) {
-      final matchesCategory = _selectedCategory == 'all' || rest.category == _selectedCategory;
+      final matchesCategory = _selectedCategory == 'all' ||
+          normalizeCategoryId(rest.category) == _selectedCategory ||
+          normalizeCategoryId(rest.cuisineType) == _selectedCategory;
 
       final kw = _searchKeyword.toLowerCase();
       final matchesSearch = rest.name.toLowerCase().contains(kw) ||
@@ -515,6 +536,57 @@ class FASTProvider extends ChangeNotifier {
       return matchesCategory && matchesSearch && matchesDietary;
     }).toList();
     return _cachedFiltered!;
+  }
+
+  // Normalize a stored category/cuisine label ('Burger', 'Bols/Healthy',
+  // 'Italien'...) to a canonical category id from `categories`.
+  static String normalizeCategoryId(String raw) {
+    var s = raw.toLowerCase().trim();
+    s = s
+        .replaceAll('é', 'e')
+        .replaceAll('è', 'e')
+        .replaceAll('ê', 'e')
+        .replaceAll('ë', 'e')
+        .replaceAll('à', 'a')
+        .replaceAll('â', 'a')
+        .replaceAll('î', 'i')
+        .replaceAll('ï', 'i')
+        .replaceAll('ô', 'o')
+        .replaceAll('û', 'u')
+        .replaceAll('ù', 'u')
+        .replaceAll('ç', 'c');
+    const aliases = {
+      'burgers': 'burger',
+      'italien': 'pizza',
+      'italienne': 'pizza',
+      'italian': 'pizza',
+      'halal': 'kebab',
+      'kebabs': 'kebab',
+      'asiatique': 'sushi',
+      'asian': 'sushi',
+      'japonais': 'sushi',
+      'bols': 'salade',
+      'healthy': 'salade',
+      'bols/healthy': 'salade',
+      'bowls': 'salade',
+      'salades': 'salade',
+      'sandwichs': 'sandwich',
+      'sandwiches': 'sandwich',
+      'hot-dog': 'hotdog',
+      'hot dog': 'hotdog',
+      'pates ': 'pates',
+      'pasta': 'pates',
+      'crepe': 'crepes',
+      'gauffre': 'waffle',
+      'gaufre': 'waffle',
+      'waffles': 'waffle',
+      'glace': 'glaces',
+      'desserts': 'dessert',
+      'francais': 'autre',
+      'francaise': 'autre',
+      'other': 'autre',
+    };
+    return aliases[s] ?? s;
   }
 
   // Surprise Me logic - Slot Machine visual animation

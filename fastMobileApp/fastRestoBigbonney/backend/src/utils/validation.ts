@@ -32,7 +32,16 @@ export const loginSchema = z.object({
 
 export const updateProfileSchema = z.object({
   name: z.string().min(1, 'Nom requis').max(100, 'Nom trop long').optional(),
+  email: z.string().email('Email invalide').optional(),
   phone: z.string().max(20, 'Téléphone trop long').optional(),
+});
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Mot de passe actuel requis'),
+  newPassword: passwordSchema,
+}).refine((data) => data.currentPassword !== data.newPassword, {
+  message: 'Le nouveau mot de passe doit être différent',
+  path: ['newPassword'],
 });
 
 // ─── Restaurant ─────────────────────────────────────────────

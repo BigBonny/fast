@@ -151,6 +151,16 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    await AuthService().changePassword(
+      currentPassword: currentPassword,
+      newPassword: newPassword,
+    );
+  }
+
   String _extractError(dynamic e) {
     final msg = e.toString();
     // Clean up common exception wrappers
