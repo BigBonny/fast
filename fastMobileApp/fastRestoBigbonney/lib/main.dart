@@ -28,8 +28,8 @@ void main() {
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.light,
-    systemNavigationBarColor: Color(0xFF121212),
-    systemNavigationBarIconBrightness: Brightness.light,
+    systemNavigationBarColor: Colors.white,
+    systemNavigationBarIconBrightness: Brightness.dark,
   ));
 
   // Set up 401 auto-logout handler
@@ -467,12 +467,12 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF18181B),
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFF3F3F46)),
+                          border: Border.all(color: const Color(0xFFE4E4E7)),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.35),
+                              color: Colors.black.withValues(alpha: 0.1),
                               blurRadius: 12,
                               offset: const Offset(0, 4),
                             ),
@@ -495,7 +495,7 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
                                   Text(
                                     _toastTitle,
                                     style: const TextStyle(
-                                      color: Colors.white,
+                                      color: Color(0xFF18181B),
                                       fontWeight: FontWeight.bold,
                                       fontSize: 12,
                                     ),
@@ -507,7 +507,7 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
                                     Text(
                                       _toastBody,
                                       style: const TextStyle(
-                                        color: Color(0xFFA1A1AA),
+                                        color: Color(0xFF71717A),
                                         fontSize: 10,
                                       ),
                                       overflow: TextOverflow.ellipsis,
@@ -618,10 +618,18 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
         ],
       ),
       bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          border: Border(
-            top: BorderSide(color: Color(0xFF27272A), width: 1),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: const Border(
+            top: BorderSide(color: Color(0xFFE4E4E7), width: 1),
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 8,
+              offset: const Offset(0, -2),
+            ),
+          ],
         ),
         child: BottomNavigationBar(
           currentIndex: _getBottomNavIndex(provider.currentScreen),
@@ -629,7 +637,7 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
             final screen = _getScreenFromIndex(index);
             provider.navigateToScreen(screen);
           },
-          backgroundColor: const Color(0xFF121214),
+          backgroundColor: Colors.white,
           selectedItemColor: const Color(0xFFF59E0B),
           unselectedItemColor: const Color(0xFF71717A),
           type: BottomNavigationBarType.fixed,
