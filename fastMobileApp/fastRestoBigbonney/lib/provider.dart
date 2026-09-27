@@ -519,8 +519,7 @@ class FASTProvider extends ChangeNotifier {
     _cachedFilterKey = filterKey;
     _cachedFiltered = _restaurants.where((rest) {
       final matchesCategory = _selectedCategory == 'all' ||
-          normalizeCategoryId(rest.category) == _selectedCategory ||
-          normalizeCategoryId(rest.cuisineType) == _selectedCategory;
+          normalizeCategoryId(rest.category) == _selectedCategory;
 
       final kw = _searchKeyword.toLowerCase();
       final matchesSearch = rest.name.toLowerCase().contains(kw) ||
