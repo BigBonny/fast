@@ -10,6 +10,30 @@
 # The app will be built, signed, and uploaded to TestFlight automatically.
 
 workflows:
+  android-apk:
+    name: FAST Android APK
+    max_build_duration: 40
+    environment:
+      flutter: stable
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: master
+          include: true
+      cancel_previous_builds: true
+    scripts:
+      - name: Install dependencies
+        script: |
+          cd "fastMobileApp/fastRestoBigbonney"
+          flutter packages pub get
+      - name: Build APK
+        script: |
+          cd "fastMobileApp/fastRestoBigbonney"
+          flutter build apk --release --build-number=$BUILD_NUMBER
+    artifacts:
+      - "fastMobileApp/fastRestoBigbonney/build/app/outputs/flutter-apk/app-release.apk"
+
   ios-app-store:
     name: FAST iOS App Store
     max_build_duration: 60
