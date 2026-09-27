@@ -58,10 +58,10 @@ workflows:
         script: |
           cd "fastMobileApp/fastRestoBigbonney"
           flutter packages pub get
-      - name: Flutter build (no codesign)
+      - name: Flutter build (config only)
         script: |
           cd "fastMobileApp/fastRestoBigbonney"
-          flutter build ios --release --no-codesign --build-number=$BUILD_NUMBER
+          flutter build ios --release --no-codesign --build-number=$BUILD_NUMBER --config-only
       - name: Set up keychain
         script: |
           keychain initialize
