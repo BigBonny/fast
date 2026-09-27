@@ -58,14 +58,13 @@ workflows:
         script: |
           cd "fastMobileApp/fastRestoBigbonney"
           flutter packages pub get
-      - name: Flutter build (config only)
+      - name: Flutter build (no codesign)
         script: |
           cd "fastMobileApp/fastRestoBigbonney"
-          # Retry up to 3 times — CocoaPods downloads from Google's CDN can fail
-          # transiently with HTTP/2 INTERNAL_ERROR (curl: 92).
+          # Retry up to 3 times — CocoaPods CDN downloads can fail transiently
           for attempt in 1 2 3; do
-            echo "=== Pod install attempt $attempt ==="
-            flutter build ios --release --no-codesign --build-number=$BUILD_NUMBER --config-only && exit 0
+            echo "=== Build attempt $attempt ==="
+            flutter build ios --release --no-codesign --build-number=$BUILD_NUMBER && exit 0
             echo "Attempt $attempt failed, cleaning Pods and retrying..."
             rm -rf ios/Pods ios/Podfile.lock
             sleep 5
