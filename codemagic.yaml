@@ -30,7 +30,8 @@ workflows:
       - name: Build APK
         script: |
           cd "fastMobileApp/fastRestoBigbonney"
-          flutter build apk --release --build-number=$BUILD_NUMBER
+          # No --build-number: pubspec version code must stay ahead of installed builds
+          flutter build apk --release
     artifacts:
       - "fastMobileApp/fastRestoBigbonney/build/app/outputs/flutter-apk/app-release.apk"
 
