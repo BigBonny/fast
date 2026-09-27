@@ -61,7 +61,7 @@ class FASTProvider extends ChangeNotifier {
   String _userEmail = '';
   String _userPhone = '';
   int _userPoints = 0;
-  ThemeMode _themeMode = ThemeMode.dark;
+  ThemeMode _themeMode = ThemeMode.light;
 
   // User location
   LatLng? _userLocation;
@@ -344,7 +344,7 @@ class FASTProvider extends ChangeNotifier {
     _userPhone = prefs.getString('fast_user_phone') ?? '';
     _activeGroupId = prefs.getString(_activeGroupIdKey);
     _activeGroupCode = prefs.getString(_activeGroupCodeKey);
-    final themePref = prefs.getString('fast_theme_mode') ?? 'dark';
+    final themePref = prefs.getString('fast_theme_mode') ?? 'light';
     _themeMode = themePref == 'light'
         ? ThemeMode.light
         : themePref == 'system'
