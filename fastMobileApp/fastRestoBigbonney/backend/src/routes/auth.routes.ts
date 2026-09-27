@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { register, login, getMe, updateProfile, logout, deleteAccount } from '../controllers/auth.controller';
+import { register, login, getMe, updateProfile, changePassword, logout, deleteAccount } from '../controllers/auth.controller';
 import { authenticate } from '../middleware/auth';
 import { asyncHandler } from '../utils/asyncHandler';
 
@@ -9,6 +9,7 @@ router.post('/register', asyncHandler(register));
 router.post('/login', asyncHandler(login));
 router.get('/me', authenticate, asyncHandler(getMe));
 router.patch('/profile', authenticate, asyncHandler(updateProfile));
+router.post('/change-password', authenticate, asyncHandler(changePassword));
 router.post('/logout', authenticate, asyncHandler(logout));
 router.delete('/account', authenticate, asyncHandler(deleteAccount));
 

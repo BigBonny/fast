@@ -356,7 +356,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         const SizedBox(height: 12),
-        _buildCategoryGrid(context, provider),
+        _buildCategoryStrip(context, provider),
 
         const SizedBox(height: 20),
 
@@ -724,65 +724,67 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Categories Grid
-  Widget _buildCategoryGrid(BuildContext context, FASTProvider provider) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 4,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-          childAspectRatio: 0.85,
-        ),
+  // Categories horizontal scrolling band
+  Widget _buildCategoryStrip(BuildContext context, FASTProvider provider) {
+    return SizedBox(
+      height: 84,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: provider.categories.length,
+        separatorBuilder: (context, index) => const SizedBox(width: 10),
         itemBuilder: (context, index) {
           final cat = provider.categories[index];
           final isActive = provider.selectedCategory == cat.id;
           return GestureDetector(
             onTap: () => provider.setCategory(cat.id),
-            child: Column(
-              children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: isActive ? const Color(0xFFF59E0B).withValues(alpha: 0.1) : const Color(0xFF18181B),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: isActive ? const Color(0xFFF59E0B) : const Color(0xFF27272A),
-                      width: isActive ? 2 : 1,
-                    ),
-                    boxShadow: isActive
-                        ? [
-                            BoxShadow(
-                              color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
-                              blurRadius: 8,
-                              spreadRadius: 1,
-                            )
-                          ]
-                        : null,
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOutCubic,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: isActive
+                    ? const Color(0xFFF59E0B).withValues(alpha: 0.12)
+                    : const Color(0xFF18181B),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: isActive
+                      ? const Color(0xFFF59E0B)
+                      : const Color(0xFF27272A),
+                  width: isActive ? 1.5 : 1,
+                ),
+                boxShadow: isActive
+                    ? [
+                        BoxShadow(
+                          color: const Color(0xFFF59E0B).withValues(alpha: 0.18),
+                          blurRadius: 10,
+                          spreadRadius: 1,
+                        ),
+                      ]
+                    : null,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
                     cat.icon,
                     style: const TextStyle(fontSize: 22),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  cat.name,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
-                    color: isActive ? const Color(0xFFF59E0B) : const Color(0xFFA1A1AA),
+                  const SizedBox(height: 4),
+                  Text(
+                    cat.name,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+                      color: isActive
+                          ? const Color(0xFFF59E0B)
+                          : const Color(0xFFA1A1AA),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+                ],
+              ),
             ),
           );
         },

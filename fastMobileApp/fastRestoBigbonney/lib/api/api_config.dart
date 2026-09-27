@@ -9,6 +9,7 @@ class ApiConfig {
   static const String register = '/auth/register';
   static const String me = '/auth/me';
   static const String updateProfile = '/auth/profile';
+  static const String changePassword = '/auth/change-password';
   static const String logout = '/auth/logout';
   static const String deleteAccount = '/auth/account';
 

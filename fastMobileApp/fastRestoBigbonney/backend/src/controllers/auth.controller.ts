@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../services/prisma';
 import { env } from '../config/env';
-import { registerSchema, loginSchema, updateProfileSchema } from '../utils/validation';
+import { registerSchema, loginSchema, updateProfileSchema, changePasswordSchema } from '../utils/validation';
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   const data = registerSchema.parse(req.body);
@@ -185,10 +185,47 @@ export const deleteAccount = async (req: Request, res: Response): Promise<void> 
 export const updateProfile = async (req: Request, res: Response): Promise<void> => {
   const data = updateProfileSchema.parse(req.body);
 
+  // If email is being changed, ensure it's not already in use.
+  if (data.email) {
+    const existing = await prisma.user.findUnique({ where: { email: data.email } });
+    if (existing && existing.id !== req.user!.userId) {
+      res.status(409).json({ error: 'Cet email est déjà utilisé' });
+      return;
+    }
+  }
+
   const user = await prisma.user.update({
     where: { id: req.user!.userId },
-    data: { ...(data.name && { name: data.name }), ...(data.phone && { phone: data.phone }) },
+    data: {
+      ...(data.name && { name: data.name }),
+      ...(data.email && { email: data.email }),
+      ...(data.phone && { phone: data.phone }),
+    },
   });
 
   res.json({ id: user.id, name: user.name, email: user.email, phone: user.phone, role: user.role, points: user.points });
+};
+
+export const changePassword = async (req: Request, res: Response): Promise<void> => {
+  const data = changePasswordSchema.parse(req.body);
+
+  const user = await prisma.user.findUnique({ where: { id: req.user!.userId } });
+  if (!user) {
+    res.status(404).json({ error: 'Utilisateur introuvable' });
+    return;
+  }
+
+  const valid = await bcrypt.compare(data.currentPassword, user.password);
+  if (!valid) {
+    res.status(401).json({ error: 'Mot de passe actuel incorrect' });
+    return;
+  }
+
+  const hashedPassword = await bcrypt.hash(data.newPassword, env.bcryptRounds);
+  await prisma.user.update({
+    where: { id: req.user!.userId },
+    data: { password: hashedPassword },
+  });
+
+  res.json({ message: 'Mot de passe mis à jour' });
 };

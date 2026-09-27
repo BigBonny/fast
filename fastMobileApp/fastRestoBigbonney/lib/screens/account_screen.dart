@@ -404,6 +404,174 @@ class _AccountScreenState extends State<AccountScreen>
 
           const SizedBox(height: 24),
 
+          // Payment methods
+          _sectionLabel('MOYENS DE PAIEMENT'),
+          const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF18181B),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFF27272A)),
+            ),
+            child: ListTile(
+              onTap: () => _showPaymentMethodsInfo(context),
+              leading: const Icon(
+                Icons.credit_card,
+                color: Color(0xFFF59E0B),
+                size: 20,
+              ),
+              title: const Text(
+                'Carte bancaire',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+              subtitle: const Text(
+                'Gérer vos moyens de paiement',
+                style: TextStyle(
+                  color: Color(0xFF71717A),
+                  fontSize: 11,
+                ),
+              ),
+              trailing: const Icon(
+                Icons.chevron_right,
+                color: Color(0xFF52525B),
+                size: 18,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          // Account security
+          _sectionLabel('SÉCURITÉ DU COMPTE'),
+          const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF18181B),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFF27272A)),
+            ),
+            child: Column(
+              children: [
+                ListTile(
+                  onTap: () => _showChangePasswordDialog(context),
+                  leading: const Icon(
+                    Icons.lock_outline,
+                    color: Color(0xFFF59E0B),
+                    size: 20,
+                  ),
+                  title: const Text(
+                    'Modifier le mot de passe',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
+                  trailing: const Icon(
+                    Icons.chevron_right,
+                    color: Color(0xFF52525B),
+                    size: 18,
+                  ),
+                ),
+                const Divider(height: 1, color: Color(0xFF27272A)),
+                ListTile(
+                  onTap: () => _showEmailSecurityInfo(context, provider),
+                  leading: const Icon(
+                    Icons.mail_lock_outlined,
+                    color: Color(0xFFF59E0B),
+                    size: 20,
+                  ),
+                  title: const Text(
+                    'Sécurité e-mail',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
+                  subtitle: const Text(
+                    'Adresse e-mail et confidentialité',
+                    style: TextStyle(
+                      color: Color(0xFF71717A),
+                      fontSize: 11,
+                    ),
+                  ),
+                  trailing: const Icon(
+                    Icons.chevron_right,
+                    color: Color(0xFF52525B),
+                    size: 18,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          // Legal
+          _sectionLabel('INFORMATIONS LÉGALES'),
+          const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF18181B),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFF27272A)),
+            ),
+            child: Column(
+              children: [
+                ListTile(
+                  onTap: () => _showLegalInfo(context, 'Confidentialité'),
+                  leading: const Icon(
+                    Icons.shield_outlined,
+                    color: Color(0xFFF59E0B),
+                    size: 20,
+                  ),
+                  title: const Text(
+                    'Confidentialité',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
+                  trailing: const Icon(
+                    Icons.chevron_right,
+                    color: Color(0xFF52525B),
+                    size: 18,
+                  ),
+                ),
+                const Divider(height: 1, color: Color(0xFF27272A)),
+                ListTile(
+                  onTap: () => _showLegalInfo(context, 'CGU'),
+                  leading: const Icon(
+                    Icons.description_outlined,
+                    color: Color(0xFFF59E0B),
+                    size: 20,
+                  ),
+                  title: const Text(
+                    'Conditions générales',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
+                  trailing: const Icon(
+                    Icons.chevron_right,
+                    color: Color(0xFF52525B),
+                    size: 18,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
           // Session
           _sectionLabel('SESSION'),
           const SizedBox(height: 8),
@@ -1083,5 +1251,309 @@ class _AccountScreenState extends State<AccountScreen>
   // ─── Notifs Tab ──────────────────────────────────────────────────────────────
   Widget _buildNotifsTab(FASTProvider provider) {
     return NotificationCenterList(provider: provider);
+  }
+
+  // ─── Payment methods info ───────────────────────────────────────────────────
+  void _showPaymentMethodsInfo(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF18181B),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: Color(0xFF27272A)),
+        ),
+        title: const Row(
+          children: [
+            Icon(Icons.credit_card, color: Color(0xFFF59E0B), size: 20),
+            SizedBox(width: 8),
+            Text(
+              'Moyens de paiement',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+        content: const Text(
+          'Vos paiements sont sécurisés par Stripe. Aucune carte bancaire n\'est stockée sur l\'app. '
+          'Vos informations de paiement sont saisies directement sur la page sécurisée Stripe lors de chaque commande.',
+          style: TextStyle(color: Color(0xFFA1A1AA), fontSize: 12, height: 1.5),
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFF59E0B),
+              foregroundColor: const Color(0xFF09090B),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              elevation: 0,
+            ),
+            child: const Text('Compris', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── Change password dialog ─────────────────────────────────────────────────
+  void _showChangePasswordDialog(BuildContext context) {
+    final currentCtrl = TextEditingController();
+    final newCtrl = TextEditingController();
+    final confirmCtrl = TextEditingController();
+    bool loading = false;
+    String? error;
+
+    showDialog(
+      context: context,
+      barrierDismissible: !loading,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setState) => AlertDialog(
+          backgroundColor: const Color(0xFF18181B),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: const BorderSide(color: Color(0xFF27272A)),
+          ),
+          title: const Text(
+            'Modifier le mot de passe',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _passwordField(currentCtrl, 'Mot de passe actuel', obscure: true),
+              const SizedBox(height: 12),
+              _passwordField(newCtrl, 'Nouveau mot de passe', obscure: true),
+              const SizedBox(height: 12),
+              _passwordField(confirmCtrl, 'Confirmer le nouveau', obscure: true),
+              if (error != null) ...[
+                const SizedBox(height: 12),
+                Text(
+                  error!,
+                  style: const TextStyle(color: Color(0xFFEF4444), fontSize: 11),
+                ),
+              ],
+              const SizedBox(height: 8),
+              const Text(
+                'Minimum 8 caractères, 1 majuscule, 1 chiffre.',
+                style: TextStyle(color: Color(0xFF52525B), fontSize: 10),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: loading ? null : () => Navigator.of(ctx).pop(),
+              child: const Text('Annuler', style: TextStyle(color: Color(0xFF71717A))),
+            ),
+            ElevatedButton(
+              onPressed: loading
+                  ? null
+                  : () async {
+                      setState(() {
+                        error = null;
+                        loading = true;
+                      });
+                      if (newCtrl.text != confirmCtrl.text) {
+                        setState(() {
+                          error = 'Les mots de passe ne correspondent pas.';
+                          loading = false;
+                        });
+                        return;
+                      }
+                      try {
+                        final auth = context.read<AuthProvider>();
+                        await auth.changePassword(
+                          currentPassword: currentCtrl.text,
+                          newPassword: newCtrl.text,
+                        );
+                        if (ctx.mounted) {
+                          Navigator.of(ctx).pop();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Mot de passe mis à jour')),
+                          );
+                        }
+                      } catch (e) {
+                        setState(() {
+                          error = e.toString().replaceFirst('Exception: ', '');
+                          loading = false;
+                        });
+                      }
+                    },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFF59E0B),
+                foregroundColor: const Color(0xFF09090B),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                elevation: 0,
+              ),
+              child: loading
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Color(0xFF09090B),
+                      ),
+                    )
+                  : const Text('Enregistrer', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _passwordField(TextEditingController controller, String label,
+      {bool obscure = true}) {
+    return TextField(
+      controller: controller,
+      obscureText: obscure,
+      style: const TextStyle(color: Colors.white, fontSize: 13),
+      decoration: InputDecoration(
+        hintText: label,
+        hintStyle: const TextStyle(color: Color(0xFF52525B), fontSize: 12),
+        filled: true,
+        fillColor: const Color(0xFF09090B),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Color(0xFF27272A)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Color(0xFF27272A)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Color(0xFFF59E0B)),
+        ),
+      ),
+    );
+  }
+
+  // ─── Email security info ────────────────────────────────────────────────────
+  void _showEmailSecurityInfo(BuildContext context, FASTProvider provider) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF18181B),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: Color(0xFF27272A)),
+        ),
+        title: const Row(
+          children: [
+            Icon(Icons.mail_lock_outlined, color: Color(0xFFF59E0B), size: 20),
+            SizedBox(width: 8),
+            Text(
+              'Sécurité e-mail',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Adresse e-mail associée :',
+              style: TextStyle(color: Color(0xFF71717A), fontSize: 11),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              provider.userEmail.isNotEmpty ? provider.userEmail : 'Non renseigné',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Pour modifier votre e-mail, rendez-vous dans l\'onglet Profil ci-dessus. '
+              'Votre e-mail est utilisé pour la connexion et les notifications de commande.',
+              style: TextStyle(color: Color(0xFFA1A1AA), fontSize: 11, height: 1.5),
+            ),
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFF59E0B),
+              foregroundColor: const Color(0xFF09090B),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              elevation: 0,
+            ),
+            child: const Text('Fermer', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── Legal info ─────────────────────────────────────────────────────────────
+  void _showLegalInfo(BuildContext context, String type) {
+    final content = type == 'CGU'
+        ? 'En utilisant FAST, vous acceptez nos conditions générales d\'utilisation. '
+            'FAST est un service de commande Click & Collect et de livraison pour restaurants. '
+            'Les commandes sont préparées par les restaurants partenaires. Les paiements sont '
+            'sécurisés par Stripe. Vous pouvez demander la suppression de votre compte à tout moment.'
+        : 'FAST collecte votre nom, e-mail, téléphone et position (avec votre accord) pour '
+            'permettre la commande et la livraison. Vos données ne sont jamais vendues. '
+            'Vous pouvez les modifier ou supprimer votre compte à tout moment depuis cette page.';
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF18181B),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: Color(0xFF27272A)),
+        ),
+        title: Text(
+          type == 'CGU' ? 'Conditions générales' : 'Confidentialité',
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
+        ),
+        content: Text(
+          content,
+          style: const TextStyle(color: Color(0xFFA1A1AA), fontSize: 12, height: 1.5),
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFF59E0B),
+              foregroundColor: const Color(0xFF09090B),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              elevation: 0,
+            ),
+            child: const Text('Fermer', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
   }
 }
