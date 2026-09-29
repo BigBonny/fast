@@ -390,9 +390,9 @@ class _GroupScreenState extends State<GroupScreen> {
   }
 
   Widget _progress(String status) {
-          steps = ['OPEN', 'LOCKED', 'SUBMITTED'];
+          final steps = ['OPEN', 'LOCKED', 'SUBMITTED'];
     final current = steps.indexOf(status).clamp(0, 2);
-          labels = ['Invitations', 'Paiements', 'Envoyé'];
+          final labels = ['Invitations', 'Paiements', 'Envoyé'];
     return Row(
       children: List.generate(3, (index) => Expanded(
         child: Column(
@@ -405,7 +405,7 @@ class _GroupScreenState extends State<GroupScreen> {
                 borderRadius: BorderRadius.circular(4),
               ),
             ),
-                  SizedBox(height: 6), Text(labels[index], style: TextStyle(color: index <= current ? Colors.white : context.fast.t3, fontSize: 10, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 6), Text(labels[index], style: TextStyle(color: index <= current ? const Color(0xFFF59E0B) : context.fast.t3, fontSize: 10, fontWeight: FontWeight.bold)),
           ],
         ),
       )),
@@ -447,7 +447,7 @@ class _GroupScreenState extends State<GroupScreen> {
 }
 
 class _SubmittedCard extends StatelessWidget {
-        _SubmittedCard();
+        const _SubmittedCard();
 
   @override
   Widget build(BuildContext context) => Container(

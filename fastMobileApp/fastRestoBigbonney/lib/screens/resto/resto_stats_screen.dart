@@ -291,7 +291,7 @@ class _RevenueChart extends StatelessWidget {
                   maxY: maxY,
                   lineTouchData: LineTouchData(
                     touchTooltipData: LineTouchTooltipData(
-                      getTooltipColor: (_) =>       Color(context.fast.cardHigh),
+                      getTooltipColor: (_) => context.fast.cardHigh,
                       getTooltipItems: (spots) => spots
                           .map(
                             (spot) => LineTooltipItem(

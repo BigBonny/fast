@@ -43,10 +43,10 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
   Map<String, dynamic>? _connectStatus;
   bool _connectLoading = false;
 
-  static       _dietaryAll = [
+  static const _dietaryAll = [
     'VEGAN', 'VEGETARIAN', 'GLUTEN_FREE', 'HALAL', 'KETO', 'DAIRY_FREE',
   ];
-  static       _dietaryLabels = {
+  static const _dietaryLabels = {
     'VEGAN': 'Végétalien',
     'VEGETARIAN': 'Végétarien',
     'GLUTEN_FREE': 'Sans Gluten',
@@ -55,7 +55,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
     'DAIRY_FREE': 'Sans Lactose',
   };
 
-  static       _categories = [
+  static const _categories = [
     'Burgers', 'Pizza', 'Sushi', 'Tacos', 'Sandwichs',
     'Salades', 'Pâtes', 'Poulet', 'Végétarien', 'Desserts',
   ];

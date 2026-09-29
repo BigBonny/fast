@@ -5,7 +5,7 @@ import '../../resto_provider.dart';
 import '../../theme.dart';
 
 class RestoProfileScreen extends StatelessWidget {
-        RestoProfileScreen({super.key});
+        const RestoProfileScreen({super.key});
 
   Widget _placeholderImage(BuildContext context) => Container(
     color: context.fast.card,
