@@ -8,6 +8,7 @@ import '../provider.dart';
 import '../models.dart';
 import '../services/payment_service.dart';
 import '../services/group_service.dart';
+import '../theme.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -53,28 +54,25 @@ class _CartScreenState extends State<CartScreen> {
     if (cart.isEmpty || rest == null) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(32),
+          padding: EdgeInsets.all(32),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text('🛒', style: TextStyle(fontSize: 48)),
-              const SizedBox(height: 12),
-              const Text(
+            children: [ Text('🛒', style: TextStyle(fontSize: 48)),
+                    SizedBox(height: 12), Text(
                 'Votre panier est vide',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: context.fast.t1),
               ),
-              const SizedBox(height: 6),
-              const Text(
+                    SizedBox(height: 6), Text(
                 'Ajoutez de bons plats d\'un restaurant local pour passer commande !',
-                style: TextStyle(fontSize: 11, color: Color(0xFFA1A1AA)),
+                style: TextStyle(fontSize: 11, color: context.fast.t2),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 16),
+                    SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => provider.navigateToScreen('home'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF59E0B),
-                  foregroundColor: const Color(0xFF09090B),
+                  backgroundColor: Color(0xFFF59E0B),
+                  foregroundColor: FASTBrand.onAmber,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 child: const Text('Parcourir les restaurants', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -95,27 +93,26 @@ class _CartScreenState extends State<CartScreen> {
     });
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (provider.activeGroupId != null) ...[
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(14),
+              padding: EdgeInsets.all(14),
               decoration: BoxDecoration(
                 color: const Color(0xFFF59E0B).withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.45)),
               ),
               child: Row(
-                children: [
-                  const Icon(Icons.groups_outlined, color: Color(0xFFF59E0B)),
-                  const SizedBox(width: 12),
+                children: [ Icon(Icons.groups_outlined, color: Color(0xFFF59E0B)),
+                        SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       'Part individuelle du groupe ${provider.activeGroupCode ?? ''}\nVous paierez uniquement vos articles.',
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, height: 1.4),
+                      style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold, height: 1.4),
                     ),
                   ),
                 ],
@@ -124,19 +121,19 @@ class _CartScreenState extends State<CartScreen> {
             const SizedBox(height: 20),
           ],
           // Order list Card
-          Text(
+ Text(
             'PANIER DE ${rest.name.toUpperCase()}',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.bold,
               letterSpacing: 1.0,
-              color: Color(0xFF71717A),
+              color: context.fast.t3,
             ),
           ),
-          const SizedBox(height: 12),
+                SizedBox(height: 12),
           _buildCartItemsCard(context, provider, cart),
           
-          const SizedBox(height: 20),
+                SizedBox(height: 20),
 
           if (provider.activeGroupId == null && rest.deliveryEnabled)
             _buildFulfillmentSelector(provider),
@@ -145,14 +142,13 @@ class _CartScreenState extends State<CartScreen> {
             const SizedBox(height: 16),
             _buildDeliveryAddressSection(provider),
           ] else ...[
-            const SizedBox(height: 20),
-            const Text(
+                  SizedBox(height: 20), Text(
               'CHOISIR LE TEMPS DE MARCHE ESTIMÉ',
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1.0,
-                color: Color(0xFF71717A),
+                color: context.fast.t3,
               ),
             ),
             const SizedBox(height: 12),
@@ -175,29 +171,28 @@ class _CartScreenState extends State<CartScreen> {
   Widget _buildCartItemsCard(BuildContext context, FASTProvider provider, List<CartItem> cart) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF18181B),
+        color: context.fast.card,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF27272A)),
+        border: Border.all(color: context.fast.line),
       ),
       child: ListView.separated(
         shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
+        physics:       NeverScrollableScrollPhysics(),
         itemCount: cart.length,
-        separatorBuilder: (context, index) => const Divider(color: Color(0xFF27272A), height: 1),
+        separatorBuilder: (context, index) =>       Divider(color: context.fast.line, height: 1),
         itemBuilder: (context, index) {
           final item = cart[index];
           return Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
+                    children: [ Text(
                         item.menuItem.name,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.white),
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: context.fast.t1),
                       ),
                       if (item.selectedOptions.isNotEmpty) ...[
                         const SizedBox(height: 4),
@@ -216,13 +211,13 @@ class _CartScreenState extends State<CartScreen> {
                         ),
                       ],
                       if (item.allergyNotes.isNotEmpty) ...[
-                        const SizedBox(height: 4),
+                              SizedBox(height: 4),
                         Container(
-                          padding: const EdgeInsets.all(8),
+                          padding: EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF09090B),
+                            color: context.fast.amberSoftBg,
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.2)),
+                            border: Border.all(color: context.fast.amberSoftBorder),
                           ),
                           child: Text(
                             '« ${item.allergyNotes} »',
@@ -234,21 +229,20 @@ class _CartScreenState extends State<CartScreen> {
                           ),
                         ),
                       ],
-                      const SizedBox(height: 6),
-                      Text(
+                            SizedBox(height: 6), Text(
                         '${item.menuItem.price.toStringAsFixed(2)} € chacun',
-                        style: const TextStyle(fontSize: 11, color: Color(0xFFA1A1AA)),
+                        style: TextStyle(fontSize: 11, color: context.fast.t2),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 12),
+                      SizedBox(width: 12),
                 Row(
                   children: [
                     // quantity adjustments
                     Container(
                       decoration: BoxDecoration(
-                        color: const Color(0xFF09090B),
+                        color: FASTBrand.onAmber,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
@@ -259,8 +253,7 @@ class _CartScreenState extends State<CartScreen> {
                               padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                               child: Text('-', style: TextStyle(fontWeight: FontWeight.bold)),
                             ),
-                          ),
-                          Text(
+                          ), Text(
                             '${item.quantity}',
                             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, fontFamily: 'monospace'),
                           ),
@@ -274,8 +267,7 @@ class _CartScreenState extends State<CartScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    IconButton(
+                    const SizedBox(width: 8), IconButton(
                       onPressed: () => provider.removeFromCart(item.menuItem.id),
                       icon: const Icon(Icons.delete_outline, color: Color(0xFFEF4444), size: 18),
                     ),
@@ -291,11 +283,11 @@ class _CartScreenState extends State<CartScreen> {
 
   Widget _buildWalkTimeSelector(BuildContext context, int minPrepTime) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF18181B),
+        color: context.fast.card,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF27272A)),
+        border: Border.all(color: context.fast.line),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -306,13 +298,11 @@ class _CartScreenState extends State<CartScreen> {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
+                  children: [ Text(
                       'Temps de trajet à pied',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: context.fast.t1),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
+                    const SizedBox(height: 2), Text(
                       'Préparation synchronisée basée sur votre rythme de marche.',
                       style: TextStyle(fontSize: 10, color: const Color(0xFFF59E0B).withValues(alpha: 0.8)),
                     ),
@@ -362,35 +352,34 @@ class _CartScreenState extends State<CartScreen> {
   Widget _buildFulfillmentSelector(FASTProvider provider) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
+      children: [ Text(
           'MODE DE RÉCUPÉRATION',
-          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.0, color: Color(0xFF71717A)),
+          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.0, color: context.fast.t3),
         ),
-        const SizedBox(height: 10),
+              SizedBox(height: 10),
         Row(
           children: [
             Expanded(
               child: ChoiceChip(
-                label: const Text('Click & Collect', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                label: Text('Click & Collect', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                 selected: provider.fulfillmentType == FulfillmentType.pickup,
-                selectedColor: const Color(0xFFF59E0B),
-                backgroundColor: const Color(0xFF18181B),
+                selectedColor: Color(0xFFF59E0B),
+                backgroundColor: context.fast.card,
                 labelStyle: TextStyle(
-                  color: provider.fulfillmentType == FulfillmentType.pickup ? const Color(0xFF09090B) : Colors.white,
+                  color: provider.fulfillmentType == FulfillmentType.pickup ? FASTBrand.onAmber : context.fast.t1,
                 ),
                 onSelected: (_) => provider.setFulfillmentType(FulfillmentType.pickup),
               ),
             ),
-            const SizedBox(width: 8),
+                  SizedBox(width: 8),
             Expanded(
               child: ChoiceChip(
-                label: const Text('Livraison', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                label: Text('Livraison', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                 selected: provider.fulfillmentType == FulfillmentType.delivery,
-                selectedColor: const Color(0xFF10B981),
-                backgroundColor: const Color(0xFF18181B),
+                selectedColor: Color(0xFF10B981),
+                backgroundColor: context.fast.card,
                 labelStyle: TextStyle(
-                  color: provider.fulfillmentType == FulfillmentType.delivery ? const Color(0xFF09090B) : Colors.white,
+                  color: provider.fulfillmentType == FulfillmentType.delivery ? Colors.white : context.fast.t1,
                 ),
                 onSelected: (_) => provider.setFulfillmentType(FulfillmentType.delivery),
               ),
@@ -404,30 +393,27 @@ class _CartScreenState extends State<CartScreen> {
   Widget _buildDeliveryAddressSection(FASTProvider provider) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
+      children: [ Text(
           'ADRESSE DE LIVRAISON',
-          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.0, color: Color(0xFF71717A)),
+          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.0, color: context.fast.t3),
         ),
-        const SizedBox(height: 10),
-        TextField(
+              SizedBox(height: 10), TextField(
           controller: _deliveryAddressCtrl,
-          style: const TextStyle(color: Colors.white, fontSize: 13),
+          style: TextStyle(color: context.fast.t1, fontSize: 13),
           maxLines: 2,
           decoration: InputDecoration(
             hintText: '12 rue Example, 75001 Paris',
-            hintStyle: const TextStyle(color: Color(0xFF71717A)),
+            hintStyle: TextStyle(color: context.fast.t3),
             filled: true,
-            fillColor: const Color(0xFF18181B),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF27272A))),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF27272A))),
+            fillColor: context.fast.card,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: context.fast.line)),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: context.fast.line)),
           ),
           onChanged: (v) => provider.setDeliveryAddress(v),
         ),
-        const SizedBox(height: 8),
+              SizedBox(height: 8),
         Row(
-          children: [
-            TextButton.icon(
+          children: [ TextButton.icon(
               onPressed: _geocodingAddress ? null : () => _useCurrentLocation(provider),
               icon: const Icon(Icons.my_location, size: 16, color: Color(0xFF10B981)),
               label: Text(
@@ -435,10 +421,9 @@ class _CartScreenState extends State<CartScreen> {
                 style: const TextStyle(color: Color(0xFF10B981), fontSize: 11),
               ),
             ),
-            const Spacer(),
-            Text(
+                  Spacer(), Text(
               'Zone ${provider.selectedRestaurant?.deliveryRadiusKm.toStringAsFixed(0) ?? '5'} km',
-              style: const TextStyle(fontSize: 10, color: Color(0xFF71717A)),
+              style: TextStyle(fontSize: 10, color: context.fast.t3),
             ),
           ],
         ),
@@ -473,11 +458,11 @@ class _CartScreenState extends State<CartScreen> {
     return ChoiceChip(
       label: Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
       selected: isSelected,
-      backgroundColor: const Color(0xFF09090B),
-      selectedColor: const Color(0xFFF59E0B),
-      checkmarkColor: const Color(0xFF09090B),
-      labelStyle: TextStyle(color: isSelected ? const Color(0xFF09090B) : Colors.white),
-      side: BorderSide(color: isSelected ? const Color(0xFFF59E0B) : const Color(0xFF27272A)),
+      backgroundColor: context.fast.card,
+      selectedColor: Color(0xFFF59E0B),
+      checkmarkColor: FASTBrand.onAmber,
+      labelStyle: TextStyle(color: isSelected ? FASTBrand.onAmber : context.fast.t1),
+      side: BorderSide(color: isSelected ?       Color(0xFFF59E0B) : context.fast.line),
       onSelected: (selected) {
         if (selected) {
           setState(() {
@@ -491,56 +476,52 @@ class _CartScreenState extends State<CartScreen> {
   // Secure checkout fields card
   Widget _buildCheckoutFormCard(BuildContext context, FASTProvider provider) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF18181B),
+        color: context.fast.card,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF27272A)),
+        border: Border.all(color: context.fast.line),
       ),
       child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
+          children: [ Text(
               'DÉTAILS DU PAIEMENT',
               style: TextStyle(
                 fontSize: 9,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1.0,
-                color: Color(0xFF71717A),
+                color: context.fast.t3,
               ),
             ),
-            const SizedBox(height: 12),
+                  SizedBox(height: 12),
             
             // Receipt breakdown
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFF09090B),
+                color: context.fast.cardHigh,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Sous-total du panier', style: TextStyle(fontSize: 12, color: Color(0xFFA1A1AA))),
-                      Text('${provider.cartSubtotal.toStringAsFixed(2)} €', style: const TextStyle(fontSize: 12, color: Colors.white, fontFamily: 'monospace')),
+                    children: [ Text('Sous-total du panier', style: TextStyle(fontSize: 12, color: context.fast.t2)), Text('${provider.cartSubtotal.toStringAsFixed(2)} €', style: TextStyle(fontSize: 12, color: context.fast.t1, fontFamily: 'monospace')),
                     ],
                   ),
-                  const SizedBox(height: 6),
+                        SizedBox(height: 6),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
+                    children: [ Text(
                         provider.fulfillmentType == FulfillmentType.delivery
                             ? 'Frais de livraison'
                             : 'Frais de retrait',
-                        style: const TextStyle(fontSize: 12, color: Color(0xFFA1A1AA)),
+                        style: TextStyle(fontSize: 12, color: context.fast.t2),
                       ),
                       if (provider.fulfillmentType == FulfillmentType.delivery)
-                        Text(
+ Text(
                           '${provider.cartDeliveryFee.toStringAsFixed(2)} €',
-                          style: const TextStyle(fontSize: 12, color: Colors.white, fontFamily: 'monospace'),
+                          style: TextStyle(fontSize: 12, color: context.fast.t1, fontFamily: 'monospace'),
                         )
                       else
                         Container(
@@ -553,43 +534,38 @@ class _CartScreenState extends State<CartScreen> {
                         ),
                     ],
                   ),
-                  const SizedBox(height: 6),
+                        SizedBox(height: 6),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Frais de service fixes', style: TextStyle(fontSize: 12, color: Color(0xFFA1A1AA))),
-                      Text('${provider.flatServiceFee.toStringAsFixed(2)} €', style: const TextStyle(fontSize: 12, color: Colors.white, fontFamily: 'monospace')),
+                    children: [ Text('Frais de service fixes', style: TextStyle(fontSize: 12, color: context.fast.t2)), Text('${provider.flatServiceFee.toStringAsFixed(2)} €', style: TextStyle(fontSize: 12, color: context.fast.t1, fontFamily: 'monospace')),
                     ],
                   ),
-                  const Divider(color: Color(0xFF27272A), height: 16),
+                        Divider(color: context.fast.line, height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Montant total', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white)),
-                      Text('${provider.cartTotal.toStringAsFixed(2)} €', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: Color(0xFFF59E0B), fontFamily: 'monospace')),
+                    children: [ Text('Montant total', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: context.fast.t1)), Text('${provider.cartTotal.toStringAsFixed(2)} €', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: Color(0xFFF59E0B), fontFamily: 'monospace')),
                     ],
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+                  SizedBox(height: 16),
             
             // Stripe Checkout
-            const Text(
+ Text(
               'PAIEMENT SÉCURISÉ STRIPE',
               style: TextStyle(
                 fontSize: 9,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1.0,
-                color: Color(0xFF71717A),
+                color: context.fast.t3,
               ),
             ),
-            const SizedBox(height: 12),
-            const Text(
+                  SizedBox(height: 12), Text(
               'Les informations bancaires sont saisies directement chez Stripe. FAST ne stocke jamais les numéros de carte.',
-              style: TextStyle(fontSize: 11, color: Color(0xFFA1A1AA), height: 1.35),
+              style: TextStyle(fontSize: 11, color: context.fast.t2, height: 1.35),
             ),
-            const SizedBox(height: 20),
+                  SizedBox(height: 20),
 
             // Place Order Button
             SizedBox(
@@ -597,8 +573,8 @@ class _CartScreenState extends State<CartScreen> {
               child: ElevatedButton(
                 onPressed: () => _startStripeCheckout(provider),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF59E0B),
-                  foregroundColor: const Color(0xFF09090B),
+                  backgroundColor: Color(0xFFF59E0B),
+                  foregroundColor: FASTBrand.onAmber,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -609,8 +585,7 @@ class _CartScreenState extends State<CartScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Icon(Icons.shield, size: 16),
-                    const SizedBox(width: 8),
-                    Text(
+                    const SizedBox(width: 8), Text(
                       'Payer ${provider.cartTotal.toStringAsFixed(2)} € avec Stripe',
                       style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13),
                     ),
@@ -619,25 +594,22 @@ class _CartScreenState extends State<CartScreen> {
               ),
             ),
             if (_pendingStripeSessionId != null) ...[
-              const SizedBox(height: 8),
-              TextButton(
+                    SizedBox(height: 8), TextButton(
                 onPressed: () => _confirmStripeCheckout(provider),
-                child: const Text(
+                child: Text(
                   'Paiement non détecté ? Confirmer manuellement',
-                  style: TextStyle(color: Color(0xFF71717A), fontSize: 11),
+                  style: TextStyle(color: context.fast.t3, fontSize: 11),
                 ),
               ),
             ],
-            const SizedBox(height: 10),
-            const Center(
+                  SizedBox(height: 10),
+                  Center(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.lock_outline, size: 12, color: Color(0xFF71717A)),
-                  SizedBox(width: 4),
-                  Text(
+                children: [ Icon(Icons.lock_outline, size: 12, color: context.fast.t3),
+                  SizedBox(width: 4), Text(
                     'Connexion sécurisée PCI-DSS active',
-                    style: TextStyle(fontSize: 9, color: Color(0xFF71717A), fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 9, color: context.fast.t3, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
@@ -650,16 +622,16 @@ class _CartScreenState extends State<CartScreen> {
   Widget _buildProcessingCard() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(32),
+      padding: EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: const Color(0xFF18181B),
+        color: context.fast.card,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF27272A)),
+        border: Border.all(color: context.fast.line),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const SizedBox(
+                SizedBox(
             width: 48,
             height: 48,
             child: CircularProgressIndicator(
@@ -667,16 +639,14 @@ class _CartScreenState extends State<CartScreen> {
               valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFF59E0B)),
             ),
           ),
-          const SizedBox(height: 20),
-          Text(
+                SizedBox(height: 20), Text(
             _processStep,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.white, fontFamily: 'monospace'),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: context.fast.t1, fontFamily: 'monospace'),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 6),
-          const Text(
+                SizedBox(height: 6), Text(
             'Sécurisation des jetons d\'autorisation...',
-            style: TextStyle(fontSize: 10, color: Color(0xFF71717A)),
+            style: TextStyle(fontSize: 10, color: context.fast.t3),
             textAlign: TextAlign.center,
           ),
         ],

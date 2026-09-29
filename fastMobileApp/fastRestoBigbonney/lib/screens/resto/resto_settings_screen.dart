@@ -8,6 +8,7 @@ import '../../models.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/restaurant_service.dart';
 import '../../services/payment_service.dart';
+import '../../theme.dart';
 
 class RestoSettingsScreen extends StatefulWidget {
   const RestoSettingsScreen({super.key});
@@ -42,10 +43,10 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
   Map<String, dynamic>? _connectStatus;
   bool _connectLoading = false;
 
-  static const _dietaryAll = [
+  static       _dietaryAll = [
     'VEGAN', 'VEGETARIAN', 'GLUTEN_FREE', 'HALAL', 'KETO', 'DAIRY_FREE',
   ];
-  static const _dietaryLabels = {
+  static       _dietaryLabels = {
     'VEGAN': 'Végétalien',
     'VEGETARIAN': 'Végétarien',
     'GLUTEN_FREE': 'Sans Gluten',
@@ -54,7 +55,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
     'DAIRY_FREE': 'Sans Lactose',
   };
 
-  static const _categories = [
+  static       _categories = [
     'Burgers', 'Pizza', 'Sushi', 'Tacos', 'Sandwichs',
     'Salades', 'Pâtes', 'Poulet', 'Végétarien', 'Desserts',
   ];
@@ -192,11 +193,11 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        backgroundColor: const Color(0xFF10B981),
+        backgroundColor: Color(0xFF10B981),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        content: const Text('Profil mis à jour ✓',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        content: Text('Profil mis à jour ✓',
+            style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold)),
       ));
     } catch (e) {
       setState(() => _error = 'Erreur: ${e.toString()}');
@@ -224,13 +225,11 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
     }
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 48),
-      children: [
-        const Text('Profil Restaurant',
-            style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 4),
-        const Text('Ces informations sont visibles par vos clients.',
-            style: TextStyle(color: Color(0xFFA1A1AA), fontSize: 13)),
+      padding: EdgeInsets.fromLTRB(16, 16, 16, 48),
+      children: [ Text('Profil Restaurant',
+            style: TextStyle(color: context.fast.t1, fontSize: 24, fontWeight: FontWeight.bold)),
+              SizedBox(height: 4), Text('Ces informations sont visibles par vos clients.',
+            style: TextStyle(color: context.fast.t2, fontSize: 13)),
 
         if (_error != null) ...[
           const SizedBox(height: 12),
@@ -245,10 +244,10 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
           ),
         ],
 
-        const SizedBox(height: 24),
+              SizedBox(height: 24),
         _section('Paiements Stripe Connect'),
         _buildStripeConnectBanner(),
-        const SizedBox(height: 12),
+              SizedBox(height: 12),
         OutlinedButton.icon(
           onPressed: _connectLoading ? null : _configureStripeConnect,
           icon: const Icon(Icons.account_balance),
@@ -260,31 +259,31 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
           ),
         ),
 
-        const SizedBox(height: 24),
+              SizedBox(height: 24),
         _section('Image de couverture'),
         _buildImagePicker(),
 
-        const SizedBox(height: 24),
+              SizedBox(height: 24),
         _section('Identité'),
         _field('Nom du restaurant *', _nameCtrl),
         _field('Description', _descCtrl, maxLines: 3,
             hint: 'Décrivez votre restaurant, votre spécialité...'),
 
-        const SizedBox(height: 24),
+              SizedBox(height: 24),
         _section('Coordonnées & Banque'),
         _field('Ville', _cityCtrl),
         _field('Adresse complète', _addressCtrl, hint: '12 rue des Lilas, 75001 Paris'),
         _field('IBAN', _ibanCtrl, hint: 'FR76 **** **** **** **** 1234'),
 
-        const SizedBox(height: 24),
+              SizedBox(height: 24),
         _section('Cuisine & Catégorie'),
         _field('Type de cuisine', _cuisineCtrl, hint: 'ex: Française, Japonaise, Italienne'),
-        const SizedBox(height: 8),
+              SizedBox(height: 8),
         _dropdownField('Catégorie', _categoryCtrl, _categories),
 
-        const SizedBox(height: 24),
+              SizedBox(height: 24),
         _section('Options alimentaires'),
-        const SizedBox(height: 8),
+              SizedBox(height: 8),
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -294,7 +293,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
               label: Text(_dietaryLabels[key] ?? key,
                   style: TextStyle(
                     fontSize: 12,
-                    color: selected ? const Color(0xFF09090B) : const Color(0xFFA1A1AA),
+                    color: selected ? context.fast.bg : context.fast.t2,
                     fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
                   )),
               selected: selected,
@@ -307,26 +306,26 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
                   }
                 });
               },
-              selectedColor: const Color(0xFFF59E0B),
-              backgroundColor: const Color(0xFF18181B),
-              checkmarkColor: const Color(0xFF09090B),
+              selectedColor: Color(0xFFF59E0B),
+              backgroundColor: context.fast.card,
+              checkmarkColor: FASTBrand.onAmber,
               side: BorderSide(
-                color: selected ? const Color(0xFFF59E0B) : const Color(0xFF3F3F46),
+                color: selected ?       Color(0xFFF59E0B) : context.fast.faint,
               ),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
             );
           }).toList(),
         ),
 
-        const SizedBox(height: 24),
+              SizedBox(height: 24),
         _section('Temps de Préparation'),
         _timeSlider('Temps Normal', _normalPrepTime, 5, 60,
             const Color(0xFFF59E0B), (v) => setState(() => _normalPrepTime = v)),
-        const SizedBox(height: 20),
+              SizedBox(height: 20),
         _timeSlider('Temps Mode Rush', _rushPrepTime, 10, 90,
             const Color(0xFFEF4444), (v) => setState(() => _rushPrepTime = v)),
 
-        const SizedBox(height: 32),
+              SizedBox(height: 32),
         ElevatedButton(
           onPressed: _saving ? null : _save,
           style: ElevatedButton.styleFrom(
@@ -344,8 +343,8 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
               : const Text('Enregistrer', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
         ),
 
-        const SizedBox(height: 32),
-        const Divider(color: Color(0xFF27272A)),
+              SizedBox(height: 32),
+              Divider(color: context.fast.line),
         const SizedBox(height: 16),
         // Proper logout button — only signs out, does not reset data
         Consumer<AuthProvider>(
@@ -395,8 +394,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
         ),
       ),
       child: Row(
-        children: [
-          Icon(
+        children: [ Icon(
             ok ? Icons.check_circle : Icons.info_outline,
             color: ok ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
           ),
@@ -449,9 +447,9 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
         height: 160,
         width: double.infinity,
         decoration: BoxDecoration(
-          color: const Color(0xFF18181B),
+          color: context.fast.card,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFF3F3F46)),
+          border: Border.all(color: context.fast.faint),
           image: _imageBase64.isNotEmpty
               ? DecorationImage(
                   image: _imageBase64.startsWith('http')
@@ -462,20 +460,18 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
               : null,
         ),
         child: _imageBase64.isEmpty
-            ? const Column(
+            ?       Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.add_a_photo, color: Color(0xFFA1A1AA), size: 40),
-                  SizedBox(height: 12),
-                  Text('Ajouter une photo', style: TextStyle(color: Color(0xFFA1A1AA))),
+                children: [ Icon(Icons.add_a_photo, color: context.fast.t2, size: 40),
+                  SizedBox(height: 12), Text('Ajouter une photo', style: TextStyle(color: context.fast.t2)),
                 ],
               )
             : Container(
                 alignment: Alignment.topRight,
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(8),
                 child: IconButton(
                   onPressed: () => setState(() => _imageBase64 = ''),
-                  icon: const Icon(Icons.close, color: Colors.white),
+                  icon: Icon(Icons.close, color: context.fast.t1),
                   style: IconButton.styleFrom(backgroundColor: Colors.black54),
                 ),
               ),
@@ -486,25 +482,25 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
   Widget _field(String label, TextEditingController ctrl,
       {int maxLines = 1, String? hint}) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.only(bottom: 12),
       child: TextField(
         controller: ctrl,
         maxLines: maxLines,
-        style: const TextStyle(color: Colors.white, fontSize: 14),
+        style: TextStyle(color: context.fast.t1, fontSize: 14),
         decoration: InputDecoration(
           labelText: label,
           hintText: hint,
-          labelStyle: const TextStyle(color: Color(0xFFA1A1AA), fontSize: 13),
-          hintStyle: const TextStyle(color: Color(0xFF52525B), fontSize: 13),
+          labelStyle: TextStyle(color: context.fast.t2, fontSize: 13),
+          hintStyle: TextStyle(color: context.fast.faint, fontSize: 13),
           filled: true,
-          fillColor: const Color(0xFF18181B),
+          fillColor: context.fast.card,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: Color(0xFF3F3F46)),
+            borderSide: BorderSide(color: context.fast.faint),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: Color(0xFF3F3F46)),
+            borderSide: BorderSide(color: context.fast.faint),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
@@ -518,24 +514,24 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
 
   Widget _dropdownField(String label, TextEditingController ctrl, List<String> options) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.only(bottom: 12),
       child: DropdownButtonFormField<String>(
         initialValue: options.contains(ctrl.text) ? ctrl.text : null,
-        hint: Text('Sélectionner', style: const TextStyle(color: Color(0xFF52525B), fontSize: 13)),
-        dropdownColor: const Color(0xFF18181B),
-        style: const TextStyle(color: Colors.white, fontSize: 14),
+        hint: Text('Sélectionner', style: TextStyle(color: context.fast.faint, fontSize: 13)),
+        dropdownColor: context.fast.card,
+        style: TextStyle(color: context.fast.t1, fontSize: 14),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(color: Color(0xFFA1A1AA), fontSize: 13),
+          labelStyle: TextStyle(color: context.fast.t2, fontSize: 13),
           filled: true,
-          fillColor: const Color(0xFF18181B),
+          fillColor: context.fast.card,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: Color(0xFF3F3F46)),
+            borderSide: BorderSide(color: context.fast.faint),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: Color(0xFF3F3F46)),
+            borderSide: BorderSide(color: context.fast.faint),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
@@ -546,7 +542,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
         items: options
             .map((o) => DropdownMenuItem(
                   value: o,
-                  child: Text(o, style: const TextStyle(color: Colors.white, fontSize: 14)),
+                  child: Text(o, style: TextStyle(color: context.fast.t1, fontSize: 14)),
                 ))
             .toList(),
         onChanged: (v) => setState(() => ctrl.text = v ?? ''),
@@ -554,16 +550,14 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
     );
   }
 
-  Widget _timeSlider(String title, double value, double min, double max,
-      Color color, ValueChanged<double> onChanged) {
+  Widget _timeSlider(String title, double value, double min, double max, Color color, ValueChanged<double> onChanged) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(title,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14)),
+          children: [ Text(title,
+                style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.w600, fontSize: 14)),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
               decoration: BoxDecoration(
@@ -575,14 +569,14 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
             ),
           ],
         ),
-        const SizedBox(height: 8),
+              SizedBox(height: 8),
         SliderTheme(
           data: SliderTheme.of(context).copyWith(
             trackHeight: 5,
-            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 12),
-            overlayShape: const RoundSliderOverlayShape(overlayRadius: 22),
+            thumbShape:       RoundSliderThumbShape(enabledThumbRadius: 12),
+            overlayShape:       RoundSliderOverlayShape(overlayRadius: 22),
             activeTrackColor: color,
-            inactiveTrackColor: const Color(0xFF27272A),
+            inactiveTrackColor: context.fast.line,
             thumbColor: color,
             overlayColor: color.withValues(alpha: 0.12),
             tickMarkShape: SliderTickMarkShape.noTickMark,

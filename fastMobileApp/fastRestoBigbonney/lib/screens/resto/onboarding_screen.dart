@@ -7,6 +7,7 @@ import '../../api/api_client.dart';
 import '../../api/api_config.dart';
 import '../../api/api_exceptions.dart';
 import 'resto_shell.dart';
+import '../../theme.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -172,8 +173,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     if (_checkingBackend) {
-      return const Scaffold(
-        backgroundColor: Color(0xFF09090B),
+      return       Scaffold(
+        backgroundColor: context.fast.bg,
         body: Center(
           child: CircularProgressIndicator(color: Color(0xFFF59E0B)),
         ),
@@ -199,7 +200,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFF09090B),
+      backgroundColor: context.fast.bg,
       body: SafeArea(child: Center(child: content)),
     );
   }
@@ -210,16 +211,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       children: [
         const Icon(Icons.privacy_tip, size: 64, color: Color(0xFFF59E0B)),
         const SizedBox(height: 24),
-        const Text('Confidentialité & CGU',
+              Text('Confidentialité & CGU',
             style: TextStyle(
-                fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+                fontSize: 24, fontWeight: FontWeight.bold, color: context.fast.t1)),
         const SizedBox(height: 16),
-        const Padding(
+              Padding(
           padding: EdgeInsets.symmetric(horizontal: 32.0),
           child: Text(
             'En continuant, vous acceptez nos conditions générales d\'utilisation et notre politique de confidentialité (RGPD).',
             textAlign: TextAlign.center,
-            style: TextStyle(color: Color(0xFFA1A1AA)),
+            style: TextStyle(color: context.fast.t2),
           ),
         ),
         const SizedBox(height: 48),
@@ -237,19 +238,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget _buildTutorial() {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Icon(Icons.swipe, size: 64, color: Color(0xFF10B981)),
-        const SizedBox(height: 24),
-        const Text('Tutoriel FAST',
+      children: [ Icon(Icons.swipe, size: 64, color: Color(0xFF10B981)),
+              SizedBox(height: 24), Text('Tutoriel FAST',
             style: TextStyle(
-                fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
-        const SizedBox(height: 16),
-        const Padding(
+                fontSize: 24, fontWeight: FontWeight.bold, color: context.fast.t1)),
+              SizedBox(height: 16),
+              Padding(
           padding: EdgeInsets.symmetric(horizontal: 32.0),
           child: Text(
             'Gérez vos commandes en temps réel, activez le Mode Rush, et suivez vos statistiques via votre espace dédié.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: Color(0xFFA1A1AA)),
+            style: TextStyle(color: context.fast.t2),
           ),
         ),
         const SizedBox(height: 48),
@@ -277,12 +276,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               scale: 1.35,
               child: Image.asset('assets/images/logo.png', fit: BoxFit.cover)),
         ),
-        const SizedBox(height: 32),
-        const Text(
+              SizedBox(height: 32), Text(
           'Faites grandir votre\nrestaurant avec FAST',
           textAlign: TextAlign.center,
           style: TextStyle(
-              fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white),
+              fontSize: 28, fontWeight: FontWeight.w900, color: context.fast.t1),
         ),
         const SizedBox(height: 48),
         ElevatedButton(
@@ -303,47 +301,43 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return Form(
       key: _formKey,
       child: ListView(
-        padding: const EdgeInsets.all(24.0),
-        children: [
-          const Text('Configuration',
+        padding: EdgeInsets.all(24.0),
+        children: [ Text('Configuration',
               style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w900,
-                  color: Colors.white)),
-          const SizedBox(height: 24),
-          TextFormField(
-            style: const TextStyle(color: Colors.white),
-            decoration: const InputDecoration(
+                  color: context.fast.t1)),
+                SizedBox(height: 24), TextFormField(
+            style: TextStyle(color: context.fast.t1),
+            decoration:       InputDecoration(
                 labelText: 'Prénom du gérant',
-                labelStyle: TextStyle(color: Color(0xFFA1A1AA))),
+                labelStyle: TextStyle(color: context.fast.t2)),
             onSaved: (val) => _managerFirstName = val ?? '',
           ),
-          const SizedBox(height: 16),
-          TextFormField(
-            style: const TextStyle(color: Colors.white),
-            decoration: const InputDecoration(
+                SizedBox(height: 16), TextFormField(
+            style: TextStyle(color: context.fast.t1),
+            decoration:       InputDecoration(
                 labelText: 'Nom du Restaurant *',
-                labelStyle: TextStyle(color: Color(0xFFA1A1AA))),
+                labelStyle: TextStyle(color: context.fast.t2)),
             validator: (val) =>
                 val == null || val.isEmpty ? 'Requis' : null,
             onSaved: (val) => _restoName = val ?? '',
           ),
-          const SizedBox(height: 16),
-          TextFormField(
-            style: const TextStyle(color: Colors.white),
-            decoration: const InputDecoration(
+                SizedBox(height: 16), TextFormField(
+            style: TextStyle(color: context.fast.t1),
+            decoration:       InputDecoration(
                 labelText: 'Ville',
-                labelStyle: TextStyle(color: Color(0xFFA1A1AA))),
+                labelStyle: TextStyle(color: context.fast.t2)),
             onSaved: (val) => _city = val ?? '',
           ),
-          const SizedBox(height: 16),
+                SizedBox(height: 16),
           DropdownButtonFormField<String>(
             initialValue: _cuisineType,
-            dropdownColor: const Color(0xFF18181B),
-            style: const TextStyle(color: Colors.white),
-            decoration: const InputDecoration(
+            dropdownColor: context.fast.card,
+            style: TextStyle(color: context.fast.t1),
+            decoration:       InputDecoration(
                 labelText: 'Type de cuisine',
-                labelStyle: TextStyle(color: Color(0xFFA1A1AA))),
+                labelStyle: TextStyle(color: context.fast.t2)),
             items: _cuisines
                 .map((c) => DropdownMenuItem(value: c, child: Text(c)))
                 .toList(),
@@ -395,27 +389,24 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  Widget _buildTimeSlider(String title, double value, double min, double max,
-      Color color, ValueChanged<double> onChanged) {
+  Widget _buildTimeSlider(String title, double value, double min, double max, Color color, ValueChanged<double> onChanged) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(title,
-                style: const TextStyle(
-                    color: Colors.white,
+          children: [ Text(title,
+                style: TextStyle(
+                    color: context.fast.t1,
                     fontWeight: FontWeight.bold,
-                    fontSize: 15)),
-            Text('${value.round()} min',
+                    fontSize: 15)), Text('${value.round()} min',
                 style: TextStyle(
                     color: color,
                     fontWeight: FontWeight.bold,
                     fontSize: 16)),
           ],
         ),
-        const SizedBox(height: 8),
+              SizedBox(height: 8),
         Row(
           children: [
             Padding(
@@ -430,11 +421,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 data: SliderTheme.of(context).copyWith(
                   trackHeight: 6.0,
                   thumbShape:
-                      const RoundSliderThumbShape(enabledThumbRadius: 14.0),
+                            RoundSliderThumbShape(enabledThumbRadius: 14.0),
                   overlayShape:
-                      const RoundSliderOverlayShape(overlayRadius: 28.0),
+                            RoundSliderOverlayShape(overlayRadius: 28.0),
                   activeTrackColor: color,
-                  inactiveTrackColor: const Color(0xFF27272A),
+                  inactiveTrackColor: context.fast.line,
                   thumbColor: color,
                   overlayColor: color.withValues(alpha: 0.15),
                   tickMarkShape: SliderTickMarkShape.noTickMark,

@@ -10,6 +10,7 @@ import 'resto_menu_screen.dart';
 import 'resto_stats_screen.dart';
 import 'resto_settings_screen.dart';
 import 'resto_profile_screen.dart';
+import '../../theme.dart';
 
 class RestoMainShell extends StatefulWidget {
   const RestoMainShell({super.key});
@@ -154,13 +155,13 @@ class _RestoMainShellState extends State<RestoMainShell> {
       children: [
         Scaffold(
           key: _scaffoldKey,
-          backgroundColor: const Color(0xFF09090B),
+          backgroundColor: context.fast.bg,
           appBar: AppBar(
-            backgroundColor: const Color(0xFF18181B),
+            backgroundColor: context.fast.card,
             surfaceTintColor: Colors.transparent,
             elevation: 0,
             titleSpacing: 16,
-            iconTheme: const IconThemeData(color: Colors.white),
+            iconTheme: IconThemeData(color: context.fast.t1),
             title: Row(
               children: [
                 Container(
@@ -178,13 +179,12 @@ class _RestoMainShellState extends State<RestoMainShell> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
-                const Text(
+                      SizedBox(width: 12), Text(
                   'FAST Resto',
                   style: TextStyle(
                     fontWeight: FontWeight.w900,
                     fontSize: 16,
-                    color: Colors.white,
+                    color: context.fast.t1,
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -210,13 +210,13 @@ class _RestoMainShellState extends State<RestoMainShell> {
                         const KitchenScreen(),
                   );
                 },
-                icon: const Icon(Icons.soup_kitchen, size: 18),
-                label: const Text(
+                icon: Icon(Icons.soup_kitchen, size: 18),
+                label: Text(
                   'Cuisine',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF27272A),
+                  backgroundColor: context.fast.line,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   shape: RoundedRectangleBorder(
@@ -228,28 +228,26 @@ class _RestoMainShellState extends State<RestoMainShell> {
             ],
           ),
           drawer: Drawer(
-            backgroundColor: const Color(0xFF18181B),
+            backgroundColor: context.fast.card,
             child: ListView(
               padding: EdgeInsets.zero,
               children: [
                 DrawerHeader(
-                  decoration: const BoxDecoration(color: Color(0xFF09090B)),
+                  decoration: BoxDecoration(gradient: FASTBrand.accentGradient),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      const Text(
+                    children: [ Text(
                         'FAST',
                         style: TextStyle(
                           color: Color(0xFFF59E0B),
                           fontSize: 24,
                           fontWeight: FontWeight.w900,
                         ),
-                      ),
-                      Text(
+                      ), Text(
                         provider.settings?.name ?? 'Mon Restaurant',
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: context.fast.t1,
                           fontSize: 16,
                         ),
                       ),
@@ -257,35 +255,33 @@ class _RestoMainShellState extends State<RestoMainShell> {
                   ),
                 ),
                 SwitchListTile(
-                  title: const Text(
+                  title: Text(
                     'Mode Rush',
-                    style: TextStyle(color: Colors.white),
+                    style: TextStyle(color: context.fast.t1),
                   ),
-                  subtitle: const Text(
+                  subtitle: Text(
                     'Augmente les temps de prépa',
-                    style: TextStyle(color: Color(0xFFA1A1AA), fontSize: 12),
+                    style: TextStyle(color: context.fast.t2, fontSize: 12),
                   ),
                   activeThumbColor: const Color(0xFFEF4444),
                   value: provider.isRushMode,
                   onChanged: (val) => provider.toggleRushMode(),
-                  secondary: const Icon(
-                    Icons.local_fire_department,
+                  secondary: const Icon( Icons.local_fire_department,
                     color: Color(0xFFEF4444),
                   ),
                 ),
-                const Divider(color: Color(0xFF27272A)),
+                      Divider(color: context.fast.line),
                 ListTile(
-                  leading: const Icon(
-                    Icons.help_outline,
+                  leading: Icon( Icons.help_outline,
                     color: Color(0xFFF59E0B),
                   ),
-                  title: const Text(
+                  title: Text(
                     'Revoir le tutoriel',
-                    style: TextStyle(color: Colors.white),
+                    style: TextStyle(color: context.fast.t1),
                   ),
-                  subtitle: const Text(
+                  subtitle: Text(
                     'Redécouvrir les fonctions principales',
-                    style: TextStyle(color: Color(0xFFA1A1AA), fontSize: 12),
+                    style: TextStyle(color: context.fast.t2, fontSize: 12),
                   ),
                   onTap: _startTutorial,
                 ),
@@ -297,13 +293,13 @@ class _RestoMainShellState extends State<RestoMainShell> {
               if (provider.isRushMode)
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  color: const Color(0xFFEF4444),
-                  child: const Text(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  color: Color(0xFFEF4444),
+                  child: Text(
                     '🔥 MODE RUSH ACTIF - Temps de préparation augmentés',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: Colors.white,
+                      color: context.fast.t1,
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
                     ),
@@ -315,9 +311,9 @@ class _RestoMainShellState extends State<RestoMainShell> {
           bottomNavigationBar: BottomNavigationBar(
             currentIndex: _currentIndex,
             onTap: (index) => setState(() => _currentIndex = index),
-            backgroundColor: const Color(0xFF18181B),
-            selectedItemColor: const Color(0xFFF59E0B),
-            unselectedItemColor: const Color(0xFF71717A),
+            backgroundColor: context.fast.card,
+            selectedItemColor: Color(0xFFF59E0B),
+            unselectedItemColor: context.fast.t3,
             type: BottomNavigationBarType.fixed,
             items: [
               BottomNavigationBarItem(

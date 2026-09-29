@@ -6,6 +6,7 @@ import '../resto_provider.dart';
 import '../main.dart';
 import 'resto/onboarding_screen.dart';
 import 'role_selection_screen.dart';
+import '../theme.dart';
 
 class AuthScreen extends StatefulWidget {
   final String? initialRole; // 'CLIENT', 'RESTAURANT' or 'LIVREUR'
@@ -151,12 +152,12 @@ class _AuthScreenState extends State<AuthScreen>
         );
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFF09090B),
+        backgroundColor: context.fast.bg,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            icon: Icon(Icons.arrow_back, color: context.fast.t1),
             onPressed: () {
               if (Navigator.canPop(context)) {
                 Navigator.pop(context);
@@ -174,21 +175,21 @@ class _AuthScreenState extends State<AuthScreen>
                 : widget.initialRole == 'LIVREUR'
                     ? 'Espace Livreur'
                     : 'Espace Client',
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold),
           ),
         ),
         body: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.all(24),
             child: Column(
               children: [
                 TabBar(
                   controller: _tabController,
-                  indicatorColor: const Color(0xFFF59E0B),
+                  indicatorColor: Color(0xFFF59E0B),
                   indicatorSize: TabBarIndicatorSize.tab,
-                  dividerColor: const Color(0xFF27272A),
-                  labelColor: Colors.white,
-                  unselectedLabelColor: const Color(0xFFA1A1AA),
+                  dividerColor: context.fast.line,
+                  labelColor: context.fast.t1,
+                  unselectedLabelColor: context.fast.t2,
                   labelStyle: const TextStyle(
                       fontWeight: FontWeight.bold, fontSize: 15),
                   unselectedLabelStyle: const TextStyle(
@@ -235,7 +236,7 @@ class _AuthScreenState extends State<AuthScreen>
                 return null;
               },
             ),
-            const SizedBox(height: 20),
+                  SizedBox(height: 20),
             _buildTextField(
               controller: _loginPassword,
               label: 'Mot de passe',
@@ -247,7 +248,7 @@ class _AuthScreenState extends State<AuthScreen>
                   _obscureLoginPwd
                       ? Icons.visibility_off
                       : Icons.visibility,
-                  color: const Color(0xFF71717A),
+                  color: context.fast.t3,
                   size: 20,
                 ),
                 onPressed: () =>
@@ -258,7 +259,7 @@ class _AuthScreenState extends State<AuthScreen>
                 return null;
               },
             ),
-            const SizedBox(height: 32),
+                  SizedBox(height: 32),
             Consumer<AuthProvider>(
               builder: (context, auth, _) {
                 if (auth.error != null) {
@@ -279,8 +280,8 @@ class _AuthScreenState extends State<AuthScreen>
                 return ElevatedButton(
                   onPressed: auth.state == AuthState.loading ? null : _handleLogin,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFF59E0B),
-                    foregroundColor: const Color(0xFF09090B),
+                    backgroundColor: Color(0xFFF59E0B),
+                    foregroundColor: FASTBrand.onAmber,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -288,12 +289,12 @@ class _AuthScreenState extends State<AuthScreen>
                     elevation: 0,
                   ),
                   child: auth.state == AuthState.loading
-                      ? const SizedBox(
+                      ?       SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: Color(0xFF09090B),
+                            color: FASTBrand.onAmber,
                           ),
                         )
                       : const Text(
@@ -327,7 +328,7 @@ class _AuthScreenState extends State<AuthScreen>
                 return null;
               },
             ),
-            const SizedBox(height: 20),
+                  SizedBox(height: 20),
             _buildTextField(
               controller: _registerEmail,
               label: 'Email',
@@ -340,7 +341,7 @@ class _AuthScreenState extends State<AuthScreen>
                 return null;
               },
             ),
-            const SizedBox(height: 20),
+                  SizedBox(height: 20),
             _buildTextField(
               controller: _registerPhone,
               label: 'Téléphone',
@@ -352,15 +353,14 @@ class _AuthScreenState extends State<AuthScreen>
                 return null;
               },
             ),
-            const SizedBox(height: 20),
-            if (widget.initialRole == 'LIVREUR') ...[
-              const Text(
+                  SizedBox(height: 20),
+            if (widget.initialRole == 'LIVREUR') ...[ Text(
                 'Mode de disponibilité',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFFE4E4E7)),
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: context.fast.t1),
               ),
-              const SizedBox(height: 8),
+                    SizedBox(height: 8),
               SegmentedButton<String>(
-                segments: const [
+                segments:       [
                   ButtonSegment(
                     value: 'OCCASIONAL',
                     icon: Icon(Icons.flash_on_outlined),
@@ -376,25 +376,24 @@ class _AuthScreenState extends State<AuthScreen>
                 onSelectionChanged: (selection) => setState(() => _driverType = selection.first),
                 showSelectedIcon: false,
                 style: ButtonStyle(
-                  minimumSize: const WidgetStatePropertyAll(Size(0, 48)),
+                  minimumSize:       WidgetStatePropertyAll(Size(0, 48)),
                   foregroundColor: WidgetStateProperty.resolveWith(
                     (states) => states.contains(WidgetState.selected)
-                        ? const Color(0xFF09090B)
-                        : const Color(0xFFE4E4E7),
+                        ? context.fast.bg
+                        : context.fast.t1,
                   ),
                   backgroundColor: WidgetStateProperty.resolveWith(
                     (states) => states.contains(WidgetState.selected)
-                        ? const Color(0xFFF59E0B)
-                        : const Color(0xFF18181B),
+                        ?       Color(0xFFF59E0B)
+                        : context.fast.card,
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
+                    SizedBox(height: 8), Text(
                 _driverType == 'OCCASIONAL'
                     ? 'Connectez-vous librement lorsque vous souhaitez livrer.'
                     : 'Définissez des créneaux réguliers et mettez-les en pause si besoin.',
-                style: const TextStyle(color: Color(0xFFA1A1AA), fontSize: 12, height: 1.4),
+                style: TextStyle(color: context.fast.t2, fontSize: 12, height: 1.4),
               ),
               const SizedBox(height: 20),
             ],
@@ -409,7 +408,7 @@ class _AuthScreenState extends State<AuthScreen>
                   _obscureRegisterPwd
                       ? Icons.visibility_off
                       : Icons.visibility,
-                  color: const Color(0xFF71717A),
+                  color: context.fast.t3,
                   size: 20,
                 ),
                 onPressed: () =>
@@ -423,7 +422,7 @@ class _AuthScreenState extends State<AuthScreen>
                 return null;
               },
             ),
-            const SizedBox(height: 32),
+                  SizedBox(height: 32),
             Consumer<AuthProvider>(
               builder: (context, auth, _) {
                 if (auth.error != null) {
@@ -445,8 +444,8 @@ class _AuthScreenState extends State<AuthScreen>
                   onPressed:
                       auth.state == AuthState.loading ? null : _handleRegister,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFF59E0B),
-                    foregroundColor: const Color(0xFF09090B),
+                    backgroundColor: Color(0xFFF59E0B),
+                    foregroundColor: FASTBrand.onAmber,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -454,12 +453,12 @@ class _AuthScreenState extends State<AuthScreen>
                     elevation: 0,
                   ),
                   child: auth.state == AuthState.loading
-                      ? const SizedBox(
+                      ?       SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: Color(0xFF09090B),
+                            color: FASTBrand.onAmber,
                           ),
                         )
                       : const Text(
@@ -480,41 +479,38 @@ class _AuthScreenState extends State<AuthScreen>
     required TextEditingController controller,
     required String label,
     required String hint,
-    required IconData icon,
-    TextInputType? keyboardType,
+    required IconData icon, TextInputType? keyboardType,
     bool obscureText = false,
     Widget? suffix,
     String? Function(String?)? validator,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
+      children: [ Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: Color(0xFFE4E4E7),
+            color: context.fast.t1,
           ),
         ),
-        const SizedBox(height: 8),
-        TextFormField(
+              SizedBox(height: 8), TextFormField(
           controller: controller,
           obscureText: obscureText,
           keyboardType: keyboardType,
           validator: validator,
-          style: const TextStyle(color: Colors.white, fontSize: 14),
+          style: TextStyle(color: context.fast.t1, fontSize: 14),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: const TextStyle(color: Color(0xFF52525B), fontSize: 14),
-            prefixIcon: Icon(icon, color: const Color(0xFF71717A), size: 18),
+            hintStyle: TextStyle(color: context.fast.faint, fontSize: 14),
+            prefixIcon: Icon(icon, color: context.fast.t3, size: 18),
             suffixIcon: suffix,
             filled: true,
-            fillColor: const Color(0xFF18181B),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            fillColor: context.fast.card,
+            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF27272A), width: 1),
+              borderSide: BorderSide(color: context.fast.line, width: 1),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),

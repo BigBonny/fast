@@ -7,9 +7,10 @@ import 'package:url_launcher/url_launcher.dart';
 import '../provider.dart';
 import '../models.dart';
 import '../services/map_helper.dart';
+import '../theme.dart';
 
 class RestaurantScreen extends StatelessWidget {
-  const RestaurantScreen({super.key});
+        RestaurantScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -33,17 +34,14 @@ class RestaurantScreen extends StatelessWidget {
               fit: BoxFit.cover,
               filterQuality: FilterQuality.low,
               errorBuilder: (context, error, stackTrace) =>
-                  Container(height: 160, color: Colors.grey),
+                  Container(height: 160, color: context.fast.cardHigh),
             ),
             // Gradient Overlay
             Positioned.fill(
               child: Container(
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [
-                      Colors.black54,
-                      Colors.transparent,
-                      Colors.black87,
+                    colors: [ Colors.black54, Colors.transparent, Colors.black87,
                     ],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
@@ -57,7 +55,7 @@ class RestaurantScreen extends StatelessWidget {
               left: 12,
               child: Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xFF09090B).withValues(alpha: 0.8),
+                  color: context.fast.bg.withValues(alpha: 0.8),
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
@@ -65,9 +63,8 @@ class RestaurantScreen extends StatelessWidget {
                     provider.selectRestaurant(null);
                     provider.navigateToScreen('home');
                   },
-                  icon: const Icon(
-                    Icons.arrow_back,
-                    color: Colors.white,
+                  icon: Icon( Icons.arrow_back,
+                    color: context.fast.t1,
                     size: 20,
                   ),
                 ),
@@ -82,7 +79,7 @@ class RestaurantScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(
+                    padding: EdgeInsets.symmetric(
                       horizontal: 6,
                       vertical: 2,
                     ),
@@ -90,17 +87,16 @@ class RestaurantScreen extends StatelessWidget {
                       color: const Color(0xFFF59E0B),
                       borderRadius: BorderRadius.circular(4),
                     ),
-                    child: const Text(
+                    child: Text(
                       '⚡ CLICK & COLLECT',
                       style: TextStyle(
                         fontSize: 8,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF09090B),
+                        color: FASTBrand.onAmber,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 6),
-                  Text(
+                        SizedBox(height: 6), Text(
                     rest.name,
                     style: const TextStyle(
                       fontSize: 18,
@@ -116,85 +112,76 @@ class RestaurantScreen extends StatelessWidget {
 
         // Restaurant Meta Info Section
         Padding(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Meta chips
               Row(
-                children: [
-                  const Icon(Icons.star, color: Color(0xFFF59E0B), size: 16),
-                  const SizedBox(width: 4),
-                  Text(
+                children: [ Icon(Icons.star, color: Color(0xFFF59E0B), size: 16),
+                        SizedBox(width: 4), Text(
                     '${rest.rating} (${rest.reviewsCount} avis)',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
-                      color: Colors.white,
+                      color: context.fast.t1,
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  const Icon(
-                    Icons.access_time_filled,
-                    color: Color(0xFFA1A1AA),
+                        SizedBox(width: 12), Icon( Icons.access_time_filled,
+                    color: context.fast.t2,
                     size: 14,
                   ),
-                  const SizedBox(width: 4),
-                  Text(
+                        SizedBox(width: 4), Text(
                     '${rest.pickupPrepTime} min de prép',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
-                      color: Color(0xFFA1A1AA),
+                      color: context.fast.t2,
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  const Icon(
-                    Icons.location_on,
-                    color: Color(0xFFA1A1AA),
+                        SizedBox(width: 12), Icon( Icons.location_on,
+                    color: context.fast.t2,
                     size: 14,
                   ),
-                  const SizedBox(width: 4),
-                  Text(
+                        SizedBox(width: 4), Text(
                     '${rest.distance} km',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
-                      color: Color(0xFFA1A1AA),
+                      color: context.fast.t2,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+                    SizedBox(height: 12),
               // Description
-              Text(
+ Text(
                 rest.description,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
-                  color: Color(0xFFA1A1AA),
+                  color: context.fast.t2,
                   height: 1.4,
                 ),
               ),
-              const SizedBox(height: 8),
+                    SizedBox(height: 8),
               // Address
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(Icons.map, color: Color(0xFF71717A), size: 14),
-                  const SizedBox(width: 6),
+                children: [ Icon(Icons.map, color: context.fast.t3, size: 14),
+                        SizedBox(width: 6),
                   Expanded(
                     child: Text(
                       rest.address,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
-                        color: Color(0xFF71717A),
+                        color: context.fast.t3,
                         fontFamily: 'monospace',
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+                    SizedBox(height: 12),
 
               // Mini Map (MapLibre GL + OpenFreeMap)
               ClipRRect(
@@ -228,7 +215,7 @@ class RestaurantScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 12),
+                    SizedBox(height: 12),
               Semantics(
                 button: true,
                 label: 'Ouvrir l’itinéraire à pied dans Google Maps',
@@ -237,11 +224,11 @@ class RestaurantScreen extends StatelessWidget {
                   height: 48,
                   child: ElevatedButton.icon(
                     onPressed: () => _openGoogleMapsDirections(context, rest),
-                    icon: const Icon(Icons.directions_walk, size: 20),
-                    label: const Text('ITINÉRAIRE À PIED · GOOGLE MAPS'),
+                    icon: Icon(Icons.directions_walk, size: 20),
+                    label: Text('ITINÉRAIRE À PIED · GOOGLE MAPS'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFF59E0B),
-                      foregroundColor: const Color(0xFF09090B),
+                      backgroundColor: Color(0xFFF59E0B),
+                      foregroundColor: FASTBrand.onAmber,
                       elevation: 0,
                       textStyle: const TextStyle(
                         fontSize: 11,
@@ -259,10 +246,10 @@ class RestaurantScreen extends StatelessWidget {
           ),
         ),
 
-        const Divider(color: Color(0xFF27272A), height: 1),
+              Divider(color: context.fast.line, height: 1),
 
         // Menu title
-        const Padding(
+              Padding(
           padding: EdgeInsets.fromLTRB(16, 20, 16, 8),
           child: Text(
             'ARTICLES DU MENU',
@@ -270,29 +257,29 @@ class RestaurantScreen extends StatelessWidget {
               fontSize: 10,
               fontWeight: FontWeight.bold,
               letterSpacing: 1.0,
-              color: Color(0xFF71717A),
+              color: context.fast.t3,
             ),
           ),
         ),
 
         // Menu list items
         if (rest.menu.isEmpty)
-          const Padding(
+                Padding(
             padding: EdgeInsets.all(32),
             child: Center(
               child: Text(
                 'Aucun article disponible au menu.',
-                style: TextStyle(color: Color(0xFF71717A)),
+                style: TextStyle(color: context.fast.t3),
               ),
             ),
           )
         else
           ListView.separated(
             shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
+            physics:       NeverScrollableScrollPhysics(),
             itemCount: rest.menu.length,
             separatorBuilder: (context, index) =>
-                const Divider(color: Color(0xFF27272A), height: 1),
+                      Divider(color: context.fast.line, height: 1),
             itemBuilder: (context, index) {
               final item = rest.menu[index];
               return _buildMenuItemTile(context, provider, item);
@@ -360,7 +347,7 @@ class RestaurantScreen extends StatelessWidget {
       ..showSnackBar(
         SnackBar(
           content: Text(message),
-          backgroundColor: const Color(0xFF27272A),
+          backgroundColor: context.fast.line,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -374,35 +361,32 @@ class RestaurantScreen extends StatelessWidget {
     return InkWell(
       onTap: () => _showAddToCartDialog(context, provider, item),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
+                children: [ Text(
                     item.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
-                      color: Colors.white,
+                      color: context.fast.t1,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
+                        SizedBox(height: 4), Text(
                     item.description,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11,
-                      color: Color(0xFFA1A1AA),
+                      color: context.fast.t2,
                       height: 1.4,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 8),
-                  Text(
+                  const SizedBox(height: 8), Text(
                     '€${item.price.toStringAsFixed(2)}',
                     style: const TextStyle(
                       fontWeight: FontWeight.w900,
@@ -413,7 +397,7 @@ class RestaurantScreen extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 16),
+                  SizedBox(width: 16),
             Stack(
               clipBehavior: Clip.none,
               children: [
@@ -430,11 +414,11 @@ class RestaurantScreen extends StatelessWidget {
                     errorBuilder: (context, error, stackTrace) => Container(
                       width: 72,
                       height: 72,
-                      color: const Color(0xFF27272A),
+                      color: context.fast.line,
                     ),
                   ),
                 ),
-                const Positioned(
+                      Positioned(
                   bottom: -6,
                   right: -6,
                   child: DecoratedBox(
@@ -442,7 +426,7 @@ class RestaurantScreen extends StatelessWidget {
                       color: Color(0xFFF59E0B),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(Icons.add, color: Color(0xFF09090B), size: 20),
+                    child: Icon(Icons.add, color: FASTBrand.onAmber, size: 20),
                   ),
                 ),
               ],
@@ -481,7 +465,7 @@ class RestaurantScreen extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      backgroundColor: const Color(0xFF18181B),
+      backgroundColor: context.fast.card,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -506,35 +490,34 @@ class RestaurantScreen extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           // Item Name & Description
-                          Text(
+ Text(
                             item.name,
-                            style: const TextStyle(
+                            style:       TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: context.fast.t1,
                             ),
                           ),
                           if (item.description.isNotEmpty) ...[
-                            const SizedBox(height: 6),
-                            Text(
+                            const SizedBox(height: 6), Text(
                               item.description,
-                              style: const TextStyle(
+                              style:       TextStyle(
                                 fontSize: 12,
-                                color: Color(0xFFA1A1AA),
+                                color: context.fast.t2,
                               ),
                             ),
                           ],
                           const SizedBox(height: 16),
-                          const Divider(color: Color(0xFF27272A), height: 1),
+                                Divider(color: context.fast.line, height: 1),
                           const SizedBox(height: 16),
 
                           // Free options — no extra charge
-                          const Text(
+                                Text(
                             'Options',
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: context.fast.t1,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -546,9 +529,9 @@ class RestaurantScreen extends StatelessWidget {
                                   (option) => FilterChip(
                                     label: Text(
                                       option,
-                                      style: const TextStyle(
+                                      style:       TextStyle(
                                         fontSize: 12,
-                                        color: Colors.white,
+                                        color: context.fast.t1,
                                       ),
                                     ),
                                     selected: selectedFree.contains(option),
@@ -561,11 +544,11 @@ class RestaurantScreen extends StatelessWidget {
                                         }
                                       });
                                     },
-                                    backgroundColor: const Color(0xFF09090B),
+                                    backgroundColor: context.fast.bg,
                                     side: BorderSide(
                                       color: selectedFree.contains(option)
                                           ? const Color(0xFFF59E0B)
-                                          : const Color(0xFF3F3F46),
+                                          : context.fast.faint,
                                     ),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(8),
@@ -578,12 +561,12 @@ class RestaurantScreen extends StatelessWidget {
 
                           // Paid supplements — from item.supplements
                           if (item.supplements.isNotEmpty) ...[
-                            const Text(
+                                  Text(
                               'Suppléments',
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: context.fast.t1,
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -595,9 +578,9 @@ class RestaurantScreen extends StatelessWidget {
                                     (s) => FilterChip(
                                       label: Text(
                                         '${s.name} (+${s.price.toStringAsFixed(2)}€)',
-                                        style: const TextStyle(
+                                        style:       TextStyle(
                                           fontSize: 12,
-                                          color: Colors.white,
+                                          color: context.fast.t1,
                                         ),
                                       ),
                                       selected: selectedPaid.contains(s.id),
@@ -610,11 +593,11 @@ class RestaurantScreen extends StatelessWidget {
                                           }
                                         });
                                       },
-                                      backgroundColor: const Color(0xFF09090B),
+                                      backgroundColor: context.fast.bg,
                                       side: BorderSide(
                                         color: selectedPaid.contains(s.id)
                                             ? const Color(0xFFF59E0B)
-                                            : const Color(0xFF3F3F46),
+                                            : context.fast.faint,
                                       ),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(8),
@@ -627,42 +610,41 @@ class RestaurantScreen extends StatelessWidget {
                           ],
 
                           // Allergy notes multiline field
-                          const Text(
+                                Text(
                             'ALLERGIES / NOTES',
                             style: TextStyle(
                               fontSize: 9,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 1.0,
-                              color: Color(0xFF71717A),
+                              color: context.fast.t3,
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          TextField(
+                          const SizedBox(height: 8), TextField(
                             controller: textController,
                             maxLines: 3,
-                            style: const TextStyle(
+                            style:       TextStyle(
                               fontSize: 12,
-                              color: Colors.white,
+                              color: context.fast.t1,
                             ),
                             decoration: InputDecoration(
                               hintText:
                                   'ex. Allergie aux noix, sans lactose...',
-                              hintStyle: const TextStyle(
-                                color: Color(0xFF71717A),
+                              hintStyle:       TextStyle(
+                                color: context.fast.t3,
                                 fontSize: 11,
                               ),
                               filled: true,
-                              fillColor: const Color(0xFF09090B),
+                              fillColor: context.fast.bg,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(
-                                  color: Color(0xFF27272A),
+                                borderSide:       BorderSide(
+                                  color: context.fast.line,
                                 ),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(
-                                  color: Color(0xFF27272A),
+                                borderSide:       BorderSide(
+                                  color: context.fast.line,
                                 ),
                               ),
                               focusedBorder: OutlineInputBorder(
@@ -690,13 +672,12 @@ class RestaurantScreen extends StatelessWidget {
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF09090B),
+                          color: FASTBrand.onAmber,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFF27272A)),
+                          border: Border.all(color: context.fast.line),
                         ),
                         child: Row(
-                          children: [
-                            IconButton(
+                          children: [ IconButton(
                               onPressed: () {
                                 if (qty > 1) {
                                   setModalState(() {
@@ -705,16 +686,14 @@ class RestaurantScreen extends StatelessWidget {
                                 }
                               },
                               icon: const Icon(Icons.remove, size: 16),
-                            ),
-                            Text(
+                            ), Text(
                               '$qty',
-                              style: const TextStyle(
+                              style:       TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
-                                color: Colors.white,
+                                color: context.fast.t1,
                               ),
-                            ),
-                            IconButton(
+                            ), IconButton(
                               onPressed: () {
                                 setModalState(() {
                                   qty++;
@@ -762,7 +741,7 @@ class RestaurantScreen extends StatelessWidget {
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFFF59E0B),
-                                  foregroundColor: const Color(0xFF09090B),
+                                  foregroundColor: FASTBrand.onAmber,
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 16,
                                   ),

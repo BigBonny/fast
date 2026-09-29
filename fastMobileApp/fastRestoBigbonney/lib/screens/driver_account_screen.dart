@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../providers/auth_provider.dart';
 import '../services/delivery_service.dart';
+import '../theme.dart';
 
 class DriverAccountScreen extends StatefulWidget {
   const DriverAccountScreen({super.key});
@@ -54,20 +55,20 @@ class _DriverAccountScreenState extends State<DriverAccountScreen> {
     final initial = (user?.name.isNotEmpty ?? false) ? user!.name[0].toUpperCase() : 'L';
 
     return Scaffold(
-      backgroundColor: const Color(0xFF09090B),
+      backgroundColor: context.fast.bg,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF09090B),
+        backgroundColor: context.fast.bg,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
-        title: const Text(
+        title: Text(
           'Compte livreur',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16),
+          style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.w900, fontSize: 16),
         ),
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFFF59E0B)))
+          ?       Center(child: CircularProgressIndicator(color: Color(0xFFF59E0B)))
           : ListView(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16),
               children: [
                 Row(
                   children: [
@@ -81,93 +82,89 @@ class _DriverAccountScreenState extends State<DriverAccountScreen> {
                       alignment: Alignment.center,
                       child: Text(
                         initial,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.w900,
-                          color: Color(0xFF09090B),
+                          color: FASTBrand.onAmber,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 14),
+                          SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
+                        children: [ Text(
                             user?.name ?? 'Livreur',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w900,
-                              color: Colors.white,
+                              color: context.fast.t1,
                             ),
                           ),
                           if (user?.email.isNotEmpty ?? false)
-                            Text(
+ Text(
                               user!.email,
-                              style: const TextStyle(fontSize: 12, color: Color(0xFFA1A1AA)),
+                              style: TextStyle(fontSize: 12, color: context.fast.t2),
                             ),
                         ],
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
+                      SizedBox(height: 24),
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF18181B),
+                    color: context.fast.card,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFF27272A)),
+                    border: Border.all(color: context.fast.line),
                   ),
                   child: Row(
-                    children: [
-                      const Icon(Icons.payments_outlined, color: Color(0xFFF59E0B), size: 28),
-                      const SizedBox(width: 14),
+                    children: [ Icon(Icons.payments_outlined, color: Color(0xFFF59E0B), size: 28),
+                            SizedBox(width: 14),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
+                        children: [ Text(
                             '${_earningsPlaceholder.toStringAsFixed(2)} €',
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: context.fast.t1,
                               fontSize: 22,
                               fontWeight: FontWeight.w900,
                             ),
-                          ),
-                          const Text(
+                          ), Text(
                             'Gains (aperçu)',
-                            style: TextStyle(color: Color(0xFFA1A1AA), fontSize: 12),
+                            style: TextStyle(color: context.fast.t2, fontSize: 12),
                           ),
                         ],
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
+                      SizedBox(height: 16),
                 Container(
                   decoration: BoxDecoration(
-                    color: const Color(0xFF18181B),
+                    color: context.fast.card,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFF27272A)),
+                    border: Border.all(color: context.fast.line),
                   ),
                   child: Column(
                     children: [
                       ListTile(
-                        leading: const Icon(Icons.calendar_month_outlined, color: Color(0xFF10B981)),
-                        title: const Text('Mon planning', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        leading: Icon(Icons.calendar_month_outlined, color: Color(0xFF10B981)),
+                        title: Text('Mon planning', style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold)),
                         subtitle: Text(
                           _schedules.isEmpty
                               ? 'Aucun créneau configuré'
                               : '${_schedules.length} créneau(x) enregistré(s)',
-                          style: const TextStyle(color: Color(0xFFA1A1AA), fontSize: 11),
+                          style: TextStyle(color: context.fast.t2, fontSize: 11),
                         ),
-                        trailing: const Icon(Icons.open_in_new, color: Color(0xFF71717A), size: 18),
+                        trailing: Icon(Icons.open_in_new, color: context.fast.t3, size: 18),
                         onTap: () => launchUrl(
                           Uri.parse('https://fast-resto.app/livreur/planning'),
                           mode: LaunchMode.externalApplication,
                         ),
                       ),
-                      const Divider(height: 1, color: Color(0xFF27272A)),
+                            Divider(height: 1, color: context.fast.line),
                       ListTile(
                         leading: const Icon(Icons.logout, color: Color(0xFFEF4444)),
                         title: Consumer<AuthProvider>(
@@ -183,8 +180,7 @@ class _DriverAccountScreenState extends State<DriverAccountScreen> {
                                       color: Color(0xFFEF4444),
                                     ),
                                   ),
-                                  SizedBox(width: 12),
-                                  Text(
+                                  SizedBox(width: 12), Text(
                                     'Déconnexion...',
                                     style: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.bold),
                                   ),
@@ -202,11 +198,11 @@ class _DriverAccountScreenState extends State<DriverAccountScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
-                const Center(
+                      SizedBox(height: 24),
+                      Center(
                   child: Text(
                     'FAST Livreur · Livraison à domicile',
-                    style: TextStyle(color: Color(0xFF52525B), fontSize: 11),
+                    style: TextStyle(color: context.fast.faint, fontSize: 11),
                   ),
                 ),
               ],

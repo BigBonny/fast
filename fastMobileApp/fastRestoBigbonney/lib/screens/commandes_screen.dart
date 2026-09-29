@@ -14,6 +14,7 @@ import '../services/location_service.dart';
 import '../services/order_service.dart';
 import '../services/delivery_service.dart';
 import 'qr_screen.dart';
+import '../theme.dart';
 
 class CommandesScreen extends StatefulWidget {
   const CommandesScreen({super.key});
@@ -90,8 +91,7 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
     }
     super.dispose();
   }
-
-  TextEditingController _getHistoryController(String orderId) {
+ TextEditingController _getHistoryController(String orderId) {
     if (!_controllers.containsKey(orderId)) {
       _controllers[orderId] = TextEditingController();
     }
@@ -103,26 +103,26 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
     final provider = Provider.of<FASTProvider>(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF09090B),
+      backgroundColor: context.fast.bg,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF09090B),
+        backgroundColor: context.fast.bg,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         automaticallyImplyLeading: false,
-        title: const Text(
+        title: Text(
           'Commandes',
           style: TextStyle(
-            color: Colors.white,
+            color: context.fast.t1,
             fontWeight: FontWeight.w900,
             fontSize: 18,
           ),
         ),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: const Color(0xFFF59E0B),
+          indicatorColor: Color(0xFFF59E0B),
           indicatorWeight: 2,
-          labelColor: const Color(0xFFF59E0B),
-          unselectedLabelColor: const Color(0xFF71717A),
+          labelColor: Color(0xFFF59E0B),
+          unselectedLabelColor: context.fast.t3,
           labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
           unselectedLabelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
           tabs: const [
@@ -151,28 +151,25 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
       WidgetsBinding.instance.addPostFrameCallback((_) => _stopLocationTracking());
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(32),
+          padding: EdgeInsets.all(32),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text('🚶', style: TextStyle(fontSize: 48)),
-              const SizedBox(height: 12),
-              const Text(
+            children: [ Text('🚶', style: TextStyle(fontSize: 48)),
+                    SizedBox(height: 12), Text(
                 'Aucun suivi actif',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: context.fast.t1),
               ),
-              const SizedBox(height: 6),
-              const Text(
+                    SizedBox(height: 6), Text(
                 'Passez une commande depuis le panier pour activer le suivi de marche !',
-                style: TextStyle(fontSize: 11, color: Color(0xFFA1A1AA)),
+                style: TextStyle(fontSize: 11, color: context.fast.t2),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 16),
+                    SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => provider.navigateToScreen('home'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF59E0B),
-                  foregroundColor: const Color(0xFF09090B),
+                  backgroundColor: Color(0xFFF59E0B),
+                  foregroundColor: FASTBrand.onAmber,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   elevation: 0,
                 ),
@@ -212,7 +209,7 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
     return Stack(
       children: [
         SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -222,7 +219,7 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: activeOrders.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 8),
+                    separatorBuilder: (_, __) =>       SizedBox(width: 8),
                     itemBuilder: (context, index) {
                       final o = activeOrders[index];
                       final selected = index == _selectedActiveIndex;
@@ -232,12 +229,12 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
-                            color: selected ? const Color(0xFF09090B) : Colors.white,
+                            color: selected ? FASTBrand.onAmber : context.fast.t1,
                           ),
                         ),
                         selected: selected,
-                        selectedColor: const Color(0xFFF59E0B),
-                        backgroundColor: const Color(0xFF18181B),
+                        selectedColor: Color(0xFFF59E0B),
+                        backgroundColor: context.fast.card,
                         onSelected: (_) => setState(() => _selectedActiveIndex = index),
                       );
                     },
@@ -246,28 +243,26 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                 const SizedBox(height: 12),
               ],
               _buildTrackerHeader(context, activeOrder, isCompleted, isCancelled),
-              const SizedBox(height: 16),
+                    SizedBox(height: 16),
               if (!isCancelled) ...[
-                if (activeOrder.isDelivery) ...[
-                  const Text(
+                if (activeOrder.isDelivery) ...[ Text(
                     'SUIVI LIVRAISON',
                     style: TextStyle(
                       fontSize: 9,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.0,
-                      color: Color(0xFF71717A),
+                      color: context.fast.t3,
                     ),
                   ),
                   const SizedBox(height: 8),
                   _buildDeliveryTrackingCard(activeOrder),
-                ] else ...[
-                  const Text(
+                ] else ...[ Text(
                     'SUIVI GPS — TRAJET VERS LE RESTAURANT',
                     style: TextStyle(
                       fontSize: 9,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.0,
-                      color: Color(0xFF71717A),
+                      color: context.fast.t3,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -303,11 +298,11 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
 
   Widget _buildTrackerHeader(BuildContext context, Order order, bool isCompleted, bool isCancelled) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF18181B),
+        color: context.fast.card,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF27272A)),
+        border: Border.all(color: context.fast.line),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -320,18 +315,17 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
               height: 56,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) =>
-                  Container(color: Colors.grey, width: 56, height: 56),
+                  Container(color: context.fast.cardHigh, width: 56, height: 56),
             ),
           ),
-          const SizedBox(width: 12),
+                SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
+                  children: [ Text(
                       'SUIVI ACTIF • ${order.id}',
                       style: const TextStyle(
                         fontFamily: 'monospace',
@@ -343,23 +337,20 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                     _buildStatusBadge(order.status),
                   ],
                 ),
-                const SizedBox(height: 4),
-                Text(
+                      SizedBox(height: 4), Text(
                   order.restaurantName,
-                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: Colors.white),
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: context.fast.t1),
                 ),
-                const SizedBox(height: 6),
+                      SizedBox(height: 6),
                 Row(
-                  children: [
-                    const Icon(Icons.directions_walk, size: 12, color: Color(0xFFA1A1AA)),
-                    const SizedBox(width: 4),
-                    Text(
+                  children: [ Icon(Icons.directions_walk, size: 12, color: context.fast.t2),
+                          SizedBox(width: 4), Text(
                       isCompleted
                           ? 'Récupéré'
                           : isCancelled
                               ? 'Annulé'
                               : 'Arrivée estimée dans : ${order.userWalkTimeMinutes} min',
-                      style: const TextStyle(fontSize: 11, color: Color(0xFFA1A1AA), fontWeight: FontWeight.bold),
+                      style: TextStyle(fontSize: 11, color: context.fast.t2, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -372,8 +363,8 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
   }
 
   Widget _buildStatusBadge(OrderStatus status) {
-    Color bg;
-    Color fg;
+ Color bg;
+ Color fg;
     String label;
     switch (status) {
       case OrderStatus.placed:
@@ -382,18 +373,18 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
         label = 'COMMANDÉ';
         break;
       case OrderStatus.preparing:
-        bg = const Color(0xFFF59E0B).withValues(alpha: 0.15);
-        fg = const Color(0xFFF59E0B);
+        bg =       Color(0xFFF59E0B).withValues(alpha: 0.15);
+        fg =       Color(0xFFF59E0B);
         label = 'EN COURS';
         break;
       case OrderStatus.readyForPickup:
-        bg = const Color(0xFF10B981).withValues(alpha: 0.15);
-        fg = const Color(0xFF10B981);
+        bg =       Color(0xFF10B981).withValues(alpha: 0.15);
+        fg =       Color(0xFF10B981);
         label = 'PRÊT';
         break;
       case OrderStatus.completed:
-        bg = const Color(0xFF71717A).withValues(alpha: 0.15);
-        fg = const Color(0xFFA1A1AA);
+        bg = context.fast.t3.withValues(alpha: 0.15);
+        fg = context.fast.t2;
         label = 'RÉCUPÉRÉ';
         break;
       case OrderStatus.cancelled:
@@ -437,7 +428,7 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
       width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFF27272A)),
+        border: Border.all(color: context.fast.line),
       ),
       clipBehavior: Clip.antiAlias,
       child: Stack(
@@ -566,34 +557,31 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
   Widget _buildDeliveryTrackingCard(Order order) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF18181B),
+        color: context.fast.card,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF27272A)),
+        border: Border.all(color: context.fast.line),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: [
-              const Icon(Icons.delivery_dining, color: Color(0xFF10B981), size: 28),
-              const SizedBox(width: 12),
+            children: [ Icon(Icons.delivery_dining, color: Color(0xFF10B981), size: 28),
+                    SizedBox(width: 12),
               Expanded(
                 child: Text(
                   _deliveryStatusLabel ?? _deliveryStatusToLabel(order.deliveryStatus),
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                  style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold, fontSize: 13),
                 ),
               ),
             ],
           ),
           if (_deliveryDriverName != null) ...[
-            const SizedBox(height: 10),
-            Text('Livreur : $_deliveryDriverName', style: const TextStyle(fontSize: 12, color: Color(0xFFA1A1AA))),
+                  SizedBox(height: 10), Text('Livreur : $_deliveryDriverName', style: TextStyle(fontSize: 12, color: context.fast.t2)),
           ],
           if (order.deliveryAddress.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text('📍 ${order.deliveryAddress}', style: const TextStyle(fontSize: 11, color: Color(0xFF71717A))),
+                  SizedBox(height: 8), Text('📍 ${order.deliveryAddress}', style: TextStyle(fontSize: 11, color: context.fast.t3)),
           ],
         ],
       ),
@@ -660,8 +648,8 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
   Widget _buildStatusDescriptionCard(BuildContext context, Order order, bool isCompleted, bool isCancelled) {
     String title = '';
     String desc = '';
-    IconData icon = Icons.info;
-    Color iconColor = const Color(0xFFF59E0B);
+ IconData icon = Icons.info;
+ Color iconColor =       Color(0xFFF59E0B);
 
     if (isCancelled) {
       title = 'Commande annulée';
@@ -699,11 +687,11 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
     }
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF18181B),
+        color: context.fast.card,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF27272A)),
+        border: Border.all(color: context.fast.line),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -716,19 +704,17 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
             ),
             child: Icon(icon, color: iconColor, size: 20),
           ),
-          const SizedBox(width: 12),
+                SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
+              children: [ Text(
                   title,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.white),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: context.fast.t1),
                 ),
-                const SizedBox(height: 4),
-                Text(
+                      SizedBox(height: 4), Text(
                   desc,
-                  style: const TextStyle(fontSize: 11, color: Color(0xFFA1A1AA), height: 1.4),
+                  style: TextStyle(fontSize: 11, color: context.fast.t2, height: 1.4),
                 ),
               ],
             ),
@@ -793,69 +779,62 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF18181B),
-      shape: const RoundedRectangleBorder(
+      backgroundColor: context.fast.card,
+      shape:       RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
         return Padding(
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.all(20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Row(
-                children: [
-                  Icon(Icons.warning, color: Color(0xFFEF4444)),
-                  SizedBox(width: 8),
-                  Text(
+                    Row(
+                children: [ Icon(Icons.warning, color: Color(0xFFEF4444)),
+                  SizedBox(width: 8), Text(
                     'Politique d\'annulation',
-                    style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Colors.white),
+                    style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: context.fast.t1),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              const Text(
+                    SizedBox(height: 12), Text(
                 'Chez FAST, notre politique d\'annulation est transparente et simple. Pas de petits caractères :',
-                style: TextStyle(fontSize: 11, color: Color(0xFFA1A1AA), height: 1.4),
+                style: TextStyle(fontSize: 11, color: context.fast.t2, height: 1.4),
               ),
-              const SizedBox(height: 16),
+                    SizedBox(height: 16),
 
               Container(
-                padding: const EdgeInsets.all(12),
-                margin: const EdgeInsets.only(bottom: 8),
+                padding: EdgeInsets.all(12),
+                margin: EdgeInsets.only(bottom: 8),
                 decoration: BoxDecoration(
-                  color: !prepStarted ? const Color(0xFF0C1D1A) : const Color(0xFF09090B),
+                  color: !prepStarted ?       Color(0xFF10B981).withValues(alpha: Theme.of(context).brightness == Brightness.dark ? 0.12 : 0.08) : context.fast.bg,
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                    color: !prepStarted ? const Color(0xFF10B981).withValues(alpha: 0.3) : const Color(0xFF27272A),
+                    color: !prepStarted ?       Color(0xFF10B981).withValues(alpha: 0.3) : context.fast.line,
                   ),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
+                  children: [ Icon(
                       !prepStarted ? Icons.check_circle : Icons.radio_button_off,
-                      color: !prepStarted ? const Color(0xFF10B981) : const Color(0xFF71717A),
+                      color: !prepStarted ?       Color(0xFF10B981) : context.fast.t3,
                       size: 16,
                     ),
-                    const SizedBox(width: 10),
+                          SizedBox(width: 10),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
+                        children: [ Text(
                             'Cas 1 : Annulation avant préparation',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.white),
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: context.fast.t1),
                           ),
-                          const SizedBox(height: 2),
-                          const Text(
+                                SizedBox(height: 2), Text(
                             'Remboursement intégral (hors frais de service 1,50 € utilisés pour le traitement).',
-                            style: TextStyle(fontSize: 10, color: Color(0xFFA1A1AA), height: 1.3),
+                            style: TextStyle(fontSize: 10, color: context.fast.t2, height: 1.3),
                           ),
                           if (!prepStarted) ...[
-                            const SizedBox(height: 6),
-                            Text(
+                            const SizedBox(height: 6), Text(
                               '👉 ACTIF. Remboursement : ${order.subtotal.toStringAsFixed(2)} €',
                               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: Color(0xFF10B981)),
                             ),
@@ -868,39 +847,35 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
               ),
 
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: prepStarted ? const Color(0xFF2D1616) : const Color(0xFF09090B),
+                  color: prepStarted ?       Color(0xFFEF4444).withValues(alpha: Theme.of(context).brightness == Brightness.dark ? 0.14 : 0.08) : context.fast.bg,
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                    color: prepStarted ? const Color(0xFFEF4444).withValues(alpha: 0.3) : const Color(0xFF27272A),
+                    color: prepStarted ?       Color(0xFFEF4444).withValues(alpha: 0.3) : context.fast.line,
                   ),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
+                  children: [ Icon(
                       prepStarted ? Icons.error : Icons.radio_button_off,
-                      color: prepStarted ? const Color(0xFFEF4444) : const Color(0xFF71717A),
+                      color: prepStarted ?       Color(0xFFEF4444) : context.fast.t3,
                       size: 16,
                     ),
-                    const SizedBox(width: 10),
+                          SizedBox(width: 10),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
+                        children: [ Text(
                             'Cas 2 : Annulation après préparation',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.white),
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: context.fast.t1),
                           ),
-                          const SizedBox(height: 2),
-                          const Text(
+                                SizedBox(height: 2), Text(
                             'Débit total appliqué. La cuisine a déjà utilisé les ingrédients frais pour votre repas.',
-                            style: TextStyle(fontSize: 10, color: Color(0xFFA1A1AA), height: 1.3),
+                            style: TextStyle(fontSize: 10, color: context.fast.t2, height: 1.3),
                           ),
                           if (prepStarted) ...[
-                            const SizedBox(height: 6),
-                            Text(
+                            const SizedBox(height: 6), Text(
                               '👉 ACTIF. Débit : ${order.total.toStringAsFixed(2)} €',
                               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: Color(0xFFEF4444)),
                             ),
@@ -912,7 +887,7 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                 ),
               ),
 
-              const SizedBox(height: 24),
+                    SizedBox(height: 24),
 
               Row(
                 children: [
@@ -920,11 +895,11 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                     child: OutlinedButton(
                       onPressed: () => Navigator.of(context).pop(),
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFF27272A)),
+                        side: BorderSide(color: context.fast.line),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
-                      child: const Text('Garder la commande', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      child: Text('Garder la commande', style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold)),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -993,16 +968,16 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
 
   Widget _buildRatingCard(BuildContext context, FASTProvider provider, Order order) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF18181B),
+      decoration: BoxDecoration(
+        color: context.fast.card,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         border: Border(
-          top: BorderSide(color: Color(0xFF27272A)),
-          left: BorderSide(color: Color(0xFF27272A)),
-          right: BorderSide(color: Color(0xFF27272A)),
+          top: BorderSide(color: context.fast.line),
+          left: BorderSide(color: context.fast.line),
+          right: BorderSide(color: context.fast.line),
         ),
       ),
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+      padding: EdgeInsets.fromLTRB(20, 20, 20, 32),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1012,34 +987,31 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: const Color(0xFF3F3F46),
+                color: context.fast.faint,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
           ),
-          const SizedBox(height: 16),
+                SizedBox(height: 16),
 
           Row(
-            children: [
-              const Text('🎉', style: TextStyle(fontSize: 22)),
-              const SizedBox(width: 10),
+            children: [ Text('🎉', style: TextStyle(fontSize: 22)),
+                    SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
+                  children: [ Text(
                       'Récupéré !',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w900,
-                        color: Colors.white,
+                        color: context.fast.t1,
                       ),
-                    ),
-                    Text(
+                    ), Text(
                       order.restaurantName,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color: Color(0xFFA1A1AA),
+                        color: context.fast.t2,
                       ),
                     ),
                   ],
@@ -1047,13 +1019,11 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
               ),
             ],
           ),
-          const SizedBox(height: 20),
-
-          const Text(
+                SizedBox(height: 20), Text(
             'Comment s\'est passée votre expérience ?',
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: context.fast.t1),
           ),
-          const SizedBox(height: 10),
+                SizedBox(height: 10),
           StatefulBuilder(
             builder: (context, setInnerState) {
               return Row(
@@ -1064,10 +1034,10 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                       setState(() => _pendingRating = (i + 1).toDouble());
                     },
                     child: Padding(
-                      padding: const EdgeInsets.only(right: 6),
+                      padding: EdgeInsets.only(right: 6),
                       child: Icon(
                         filled ? Icons.star_rounded : Icons.star_outline_rounded,
-                        color: filled ? const Color(0xFFF59E0B) : const Color(0xFF3F3F46),
+                        color: filled ?       Color(0xFFF59E0B) : context.fast.faint,
                         size: 32,
                       ),
                     ),
@@ -1076,25 +1046,23 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
               );
             },
           ),
-          const SizedBox(height: 14),
-
-          TextField(
+                SizedBox(height: 14), TextField(
             controller: _commentController,
             maxLines: 2,
-            style: const TextStyle(fontSize: 13, color: Colors.white),
+            style: TextStyle(fontSize: 13, color: context.fast.t1),
             decoration: InputDecoration(
               hintText: 'Laissez un commentaire (optionnel)...',
-              hintStyle: const TextStyle(color: Color(0xFF52525B), fontSize: 12),
+              hintStyle: TextStyle(color: context.fast.faint, fontSize: 12),
               filled: true,
-              fillColor: const Color(0xFF09090B),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              fillColor: context.fast.bg,
+              contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Color(0xFF27272A)),
+                borderSide: BorderSide(color: context.fast.line),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Color(0xFF27272A)),
+                borderSide: BorderSide(color: context.fast.line),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
@@ -1102,20 +1070,20 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
               ),
             ),
           ),
-          const SizedBox(height: 16),
+                SizedBox(height: 16),
 
           Row(
             children: [
               Expanded(
                 child: TextButton(
                   onPressed: () => setState(() => _ratingSubmitted = true),
-                  child: const Text(
+                  child: Text(
                     'Passer',
-                    style: TextStyle(color: Color(0xFF71717A), fontWeight: FontWeight.bold),
+                    style: TextStyle(color: context.fast.t3, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+                    SizedBox(width: 12),
               Expanded(
                 flex: 2,
                 child: ElevatedButton(
@@ -1131,10 +1099,10 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                           setState(() => _ratingSubmitted = true);
                         },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFF59E0B),
-                    foregroundColor: const Color(0xFF09090B),
-                    disabledBackgroundColor: const Color(0xFF27272A),
-                    disabledForegroundColor: const Color(0xFF52525B),
+                    backgroundColor: Color(0xFFF59E0B),
+                    foregroundColor: FASTBrand.onAmber,
+                    disabledBackgroundColor: context.fast.line,
+                    disabledForegroundColor: context.fast.faint,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     elevation: 0,
@@ -1159,20 +1127,17 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
     if (orders.isEmpty) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(32),
+          padding: EdgeInsets.all(32),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text('📜', style: TextStyle(fontSize: 48)),
-              const SizedBox(height: 12),
-              const Text(
+            children: [ Text('📜', style: TextStyle(fontSize: 48)),
+                    SizedBox(height: 12), Text(
                 'Aucun historique de commande',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: context.fast.t1),
               ),
-              const SizedBox(height: 6),
-              const Text(
+                    SizedBox(height: 6), Text(
                 'Une fois que vous aurez récupéré des commandes Click & Collect, l\'historique apparaîtra ici.',
-                style: TextStyle(fontSize: 11, color: Color(0xFFA1A1AA)),
+                style: TextStyle(fontSize: 11, color: context.fast.t2),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -1196,11 +1161,11 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
     final isCompleted = order.status == OrderStatus.completed;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: const Color(0xFF18181B),
+        color: context.fast.card,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF27272A)),
+        border: Border.all(color: context.fast.line),
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -1208,8 +1173,8 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
         children: [
           // Header
           Container(
-            padding: const EdgeInsets.all(16),
-            color: const Color(0xFF09090B),
+            padding: EdgeInsets.all(16),
+            color: FASTBrand.onAmber,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -1221,38 +1186,35 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                     height: 44,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) =>
-                        Container(color: Colors.grey, width: 44, height: 44),
+                        Container(color: context.fast.cardHigh, width: 44, height: 44),
                   ),
                 ),
-                const SizedBox(width: 12),
+                      SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
+                        children: [ Text(
                             order.id,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontFamily: 'monospace',
                               fontWeight: FontWeight.bold,
                               fontSize: 9,
-                              color: Color(0xFFA1A1AA),
+                              color: context.fast.t2,
                             ),
                           ),
                           _buildStatusLabel(order.status),
                         ],
                       ),
-                      const SizedBox(height: 2),
-                      Text(
+                            SizedBox(height: 2), Text(
                         order.restaurantName,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.white),
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: context.fast.t1),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
+                            SizedBox(height: 4), Text(
                         'Commandé le : $formattedDate',
-                        style: const TextStyle(fontSize: 10, color: Color(0xFF71717A)),
+                        style: TextStyle(fontSize: 10, color: context.fast.t3),
                       ),
                     ],
                   ),
@@ -1263,49 +1225,43 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
           
           // Items list
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ...order.items.map((cartItem) {
                   return Padding(
-                    padding: const EdgeInsets.only(bottom: 6),
+                    padding: EdgeInsets.only(bottom: 6),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
+                      children: [ Text(
                           '${cartItem.quantity}x  ${cartItem.menuItem.name}',
-                          style: const TextStyle(fontSize: 12, color: Color(0xFFE4E4E7)),
-                        ),
-                        Text(
+                          style: TextStyle(fontSize: 12, color: context.fast.t1),
+                        ), Text(
                           '€${(cartItem.menuItem.price * cartItem.quantity).toStringAsFixed(2)}',
-                          style: const TextStyle(fontSize: 11, color: Color(0xFFA1A1AA), fontFamily: 'monospace'),
+                          style: TextStyle(fontSize: 11, color: context.fast.t2, fontFamily: 'monospace'),
                         ),
                       ],
                     ),
                   );
                 }),
                 
-                const Divider(color: Color(0xFF27272A), height: 20),
+                      Divider(color: context.fast.line, height: 20),
                 
                 // commission flat fee
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Frais de service FAST', style: TextStyle(fontSize: 11, color: Color(0xFF71717A))),
-                    Text('€${order.serviceFee.toStringAsFixed(2)}', style: const TextStyle(fontSize: 11, color: Color(0xFF71717A), fontFamily: 'monospace')),
+                  children: [ Text('Frais de service FAST', style: TextStyle(fontSize: 11, color: context.fast.t3)), Text('€${order.serviceFee.toStringAsFixed(2)}', style: TextStyle(fontSize: 11, color: context.fast.t3, fontFamily: 'monospace')),
                   ],
                 ),
-                const SizedBox(height: 6),
+                      SizedBox(height: 6),
                 // total paid
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
+                  children: [ Text(
                       'Total payé',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
-                    Text(
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: context.fast.t1),
+                    ), Text(
                       '€${order.total.toStringAsFixed(2)}',
                       style: const TextStyle(
                         fontSize: 13,
@@ -1322,17 +1278,15 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
 
           // Rating Feedback panel (only for completed orders)
           if (isCompleted) ...[
-            const Divider(color: Color(0xFF27272A), height: 1),
+                  Divider(color: context.fast.line, height: 1),
             Container(
-              padding: const EdgeInsets.all(16),
-              color: const Color(0xFF09090B).withValues(alpha: 0.3),
+              padding: EdgeInsets.all(16),
+              color: context.fast.bg.withValues(alpha: 0.3),
               child: order.userRatingSubmitted
-                  ? const Row(
+                  ?       Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.check_circle_outline, color: Color(0xFF10B981), size: 16),
-                        SizedBox(width: 8),
-                        Text(
+                      children: [ Icon(Icons.check_circle_outline, color: Color(0xFF10B981), size: 16),
+                        SizedBox(width: 8), Text(
                           'Avis envoyé avec succès !',
                           style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF10B981)),
                         ),
@@ -1340,17 +1294,16 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                     )
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
+                      children: [ Text(
                           'ÉVALUER CE POINT DE VENTE',
                           style: TextStyle(
                             fontSize: 9,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 1.0,
-                            color: Color(0xFF71717A),
+                            color: context.fast.t3,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                              SizedBox(height: 8),
                         
                         // Stars Picker
                         Row(
@@ -1367,32 +1320,32 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                               },
                               icon: Icon(
                                 isLit ? Icons.star : Icons.star_border,
-                                color: isLit ? const Color(0xFFF59E0B) : const Color(0xFF27272A),
+                                color: isLit ?       Color(0xFFF59E0B) : context.fast.line,
                                 size: 28,
                               ),
                             );
                           }),
                         ),
                         
-                        const SizedBox(height: 10),
+                              SizedBox(height: 10),
                         
                         // Comments field
-                        TextField(
+ TextField(
                           controller: _getHistoryController(order.id),
                           maxLines: 1,
-                          style: const TextStyle(fontSize: 11, color: Colors.white),
+                          style: TextStyle(fontSize: 11, color: context.fast.t1),
                           decoration: InputDecoration(
                             hintText: 'Votre avis sur la température de la nourriture, rapidité...',
-                            hintStyle: const TextStyle(color: Color(0xFF71717A), fontSize: 10),
+                            hintStyle: TextStyle(color: context.fast.t3, fontSize: 10),
                             filled: true,
-                            fillColor: const Color(0xFF09090B),
+                            fillColor: context.fast.bg,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(color: Color(0xFF27272A)),
+                              borderSide: BorderSide(color: context.fast.line),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(color: Color(0xFF27272A)),
+                              borderSide: BorderSide(color: context.fast.line),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
@@ -1402,7 +1355,7 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                           ),
                         ),
                         
-                        const SizedBox(height: 12),
+                              SizedBox(height: 12),
                         
                         // Submit button
                         SizedBox(
@@ -1416,8 +1369,8 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                               _getHistoryController(order.id).clear();
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFF59E0B),
-                              foregroundColor: const Color(0xFF09090B),
+                              backgroundColor: Color(0xFFF59E0B),
+                              foregroundColor: FASTBrand.onAmber,
                               padding: const EdgeInsets.symmetric(vertical: 10),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                               elevation: 0,
@@ -1438,7 +1391,7 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
   }
 
   Widget _buildStatusLabel(OrderStatus status) {
-    Color fg = Colors.grey;
+ Color fg = Colors.grey;
     switch (status) {
       case OrderStatus.completed:
         fg = const Color(0xFF10B981);
@@ -1488,8 +1441,7 @@ class _ConfettiPainter extends CustomPainter {
       const Color(0xFF3B82F6),
       const Color(0xFFEC4899),
       const Color(0xFFA855F7),
-      const Color(0xFFEF4444),
-      Colors.white,
+      const Color(0xFFEF4444), Colors.white,
     ];
 
     for (int i = 0; i < _count; i++) {
@@ -1540,7 +1492,7 @@ class MapRoadmapPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final bgPaint = Paint()
-      ..color = const Color(0xFF0E0E11)
+      ..color = const Color(0xFF0A0A0C)
       ..style = PaintingStyle.fill;
     canvas.drawRect(Offset.zero & size, bgPaint);
 
