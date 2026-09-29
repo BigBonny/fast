@@ -10,7 +10,7 @@ import '../services/map_helper.dart';
 import '../theme.dart';
 
 class RestaurantScreen extends StatelessWidget {
-        RestaurantScreen({super.key});
+        const RestaurantScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

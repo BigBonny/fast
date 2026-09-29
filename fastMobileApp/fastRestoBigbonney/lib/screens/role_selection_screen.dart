@@ -3,7 +3,7 @@ import 'auth_screen.dart';
 import '../theme.dart';
 
 class RoleSelectionScreen extends StatelessWidget {
-        RoleSelectionScreen({super.key});
+        const RoleSelectionScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
