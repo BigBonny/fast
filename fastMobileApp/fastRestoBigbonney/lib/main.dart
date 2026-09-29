@@ -9,6 +9,7 @@ import 'package:app_links/app_links.dart';
 import 'models.dart';
 import 'provider.dart';
 import 'resto_provider.dart';
+import 'theme.dart';
 import 'api/api_client.dart';
 import 'providers/auth_provider.dart';
 import 'screens/home_screen.dart';
@@ -27,8 +28,8 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
-    statusBarIconBrightness: Brightness.light,
-    systemNavigationBarColor: Colors.white,
+    statusBarIconBrightness: Brightness.dark,
+    systemNavigationBarColor: Colors.transparent,
     systemNavigationBarIconBrightness: Brightness.dark,
   ));
 
@@ -61,52 +62,6 @@ class _FASTAppState extends State<FASTApp> with WidgetsBindingObserver {
   bool _onboardingDone = false;
   final _appLinks = AppLinks();
   StreamSubscription<Uri>? _linkSub;
-
-  static ThemeData _darkTheme() => ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF09090B),
-        cardColor: const Color(0xFF18181B),
-        dividerColor: const Color(0xFF27272A),
-        colorScheme: const ColorScheme.dark(
-          primary: Color(0xFFF59E0B),
-          secondary: Color(0xFFD97706),
-          surface: Color(0xFF18181B),
-          error: Color(0xFFEF4444),
-          onPrimary: Color(0xFF09090B),
-          onSecondary: Colors.white,
-          onSurface: Color(0xFFF4F4F5),
-        ),
-        textTheme: const TextTheme(
-          titleLarge: TextStyle(fontFamily: 'sans-serif', fontWeight: FontWeight.w900, fontSize: 22, color: Colors.white),
-          titleMedium: TextStyle(fontFamily: 'sans-serif', fontWeight: FontWeight.w800, fontSize: 18, color: Colors.white),
-          bodyLarge: TextStyle(fontFamily: 'sans-serif', fontWeight: FontWeight.w600, fontSize: 15, color: Color(0xFFE4E4E7)),
-          bodyMedium: TextStyle(fontFamily: 'sans-serif', fontWeight: FontWeight.w500, fontSize: 13, color: Color(0xFFA1A1AA)),
-          labelSmall: TextStyle(fontFamily: 'sans-serif', fontWeight: FontWeight.bold, fontSize: 10, letterSpacing: 1.0, color: Color(0xFF71717A)),
-        ),
-      );
-
-  static ThemeData _lightTheme() => ThemeData(
-        brightness: Brightness.light,
-        scaffoldBackgroundColor: const Color(0xFFFAFAFA),
-        cardColor: Colors.white,
-        dividerColor: const Color(0xFFE4E4E7),
-        colorScheme: const ColorScheme.light(
-          primary: Color(0xFFF59E0B),
-          secondary: Color(0xFFD97706),
-          surface: Colors.white,
-          error: Color(0xFFEF4444),
-          onPrimary: Color(0xFF09090B),
-          onSecondary: Colors.white,
-          onSurface: Color(0xFF18181B),
-        ),
-        textTheme: const TextTheme(
-          titleLarge: TextStyle(fontFamily: 'sans-serif', fontWeight: FontWeight.w900, fontSize: 22, color: Color(0xFF18181B)),
-          titleMedium: TextStyle(fontFamily: 'sans-serif', fontWeight: FontWeight.w800, fontSize: 18, color: Color(0xFF18181B)),
-          bodyLarge: TextStyle(fontFamily: 'sans-serif', fontWeight: FontWeight.w600, fontSize: 15, color: Color(0xFF3F3F46)),
-          bodyMedium: TextStyle(fontFamily: 'sans-serif', fontWeight: FontWeight.w500, fontSize: 13, color: Color(0xFF71717A)),
-          labelSmall: TextStyle(fontFamily: 'sans-serif', fontWeight: FontWeight.bold, fontSize: 10, letterSpacing: 1.0, color: Color(0xFFA1A1AA)),
-        ),
-      );
 
   @override
   void initState() {
@@ -218,8 +173,8 @@ class _FASTAppState extends State<FASTApp> with WidgetsBindingObserver {
       title: 'FAST - Click & Collect',
       debugShowCheckedModeBanner: false,
       themeMode: themeMode,
-      theme: _lightTheme(),
-      darkTheme: _darkTheme(),
+      theme: FASTTheme.light(),
+      darkTheme: FASTTheme.dark(),
       home: _buildHome(),
     );
   }
@@ -260,8 +215,8 @@ class _SplashScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: Color(0xFF09090B),
+    return       Scaffold(
+      backgroundColor: context.fast.bg,
       body: Center(
         child: CircularProgressIndicator(color: Color(0xFFF59E0B)),
       ),
@@ -356,12 +311,12 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF09090B).withValues(alpha: 0.95),
+        backgroundColor: context.fast.bg.withValues(alpha: 0.95),
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         titleSpacing: 16,
         leadingWidth: 0,
-        leading: const SizedBox.shrink(),
+        leading:       SizedBox.shrink(),
         title: GestureDetector(
           onTap: () {
             provider.selectRestaurant(null);
@@ -369,50 +324,48 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
           },
           child: Row(
             children: [
-              // Logo image - Programmatically cropped to hide white outer border
-              Container(
-                width: 32,
-                height: 32,
-                clipBehavior: Clip.antiAlias,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Transform.scale(
-                  scale: 1.35, // Zooms in to crop out the white frame/border
-                  child: Image.asset(
-                    'assets/images/logo.png',
-                    fit: BoxFit.cover,
+              // Logo mark: zap + gradient FAST wordmark (matches website Navbar)
+              const Icon(Icons.bolt, color: FASTBrand.amber, size: 22),
+              ShaderMask(
+                shaderCallback: (bounds) => const LinearGradient(
+                  colors: [
+                    Color(0xFFF59E0B),
+                    Color(0xFFFBBF24),
+                    Color(0xFFF97316),
+                  ],
+                ).createShader(bounds),
+                child: const Text(
+                  'FAST',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w900,
+                    fontStyle: FontStyle.italic,
+                    fontSize: 20,
+                    letterSpacing: -0.5,
+                    color: Colors.white,
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'FAST',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w900,
-                      fontSize: 16,
-                      letterSpacing: 1.2,
-                      color: Colors.white,
+              const Icon(Icons.bolt, color: FASTBrand.amber, size: 22),
+              const SizedBox(width: 8),
+              Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF00C8B3),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF00C8B3).withValues(alpha: 0.6),
+                      blurRadius: 6,
+                      spreadRadius: 1,
                     ),
-                  ),
-                  const Text(
-                    'Chaque minute compte',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFFF59E0B),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),
         ),
-        actions: [
-          IconButton(
+        actions: [ IconButton(
             onPressed: () {
               Navigator.push(
                 context,
@@ -429,10 +382,10 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
               alignment: Alignment.center,
               child: Text(
                 provider.userInitial.isNotEmpty ? provider.userInitial : 'D',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w900,
-                  color: Color(0xFF09090B),
+                  color: FASTBrand.onAmber,
                 ),
               ),
             ),
@@ -455,7 +408,7 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
               right: 0,
               child: SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: SlideTransition(
                     position: _toastSlide,
                     child: GestureDetector(
@@ -465,11 +418,11 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
                         });
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: context.fast.card,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFE4E4E7)),
+                          border: Border.all(color: context.fast.line),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withValues(alpha: 0.1),
@@ -480,22 +433,19 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.notifications_active,
+                          children: [ Icon( Icons.notifications_active,
                               color: Color(0xFFF59E0B),
                               size: 16,
                             ),
-                            const SizedBox(width: 8),
+                                  SizedBox(width: 8),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
+                                children: [ Text(
                                     _toastTitle,
-                                    style: const TextStyle(
-                                      color: Color(0xFF18181B),
+                                    style: TextStyle(
+                                      color: context.fast.t1,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 12,
                                     ),
@@ -503,11 +453,10 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
                                     maxLines: 1,
                                   ),
                                   if (_toastBody.isNotEmpty) ...[
-                                    const SizedBox(height: 2),
-                                    Text(
+                                          SizedBox(height: 2), Text(
                                       _toastBody,
-                                      style: const TextStyle(
-                                        color: Color(0xFF71717A),
+                                      style: TextStyle(
+                                        color: context.fast.t3,
                                         fontSize: 10,
                                       ),
                                       overflow: TextOverflow.ellipsis,
@@ -535,7 +484,7 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
               child: GestureDetector(
                 onTap: () => provider.navigateToScreen('cart'),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF59E0B),
                     borderRadius: BorderRadius.circular(16),
@@ -553,37 +502,35 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
                               color: Colors.black.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
                               '${provider.cartCount}',
-                              style: const TextStyle(
-                                color: Color(0xFF09090B),
+                              style: TextStyle(
+                                color: FASTBrand.onAmber,
                                 fontWeight: FontWeight.w900,
                                 fontSize: 13,
                               ),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                                SizedBox(width: 12),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Text(
+                            children: [ Text(
                                 'Voir le panier',
                                 style: TextStyle(
-                                  color: Color(0xFF09090B),
+                                  color: FASTBrand.onAmber,
                                   fontWeight: FontWeight.w900,
                                   fontSize: 13,
                                 ),
-                              ),
-                              Text(
+                              ), Text(
                                 'Chez : ${provider.selectedRestaurant!.name}',
                                 style: TextStyle(
-                                  color: const Color(0xFF09090B).withValues(alpha: 0.7),
+                                  color: FASTBrand.onAmber.withValues(alpha: 0.7),
                                   fontWeight: FontWeight.bold,
                                   fontSize: 10,
                                 ),
@@ -593,19 +540,16 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
                         ],
                       ),
                       Row(
-                        children: [
-                          Text(
+                        children: [ Text(
                             '€${provider.cartTotal.toStringAsFixed(2)}',
-                            style: const TextStyle(
-                              color: Color(0xFF09090B),
+                            style: TextStyle(
+                              color: FASTBrand.onAmber,
                               fontWeight: FontWeight.w900,
                               fontSize: 15,
                             ),
                           ),
-                          const SizedBox(width: 4),
-                          const Icon(
-                            Icons.chevron_right,
-                            color: Color(0xFF09090B),
+                                SizedBox(width: 4), Icon( Icons.chevron_right,
+                            color: FASTBrand.onAmber,
                             size: 20,
                           ),
                         ],
@@ -619,9 +563,9 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
-          border: const Border(
-            top: BorderSide(color: Color(0xFFE4E4E7), width: 1),
+          color: context.fast.card,
+          border:       Border(
+            top: BorderSide(color: context.fast.line, width: 1),
           ),
           boxShadow: [
             BoxShadow(
@@ -637,14 +581,14 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
             final screen = _getScreenFromIndex(index);
             provider.navigateToScreen(screen);
           },
-          backgroundColor: Colors.white,
-          selectedItemColor: const Color(0xFFF59E0B),
-          unselectedItemColor: const Color(0xFF71717A),
+          backgroundColor: context.fast.card,
+          selectedItemColor: Color(0xFFF59E0B),
+          unselectedItemColor: context.fast.t3,
           type: BottomNavigationBarType.fixed,
-          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 10),
-          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 10),
+          selectedLabelStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 10),
+          unselectedLabelStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 10),
           items: [
-            const BottomNavigationBarItem(
+                  BottomNavigationBarItem(
               icon: Padding(
                 padding: EdgeInsets.only(bottom: 4),
                 child: Icon(Icons.restaurant),
@@ -653,21 +597,20 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
             ),
             BottomNavigationBarItem(
               icon: Padding(
-                padding: const EdgeInsets.only(bottom: 4),
+                padding: EdgeInsets.only(bottom: 4),
                 child: Stack(
-                  children: [
-                    const Icon(Icons.shopping_bag_outlined),
+                  children: [ Icon(Icons.shopping_bag_outlined),
                     if (provider.cartCount > 0)
                       Positioned(
                         right: 0,
                         top: 0,
                         child: Container(
-                          padding: const EdgeInsets.all(2),
-                          decoration: const BoxDecoration(
+                          padding: EdgeInsets.all(2),
+                          decoration: BoxDecoration(
                             color: Color(0xFFEF4444),
                             shape: BoxShape.circle,
                           ),
-                          constraints: const BoxConstraints(
+                          constraints:       BoxConstraints(
                             minWidth: 14,
                             minHeight: 14,
                           ),
@@ -780,9 +723,9 @@ class _DriverShellState extends State<DriverShell> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _index,
         onTap: (i) => setState(() => _index = i),
-        backgroundColor: const Color(0xFF121214),
-        selectedItemColor: const Color(0xFF10B981),
-        unselectedItemColor: const Color(0xFF71717A),
+        backgroundColor: context.fast.bg,
+        selectedItemColor: Color(0xFF10B981),
+        unselectedItemColor: context.fast.t3,
         type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.delivery_dining), label: 'Courses'),

@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
 import 'auth_screen.dart';
+import '../theme.dart';
 
 class RoleSelectionScreen extends StatelessWidget {
-  const RoleSelectionScreen({super.key});
+        RoleSelectionScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF09090B),
+      backgroundColor: context.fast.bg,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: EdgeInsets.all(24.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 24),
+                    SizedBox(height: 24),
               // Logo
               Center(
                 child: Container(
@@ -34,27 +35,25 @@ class RoleSelectionScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 32),
-              const Text(
+                    SizedBox(height: 32), Text(
                 'Bienvenue sur FAST',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w900,
-                  color: Colors.white,
+                  color: context.fast.t1,
                   letterSpacing: -0.5,
                 ),
               ),
-              const SizedBox(height: 8),
-              const Text(
+                    SizedBox(height: 8), Text(
                 'Choisissez votre profil pour continuer',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
-                  color: Color(0xFFA1A1AA),
+                  color: context.fast.t2,
                 ),
               ),
-              const SizedBox(height: 64),
+                    SizedBox(height: 64),
               
               // Client Button
               ElevatedButton(
@@ -67,33 +66,30 @@ class RoleSelectionScreen extends StatelessWidget {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF18181B),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  backgroundColor: context.fast.card,
+                  foregroundColor: context.fast.t1,
+                  padding: EdgeInsets.symmetric(vertical: 24),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
-                    side: const BorderSide(color: Color(0xFF27272A)),
+                    side: BorderSide(color: context.fast.line),
                   ),
                   elevation: 0,
                 ),
-                child: const Column(
-                  children: [
-                    Icon(Icons.person_outline, size: 36, color: Color(0xFFF59E0B)),
-                    SizedBox(height: 16),
-                    Text(
+                child:       Column(
+                  children: [ Icon(Icons.person_outline, size: 36, color: Color(0xFFF59E0B)),
+                    SizedBox(height: 16), Text(
                       'Je suis un Client',
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
-                    SizedBox(height: 4),
-                    Text(
+                    SizedBox(height: 4), Text(
                       'Commander à manger',
-                      style: TextStyle(fontSize: 12, color: Color(0xFFA1A1AA), fontWeight: FontWeight.normal),
+                      style: TextStyle(fontSize: 12, color: context.fast.t2, fontWeight: FontWeight.normal),
                     ),
                   ],
                 ),
               ),
               
-              const SizedBox(height: 20),
+                    SizedBox(height: 20),
               
               // Resto Button
               ElevatedButton(
@@ -106,8 +102,8 @@ class RoleSelectionScreen extends StatelessWidget {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF59E0B),
-                  foregroundColor: const Color(0xFF09090B),
+                  backgroundColor: Color(0xFFF59E0B),
+                  foregroundColor: FASTBrand.onAmber,
                   padding: const EdgeInsets.symmetric(vertical: 24),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
@@ -115,22 +111,19 @@ class RoleSelectionScreen extends StatelessWidget {
                   elevation: 0,
                 ),
                 child: const Column(
-                  children: [
-                    Icon(Icons.restaurant, size: 36),
-                    SizedBox(height: 16),
-                    Text(
+                  children: [ Icon(Icons.restaurant, size: 36),
+                    SizedBox(height: 16), Text(
                       'Je suis un Restaurant',
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
-                    SizedBox(height: 4),
-                    Text(
+                    SizedBox(height: 4), Text(
                       'Gérer mes commandes',
                       style: TextStyle(fontSize: 12, color: Color(0xCC09090B), fontWeight: FontWeight.normal),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+                    SizedBox(height: 20),
 
               // Driver Button
               ElevatedButton(
@@ -143,30 +136,26 @@ class RoleSelectionScreen extends StatelessWidget {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF18181B),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  backgroundColor: context.fast.card,
+                  foregroundColor: context.fast.t1,
+                  padding: EdgeInsets.symmetric(vertical: 20),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
-                    side: const BorderSide(color: Color(0xFF3F3F46)),
+                    side: BorderSide(color: context.fast.faint),
                   ),
                   elevation: 0,
                 ),
-                child: const Column(
-                  children: [
-                    Icon(Icons.delivery_dining_outlined, size: 34, color: Color(0xFF10B981)),
-                    SizedBox(height: 12),
-                    Text(
+                child:       Column(
+                  children: [ Icon(Icons.delivery_dining_outlined, size: 34, color: Color(0xFF10B981)),
+                    SizedBox(height: 12), Text(
                       'Je suis un Livreur',
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
-                    SizedBox(height: 4),
-                    Text(
+                    SizedBox(height: 4), Text(
                       'Occasionnel ou permanent',
-                      style: TextStyle(fontSize: 12, color: Color(0xFFA1A1AA), fontWeight: FontWeight.normal),
+                      style: TextStyle(fontSize: 12, color: context.fast.t2, fontWeight: FontWeight.normal),
                     ),
-                    SizedBox(height: 4),
-                    Text(
+                    SizedBox(height: 4), Text(
                       'Livraison à domicile',
                       style: TextStyle(fontSize: 10, color: Color(0xFF10B981), fontWeight: FontWeight.bold),
                     ),

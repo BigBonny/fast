@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:camera/camera.dart';
 import '../../resto_provider.dart';
 import '../../services/restaurant_service.dart';
+import '../../theme.dart';
 
 class MenuAiScannerScreen extends StatefulWidget {
   const MenuAiScannerScreen({super.key});
@@ -165,10 +166,10 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text(
+        iconTheme: IconThemeData(color: context.fast.t1),
+        title: Text(
           'Assistant IA FAST',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold),
         ),
       ),
       extendBodyBehindAppBar: true,
@@ -191,7 +192,7 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                         ),
                       ),
                     )
-                  : Container(color: const Color(0xFF09090B)),
+                  : Container(color: context.fast.bg),
             ),
 
           // Viewfinder darkened overlay with a clear center cutout
@@ -239,15 +240,13 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 40),
-                  const Text(
+                        SizedBox(height: 40), Text(
                     'Prenez une photo nette du menu',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: context.fast.t1,
                       fontWeight: FontWeight.w600,
                       fontSize: 13,
-                      shadows: [
-                        Shadow(
+                      shadows: [ Shadow(
                           offset: Offset(0, 1),
                           blurRadius: 4,
                           color: Color(0x80000000),
@@ -270,15 +269,14 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   // Gallery picker button
-                  IconButton(
+ IconButton(
                     onPressed: () => _captureAndScan(ImageSource.gallery),
-                    icon: const Icon(
-                      Icons.photo_library_outlined,
-                      color: Colors.white,
+                    icon: Icon( Icons.photo_library_outlined,
+                      color: context.fast.t1,
                       size: 28,
                     ),
                   ),
-                  const SizedBox(width: 48),
+                        SizedBox(width: 48),
                   // Capture camera button in the absolute center
                   Material(
                     color: Colors.transparent,
@@ -292,14 +290,13 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                           color: Colors.white,
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: const Color(0xFF27272A),
+                            color: context.fast.line,
                             width: 6,
                           ),
                         ),
-                        child: const Center(
-                          child: Icon(
-                            Icons.camera_alt,
-                            color: Color(0xFF09090B),
+                        child:       Center(
+                          child: Icon( Icons.camera_alt,
+                            color: FASTBrand.onAmber,
                             size: 28,
                           ),
                         ),
@@ -314,13 +311,12 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
             ),
 
           if (_state == 1)
-            const Center(
+                  Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   CircularProgressIndicator(color: Color(0xFF8B5CF6)),
-                  SizedBox(height: 24),
-                  Text(
+                  SizedBox(height: 24), Text(
                     'L\'IA analyse votre menu...',
                     style: TextStyle(
                       color: Color(0xFF8B5CF6),
@@ -328,23 +324,20 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: 8),
-                  Text(
+                  SizedBox(height: 8), Text(
                     'Extraction des plats et des prix en cours',
-                    style: TextStyle(color: Color(0xFFA1A1AA)),
+                    style: TextStyle(color: context.fast.t2),
                   ),
                 ],
               ),
             ),
 
           if (_state == 2)
-            const Center(
+                  Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.check_circle, color: Color(0xFF10B981), size: 80),
-                  SizedBox(height: 24),
-                  Text(
+                children: [ Icon(Icons.check_circle, color: Color(0xFF10B981), size: 80),
+                  SizedBox(height: 24), Text(
                     'Menu importé avec succès !',
                     style: TextStyle(
                       color: Color(0xFF10B981),
@@ -360,14 +353,11 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
             Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.error_outline,
+                children: [ Icon( Icons.error_outline,
                     color: Color(0xFFEF4444),
                     size: 80,
                   ),
-                  const SizedBox(height: 24),
-                  const Text(
+                        SizedBox(height: 24), Text(
                     'Erreur d\'import',
                     style: TextStyle(
                       color: Color(0xFFEF4444),
@@ -375,26 +365,26 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                        SizedBox(height: 8),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 32),
+                    padding: EdgeInsets.symmetric(horizontal: 32),
                     child: Text(
                       _errorMessage,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Color(0xFFA1A1AA),
+                      style: TextStyle(
+                        color: context.fast.t2,
                         fontSize: 14,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                        SizedBox(height: 24),
                   ElevatedButton(
                     onPressed: () {
                       setState(() => _state = 0);
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFF59E0B),
-                      foregroundColor: const Color(0xFF09090B),
+                      backgroundColor: Color(0xFFF59E0B),
+                      foregroundColor: FASTBrand.onAmber,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),

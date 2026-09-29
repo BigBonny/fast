@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'role_selection_screen.dart';
+import '../theme.dart';
 
 class OnboardingScreen extends StatefulWidget {
   final VoidCallback? onDone;
@@ -67,22 +68,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF09090B),
+      backgroundColor: context.fast.bg,
       body: SafeArea(
         child: Column(
           children: [
             // Skip button
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
+                children: [ TextButton(
                     onPressed: _finishOnboarding,
-                    child: const Text(
+                    child: Text(
                       'Passer',
                       style: TextStyle(
-                        color: Color(0xFF71717A),
+                        color: context.fast.t3,
                         fontWeight: FontWeight.bold,
                         fontSize: 13,
                       ),
@@ -108,7 +108,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
             // Bottom section
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
+              padding: EdgeInsets.fromLTRB(24, 8, 24, 32),
               child: Column(
                 children: [
                   // Dots indicator
@@ -117,20 +117,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     children: List.generate(_slides.length, (i) {
                       final isActive = i == _currentPage;
                       return AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        duration:       Duration(milliseconds: 300),
+                        margin: EdgeInsets.symmetric(horizontal: 4),
                         width: isActive ? 24 : 8,
                         height: 8,
                         decoration: BoxDecoration(
                           color: isActive
                               ? _slides[_currentPage].gradientColors.first
-                              : const Color(0xFF27272A),
+                              : context.fast.line,
                           borderRadius: BorderRadius.circular(4),
                         ),
                       );
                     }),
                   ),
-                  const SizedBox(height: 24),
+                        SizedBox(height: 24),
 
                   // Next / Get Started button
                   SizedBox(
@@ -149,7 +149,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _slides[_currentPage].gradientColors.first,
-                        foregroundColor: const Color(0xFF09090B),
+                        foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),
@@ -177,7 +177,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   Widget _buildSlide(_OnboardingSlide slide) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
+      padding: EdgeInsets.symmetric(horizontal: 32),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -203,31 +203,31 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             child: Icon(
               slide.icon,
               size: 56,
-              color: const Color(0xFF09090B),
+              color: Colors.white,
             ),
           ),
-          const SizedBox(height: 48),
+                SizedBox(height: 48),
 
           // Title
           Text(
             slide.title,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.w900,
-              color: Colors.white,
+              color: context.fast.t1,
               height: 1.2,
             ),
           ),
-          const SizedBox(height: 20),
+                SizedBox(height: 20),
 
           // Description
           Text(
             slide.description,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
-              color: Color(0xFFA1A1AA),
+              color: context.fast.t2,
               height: 1.6,
             ),
           ),

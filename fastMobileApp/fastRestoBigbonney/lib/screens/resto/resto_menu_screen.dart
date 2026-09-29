@@ -4,6 +4,7 @@ import '../../resto_provider.dart';
 import '../../models.dart';
 import 'menu_ai_scanner_screen.dart';
 import 'menu_item_edit_screen.dart';
+import '../../theme.dart';
 
 class RestoMenuScreen extends StatefulWidget {
   const RestoMenuScreen({super.key});
@@ -26,22 +27,21 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
   void _showAddOptions(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF18181B),
-      shape: const RoundedRectangleBorder(
+      backgroundColor: context.fast.card,
+      shape:       RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (_) => SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
+          padding: EdgeInsets.fromLTRB(16, 20, 16, 16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Ajouter un plat',
+            children: [ Text('Ajouter un plat',
                   style: TextStyle(
-                      color: Colors.white,
+                      color: context.fast.t1,
                       fontSize: 17,
                       fontWeight: FontWeight.bold)),
-              const SizedBox(height: 20),
+                    SizedBox(height: 20),
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: Container(
@@ -53,12 +53,12 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
                   child: const Icon(Icons.smart_toy,
                       color: Color(0xFF8B5CF6), size: 20),
                 ),
-                title: const Text('Scanner un menu (IA)',
+                title: Text('Scanner un menu (IA)',
                     style: TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.w600)),
-                subtitle: const Text('Import automatique via photo',
+                        color: context.fast.t1, fontWeight: FontWeight.w600)),
+                subtitle: Text('Import automatique via photo',
                     style: TextStyle(
-                        color: Color(0xFFA1A1AA), fontSize: 12)),
+                        color: context.fast.t2, fontSize: 12)),
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.push(
@@ -67,7 +67,7 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
                           builder: (_) => const MenuAiScannerScreen()));
                 },
               ),
-              const Divider(color: Color(0xFF27272A), height: 24),
+                    Divider(color: context.fast.line, height: 24),
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: Container(
@@ -79,12 +79,12 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
                   child: const Icon(Icons.edit_outlined,
                       color: Color(0xFFF59E0B), size: 20),
                 ),
-                title: const Text('Ajout manuel',
+                title: Text('Ajout manuel',
                     style: TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.w600)),
-                subtitle: const Text('Créer un plat de zéro',
+                        color: context.fast.t1, fontWeight: FontWeight.w600)),
+                subtitle: Text('Créer un plat de zéro',
                     style: TextStyle(
-                        color: Color(0xFFA1A1AA), fontSize: 12)),
+                        color: context.fast.t2, fontSize: 12)),
                 onTap: () {
                   Navigator.pop(context);
                   _openEdit(context);
@@ -133,24 +133,21 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.restaurant_menu,
-              color: Color(0xFF3F3F46), size: 56),
-          const SizedBox(height: 16),
-          const Text('Aucun plat dans le menu',
+        children: [ Icon(Icons.restaurant_menu,
+              color: context.fast.faint, size: 56),
+                SizedBox(height: 16), Text('Aucun plat dans le menu',
               style: TextStyle(
-                  color: Color(0xFFA1A1AA),
+                  color: context.fast.t2,
                   fontSize: 16,
                   fontWeight: FontWeight.w600)),
-          const SizedBox(height: 8),
-          const Text('Ajoutez votre premier plat',
-              style: TextStyle(color: Color(0xFF71717A), fontSize: 13)),
-          const SizedBox(height: 24),
+                SizedBox(height: 8), Text('Ajoutez votre premier plat',
+              style: TextStyle(color: context.fast.t3, fontSize: 13)),
+                SizedBox(height: 24),
           ElevatedButton.icon(
             onPressed: () => _openEdit(context),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFF59E0B),
-              foregroundColor: const Color(0xFF09090B),
+              backgroundColor: Color(0xFFF59E0B),
+              foregroundColor: FASTBrand.onAmber,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8)),
               elevation: 0,
@@ -178,32 +175,31 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
           SizedBox(
             height: 44,
             child: ListView.separated(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               scrollDirection: Axis.horizontal,
               itemCount: categories.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              separatorBuilder: (_, __) =>       SizedBox(width: 8),
               itemBuilder: (_, i) {
                 final cat = categories[i];
                 final active = cat == _filter;
                 return GestureDetector(
                   onTap: () => setState(() => _filter = cat),
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 150),
-                    padding: const EdgeInsets.symmetric(
+                    duration:       Duration(milliseconds: 150),
+                    padding: EdgeInsets.symmetric(
                         horizontal: 14, vertical: 6),
                     decoration: BoxDecoration(
                       color: active
-                          ? const Color(0xFFF59E0B)
-                          : const Color(0xFF27272A),
+                          ?       Color(0xFFF59E0B)
+                          : context.fast.line,
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       cat == 'all' ? 'Tout' : cat,
                       style: TextStyle(
                         color: active
-                            ? const Color(0xFF09090B)
-                            : const Color(0xFFE4E4E7),
+                            ? context.fast.bg
+                            : context.fast.t1,
                         fontWeight: FontWeight.w600,
                         fontSize: 13,
                       ),
@@ -216,12 +212,11 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
 
         // Item count
         Padding(
-          padding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Text(
             '${items.length} plat${items.length == 1 ? '' : 's'}',
-            style: const TextStyle(
-                color: Color(0xFF71717A), fontSize: 12),
+            style: TextStyle(
+                color: context.fast.t3, fontSize: 12),
           ),
         ),
 
@@ -240,14 +235,14 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
   Widget _buildCard(
       BuildContext context, RestoProvider prov, MenuItem item) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFF18181B),
+        color: context.fast.card,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
           color: item.available
-              ? const Color(0xFF27272A)
-              : const Color(0xFF3F3F46),
+              ? context.fast.line
+              : context.fast.faint,
         ),
       ),
       child: Row(
@@ -272,8 +267,7 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
           // Info
           Expanded(
             child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -284,8 +278,8 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
                           item.name,
                           style: TextStyle(
                             color: item.available
-                                ? Colors.white
-                                : const Color(0xFF71717A),
+                                ? context.fast.t1
+                                : context.fast.t3,
                             fontWeight: FontWeight.w600,
                             fontSize: 14,
                           ),
@@ -295,29 +289,27 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
                       ),
                       if (!item.available)
                         Container(
-                          padding: const EdgeInsets.symmetric(
+                          padding: EdgeInsets.symmetric(
                               horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
                             color:
-                                const Color(0xFF3F3F46),
+                                context.fast.faint,
                             borderRadius: BorderRadius.circular(4),
                           ),
-                          child: const Text('Indispo',
+                          child: Text('Indispo',
                               style: TextStyle(
-                                  color: Color(0xFF71717A),
+                                  color: context.fast.t3,
                                   fontSize: 10,
                                   fontWeight: FontWeight.w600)),
                         ),
                     ],
                   ),
-                  const SizedBox(height: 2),
-                  Text(
+                        SizedBox(height: 2), Text(
                     item.category,
-                    style: const TextStyle(
-                        color: Color(0xFF71717A), fontSize: 12),
+                    style: TextStyle(
+                        color: context.fast.t3, fontSize: 12),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
+                  const SizedBox(height: 4), Text(
                     '€${item.price.toStringAsFixed(2)}',
                     style: const TextStyle(
                         color: Color(0xFFF59E0B),
@@ -338,8 +330,7 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
                     prov.toggleMenuItemAvailability(item.id, v),
                 activeThumbColor: const Color(0xFF10B981),
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              IconButton(
+              ), IconButton(
                 icon: const Icon(Icons.edit_outlined,
                     color: Color(0xFFF59E0B), size: 20),
                 onPressed: () => _openEdit(context, item: item),
@@ -359,9 +350,9 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
     return Container(
       width: 72,
       height: 72,
-      color: const Color(0xFF27272A),
-      child: const Icon(Icons.restaurant,
-          color: Color(0xFF3F3F46), size: 28),
+      color: context.fast.line,
+      child: Icon(Icons.restaurant,
+          color: context.fast.faint, size: 28),
     );
   }
 }

@@ -6,6 +6,7 @@ import '../provider.dart';
 import '../models.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/notification_center.dart';
+import '../theme.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -35,19 +36,19 @@ class _AccountScreenState extends State<AccountScreen>
     final provider = Provider.of<FASTProvider>(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF09090B),
+      backgroundColor: context.fast.bg,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF09090B),
+        backgroundColor: context.fast.bg,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: Color(0xFFE4E4E7)),
+          icon: Icon(Icons.close, color: context.fast.t2),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
+        title: Text(
           'Mon compte',
           style: TextStyle(
-            color: Colors.white,
+            color: context.fast.t1,
             fontWeight: FontWeight.w800,
             fontSize: 16,
           ),
@@ -62,19 +63,19 @@ class _AccountScreenState extends State<AccountScreen>
           // Stats row
           _buildStatsRow(provider),
 
-          const SizedBox(height: 4),
+                SizedBox(height: 4),
 
           // Tabs
           Container(
-            decoration: const BoxDecoration(
-              border: Border(bottom: BorderSide(color: Color(0xFF27272A))),
+            decoration: BoxDecoration(
+              border: Border(bottom: BorderSide(color: context.fast.line)),
             ),
             child: TabBar(
               controller: _tabController,
-              indicatorColor: const Color(0xFFF59E0B),
+              indicatorColor: Color(0xFFF59E0B),
               indicatorWeight: 2,
-              labelColor: const Color(0xFFF59E0B),
-              unselectedLabelColor: const Color(0xFF71717A),
+              labelColor: Color(0xFFF59E0B),
+              unselectedLabelColor: context.fast.t3,
               labelStyle: const TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
@@ -118,7 +119,7 @@ class _AccountScreenState extends State<AccountScreen>
   // ─── Profile Header ──────────────────────────────────────────────────────────
   Widget _buildProfileHeader(FASTProvider provider) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+      padding: EdgeInsets.fromLTRB(20, 16, 20, 16),
       child: Row(
         children: [
           // Avatar
@@ -132,35 +133,33 @@ class _AccountScreenState extends State<AccountScreen>
             alignment: Alignment.center,
             child: Text(
               provider.userInitial,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w900,
-                color: Color(0xFF09090B),
+                color: FASTBrand.onAmber,
               ),
             ),
           ),
-          const SizedBox(width: 14),
+                SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
+              children: [ Text(
                   provider.userName.isNotEmpty
                       ? provider.userName
                       : 'Votre nom',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w900,
-                    color: Colors.white,
+                    color: context.fast.t1,
                   ),
                 ),
                 if (provider.userEmail.isNotEmpty) ...[
-                  const SizedBox(height: 2),
-                  Text(
+                        SizedBox(height: 2), Text(
                     provider.userEmail,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
-                      color: Color(0xFFA1A1AA),
+                      color: context.fast.t2,
                     ),
                   ),
                 ],
@@ -180,13 +179,11 @@ class _AccountScreenState extends State<AccountScreen>
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(
-                        Icons.bolt,
+                      const Icon( Icons.bolt,
                         color: Color(0xFFF59E0B),
                         size: 12,
                       ),
-                      const SizedBox(width: 4),
-                      Text(
+                      const SizedBox(width: 4), Text(
                         '${provider.userPoints} PTS · ${provider.membershipLevel}',
                         style: const TextStyle(
                           fontSize: 10,
@@ -208,18 +205,18 @@ class _AccountScreenState extends State<AccountScreen>
   // ─── Stats Row ───────────────────────────────────────────────────────────────
   Widget _buildStatsRow(FASTProvider provider) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      margin: EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: const Color(0xFF18181B),
+        color: context.fast.card,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFF27272A)),
+        border: Border.all(color: context.fast.line),
       ),
       child: Row(
         children: [
           _statCell('📦', '${provider.orders.length}', 'Commandes'),
-          Container(width: 1, height: 48, color: const Color(0xFF27272A)),
+          Container(width: 1, height: 48, color: context.fast.line),
           _statCell('❤️', '0', 'Favoris'),
-          Container(width: 1, height: 48, color: const Color(0xFF27272A)),
+          Container(width: 1, height: 48, color: context.fast.line),
           _statCell('⚡', '${provider.userPoints}', 'Points'),
         ],
       ),
@@ -229,23 +226,20 @@ class _AccountScreenState extends State<AccountScreen>
   Widget _statCell(String icon, String value, String label) {
     return Expanded(
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 14),
+        padding: EdgeInsets.symmetric(vertical: 14),
         child: Column(
-          children: [
-            Text(icon, style: const TextStyle(fontSize: 18)),
-            const SizedBox(height: 4),
-            Text(
+          children: [ Text(icon, style: const TextStyle(fontSize: 18)),
+                  SizedBox(height: 4), Text(
               value,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w900,
-                color: Colors.white,
+                color: context.fast.t1,
               ),
             ),
-            const SizedBox(height: 2),
-            Text(
+                  SizedBox(height: 2), Text(
               label,
-              style: const TextStyle(fontSize: 10, color: Color(0xFF71717A)),
+              style: TextStyle(fontSize: 10, color: context.fast.t3),
             ),
           ],
         ),
@@ -256,27 +250,26 @@ class _AccountScreenState extends State<AccountScreen>
   // ─── Profil Tab ──────────────────────────────────────────────────────────────
   Widget _buildProfilTab(FASTProvider provider) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Personal info section
           _sectionLabel('INFORMATIONS PERSONNELLES'),
-          const SizedBox(height: 4),
-          const Text(
+                SizedBox(height: 4), Text(
             'Commandez en Click & Collect ou en livraison à domicile.',
             style: TextStyle(
               fontSize: 11,
-              color: Color(0xFF71717A),
+              color: context.fast.t3,
               height: 1.4,
             ),
           ),
-          const SizedBox(height: 8),
+                SizedBox(height: 8),
           Container(
             decoration: BoxDecoration(
-              color: const Color(0xFF18181B),
+              color: context.fast.card,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFF27272A)),
+              border: Border.all(color: context.fast.line),
             ),
             child: Column(
               children: [
@@ -291,7 +284,7 @@ class _AccountScreenState extends State<AccountScreen>
                     (val) => provider.updateProfile(name: val),
                   ),
                 ),
-                const Divider(height: 1, color: Color(0xFF27272A)),
+                      Divider(height: 1, color: context.fast.line),
                 _editableField(
                   label: 'TÉLÉPHONE',
                   value: provider.userPhone,
@@ -304,7 +297,7 @@ class _AccountScreenState extends State<AccountScreen>
                     keyboardType: TextInputType.phone,
                   ),
                 ),
-                const Divider(height: 1, color: Color(0xFF27272A)),
+                      Divider(height: 1, color: context.fast.line),
                 _editableField(
                   label: 'EMAIL',
                   value: provider.userEmail,
@@ -321,17 +314,17 @@ class _AccountScreenState extends State<AccountScreen>
             ),
           ),
 
-          const SizedBox(height: 24),
+                SizedBox(height: 24),
 
           // Appearance section
           _sectionLabel('APPARENCE'),
-          const SizedBox(height: 8),
+                SizedBox(height: 8),
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFF18181B),
+              color: context.fast.card,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFF27272A)),
+              border: Border.all(color: context.fast.line),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -344,25 +337,22 @@ class _AccountScreenState extends State<AccountScreen>
                         color: Colors.redAccent.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(
-                        Icons.palette_outlined,
+                      child: const Icon( Icons.palette_outlined,
                         color: Colors.redAccent,
                         size: 16,
                       ),
                     ),
-                    const SizedBox(width: 10),
+                          SizedBox(width: 10),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text(
+                      children:       [ Text(
                           "Thème de l'interface",
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: context.fast.t1,
                           ),
-                        ),
-                        Text(
+                        ), Text(
                           'Clair, sombre ou selon l\'appareil',
                           style: TextStyle(
                             fontSize: 10,
@@ -378,22 +368,19 @@ class _AccountScreenState extends State<AccountScreen>
                   children: [
                     _themeOption(
                       provider,
-                      ThemeMode.system,
-                      Icons.phone_android,
+                      ThemeMode.system, Icons.phone_android,
                       'Auto',
                     ),
                     const SizedBox(width: 8),
                     _themeOption(
                       provider,
-                      ThemeMode.light,
-                      Icons.wb_sunny_outlined,
+                      ThemeMode.light, Icons.wb_sunny_outlined,
                       'Clair',
                     ),
                     const SizedBox(width: 8),
                     _themeOption(
                       provider,
-                      ThemeMode.dark,
-                      Icons.nightlight_outlined,
+                      ThemeMode.dark, Icons.nightlight_outlined,
                       'Sombre',
                     ),
                   ],
@@ -402,107 +389,101 @@ class _AccountScreenState extends State<AccountScreen>
             ),
           ),
 
-          const SizedBox(height: 24),
+                SizedBox(height: 24),
 
           // Payment methods
           _sectionLabel('MOYENS DE PAIEMENT'),
-          const SizedBox(height: 8),
+                SizedBox(height: 8),
           Container(
             decoration: BoxDecoration(
-              color: const Color(0xFF18181B),
+              color: context.fast.card,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFF27272A)),
+              border: Border.all(color: context.fast.line),
             ),
             child: ListTile(
               onTap: () => _showPaymentMethodsInfo(context),
-              leading: const Icon(
-                Icons.credit_card,
+              leading: Icon( Icons.credit_card,
                 color: Color(0xFFF59E0B),
                 size: 20,
               ),
-              title: const Text(
+              title: Text(
                 'Carte bancaire',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: context.fast.t1,
                   fontWeight: FontWeight.bold,
                   fontSize: 13,
                 ),
               ),
-              subtitle: const Text(
+              subtitle: Text(
                 'Gérer vos moyens de paiement',
                 style: TextStyle(
-                  color: Color(0xFF71717A),
+                  color: context.fast.t3,
                   fontSize: 11,
                 ),
               ),
-              trailing: const Icon(
-                Icons.chevron_right,
-                color: Color(0xFF52525B),
+              trailing: Icon( Icons.chevron_right,
+                color: context.fast.faint,
                 size: 18,
               ),
             ),
           ),
 
-          const SizedBox(height: 24),
+                SizedBox(height: 24),
 
           // Account security
           _sectionLabel('SÉCURITÉ DU COMPTE'),
-          const SizedBox(height: 8),
+                SizedBox(height: 8),
           Container(
             decoration: BoxDecoration(
-              color: const Color(0xFF18181B),
+              color: context.fast.card,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFF27272A)),
+              border: Border.all(color: context.fast.line),
             ),
             child: Column(
               children: [
                 ListTile(
                   onTap: () => _showChangePasswordDialog(context),
-                  leading: const Icon(
-                    Icons.lock_outline,
+                  leading: Icon( Icons.lock_outline,
                     color: Color(0xFFF59E0B),
                     size: 20,
                   ),
-                  title: const Text(
+                  title: Text(
                     'Modifier le mot de passe',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: context.fast.t1,
                       fontWeight: FontWeight.bold,
                       fontSize: 13,
                     ),
                   ),
-                  trailing: const Icon(
-                    Icons.chevron_right,
-                    color: Color(0xFF52525B),
+                  trailing: Icon( Icons.chevron_right,
+                    color: context.fast.faint,
                     size: 18,
                   ),
                 ),
-                const Divider(height: 1, color: Color(0xFF27272A)),
+                      Divider(height: 1, color: context.fast.line),
                 ListTile(
                   onTap: () => _showEmailSecurityInfo(context, provider),
-                  leading: const Icon(
-                    Icons.mail_lock_outlined,
+                  leading: Icon( Icons.mail_lock_outlined,
                     color: Color(0xFFF59E0B),
                     size: 20,
                   ),
-                  title: const Text(
+                  title: Text(
                     'Sécurité e-mail',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: context.fast.t1,
                       fontWeight: FontWeight.bold,
                       fontSize: 13,
                     ),
                   ),
-                  subtitle: const Text(
+                  subtitle: Text(
                     'Adresse e-mail et confidentialité',
                     style: TextStyle(
-                      color: Color(0xFF71717A),
+                      color: context.fast.t3,
                       fontSize: 11,
                     ),
                   ),
-                  trailing: const Icon(
-                    Icons.chevron_right,
-                    color: Color(0xFF52525B),
+                  trailing: Icon( Icons.chevron_right,
+                    color: context.fast.faint,
                     size: 18,
                   ),
                 ),
@@ -510,59 +491,55 @@ class _AccountScreenState extends State<AccountScreen>
             ),
           ),
 
-          const SizedBox(height: 24),
+                SizedBox(height: 24),
 
           // Legal
           _sectionLabel('INFORMATIONS LÉGALES'),
-          const SizedBox(height: 8),
+                SizedBox(height: 8),
           Container(
             decoration: BoxDecoration(
-              color: const Color(0xFF18181B),
+              color: context.fast.card,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFF27272A)),
+              border: Border.all(color: context.fast.line),
             ),
             child: Column(
               children: [
                 ListTile(
                   onTap: () => _showLegalInfo(context, 'Confidentialité'),
-                  leading: const Icon(
-                    Icons.shield_outlined,
+                  leading: Icon( Icons.shield_outlined,
                     color: Color(0xFFF59E0B),
                     size: 20,
                   ),
-                  title: const Text(
+                  title: Text(
                     'Confidentialité',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: context.fast.t1,
                       fontWeight: FontWeight.bold,
                       fontSize: 13,
                     ),
                   ),
-                  trailing: const Icon(
-                    Icons.chevron_right,
-                    color: Color(0xFF52525B),
+                  trailing: Icon( Icons.chevron_right,
+                    color: context.fast.faint,
                     size: 18,
                   ),
                 ),
-                const Divider(height: 1, color: Color(0xFF27272A)),
+                      Divider(height: 1, color: context.fast.line),
                 ListTile(
                   onTap: () => _showLegalInfo(context, 'CGU'),
-                  leading: const Icon(
-                    Icons.description_outlined,
+                  leading: Icon( Icons.description_outlined,
                     color: Color(0xFFF59E0B),
                     size: 20,
                   ),
-                  title: const Text(
+                  title: Text(
                     'Conditions générales',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: context.fast.t1,
                       fontWeight: FontWeight.bold,
                       fontSize: 13,
                     ),
                   ),
-                  trailing: const Icon(
-                    Icons.chevron_right,
-                    color: Color(0xFF52525B),
+                  trailing: Icon( Icons.chevron_right,
+                    color: context.fast.faint,
                     size: 18,
                   ),
                 ),
@@ -570,16 +547,16 @@ class _AccountScreenState extends State<AccountScreen>
             ),
           ),
 
-          const SizedBox(height: 24),
+                SizedBox(height: 24),
 
           // Session
           _sectionLabel('SESSION'),
-          const SizedBox(height: 8),
+                SizedBox(height: 8),
           Container(
             decoration: BoxDecoration(
-              color: const Color(0xFF18181B),
+              color: context.fast.card,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFF27272A)),
+              border: Border.all(color: context.fast.line),
             ),
             child: ListTile(
               onTap: () async {
@@ -589,15 +566,14 @@ class _AccountScreenState extends State<AccountScreen>
                 // Pop back to the root so the auth gate can show RoleSelectionScreen
                 Navigator.of(context).popUntil((route) => route.isFirst);
               },
-              leading: const Icon(
-                Icons.logout,
+              leading: Icon( Icons.logout,
                 color: Color(0xFFF59E0B),
                 size: 20,
               ),
               title: Consumer<AuthProvider>(
                 builder: (context, auth, _) {
                   if (auth.isLoggingOut) {
-                    return const Row(
+                    return       Row(
                       children: [
                         SizedBox(
                           width: 16,
@@ -607,11 +583,10 @@ class _AccountScreenState extends State<AccountScreen>
                             color: Color(0xFFF59E0B),
                           ),
                         ),
-                        SizedBox(width: 12),
-                        Text(
+                        SizedBox(width: 12), Text(
                           'Déconnexion...',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: context.fast.t1,
                             fontWeight: FontWeight.bold,
                             fontSize: 13,
                           ),
@@ -619,10 +594,10 @@ class _AccountScreenState extends State<AccountScreen>
                       ],
                     );
                   }
-                  return const Text(
+                  return       Text(
                     'Se déconnecter',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: context.fast.t1,
                       fontWeight: FontWeight.bold,
                       fontSize: 13,
                     ),
@@ -632,21 +607,20 @@ class _AccountScreenState extends State<AccountScreen>
             ),
           ),
 
-          const SizedBox(height: 24),
+                SizedBox(height: 24),
 
           // Danger zone
           _sectionLabel('ZONE DE DANGER'),
-          const SizedBox(height: 8),
+                SizedBox(height: 8),
           Container(
             decoration: BoxDecoration(
-              color: const Color(0xFF18181B),
+              color: context.fast.card,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFF27272A)),
+              border: Border.all(color: context.fast.line),
             ),
             child: ListTile(
               onTap: () => _showDeleteConfirm(context, provider),
-              leading: const Icon(
-                Icons.delete_outline,
+              leading: const Icon( Icons.delete_outline,
                 color: Color(0xFFEF4444),
                 size: 20,
               ),
@@ -661,18 +635,16 @@ class _AccountScreenState extends State<AccountScreen>
             ),
           ),
 
-          const SizedBox(height: 32),
+                SizedBox(height: 32),
 
           // Footer
           Center(
             child: Row(
               mainAxisSize: MainAxisSize.min,
-              children: const [
-                Text(
+              children:       [ Text(
                   'FAST Client v1.0 · Fait avec ',
-                  style: TextStyle(fontSize: 11, color: Color(0xFF52525B)),
-                ),
-                Icon(Icons.bolt, color: Color(0xFFF59E0B), size: 14),
+                  style: TextStyle(fontSize: 11, color: context.fast.faint),
+                ), Icon(Icons.bolt, color: Color(0xFFF59E0B), size: 14),
               ],
             ),
           ),
@@ -685,11 +657,11 @@ class _AccountScreenState extends State<AccountScreen>
   Widget _sectionLabel(String label) {
     return Text(
       label,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 10,
         fontWeight: FontWeight.bold,
         letterSpacing: 0.8,
-        color: Color(0xFF71717A),
+        color: context.fast.t3,
       ),
     );
   }
@@ -701,29 +673,27 @@ class _AccountScreenState extends State<AccountScreen>
     required VoidCallback onEdit,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       child: Row(
         children: [
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
+              children: [ Text(
                   label,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 9,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF71717A),
+                    color: context.fast.t3,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
+                      SizedBox(height: 4), Text(
                   value.isNotEmpty ? value : hint,
                   style: TextStyle(
                     fontSize: 14,
                     color: value.isNotEmpty
-                        ? Colors.white
-                        : const Color(0xFF52525B),
+                        ? context.fast.t1
+                        : context.fast.faint,
                   ),
                 ),
               ],
@@ -731,9 +701,8 @@ class _AccountScreenState extends State<AccountScreen>
           ),
           GestureDetector(
             onTap: onEdit,
-            child: const Icon(
-              Icons.edit_outlined,
-              color: Color(0xFF71717A),
+            child: Icon( Icons.edit_outlined,
+              color: context.fast.t3,
               size: 18,
             ),
           ),
@@ -744,8 +713,7 @@ class _AccountScreenState extends State<AccountScreen>
 
   Widget _themeOption(
     FASTProvider provider,
-    ThemeMode mode,
-    IconData icon,
+    ThemeMode mode, IconData icon,
     String label,
   ) {
     final selected = provider.themeMode == mode;
@@ -753,26 +721,24 @@ class _AccountScreenState extends State<AccountScreen>
       child: GestureDetector(
         onTap: () => provider.setThemeMode(mode),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          padding: const EdgeInsets.symmetric(vertical: 10),
+          duration:       Duration(milliseconds: 150),
+          padding: EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: selected ? const Color(0xFF10B981) : const Color(0xFF27272A),
+            color: selected ?       Color(0xFF10B981) : context.fast.line,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Column(
-            children: [
-              Icon(
+            children: [ Icon(
                 icon,
-                color: selected ? Colors.white : const Color(0xFFA1A1AA),
+                color: selected ? Colors.white : context.fast.t2,
                 size: 16,
               ),
-              const SizedBox(height: 4),
-              Text(
+                    SizedBox(height: 4), Text(
                 label,
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
-                  color: selected ? Colors.white : const Color(0xFFA1A1AA),
+                  color: selected ? Colors.white : context.fast.t2,
                 ),
               ),
             ],
@@ -787,21 +753,21 @@ class _AccountScreenState extends State<AccountScreen>
     String fieldName,
     String currentValue,
     Function(String) onSave, {
-    TextInputType keyboardType = TextInputType.text,
+ TextInputType keyboardType = TextInputType.text,
   }) {
     final controller = TextEditingController(text: currentValue);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF18181B),
+        backgroundColor: context.fast.card,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: Color(0xFF27272A)),
+          side: BorderSide(color: context.fast.line),
         ),
         title: Text(
           'Modifier $fieldName',
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: context.fast.t1,
             fontWeight: FontWeight.bold,
             fontSize: 14,
           ),
@@ -810,23 +776,23 @@ class _AccountScreenState extends State<AccountScreen>
           controller: controller,
           autofocus: true,
           keyboardType: keyboardType,
-          style: const TextStyle(color: Colors.white, fontSize: 14),
+          style: TextStyle(color: context.fast.t1, fontSize: 14),
           decoration: InputDecoration(
             hintText: fieldName,
-            hintStyle: const TextStyle(color: Color(0xFF52525B)),
+            hintStyle: TextStyle(color: context.fast.faint),
             filled: true,
-            fillColor: const Color(0xFF09090B),
-            contentPadding: const EdgeInsets.symmetric(
+            fillColor: context.fast.bg,
+            contentPadding: EdgeInsets.symmetric(
               horizontal: 12,
               vertical: 10,
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF27272A)),
+              borderSide: BorderSide(color: context.fast.line),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF27272A)),
+              borderSide: BorderSide(color: context.fast.line),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
@@ -834,12 +800,11 @@ class _AccountScreenState extends State<AccountScreen>
             ),
           ),
         ),
-        actions: [
-          TextButton(
+        actions: [ TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text(
+            child: Text(
               'Annuler',
-              style: TextStyle(color: Color(0xFF71717A)),
+              style: TextStyle(color: context.fast.t3),
             ),
           ),
           ElevatedButton(
@@ -858,8 +823,8 @@ class _AccountScreenState extends State<AccountScreen>
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFF59E0B),
-              foregroundColor: const Color(0xFF09090B),
+              backgroundColor: Color(0xFFF59E0B),
+              foregroundColor: FASTBrand.onAmber,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -879,12 +844,12 @@ class _AccountScreenState extends State<AccountScreen>
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF18181B),
+        backgroundColor: context.fast.card,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
           side: const BorderSide(color: Color(0xFFEF4444), width: 1),
         ),
-        title: const Text(
+        title: Text(
           'Supprimer le compte ?',
           style: TextStyle(
             color: Color(0xFFEF4444),
@@ -892,16 +857,15 @@ class _AccountScreenState extends State<AccountScreen>
             fontSize: 14,
           ),
         ),
-        content: const Text(
+        content: Text(
           'Votre accès, votre profil et vos données personnelles seront supprimés. Les données de transaction légalement requises seront anonymisées. Cette action est irréversible.',
-          style: TextStyle(color: Color(0xFFA1A1AA), fontSize: 12, height: 1.4),
+          style: TextStyle(color: context.fast.t2, fontSize: 12, height: 1.4),
         ),
-        actions: [
-          TextButton(
+        actions: [ TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text(
+            child: Text(
               'Annuler',
-              style: TextStyle(color: Color(0xFF71717A)),
+              style: TextStyle(color: context.fast.t3),
             ),
           ),
           ElevatedButton(
@@ -948,17 +912,17 @@ class _AccountScreenState extends State<AccountScreen>
         .toList();
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Points balance card
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: const Color(0xFF18181B),
+              color: context.fast.card,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFF27272A)),
+              border: Border.all(color: context.fast.line),
             ),
             child: Row(
               children: [
@@ -968,25 +932,22 @@ class _AccountScreenState extends State<AccountScreen>
                     color: const Color(0xFFF59E0B).withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(
-                    Icons.bolt,
+                  child: const Icon( Icons.bolt,
                     color: Color(0xFFF59E0B),
                     size: 28,
                   ),
                 ),
-                const SizedBox(width: 16),
+                      SizedBox(width: 16),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
+                  children: [ Text(
                       '${provider.userPoints} points',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.w900,
-                        color: Colors.white,
+                        color: context.fast.t1,
                       ),
-                    ),
-                    Text(
+                    ), Text(
                       provider.membershipLevel,
                       style: const TextStyle(
                         fontSize: 12,
@@ -1000,30 +961,30 @@ class _AccountScreenState extends State<AccountScreen>
             ),
           ),
 
-          const SizedBox(height: 20),
+                SizedBox(height: 20),
 
           // Progress to next level
           _buildLevelProgress(provider.userPoints),
 
-          const SizedBox(height: 20),
+                SizedBox(height: 20),
 
           _sectionLabel('HISTORIQUE DES POINTS'),
-          const SizedBox(height: 8),
+                SizedBox(height: 8),
 
           if (completedOrders.isEmpty)
             Container(
-              padding: const EdgeInsets.all(24),
+              padding: EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: const Color(0xFF18181B),
+                color: context.fast.card,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFF27272A)),
+                border: Border.all(color: context.fast.line),
               ),
-              child: const Center(
+              child:       Center(
                 child: Text(
                   'Aucun point encore.\nComplétez votre première commande pour gagner des points !',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Color(0xFF71717A),
+                    color: context.fast.t3,
                     height: 1.5,
                   ),
                   textAlign: TextAlign.center,
@@ -1033,9 +994,9 @@ class _AccountScreenState extends State<AccountScreen>
           else
             Container(
               decoration: BoxDecoration(
-                color: const Color(0xFF18181B),
+                color: context.fast.card,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFF27272A)),
+                border: Border.all(color: context.fast.line),
               ),
               child: Column(
                 children: completedOrders.asMap().entries.map((entry) {
@@ -1044,9 +1005,9 @@ class _AccountScreenState extends State<AccountScreen>
                   return Column(
                     children: [
                       if (idx > 0)
-                        const Divider(height: 1, color: Color(0xFF27272A)),
+                              Divider(height: 1, color: context.fast.line),
                       Padding(
-                        padding: const EdgeInsets.symmetric(
+                        padding: EdgeInsets.symmetric(
                           horizontal: 14,
                           vertical: 12,
                         ),
@@ -1060,30 +1021,27 @@ class _AccountScreenState extends State<AccountScreen>
                                 ).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(6),
                               ),
-                              child: const Icon(
-                                Icons.bolt,
+                              child: const Icon( Icons.bolt,
                                 color: Color(0xFFF59E0B),
                                 size: 14,
                               ),
                             ),
-                            const SizedBox(width: 12),
+                                  SizedBox(width: 12),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
+                                children: [ Text(
                                     order.restaurantName,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.white,
+                                      color: context.fast.t1,
                                     ),
-                                  ),
-                                  Text(
+                                  ), Text(
                                     'Commande récupérée · ${order.id}',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 10,
-                                      color: Color(0xFF71717A),
+                                      color: context.fast.t3,
                                     ),
                                   ),
                                 ],
@@ -1136,10 +1094,8 @@ class _AccountScreenState extends State<AccountScreen>
           ),
         ),
         child: const Row(
-          children: [
-            Icon(Icons.workspace_premium, color: Color(0xFFF59E0B)),
-            SizedBox(width: 10),
-            Text(
+          children: [ Icon(Icons.workspace_premium, color: Color(0xFFF59E0B)),
+            SizedBox(width: 10), Text(
               'Niveau maximum atteint — FAST Gold !',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
@@ -1157,38 +1113,36 @@ class _AccountScreenState extends State<AccountScreen>
     final remaining = nextThreshold - pts;
 
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFF18181B),
+        color: context.fast.card,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFF27272A)),
+        border: Border.all(color: context.fast.line),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
+            children: [ Text(
                 'Vers $nextLevel',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: context.fast.t1,
                 ),
-              ),
-              Text(
+              ), Text(
                 '$remaining pts restants',
-                style: const TextStyle(fontSize: 11, color: Color(0xFF71717A)),
+                style: TextStyle(fontSize: 11, color: context.fast.t3),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+                SizedBox(height: 10),
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
               value: progress,
-              backgroundColor: const Color(0xFF27272A),
+              backgroundColor: context.fast.line,
               valueColor: const AlwaysStoppedAnimation(Color(0xFFF59E0B)),
               minHeight: 6,
             ),
@@ -1201,40 +1155,36 @@ class _AccountScreenState extends State<AccountScreen>
   // ─── Adresses Tab ────────────────────────────────────────────────────────────
   Widget _buildAdressesTab() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: const Color(0xFF18181B),
+              color: context.fast.card,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFF27272A)),
+              border: Border.all(color: context.fast.line),
             ),
-            child: const Center(
+            child:       Center(
               child: Column(
-                children: [
-                  Icon(
-                    Icons.location_on_outlined,
+                children: [ Icon( Icons.location_on_outlined,
                     size: 40,
-                    color: Color(0xFF3F3F46),
+                    color: context.fast.faint,
                   ),
-                  SizedBox(height: 12),
-                  Text(
+                  SizedBox(height: 12), Text(
                     'Aucune adresse enregistrée',
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFFA1A1AA),
+                      color: context.fast.t2,
                     ),
                   ),
-                  SizedBox(height: 4),
-                  Text(
+                  SizedBox(height: 4), Text(
                     'Vos adresses de livraison favorites seront enregistrées ici.',
                     style: TextStyle(
                       fontSize: 11,
-                      color: Color(0xFF71717A),
+                      color: context.fast.t3,
                       height: 1.5,
                     ),
                     textAlign: TextAlign.center,
@@ -1258,36 +1208,34 @@ class _AccountScreenState extends State<AccountScreen>
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF18181B),
+        backgroundColor: context.fast.card,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: Color(0xFF27272A)),
+          side: BorderSide(color: context.fast.line),
         ),
-        title: const Row(
-          children: [
-            Icon(Icons.credit_card, color: Color(0xFFF59E0B), size: 20),
-            SizedBox(width: 8),
-            Text(
+        title:       Row(
+          children: [ Icon(Icons.credit_card, color: Color(0xFFF59E0B), size: 20),
+            SizedBox(width: 8), Text(
               'Moyens de paiement',
               style: TextStyle(
-                color: Colors.white,
+                color: context.fast.t1,
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
               ),
             ),
           ],
         ),
-        content: const Text(
+        content: Text(
           'Vos paiements sont sécurisés par Stripe. Aucune carte bancaire n\'est stockée sur l\'app. '
           'Vos informations de paiement sont saisies directement sur la page sécurisée Stripe lors de chaque commande.',
-          style: TextStyle(color: Color(0xFFA1A1AA), fontSize: 12, height: 1.5),
+          style: TextStyle(color: context.fast.t2, fontSize: 12, height: 1.5),
         ),
         actions: [
           ElevatedButton(
             onPressed: () => Navigator.of(ctx).pop(),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFF59E0B),
-              foregroundColor: const Color(0xFF09090B),
+              backgroundColor: Color(0xFFF59E0B),
+              foregroundColor: FASTBrand.onAmber,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -1313,15 +1261,15 @@ class _AccountScreenState extends State<AccountScreen>
       barrierDismissible: !loading,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setState) => AlertDialog(
-          backgroundColor: const Color(0xFF18181B),
+          backgroundColor: context.fast.card,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-            side: const BorderSide(color: Color(0xFF27272A)),
+            side: BorderSide(color: context.fast.line),
           ),
-          title: const Text(
+          title: Text(
             'Modifier le mot de passe',
             style: TextStyle(
-              color: Colors.white,
+              color: context.fast.t1,
               fontWeight: FontWeight.bold,
               fontSize: 14,
             ),
@@ -1331,28 +1279,25 @@ class _AccountScreenState extends State<AccountScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _passwordField(currentCtrl, 'Mot de passe actuel', obscure: true),
-              const SizedBox(height: 12),
+                    SizedBox(height: 12),
               _passwordField(newCtrl, 'Nouveau mot de passe', obscure: true),
-              const SizedBox(height: 12),
+                    SizedBox(height: 12),
               _passwordField(confirmCtrl, 'Confirmer le nouveau', obscure: true),
               if (error != null) ...[
-                const SizedBox(height: 12),
-                Text(
+                const SizedBox(height: 12), Text(
                   error!,
                   style: const TextStyle(color: Color(0xFFEF4444), fontSize: 11),
                 ),
               ],
-              const SizedBox(height: 8),
-              const Text(
+                    SizedBox(height: 8), Text(
                 'Minimum 8 caractères, 1 majuscule, 1 chiffre.',
-                style: TextStyle(color: Color(0xFF52525B), fontSize: 10),
+                style: TextStyle(color: context.fast.faint, fontSize: 10),
               ),
             ],
           ),
-          actions: [
-            TextButton(
+          actions: [ TextButton(
               onPressed: loading ? null : () => Navigator.of(ctx).pop(),
-              child: const Text('Annuler', style: TextStyle(color: Color(0xFF71717A))),
+              child: Text('Annuler', style: TextStyle(color: context.fast.t3)),
             ),
             ElevatedButton(
               onPressed: loading
@@ -1389,20 +1334,20 @@ class _AccountScreenState extends State<AccountScreen>
                       }
                     },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFF59E0B),
-                foregroundColor: const Color(0xFF09090B),
+                backgroundColor: Color(0xFFF59E0B),
+                foregroundColor: FASTBrand.onAmber,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
                 elevation: 0,
               ),
               child: loading
-                  ? const SizedBox(
+                  ?       SizedBox(
                       width: 16,
                       height: 16,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Color(0xFF09090B),
+                        color: FASTBrand.onAmber,
                       ),
                     )
                   : const Text('Enregistrer', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -1418,20 +1363,20 @@ class _AccountScreenState extends State<AccountScreen>
     return TextField(
       controller: controller,
       obscureText: obscure,
-      style: const TextStyle(color: Colors.white, fontSize: 13),
+      style: TextStyle(color: context.fast.t1, fontSize: 13),
       decoration: InputDecoration(
         hintText: label,
-        hintStyle: const TextStyle(color: Color(0xFF52525B), fontSize: 12),
+        hintStyle: TextStyle(color: context.fast.faint, fontSize: 12),
         filled: true,
-        fillColor: const Color(0xFF09090B),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        fillColor: context.fast.bg,
+        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFF27272A)),
+          borderSide: BorderSide(color: context.fast.line),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFF27272A)),
+          borderSide: BorderSide(color: context.fast.line),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
@@ -1446,19 +1391,17 @@ class _AccountScreenState extends State<AccountScreen>
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF18181B),
+        backgroundColor: context.fast.card,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: Color(0xFF27272A)),
+          side: BorderSide(color: context.fast.line),
         ),
-        title: const Row(
-          children: [
-            Icon(Icons.mail_lock_outlined, color: Color(0xFFF59E0B), size: 20),
-            SizedBox(width: 8),
-            Text(
+        title:       Row(
+          children: [ Icon(Icons.mail_lock_outlined, color: Color(0xFFF59E0B), size: 20),
+            SizedBox(width: 8), Text(
               'Sécurité e-mail',
               style: TextStyle(
-                color: Colors.white,
+                color: context.fast.t1,
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
               ),
@@ -1468,25 +1411,22 @@ class _AccountScreenState extends State<AccountScreen>
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
+          children: [ Text(
               'Adresse e-mail associée :',
-              style: TextStyle(color: Color(0xFF71717A), fontSize: 11),
+              style: TextStyle(color: context.fast.t3, fontSize: 11),
             ),
-            const SizedBox(height: 4),
-            Text(
+                  SizedBox(height: 4), Text(
               provider.userEmail.isNotEmpty ? provider.userEmail : 'Non renseigné',
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: context.fast.t1,
                 fontWeight: FontWeight.bold,
                 fontSize: 13,
               ),
             ),
-            const SizedBox(height: 16),
-            const Text(
+                  SizedBox(height: 16), Text(
               'Pour modifier votre e-mail, rendez-vous dans l\'onglet Profil ci-dessus. '
               'Votre e-mail est utilisé pour la connexion et les notifications de commande.',
-              style: TextStyle(color: Color(0xFFA1A1AA), fontSize: 11, height: 1.5),
+              style: TextStyle(color: context.fast.t2, fontSize: 11, height: 1.5),
             ),
           ],
         ),
@@ -1494,8 +1434,8 @@ class _AccountScreenState extends State<AccountScreen>
           ElevatedButton(
             onPressed: () => Navigator.of(ctx).pop(),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFF59E0B),
-              foregroundColor: const Color(0xFF09090B),
+              backgroundColor: Color(0xFFF59E0B),
+              foregroundColor: FASTBrand.onAmber,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -1522,29 +1462,29 @@ class _AccountScreenState extends State<AccountScreen>
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF18181B),
+        backgroundColor: context.fast.card,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: Color(0xFF27272A)),
+          side: BorderSide(color: context.fast.line),
         ),
         title: Text(
           type == 'CGU' ? 'Conditions générales' : 'Confidentialité',
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: context.fast.t1,
             fontWeight: FontWeight.bold,
             fontSize: 14,
           ),
         ),
         content: Text(
           content,
-          style: const TextStyle(color: Color(0xFFA1A1AA), fontSize: 12, height: 1.5),
+          style: TextStyle(color: context.fast.t2, fontSize: 12, height: 1.5),
         ),
         actions: [
           ElevatedButton(
             onPressed: () => Navigator.of(ctx).pop(),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFF59E0B),
-              foregroundColor: const Color(0xFF09090B),
+              backgroundColor: Color(0xFFF59E0B),
+              foregroundColor: FASTBrand.onAmber,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),

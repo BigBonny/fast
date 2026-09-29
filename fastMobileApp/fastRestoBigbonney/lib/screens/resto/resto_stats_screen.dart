@@ -10,11 +10,8 @@ import 'package:path_provider/path_provider.dart';
 import '../../models/resto_stats.dart';
 import '../../resto_provider.dart';
 import '../../services/stats_service.dart';
-const _background = Color(0xFF09090B);
-const _surface = Color(0xFF18181B);
-const _border = Color(0xFF3F3F46);
-const _primaryText = Color(0xFFFAFAFA);
-const _secondaryText = Color(0xFFD4D4D8);
+import '../../theme.dart';
+
 const _brand = Color(0xFFF59E0B);
 const _positive = Color(0xFF34D399);
 const _negative = Color(0xFFFB7185);
@@ -72,7 +69,7 @@ class _RestoStatsScreenState extends State<RestoStatsScreen> {
     final stats = provider.stats;
 
     return ColoredBox(
-      color: _background,
+      color: context.fast.bg,
       child: RefreshIndicator(
         color: _brand,
         onRefresh: provider.loadStats,
@@ -80,18 +77,18 @@ class _RestoStatsScreenState extends State<RestoStatsScreen> {
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
           children: [
-            const Text(
+                  Text(
               'Analytics restaurant',
               style: TextStyle(
-                color: _primaryText,
+                color: context.fast.t1,
                 fontSize: 26,
                 fontWeight: FontWeight.w800,
               ),
             ),
             const SizedBox(height: 6),
-            const Text(
+                  Text(
               'Chiffre d’affaires basé sur les commandes payées et terminées.',
-              style: TextStyle(color: _secondaryText, fontSize: 14),
+              style: TextStyle(color: context.fast.t2, fontSize: 14),
             ),
             const SizedBox(height: 20),
             _PeriodSelector(
@@ -121,11 +118,11 @@ class _RestoStatsScreenState extends State<RestoStatsScreen> {
             ),
             const SizedBox(height: 20),
             if (provider.statsLoading && stats != null)
-              const Padding(
+                    Padding(
                 padding: EdgeInsets.only(bottom: 16),
                 child: LinearProgressIndicator(
                   color: _brand,
-                  backgroundColor: _border,
+                  backgroundColor: context.fast.line,
                   minHeight: 3,
                 ),
               ),
@@ -179,14 +176,14 @@ class _PeriodSelector extends StatelessWidget {
           minimumSize: const WidgetStatePropertyAll(Size(72, 48)),
           foregroundColor: WidgetStateProperty.resolveWith(
             (states) => states.contains(WidgetState.selected)
-                ? _background
-                : _primaryText,
+                ? context.fast.bg
+                : context.fast.t1,
           ),
           backgroundColor: WidgetStateProperty.resolveWith(
             (states) =>
-                states.contains(WidgetState.selected) ? _brand : _surface,
+                states.contains(WidgetState.selected) ? _brand : context.fast.card,
           ),
-          side: const WidgetStatePropertyAll(BorderSide(color: _border)),
+          side:       WidgetStatePropertyAll(BorderSide(color: context.fast.line)),
         ),
       ),
     );
@@ -294,13 +291,13 @@ class _RevenueChart extends StatelessWidget {
                   maxY: maxY,
                   lineTouchData: LineTouchData(
                     touchTooltipData: LineTouchTooltipData(
-                      getTooltipColor: (_) => const Color(0xFF27272A),
+                      getTooltipColor: (_) =>       Color(context.fast.cardHigh),
                       getTooltipItems: (spots) => spots
                           .map(
                             (spot) => LineTooltipItem(
                               _money(spot.y),
-                              const TextStyle(
-                                color: _primaryText,
+                                    TextStyle(
+                                color: context.fast.t1,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -312,7 +309,7 @@ class _RevenueChart extends StatelessWidget {
                     drawVerticalLine: false,
                     horizontalInterval: maxY / 4,
                     getDrawingHorizontalLine: (_) =>
-                        const FlLine(color: _border, strokeWidth: 1),
+                              FlLine(color: context.fast.line, strokeWidth: 1),
                   ),
                   borderData: FlBorderData(show: false),
                   titlesData: FlTitlesData(
@@ -331,8 +328,8 @@ class _RevenueChart extends StatelessWidget {
                           meta: meta,
                           child: Text(
                             _compactMoney(value),
-                            style: const TextStyle(
-                              color: _secondaryText,
+                            style:       TextStyle(
+                              color: context.fast.t2,
                               fontSize: 11,
                             ),
                           ),
@@ -354,8 +351,8 @@ class _RevenueChart extends StatelessWidget {
                             space: 8,
                             child: Text(
                               _shortDate(stats.daily[index].date),
-                              style: const TextStyle(
-                                color: _secondaryText,
+                              style:       TextStyle(
+                                color: context.fast.t2,
                                 fontSize: 11,
                               ),
                             ),
@@ -457,8 +454,8 @@ class _OperationsSection extends StatelessWidget {
                   children: [
                     Text(
                       '${kpis.cancelledOrders} commande${kpis.cancelledOrders > 1 ? 's' : ''}',
-                      style: const TextStyle(
-                        color: _primaryText,
+                      style:       TextStyle(
+                        color: context.fast.t1,
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                       ),
@@ -466,7 +463,7 @@ class _OperationsSection extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       '${_percent(kpis.cancellationRate)} · ${_signedPoints(delta)} vs période précédente',
-                      style: const TextStyle(color: _secondaryText),
+                      style:       TextStyle(color: context.fast.t2),
                     ),
                   ],
                 ),
@@ -506,7 +503,7 @@ class _PopularProducts extends StatelessWidget {
                   maximum: maximum,
                 ),
                 if (index < items.length - 1)
-                  const Divider(height: 24, color: _border),
+                        Divider(height: 24, color: context.fast.line),
               ],
             ],
           ),
@@ -549,8 +546,8 @@ class _ProductRow extends StatelessWidget {
               children: [
                 Text(
                   item.name,
-                  style: const TextStyle(
-                    color: _primaryText,
+                  style:       TextStyle(
+                    color: context.fast.t1,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -560,7 +557,7 @@ class _ProductRow extends StatelessWidget {
                   minHeight: 5,
                   borderRadius: BorderRadius.circular(4),
                   color: _brand,
-                  backgroundColor: _border,
+                  backgroundColor: context.fast.line,
                 ),
               ],
             ),
@@ -568,8 +565,8 @@ class _ProductRow extends StatelessWidget {
           const SizedBox(width: 16),
           Text(
             '${item.totalSold}',
-            style: const TextStyle(
-              color: _primaryText,
+            style:       TextStyle(
+              color: context.fast.t1,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -610,9 +607,9 @@ class _KpiCard extends StatelessWidget {
         constraints: const BoxConstraints(minHeight: 154),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: _surface,
+          color: context.fast.card,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: _border),
+          border: Border.all(color: context.fast.line),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -624,8 +621,8 @@ class _KpiCard extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: Text(
                 value,
-                style: const TextStyle(
-                  color: _primaryText,
+                style:       TextStyle(
+                  color: context.fast.t1,
                   fontSize: 23,
                   fontWeight: FontWeight.w800,
                 ),
@@ -635,7 +632,7 @@ class _KpiCard extends StatelessWidget {
             Text(
               label,
               maxLines: 2,
-              style: const TextStyle(color: _secondaryText, fontSize: 13),
+              style:       TextStyle(color: context.fast.t2, fontSize: 13),
             ),
             if (hasDelta) ...[
               const SizedBox(height: 8),
@@ -682,8 +679,8 @@ class _Metric extends StatelessWidget {
         children: [
           Text(
             value,
-            style: const TextStyle(
-              color: _primaryText,
+            style:       TextStyle(
+              color: context.fast.t1,
               fontSize: 21,
               fontWeight: FontWeight.w800,
             ),
@@ -691,7 +688,7 @@ class _Metric extends StatelessWidget {
           const SizedBox(height: 5),
           Text(
             label,
-            style: const TextStyle(color: _secondaryText, fontSize: 13),
+            style:       TextStyle(color: context.fast.t2, fontSize: 13),
           ),
         ],
       ),
@@ -710,9 +707,9 @@ class _Panel extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: _surface,
+        color: context.fast.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _border),
+        border: Border.all(color: context.fast.line),
       ),
       child: child,
     );
@@ -732,8 +729,8 @@ class _SectionTitle extends StatelessWidget {
       children: [
         Text(
           title,
-          style: const TextStyle(
-            color: _primaryText,
+          style:       TextStyle(
+            color: context.fast.t1,
             fontSize: 18,
             fontWeight: FontWeight.w800,
           ),
@@ -741,7 +738,7 @@ class _SectionTitle extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           subtitle,
-          style: const TextStyle(color: _secondaryText, fontSize: 13),
+          style:       TextStyle(color: context.fast.t2, fontSize: 13),
         ),
       ],
     );
@@ -828,8 +825,8 @@ class _StatePanel extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: _primaryText,
+              style:       TextStyle(
+                color: context.fast.t1,
                 fontSize: 19,
                 fontWeight: FontWeight.w800,
               ),
@@ -838,7 +835,7 @@ class _StatePanel extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: _secondaryText, height: 1.5),
+              style:       TextStyle(color: context.fast.t2, height: 1.5),
             ),
             const SizedBox(height: 20),
             FilledButton.icon(
@@ -848,7 +845,7 @@ class _StatePanel extends StatelessWidget {
               style: FilledButton.styleFrom(
                 minimumSize: const Size(140, 48),
                 backgroundColor: _brand,
-                foregroundColor: _background,
+                foregroundColor: context.fast.bg,
               ),
             ),
           ],

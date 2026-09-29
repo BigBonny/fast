@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../resto_provider.dart';
 import '../../models.dart';
 import '../../services/order_service.dart';
+import '../../theme.dart';
 
 class RestoOrdersScreen extends StatefulWidget {
   const RestoOrdersScreen({super.key});
@@ -92,8 +93,8 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: const Color(0xFF18181B),
-        title: const Text('Scanner QR client', style: TextStyle(color: Colors.white)),
+        backgroundColor: context.fast.card,
+        title: Text('Scanner QR client', style: TextStyle(color: context.fast.t1)),
         content: SizedBox(
           height: 280,
           width: 280,
@@ -112,13 +113,12 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
             ),
           ),
         ),
-        actions: [
-          TextButton(
+        actions: [ TextButton(
             onPressed: () {
               controller.dispose();
               Navigator.pop(dialogContext);
             },
-            child: const Text('Annuler', style: TextStyle(color: Color(0xFFA1A1AA))),
+            child: Text('Annuler', style: TextStyle(color: context.fast.t2)),
           ),
         ],
       ),
@@ -157,12 +157,11 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+        padding: EdgeInsets.fromLTRB(16, 16, 16, 96),
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text('Commandes en cours', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+            children: [ Text('Commandes en cours', style: TextStyle(color: context.fast.t1, fontSize: 20, fontWeight: FontWeight.bold)),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(color: const Color(0xFF10B981).withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6)),
@@ -176,19 +175,18 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+                SizedBox(height: 16),
           if (activeOrders.isEmpty)
-            const Center(child: Padding(
+                  Center(child: Padding(
               padding: EdgeInsets.all(32.0),
-              child: Text('Aucune commande active', style: TextStyle(color: Color(0xFFA1A1AA))),
+              child: Text('Aucune commande active', style: TextStyle(color: context.fast.t2)),
             )),
           ...activeOrders.map((o) => _buildOrderCard(o, rProv)),
 
           if (billedCancelledOrders.isNotEmpty) ...[
-            const SizedBox(height: 32),
-            const Divider(color: Color(0xFF27272A)),
-            const SizedBox(height: 16),
-            const Text('Annulées (Facturées)', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 32),
+                  Divider(color: context.fast.line),
+                  SizedBox(height: 16), Text('Annulées (Facturées)', style: TextStyle(color: context.fast.t1, fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             ...billedCancelledOrders.map((o) => _buildCancelledCard(o)),
           ]
@@ -211,23 +209,22 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
         timerText = 'EN RETARD';
       }
     }
-
-    Color statusColor = const Color(0xFF3F3F46);
-    if (order.status == OrderStatus.placed) statusColor = const Color(0xFF10B981);
-    if (order.status == OrderStatus.preparing) statusColor = const Color(0xFFF59E0B);
-    if (order.status == OrderStatus.readyForPickup) statusColor = const Color(0xFF3B82F6);
+ Color statusColor = context.fast.faint;
+    if (order.status == OrderStatus.placed) statusColor =       Color(0xFF10B981);
+    if (order.status == OrderStatus.preparing) statusColor =       Color(0xFFF59E0B);
+    if (order.status == OrderStatus.readyForPickup) statusColor =       Color(0xFF3B82F6);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: const Color(0xFF18181B),
+        color: context.fast.card,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: statusColor.withValues(alpha: 0.5), width: 2),
       ),
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: statusColor.withValues(alpha: 0.1),
               borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
@@ -236,8 +233,7 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
-                  children: [
-                    Text('#${order.id.split('-').last}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                  children: [ Text('#${order.id.split('-').last}', style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold, fontSize: 16)),
                     if (order.groupCode != null) ...[
                       const SizedBox(width: 8),
                       Container(
@@ -253,47 +249,43 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                       ),
                     ],
                   ],
-                ),
-                Text(order.status.name.toUpperCase(), style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 12)),
+                ), Text(order.status.name.toUpperCase(), style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 12)),
               ],
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ...order.items.map((item) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
+                  padding: EdgeInsets.only(bottom: 8.0),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('${item.quantity}x', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                      const SizedBox(width: 12),
+                    children: [ Text('${item.quantity}x', style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold)),
+                            SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(item.menuItem.name, style: const TextStyle(color: Colors.white)),
+                          children: [ Text(item.menuItem.name, style: TextStyle(color: context.fast.t1)),
                             if (item.selectedOptions.isNotEmpty)
-                              Text(item.selectedOptions.join(', '), style: const TextStyle(color: Color(0xFFA1A1AA), fontSize: 12)),
+ Text(item.selectedOptions.join(', '), style: TextStyle(color: context.fast.t2, fontSize: 12)),
                             if (item.allergyNotes.isNotEmpty)
-                              Text('Note: ${item.allergyNotes}', style: const TextStyle(color: Color(0xFFEF4444), fontSize: 12)),
+ Text('Note: ${item.allergyNotes}', style: const TextStyle(color: Color(0xFFEF4444), fontSize: 12)),
                           ],
                         ),
                       ),
                     ],
                   ),
                 )),
-                const Divider(color: Color(0xFF27272A), height: 32),
+                      Divider(color: context.fast.line, height: 32),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('Total: €${order.total.toStringAsFixed(2)}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  children: [ Text('Total: €${order.total.toStringAsFixed(2)}', style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold)),
                     if (order.status == OrderStatus.preparing)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(color: const Color(0xFF09090B), borderRadius: BorderRadius.circular(8)),
+                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(color: FASTBrand.onAmber, borderRadius: BorderRadius.circular(8)),
                         child: Text(timerText, style: const TextStyle(color: Color(0xFFF59E0B), fontFamily: 'monospace', fontWeight: FontWeight.bold)),
                       ),
                   ],
@@ -350,10 +342,8 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                         ),
                         child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.directions_walk, color: Color(0xFF3B82F6), size: 16),
-                            SizedBox(width: 6),
-                            Text('Client en route — attendez le scan', style: TextStyle(color: Color(0xFF3B82F6), fontWeight: FontWeight.w600, fontSize: 13)),
+                          children: [ Icon(Icons.directions_walk, color: Color(0xFF3B82F6), size: 16),
+                            SizedBox(width: 6), Text('Client en route — attendez le scan', style: TextStyle(color: Color(0xFF3B82F6), fontWeight: FontWeight.w600, fontSize: 13)),
                           ],
                         ),
                       ),
@@ -384,14 +374,12 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
 
   Widget _buildCancelledCard(Order order) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: const Color(0xFF18181B), borderRadius: BorderRadius.circular(8), border: Border.all(color: const Color(0xFF27272A))),
+      margin: EdgeInsets.only(bottom: 8),
+      padding: EdgeInsets.all(12),
+      decoration: BoxDecoration(color: context.fast.card, borderRadius: BorderRadius.circular(8), border: Border.all(color: context.fast.line)),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text('#${order.id.split('-').last}', style: const TextStyle(color: Color(0xFFA1A1AA))),
-          Text('€${order.total.toStringAsFixed(2)}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        children: [ Text('#${order.id.split('-').last}', style: TextStyle(color: context.fast.t2)), Text('€${order.total.toStringAsFixed(2)}', style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold)),
         ],
       ),
     );

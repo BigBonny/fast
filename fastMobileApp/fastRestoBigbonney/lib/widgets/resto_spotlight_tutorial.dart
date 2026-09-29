@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme.dart';
 
 class RestoSpotlightTutorial extends StatelessWidget {
   final Rect? targetRect;
@@ -9,7 +10,7 @@ class RestoSpotlightTutorial extends StatelessWidget {
   final VoidCallback onNext;
   final VoidCallback onSkip;
 
-  const RestoSpotlightTutorial({
+        RestoSpotlightTutorial({
     super.key,
     required this.targetRect,
     required this.title,
@@ -40,12 +41,12 @@ class RestoSpotlightTutorial extends StatelessWidget {
       namesRoute: true,
       label: 'Tutoriel étape ${step + 1} sur $totalSteps. $title. $description',
       child: Material(
-        color: const Color(0xFF18181B),
+        color: context.fast.card,
         elevation: 18,
         borderRadius: BorderRadius.circular(16),
         child: Container(
           width: cardWidth,
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.all(20),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: const Color(0xFFF59E0B), width: 1.2),
@@ -74,36 +75,33 @@ class RestoSpotlightTutorial extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const Spacer(),
-                  TextButton(
+                        Spacer(), TextButton(
                     onPressed: onSkip,
                     style: TextButton.styleFrom(
-                      minimumSize: const Size(48, 48),
-                      foregroundColor: const Color(0xFFA1A1AA),
+                      minimumSize:       Size(48, 48),
+                      foregroundColor: context.fast.t2,
                     ),
                     child: const Text('Passer'),
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
-              Text(
+                    SizedBox(height: 10), Text(
                 title,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: context.fast.t1,
                   fontSize: 20,
                   fontWeight: FontWeight.w900,
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
+                    SizedBox(height: 8), Text(
                 description,
-                style: const TextStyle(
-                  color: Color(0xFFD4D4D8),
+                style: TextStyle(
+                  color: context.fast.t2,
                   fontSize: 14,
                   height: 1.5,
                 ),
               ),
-              const SizedBox(height: 20),
+                    SizedBox(height: 20),
               Row(
                 children: [
                   Expanded(
@@ -112,20 +110,19 @@ class RestoSpotlightTutorial extends StatelessWidget {
                       child: LinearProgressIndicator(
                         value: (step + 1) / totalSteps,
                         minHeight: 5,
-                        backgroundColor: const Color(0xFF3F3F46),
-                        valueColor: const AlwaysStoppedAnimation(
-                          Color(0xFFF59E0B),
+                        backgroundColor: context.fast.faint,
+                        valueColor: const AlwaysStoppedAnimation( Color(0xFFF59E0B),
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                        SizedBox(width: 16),
                   ElevatedButton(
                     onPressed: onNext,
                     style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(112, 48),
-                      backgroundColor: const Color(0xFFF59E0B),
-                      foregroundColor: const Color(0xFF09090B),
+                      minimumSize:       Size(112, 48),
+                      backgroundColor: Color(0xFFF59E0B),
+                      foregroundColor: FASTBrand.onAmber,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),

@@ -11,6 +11,7 @@ import '../provider.dart';
 import '../services/delivery_service.dart';
 import '../services/map_helper.dart';
 import '../api/api_exceptions.dart';
+import '../theme.dart';
 
 class LivreurScreen extends StatefulWidget {
   const LivreurScreen({super.key});
@@ -505,16 +506,16 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          backgroundColor: const Color(0xFF18181B),
+          backgroundColor: context.fast.card,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
             side: const BorderSide(color: Color(0xFF10B981)),
           ),
-          title: const Text('🎉 Livré !',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+          title:       Text('🎉 Livré !',
+              style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold, fontSize: 16)),
           content: Text(
             'Revenus crédités : +${gain.toStringAsFixed(2)} €.\nMerci pour cette livraison de proximité !',
-            style: const TextStyle(color: Color(0xFFA1A1AA), fontSize: 12, height: 1.4),
+            style:       TextStyle(color: context.fast.t2, fontSize: 12, height: 1.4),
           ),
           actions: [
             ElevatedButton(
@@ -531,7 +532,7 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF10B981),
-                foregroundColor: const Color(0xFF09090B),
+                foregroundColor: FASTBrand.onAmber,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
               child: const Text('OK', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -586,7 +587,7 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
 
     final shouldSave = await showModalBottomSheet<bool>(
       context: context,
-      backgroundColor: const Color(0xFF18181B),
+      backgroundColor: context.fast.card,
       isScrollControlled: true,
       builder: (sheetContext) => StatefulBuilder(
         builder: (context, setSheetState) {
@@ -598,9 +599,9 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Créneaux permanents', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900)),
+                        Text('Créneaux permanents', style: TextStyle(color: context.fast.t1, fontSize: 20, fontWeight: FontWeight.w900)),
                   const SizedBox(height: 8),
-                  const Text('Sélectionnez vos jours habituels. Vous pourrez mettre le service en pause à tout moment.', style: TextStyle(color: Color(0xFFA1A1AA), height: 1.4)),
+                        Text('Sélectionnez vos jours habituels. Vous pourrez mettre le service en pause à tout moment.', style: TextStyle(color: context.fast.t2, height: 1.4)),
                   const SizedBox(height: 20),
                   Wrap(
                     spacing: 8,
@@ -693,16 +694,16 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF09090B),
+      backgroundColor: context.fast.bg,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF09090B),
+        backgroundColor: context.fast.bg,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         automaticallyImplyLeading: false,
-        title: const Text(
+        title:       Text(
           'Espace Livreur',
           style: TextStyle(
-            color: Colors.white,
+            color: context.fast.t1,
             fontWeight: FontWeight.w900,
             fontSize: 18,
           ),
@@ -912,16 +913,15 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFF09090B).withValues(alpha: 0.9),
+        color: context.fast.bg.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFF27272A)),
+        border: Border.all(color: context.fast.line),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: [
-              Icon(
+            children: [ Icon(
                 _driverType == 'PERMANENT' ? Icons.calendar_month_outlined : Icons.flash_on_outlined,
                 color: const Color(0xFFF59E0B),
                 size: 18,
@@ -930,11 +930,11 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
               Expanded(
                 child: Text(
                   _driverType == 'PERMANENT' ? 'Livreur permanent FAST' : 'Livreur occasionnel FAST',
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13),
+                  style:       TextStyle(color: context.fast.t1, fontWeight: FontWeight.w900, fontSize: 13),
                 ),
               ),
               if (_driverType == 'PERMANENT')
-                TextButton.icon(
+ TextButton.icon(
                   onPressed: _editPermanentSchedule,
                   icon: const Icon(Icons.edit_calendar_outlined, size: 16),
                   label: Text('${_schedules.length} créneau${_schedules.length > 1 ? 'x' : ''}'),
@@ -953,7 +953,7 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                     Expanded(
                       child: Text(
                         slogan,
-                        style: const TextStyle(color: Color(0xFFA1A1AA), fontSize: 9, fontWeight: FontWeight.bold),
+                        style:       TextStyle(color: context.fast.t2, fontSize: 9, fontWeight: FontWeight.bold),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -972,10 +972,10 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: _isOnline ? const Color(0xFF0C1D1A).withValues(alpha: 0.95) : const Color(0xFF18181B).withValues(alpha: 0.95),
+        color: _isOnline ? const Color(0xFF0C1D1A).withValues(alpha: 0.95) : context.fast.card.withValues(alpha: 0.95),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: _isOnline ? const Color(0xFF10B981).withValues(alpha: 0.3) : const Color(0xFF27272A),
+          color: _isOnline ? const Color(0xFF10B981).withValues(alpha: 0.3) : context.fast.line,
         ),
       ),
       child: Row(
@@ -983,8 +983,7 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
         children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
+            children: [ Text(
                 _isPaused
                     ? 'SERVICE EN PAUSE'
                     : _isOnline
@@ -993,12 +992,11 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                 style: TextStyle(
                   fontSize: 9,
                   fontWeight: FontWeight.bold,
-                  color: _isOnline ? const Color(0xFF10B981) : const Color(0xFF71717A),
+                  color: _isOnline ? const Color(0xFF10B981) : context.fast.t3,
                   letterSpacing: 0.8,
                 ),
               ),
-              const SizedBox(height: 2),
-              Text(
+              const SizedBox(height: 2), Text(
                 _isPaused
                     ? 'Reprenez lorsque vous êtes disponible'
                     : _isOnline
@@ -1006,7 +1004,7 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                         : _driverType == 'PERMANENT' && _schedules.isEmpty
                             ? 'Ajoutez vos créneaux réguliers'
                             : 'Passez en ligne pour recevoir des courses',
-                style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                style: TextStyle(color: context.fast.t1, fontSize: 11, fontWeight: FontWeight.bold),
               ),
             ],
           ),
@@ -1014,7 +1012,7 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
             mainAxisSize: MainAxisSize.min,
             children: [
               if (_driverType == 'PERMANENT' && _isOnline)
-                IconButton(
+ IconButton(
                   tooltip: _isPaused ? 'Reprendre' : 'Mettre en pause',
                   onPressed: _togglePause,
                   icon: Icon(_isPaused ? Icons.play_arrow : Icons.pause),
@@ -1022,10 +1020,10 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
               Switch(
                 value: _isOnline,
                 onChanged: (v) => _toggleOnline(v),
-                activeThumbColor: const Color(0xFF10B981),
-                activeTrackColor: const Color(0xFF10B981).withValues(alpha: 0.2),
-                inactiveThumbColor: const Color(0xFF71717A),
-                inactiveTrackColor: const Color(0xFF27272A),
+                activeThumbColor: Color(0xFF10B981),
+                activeTrackColor: Color(0xFF10B981).withValues(alpha: 0.2),
+                inactiveThumbColor: context.fast.t3,
+                inactiveTrackColor: context.fast.line,
               ),
             ],
           ),
@@ -1040,9 +1038,9 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
 
     return Container(
       width: 310,
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF18181B),
+        color: context.fast.card,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: const Color(0xFFF59E0B), width: 1.5),
         boxShadow: [
@@ -1070,14 +1068,13 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                   'COURSE PROCHE',
                   style: TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold, fontSize: 9),
                 ),
-              ),
-              Text(
+              ), Text(
                 '+${(op['gain'] as num).toStringAsFixed(2)} €',
                 style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF10B981)),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+                SizedBox(height: 16),
 
           // Restaurant info
           Row(
@@ -1090,20 +1087,18 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                 ),
                 child: const Icon(Icons.storefront, color: Color(0xFFF59E0B), size: 18),
               ),
-              const SizedBox(width: 12),
+                    SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('RETRAIT', style: TextStyle(fontSize: 8, color: Color(0xFF71717A), fontWeight: FontWeight.bold)),
-                    Text(op['restaurant'] as String,
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                  children: [ Text('RETRAIT', style: TextStyle(fontSize: 8, color: context.fast.t3, fontWeight: FontWeight.bold)), Text(op['restaurant'] as String,
+                        style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold, fontSize: 13)),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+                SizedBox(height: 12),
 
           // Destination info
           Row(
@@ -1116,29 +1111,26 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                 ),
                 child: const Icon(Icons.location_on, color: Color(0xFF10B981), size: 18),
               ),
-              const SizedBox(width: 12),
+                    SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('LIVRAISON', style: TextStyle(fontSize: 8, color: Color(0xFF71717A), fontWeight: FontWeight.bold)),
-                    Text(op['dest'] as String,
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                  children: [ Text('LIVRAISON', style: TextStyle(fontSize: 8, color: context.fast.t3, fontWeight: FontWeight.bold)), Text(op['dest'] as String,
+                        style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold, fontSize: 13)),
                   ],
                 ),
               ),
             ],
           ),
 
-          const SizedBox(height: 20),
-          const Divider(color: Color(0xFF27272A)),
-          const SizedBox(height: 12),
+                SizedBox(height: 20),
+                Divider(color: context.fast.line),
+                SizedBox(height: 12),
 
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Distance : ${op['dist'] as String}',
-                  style: const TextStyle(color: Color(0xFFA1A1AA), fontSize: 11, fontWeight: FontWeight.bold)),
+            children: [ Text('Distance : ${op['dist'] as String}',
+                  style: TextStyle(color: context.fast.t2, fontSize: 11, fontWeight: FontWeight.bold)),
               // Countdown Circle
               Stack(
                 alignment: Alignment.center,
@@ -1148,21 +1140,20 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                     height: 32,
                     child: CircularProgressIndicator(
                       value: progress,
-                      backgroundColor: const Color(0xFF27272A),
+                      backgroundColor: context.fast.line,
                       valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFF59E0B)),
                       strokeWidth: 3,
                     ),
-                  ),
-                  Text(
+                  ), Text(
                     '$_popupCountdownSeconds',
-                    style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                    style: TextStyle(color: context.fast.t1, fontSize: 11, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
             ],
           ),
 
-          const SizedBox(height: 20),
+                SizedBox(height: 20),
 
           // Accept / Decline Buttons
           Row(
@@ -1171,21 +1162,21 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                 child: OutlinedButton(
                   onPressed: _declineOpportunity,
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Color(0xFF3F3F46)),
+                    side: BorderSide(color: context.fast.faint),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
-                  child: const Text('Décliner', style: TextStyle(color: Color(0xFFA1A1AA), fontWeight: FontWeight.bold)),
+                  child: Text('Décliner', style: TextStyle(color: context.fast.t2, fontWeight: FontWeight.bold)),
                 ),
               ),
-              const SizedBox(width: 12),
+                    SizedBox(width: 12),
               Expanded(
                 flex: 2,
                 child: ElevatedButton(
                   onPressed: _acceptOpportunity,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF10B981),
-                    foregroundColor: const Color(0xFF09090B),
+                    backgroundColor: Color(0xFF10B981),
+                    foregroundColor: FASTBrand.onAmber,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     elevation: 0,
@@ -1208,9 +1199,9 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
     final bool showDeliverButton = _deliveryStatus == 'Livraison en cours';
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF18181B),
+        color: context.fast.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
         boxShadow: [
@@ -1226,8 +1217,7 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
+            children: [ Text(
                 'LIVRAISON EN COURS',
                 style: TextStyle(
                     fontSize: 9,
@@ -1248,55 +1238,53 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          Text(
+                SizedBox(height: 12), Text(
             d['restaurant'] as String,
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+            style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold, fontSize: 14),
           ),
-          const SizedBox(height: 2),
-          Text(
+                SizedBox(height: 2), Text(
             'Dest : ${d['dest'] as String} (${d['dist'] as String})',
-            style: const TextStyle(color: Color(0xFFA1A1AA), fontSize: 11),
+            style: TextStyle(color: context.fast.t2, fontSize: 11),
           ),
-          const SizedBox(height: 14),
+                SizedBox(height: 14),
           Row(
             children: [
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: () => _openGoogleMaps(d['restaurant'] as String),
-                  icon: const Icon(Icons.storefront, size: 16),
-                  label: const Text('Nav. restaurant', style: TextStyle(fontSize: 11)),
+                  icon: Icon(Icons.storefront, size: 16),
+                  label: Text('Nav. restaurant', style: TextStyle(fontSize: 11)),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFFF59E0B),
-                    side: const BorderSide(color: Color(0xFF3F3F46)),
+                    foregroundColor: Color(0xFFF59E0B),
+                    side: BorderSide(color: context.fast.faint),
                     padding: const EdgeInsets.symmetric(vertical: 10),
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+                    SizedBox(width: 8),
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: () => _openGoogleMaps(d['dest'] as String),
-                  icon: const Icon(Icons.place_outlined, size: 16),
-                  label: const Text('Nav. destination', style: TextStyle(fontSize: 11)),
+                  icon: Icon(Icons.place_outlined, size: 16),
+                  label: Text('Nav. destination', style: TextStyle(fontSize: 11)),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF10B981),
-                    side: const BorderSide(color: Color(0xFF3F3F46)),
+                    foregroundColor: Color(0xFF10B981),
+                    side: BorderSide(color: context.fast.faint),
                     padding: const EdgeInsets.symmetric(vertical: 10),
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+                SizedBox(height: 12),
           if (showPickupButton)
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: _confirmPickup,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF59E0B),
-                  foregroundColor: const Color(0xFF09090B),
+                  backgroundColor: Color(0xFFF59E0B),
+                  foregroundColor: FASTBrand.onAmber,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   elevation: 0,
@@ -1311,8 +1299,8 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
               child: ElevatedButton(
                 onPressed: _confirmDelivery,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF10B981),
-                  foregroundColor: const Color(0xFF09090B),
+                  backgroundColor: Color(0xFF10B981),
+                  foregroundColor: FASTBrand.onAmber,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   elevation: 0,
@@ -1324,7 +1312,7 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
           else
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
+              children:       [
                 SizedBox(
                   width: 14,
                   height: 14,
@@ -1332,10 +1320,9 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                       strokeWidth: 2,
                       valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFF59E0B))),
                 ),
-                SizedBox(width: 8),
-                Text(
+                SizedBox(width: 8), Text(
                   'Mise à jour du trajet en cours...',
-                  style: TextStyle(color: Color(0xFFA1A1AA), fontSize: 11, fontWeight: FontWeight.bold),
+                  style: TextStyle(color: context.fast.t2, fontSize: 11, fontWeight: FontWeight.bold),
                 ),
               ],
             ),

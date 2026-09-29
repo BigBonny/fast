@@ -3,9 +3,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../provider.dart';
+import '../theme.dart';
 
 class NotificationCenter extends StatelessWidget {
-  const NotificationCenter({super.key});
+        NotificationCenter({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -13,16 +14,16 @@ class NotificationCenter extends StatelessWidget {
     final notifications = provider.notifications;
 
     return Dialog(
-      backgroundColor: const Color(0xFF18181B),
+      backgroundColor: context.fast.card,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
-        side: const BorderSide(color: Color(0xFF27272A)),
+        side: BorderSide(color: context.fast.line),
       ),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 48),
+      insetPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 48),
       child: Container(
         width: double.infinity,
         height: double.infinity,
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(20),
         child: Column(
           children: [
             // Header
@@ -30,18 +31,15 @@ class NotificationCenter extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
-                  children: [
-                    const Icon(
-                      Icons.notifications_active_outlined,
+                  children: [ Icon( Icons.notifications_active_outlined,
                       color: Color(0xFFF59E0B),
                     ),
-                    const SizedBox(width: 8),
-                    const Text(
+                          SizedBox(width: 8), Text(
                       'Notifications',
                       style: TextStyle(
                         fontWeight: FontWeight.w900,
                         fontSize: 16,
-                        color: Colors.white,
+                        color: context.fast.t1,
                       ),
                     ),
                     if (notifications.any((n) => !n.isRead))
@@ -55,14 +53,13 @@ class NotificationCenter extends StatelessWidget {
                         ),
                       ),
                   ],
-                ),
-                IconButton(
+                ), IconButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.close, color: Color(0xFFA1A1AA)),
+                  icon: Icon(Icons.close, color: context.fast.t2),
                 ),
               ],
             ),
-            const Divider(color: Color(0xFF27272A), height: 24),
+                  Divider(color: context.fast.line, height: 24),
             
             // Notifications List
             Expanded(
@@ -77,7 +74,7 @@ class NotificationCenter extends StatelessWidget {
 
 class NotificationCenterList extends StatelessWidget {
   final FASTProvider? provider;
-  const NotificationCenterList({super.key, this.provider});
+        NotificationCenterList({super.key, this.provider});
 
   @override
   Widget build(BuildContext context) {
@@ -87,30 +84,26 @@ class NotificationCenterList extends StatelessWidget {
     if (notifications.isEmpty) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(24.0),
+          padding: EdgeInsets.all(24.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.notifications_off_outlined,
+            children: [ Icon( Icons.notifications_off_outlined,
                 size: 48,
-                color: Color(0xFF27272A),
+                color: context.fast.line,
               ),
-              const SizedBox(height: 12),
-              const Text(
+                    SizedBox(height: 12), Text(
                 'Vous êtes à jour !',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 13,
-                  color: Color(0xFFA1A1AA),
+                  color: context.fast.t2,
                 ),
               ),
-              const SizedBox(height: 4),
-              const Text(
+                    SizedBox(height: 4), Text(
                 'Les notifications sur le statut de vos commandes apparaîtront ici.',
                 style: TextStyle(
                   fontSize: 11,
-                  color: Color(0xFF71717A),
+                  color: context.fast.t3,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -128,13 +121,13 @@ class NotificationCenterList extends StatelessWidget {
             itemBuilder: (context, index) {
               final notif = notifications[index];
               return Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(12),
+                margin: EdgeInsets.only(bottom: 12),
+                padding: EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF09090B),
+                  color: context.fast.card,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: const Color(0xFF27272A),
+                    color: context.fast.line,
                   ),
                 ),
                 child: Row(
@@ -143,16 +136,16 @@ class NotificationCenterList extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: _getIconColor(notif.type).withValues(alpha: 0.1),
+                        color: _getIconColor(context, notif.type).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Icon(
                         _getIcon(notif.type),
-                        color: _getIconColor(notif.type),
+                        color: _getIconColor(context, notif.type),
                         size: 16,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                          SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -163,29 +156,27 @@ class NotificationCenterList extends StatelessWidget {
                               Expanded(
                                 child: Text(
                                   notif.title,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 12,
-                                    color: Colors.white,
+                                    color: context.fast.t1,
                                   ),
                                 ),
-                              ),
-                              Text(
+                              ), Text(
                                 notif.timestamp,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 9,
                                   fontFamily: 'monospace',
-                                  color: Color(0xFF71717A),
+                                  color: context.fast.t3,
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 4),
-                          Text(
+                                SizedBox(height: 4), Text(
                             notif.body,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11,
-                              color: Color(0xFFA1A1AA),
+                              color: context.fast.t2,
                               height: 1.4,
                             ),
                           ),
@@ -198,7 +189,7 @@ class NotificationCenterList extends StatelessWidget {
             },
           ),
         ),
-        const Divider(color: Color(0xFF27272A), height: 24),
+              Divider(color: context.fast.line, height: 24),
         SizedBox(
           width: double.infinity,
           child: TextButton.icon(
@@ -219,8 +210,7 @@ class NotificationCenterList extends StatelessWidget {
       ],
     );
   }
-
-  IconData _getIcon(String type) {
+ IconData _getIcon(String type) {
     switch (type) {
       case 'success':
         return Icons.check_circle_outline;
@@ -233,18 +223,17 @@ class NotificationCenterList extends StatelessWidget {
         return Icons.info_outline;
     }
   }
-
-  Color _getIconColor(String type) {
+ Color _getIconColor(BuildContext context, String type) {
     switch (type) {
       case 'success':
-        return const Color(0xFF10B981); // Emerald 500
+        return       Color(0xFF10B981); // Emerald 500
       case 'status':
-        return const Color(0xFFF59E0B); // Amber 500
+        return       Color(0xFFF59E0B); // Amber 500
       case 'rating':
-        return const Color(0xFF3B82F6); // Blue 500
+        return       Color(0xFF3B82F6); // Blue 500
       case 'info':
       default:
-        return const Color(0xFFA1A1AA); // Muted grey
+        return context.fast.t2; // Muted grey
     }
   }
 }

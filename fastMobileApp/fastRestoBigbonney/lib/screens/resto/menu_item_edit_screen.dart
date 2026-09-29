@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../models.dart';
 import '../../resto_provider.dart';
 import '../../services/menu_service.dart';
+import '../../theme.dart';
 
 class MenuItemEditScreen extends StatefulWidget {
   final MenuItem? item; // null = create mode
@@ -96,20 +97,18 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: const Color(0xFF18181B),
-        title: const Text('Supprimer le plat',
-            style: TextStyle(color: Colors.white)),
+        backgroundColor: context.fast.card,
+        title: Text('Supprimer le plat',
+            style: TextStyle(color: context.fast.t1)),
         content: Text(
           'Voulez-vous vraiment supprimer "${widget.item!.name}" ?',
-          style: const TextStyle(color: Color(0xFFA1A1AA)),
+          style: TextStyle(color: context.fast.t2),
         ),
-        actions: [
-          TextButton(
+        actions: [ TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Annuler',
-                style: TextStyle(color: Color(0xFFA1A1AA))),
-          ),
-          TextButton(
+            child: Text('Annuler',
+                style: TextStyle(color: context.fast.t2)),
+          ), TextButton(
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Supprimer',
                 style: TextStyle(color: Color(0xFFEF4444))),
@@ -136,10 +135,10 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF18181B),
+        backgroundColor: context.fast.card,
         title: Text(
           existing == null ? 'Ajouter un supplément' : 'Modifier le supplément',
-          style: const TextStyle(color: Colors.white, fontSize: 16),
+          style: TextStyle(color: context.fast.t1, fontSize: 16),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -150,13 +149,11 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                 keyboard: TextInputType.number),
           ],
         ),
-        actions: [
-          TextButton(
+        actions: [ TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Annuler',
-                style: TextStyle(color: Color(0xFFA1A1AA))),
-          ),
-          TextButton(
+            child: Text('Annuler',
+                style: TextStyle(color: context.fast.t2)),
+          ), TextButton(
             onPressed: () async {
               final n = nameCtrl.text.trim();
               final p = double.tryParse(priceCtrl.text.trim());
@@ -231,22 +228,22 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF09090B),
+      backgroundColor: context.fast.bg,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF09090B),
+        backgroundColor: context.fast.bg,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: context.fast.t1),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           _isEdit ? 'Modifier le plat' : 'Nouveau plat',
-          style: const TextStyle(
-              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+          style: TextStyle(
+              color: context.fast.t1, fontWeight: FontWeight.bold, fontSize: 18),
         ),
         actions: [
           if (_isEdit)
-            IconButton(
+ IconButton(
               icon: const Icon(Icons.delete_outline, color: Color(0xFFEF4444)),
               onPressed: _loading ? null : _delete,
             ),
@@ -255,7 +252,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.all(20),
           children: [
             _field(
               controller: _name,
@@ -264,14 +261,14 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
               validator: (v) =>
                   v == null || v.trim().isEmpty ? 'Requis' : null,
             ),
-            const SizedBox(height: 16),
+                  SizedBox(height: 16),
             _field(
               controller: _description,
               label: 'Description',
               icon: Icons.notes,
               maxLines: 3,
             ),
-            const SizedBox(height: 16),
+                  SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
@@ -299,30 +296,29 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+                  SizedBox(height: 16),
             _field(
               controller: _image,
               label: 'URL image (optionnel)',
               icon: Icons.image_outlined,
             ),
-            const SizedBox(height: 24),
+                  SizedBox(height: 24),
 
             // Available toggle
             Container(
               decoration: BoxDecoration(
-                color: const Color(0xFF18181B),
+                color: context.fast.card,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFF27272A)),
+                border: Border.all(color: context.fast.line),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               child: Row(
-                children: [
-                  const Icon(Icons.visibility_outlined,
-                      color: Color(0xFF71717A), size: 20),
-                  const SizedBox(width: 12),
-                  const Expanded(
+                children: [ Icon(Icons.visibility_outlined,
+                      color: context.fast.t3, size: 20),
+                        SizedBox(width: 12),
+                        Expanded(
                     child: Text('Disponible',
-                        style: TextStyle(color: Colors.white, fontSize: 15)),
+                        style: TextStyle(color: context.fast.t1, fontSize: 15)),
                   ),
                   Switch(
                     value: _available,
@@ -332,15 +328,15 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+                  SizedBox(height: 24),
 
             // Dietary tags
-            const Text('Labels alimentaires',
+ Text('Labels alimentaires',
                 style: TextStyle(
-                    color: Color(0xFFA1A1AA),
+                    color: context.fast.t2,
                     fontSize: 13,
                     fontWeight: FontWeight.w600)),
-            const SizedBox(height: 10),
+                  SizedBox(height: 10),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -350,8 +346,8 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                   label: Text(pref.label,
                       style: TextStyle(
                           color: selected
-                              ? const Color(0xFF09090B)
-                              : Colors.white,
+                              ? FASTBrand.onAmber
+                              : context.fast.t1,
                           fontSize: 12,
                           fontWeight: FontWeight.w600)),
                   selected: selected,
@@ -362,27 +358,25 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                       _dietary.remove(pref);
                     }
                   }),
-                  selectedColor: const Color(0xFFF59E0B),
-                  backgroundColor: const Color(0xFF27272A),
-                  checkmarkColor: const Color(0xFF09090B),
+                  selectedColor: Color(0xFFF59E0B),
+                  backgroundColor: context.fast.line,
+                  checkmarkColor: FASTBrand.onAmber,
                   side: BorderSide.none,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(6)),
                 );
               }).toList(),
             ),
-            const SizedBox(height: 24),
+                  SizedBox(height: 24),
 
             // ─── Supplements ──────────────────────────────
             Row(
-              children: [
-                const Text('Suppléments',
+              children: [ Text('Suppléments',
                     style: TextStyle(
-                        color: Color(0xFFA1A1AA),
+                        color: context.fast.t2,
                         fontSize: 13,
                         fontWeight: FontWeight.w600)),
-                const Spacer(),
-                TextButton.icon(
+                const Spacer(), TextButton.icon(
                   onPressed: () => _showSupplementDialog(),
                   icon: const Icon(Icons.add, size: 16,
                       color: Color(0xFFF59E0B)),
@@ -397,27 +391,27 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+                  SizedBox(height: 8),
             if (_supplements.isEmpty)
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF18181B),
+                  color: context.fast.card,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFF27272A)),
+                  border: Border.all(color: context.fast.line),
                 ),
-                child: const Center(
+                child:       Center(
                   child: Text('Aucun supplément',
                       style: TextStyle(
-                          color: Color(0xFF52525B), fontSize: 13)),
+                          color: context.fast.faint, fontSize: 13)),
                 ),
               )
             else
               Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xFF18181B),
+                  color: context.fast.card,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFF27272A)),
+                  border: Border.all(color: context.fast.line),
                 ),
                 child: Column(
                   children: _supplements.asMap().entries.map((entry) {
@@ -427,30 +421,27 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                       children: [
                         ListTile(
                           dense: true,
-                          contentPadding: const EdgeInsets.symmetric(
+                          contentPadding: EdgeInsets.symmetric(
                               horizontal: 16, vertical: 0),
                           title: Text(s.name,
-                              style: const TextStyle(
-                                  color: Colors.white, fontSize: 14)),
+                              style: TextStyle(
+                                  color: context.fast.t1, fontSize: 14)),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text('+${s.price.toStringAsFixed(2)}€',
+                            children: [ Text('+${s.price.toStringAsFixed(2)}€',
                                   style: const TextStyle(
                                       color: Color(0xFFF59E0B),
                                       fontSize: 13,
                                       fontWeight: FontWeight.bold)),
-                              const SizedBox(width: 8),
-                              IconButton(
-                                icon: const Icon(Icons.edit_outlined,
-                                    color: Color(0xFF71717A), size: 18),
+                                    SizedBox(width: 8), IconButton(
+                                icon: Icon(Icons.edit_outlined,
+                                    color: context.fast.t3, size: 18),
                                 onPressed: () =>
                                     _showSupplementDialog(existing: s),
                                 padding: EdgeInsets.zero,
                                 constraints: const BoxConstraints(),
                               ),
-                              const SizedBox(width: 4),
-                              IconButton(
+                              const SizedBox(width: 4), IconButton(
                                 icon: const Icon(Icons.close,
                                     color: Color(0xFFEF4444), size: 18),
                                 onPressed: () => _deleteSupplement(s),
@@ -461,8 +452,8 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                           ),
                         ),
                         if (idx < _supplements.length - 1)
-                          const Divider(
-                              height: 1, color: Color(0xFF27272A),
+                                Divider(
+                              height: 1, color: context.fast.line,
                               indent: 16),
                       ],
                     );
@@ -470,25 +461,25 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                 ),
               ),
 
-            const SizedBox(height: 32),
+                  SizedBox(height: 32),
 
             SizedBox(
               height: 50,
               child: ElevatedButton(
                 onPressed: _loading ? null : _save,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF59E0B),
-                  foregroundColor: const Color(0xFF09090B),
+                  backgroundColor: Color(0xFFF59E0B),
+                  foregroundColor: FASTBrand.onAmber,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10)),
                 ),
                 child: _loading
-                    ? const SizedBox(
+                    ?       SizedBox(
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Color(0xFF09090B)))
+                            strokeWidth: 2, color: FASTBrand.onAmber))
                     : Text(
                         _isEdit ? 'Sauvegarder' : 'Créer le plat',
                         style: const TextStyle(
@@ -508,12 +499,12 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
     return TextField(
       controller: ctrl,
       keyboardType: keyboard,
-      style: const TextStyle(color: Colors.white, fontSize: 14),
+      style: TextStyle(color: context.fast.t1, fontSize: 14),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: Color(0xFF71717A), fontSize: 13),
+        labelStyle: TextStyle(color: context.fast.t3, fontSize: 13),
         filled: true,
-        fillColor: const Color(0xFF27272A),
+        fillColor: context.fast.line,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide.none,
@@ -531,8 +522,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
   Widget _field({
     required TextEditingController controller,
     required String label,
-    required IconData icon,
-    TextInputType? keyboard,
+    required IconData icon, TextInputType? keyboard,
     int maxLines = 1,
     String? Function(String?)? validator,
   }) {
@@ -541,14 +531,13 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
       keyboardType: keyboard,
       maxLines: maxLines,
       validator: validator,
-      style: const TextStyle(color: Colors.white, fontSize: 15),
+      style: TextStyle(color: context.fast.t1, fontSize: 15),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: Color(0xFF71717A)),
-        prefixIcon:
-            Icon(icon, color: const Color(0xFF71717A), size: 18),
+        labelStyle: TextStyle(color: context.fast.t3),
+        prefixIcon: Icon(icon, color: context.fast.t3, size: 18),
         filled: true,
-        fillColor: const Color(0xFF18181B),
+        fillColor: context.fast.card,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide.none,

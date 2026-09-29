@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../models.dart';
+import '../theme.dart';
 
 /// Shown as a full-screen modal: client shows QR to staff for verification.
 class QRVerificationScreen extends StatefulWidget {
@@ -38,19 +39,19 @@ class _QRVerificationScreenState extends State<QRVerificationScreen>
     final qrData = order.pickupToken ?? order.id;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF09090B),
+      backgroundColor: context.fast.bg,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF09090B),
+        backgroundColor: context.fast.bg,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: Color(0xFFE4E4E7)),
+          icon: Icon(Icons.close, color: context.fast.t2),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
+        title: Text(
           'Vérification du staff',
           style: TextStyle(
-            color: Colors.white,
+            color: context.fast.t1,
             fontWeight: FontWeight.w800,
             fontSize: 16,
           ),
@@ -58,26 +59,25 @@ class _QRVerificationScreenState extends State<QRVerificationScreen>
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Column(
           children: [
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: const Color(0xFF18181B),
+                color: context.fast.card,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFF27272A)),
+                border: Border.all(color: context.fast.line),
               ),
-              child: const Row(
-                children: [
-                  Icon(Icons.info_outline, color: Color(0xFFF59E0B), size: 16),
+              child:       Row(
+                children: [ Icon(Icons.info_outline, color: Color(0xFFF59E0B), size: 16),
                   SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       'Présentez ce QR code au membre du staff au comptoir Click & Collect.',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Color(0xFFA1A1AA),
+                        color: context.fast.t2,
                         height: 1.4,
                       ),
                     ),
@@ -85,12 +85,13 @@ class _QRVerificationScreenState extends State<QRVerificationScreen>
                 ],
               ),
             ),
-            const SizedBox(height: 28),
+                  SizedBox(height: 28),
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: context.fast.card,
                 borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: context.fast.line),
               ),
               child: AnimatedBuilder(
                 animation: _scanController,
@@ -105,13 +106,13 @@ class _QRVerificationScreenState extends State<QRVerificationScreen>
                             data: qrData,
                             version: QrVersions.auto,
                             backgroundColor: Colors.white,
-                            eyeStyle: const QrEyeStyle(
+                            eyeStyle:       QrEyeStyle(
                               eyeShape: QrEyeShape.square,
-                              color: Color(0xFF09090B),
+                              color: FASTBrand.onAmber,
                             ),
-                            dataModuleStyle: const QrDataModuleStyle(
+                            dataModuleStyle:       QrDataModuleStyle(
                               dataModuleShape: QrDataModuleShape.square,
-                              color: Color(0xFF09090B),
+                              color: FASTBrand.onAmber,
                             ),
                           ),
                         ),
@@ -138,8 +139,7 @@ class _QRVerificationScreenState extends State<QRVerificationScreen>
                 },
               ),
             ),
-            const SizedBox(height: 20),
-            Text(
+                  SizedBox(height: 20), Text(
               order.id.toUpperCase(),
               style: const TextStyle(
                 fontFamily: 'monospace',
@@ -149,22 +149,21 @@ class _QRVerificationScreenState extends State<QRVerificationScreen>
                 letterSpacing: 2.0,
               ),
             ),
-            const SizedBox(height: 6),
-            Text(
+                  SizedBox(height: 6), Text(
               'Valable chez : ${order.restaurantName}',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
-                color: Color(0xFFA1A1AA),
+                color: context.fast.t2,
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 24),
+                  SizedBox(height: 24),
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFF18181B),
+                color: context.fast.card,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFF27272A)),
+                border: Border.all(color: context.fast.line),
               ),
               child: Column(
                 children: [
@@ -188,20 +187,18 @@ class _QRVerificationScreenState extends State<QRVerificationScreen>
   Widget _summaryRow(String label, String value) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: const TextStyle(fontSize: 12, color: Color(0xFF71717A))),
-        Text(
+      children: [ Text(label, style: TextStyle(fontSize: 12, color: context.fast.t3)), Text(
           value,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: context.fast.t1),
         ),
       ],
     );
   }
 
   Widget _buildStatusSection(OrderStatus status) {
-    Color color;
+ Color color;
     String label;
-    IconData icon;
+ IconData icon;
 
     switch (status) {
       case OrderStatus.placed:
@@ -210,17 +207,17 @@ class _QRVerificationScreenState extends State<QRVerificationScreen>
         icon = Icons.receipt_long;
         break;
       case OrderStatus.preparing:
-        color = const Color(0xFFF59E0B);
+        color =       Color(0xFFF59E0B);
         label = 'En préparation — Venez !';
         icon = Icons.restaurant_menu;
         break;
       case OrderStatus.readyForPickup:
-        color = const Color(0xFF10B981);
+        color =       Color(0xFF10B981);
         label = 'Prêt — Récupérez maintenant !';
         icon = Icons.check_circle;
         break;
       case OrderStatus.completed:
-        color = const Color(0xFF71717A);
+        color = context.fast.t3;
         label = 'Récupéré — Bon appétit !';
         icon = Icons.handshake;
         break;
@@ -240,10 +237,8 @@ class _QRVerificationScreenState extends State<QRVerificationScreen>
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: color, size: 16),
-          const SizedBox(width: 8),
-          Text(
+        children: [ Icon(icon, color: color, size: 16),
+          const SizedBox(width: 8), Text(
             label,
             style: TextStyle(
               fontSize: 13,
