@@ -62,6 +62,7 @@ class FASTProvider extends ChangeNotifier {
   String _userPhone = '';
   int _userPoints = 0;
   ThemeMode _themeMode = ThemeMode.light;
+  Set<String> _favoriteIds = {};
 
   // User location
   LatLng? _userLocation;
@@ -113,6 +114,19 @@ class FASTProvider extends ChangeNotifier {
   String get userPhone => _userPhone;
   int get userPoints => _userPoints;
   ThemeMode get themeMode => _themeMode;
+
+  // Favorites (local persistence, like the website's localStorage)
+  List<Restaurant> get favorites =>
+      _restaurants.where((r) => _favoriteIds.contains(r.id)).toList();
+  bool isFavorite(String restaurantId) => _favoriteIds.contains(restaurantId);
+
+  void toggleFavorite(String restaurantId) {
+    if (!_favoriteIds.add(restaurantId)) _favoriteIds.remove(restaurantId);
+    SharedPreferences.getInstance().then(
+      (prefs) => prefs.setString('fast_favorites', json.encode(_favoriteIds.toList())),
+    );
+    notifyListeners();
+  }
   String get userInitial => _userName.isNotEmpty ? _userName[0].toUpperCase() : '?';
 
   // Points from API (synced via AuthProvider.getMe)
@@ -350,6 +364,14 @@ class FASTProvider extends ChangeNotifier {
         : themePref == 'system'
             ? ThemeMode.system
             : ThemeMode.dark;
+
+    // 5. Load favorites
+    final savedFavs = prefs.getString('fast_favorites');
+    if (savedFavs != null) {
+      try {
+        _favoriteIds = (json.decode(savedFavs) as List<dynamic>).cast<String>().toSet();
+      } catch (_) {}
+    }
 
     notifyListeners();
     // NOTE: Simulation removed — order states are fully manual.
