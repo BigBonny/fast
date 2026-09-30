@@ -31,6 +31,9 @@ class MenuItem {
   final double rating;
   final bool available;
   final List<MenuItemSupplement> supplements;
+  final int prepTime;     // minutes, 0 = restaurant default
+  final int prepTimeRush; // minutes during rush, 0 = fall back to prepTime
+  final String videoUrl;  // optional story/preview video (mp4…)
 
   MenuItem({
     required this.id,
@@ -43,6 +46,9 @@ class MenuItem {
     required this.rating,
     this.available = true,
     this.supplements = const [],
+    this.prepTime = 0,
+    this.prepTimeRush = 0,
+    this.videoUrl = '',
   });
 
   MenuItem copyWith({
@@ -65,6 +71,9 @@ class MenuItem {
         rating: rating,
         available: available ?? this.available,
         supplements: supplements,
+        prepTime: prepTime,
+        prepTimeRush: prepTimeRush,
+        videoUrl: videoUrl,
       );
 
   Map<String, dynamic> toJson() => {
@@ -77,6 +86,9 @@ class MenuItem {
         'dietaryTags': dietaryTags.map((t) => t.label).toList(),
         'rating': rating,
         'available': available,
+        'prepTime': prepTime,
+        'prepTimeRush': prepTimeRush,
+        'videoUrl': videoUrl,
       };
 
   factory MenuItem.fromJson(Map<String, dynamic> json) => MenuItem(
@@ -92,6 +104,9 @@ class MenuItem {
             [],
         rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
         available: json['available'] as bool? ?? true,
+        prepTime: json['prepTime'] as int? ?? 0,
+        prepTimeRush: json['prepTimeRush'] as int? ?? 0,
+        videoUrl: json['videoUrl'] as String? ?? '',
       );
 
   /// Parse from backend API JSON format
@@ -109,6 +124,9 @@ class MenuItem {
         supplements: (json['supplements'] as List<dynamic>?)
             ?.map((s) => MenuItemSupplement.fromJson(s as Map<String, dynamic>))
             .toList() ?? [],
+        prepTime: json['prepTime'] as int? ?? 0,
+        prepTimeRush: json['prepTimeRush'] as int? ?? 0,
+        videoUrl: json['videoUrl'] as String? ?? '',
       );
 
   static List<DietaryPreference> _parseDietaryTags(dynamic tags) {

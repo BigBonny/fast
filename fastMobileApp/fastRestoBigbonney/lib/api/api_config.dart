@@ -6,6 +6,7 @@ class ApiConfig {
 
   // Auth
   static const String login = '/auth/login';
+  static const String googleAuth = '/auth/google';
   static const String register = '/auth/register';
   static const String me = '/auth/me';
   static const String updateProfile = '/auth/profile';

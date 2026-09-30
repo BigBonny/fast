@@ -180,7 +180,7 @@ class _RestoMainShellState extends State<RestoMainShell> {
                   ),
                 ),
                       SizedBox(width: 12), Text(
-                  'FAST Resto',
+                  'FAST Pro',
                   style: TextStyle(
                     fontWeight: FontWeight.w900,
                     fontSize: 16,

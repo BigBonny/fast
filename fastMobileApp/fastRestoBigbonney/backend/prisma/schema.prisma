@@ -197,6 +197,7 @@ model MenuItem {
   price            Float
   originalPrice    Float?   
   image            String   @default("")
+  videoUrl         String   @default("")
   category         String   @default("")
   rating           Float    @default(0.0)
   isAvailable      Boolean  @default(true)
@@ -204,6 +205,7 @@ model MenuItem {
   isSpecialOffer   Boolean  @default(false)
   specialOfferLabel String  @default("")
   prepTime         Int      @default(0)
+  prepTimeRush     Int      @default(0) // minutes during rush; 0 = fall back to prepTime
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 

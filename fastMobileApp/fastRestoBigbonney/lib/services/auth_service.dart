@@ -10,6 +10,14 @@ class AuthService {
     return AuthResponse.fromJson(data as Map<String, dynamic>);
   }
 
+  Future<AuthResponse> loginWithGoogle(String idToken, String role) async {
+    final data = await _api.post(ApiConfig.googleAuth, body: {
+      'idToken': idToken,
+      'role': role,
+    });
+    return AuthResponse.fromJson(data as Map<String, dynamic>);
+  }
+
   Future<AuthResponse> register(RegisterRequest request) async {
     final data = await _api.post(ApiConfig.register, body: request.toJson());
     return AuthResponse.fromJson(data as Map<String, dynamic>);

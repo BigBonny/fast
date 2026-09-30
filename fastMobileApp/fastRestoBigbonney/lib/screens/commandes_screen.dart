@@ -612,7 +612,6 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
     _locationSub = geo_loc.Geolocator.getPositionStream(locationSettings: settings).listen((pos) async {
       if (!mounted || _trackingOrderId != order.id) return;
       final current = LatLng(pos.latitude, pos.longitude);
-      provider.fetchUserLocation();
 
       if (_routePolyline.isEmpty) {
         _routePolyline = await LocationService.instance.getWalkingRoute(current, restPoint);
@@ -624,6 +623,7 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
       final now = DateTime.now();
       if (_lastTrackingPatch == null || now.difference(_lastTrackingPatch!) > const Duration(seconds: 20)) {
         _lastTrackingPatch = now;
+        provider.fetchUserLocation();
         try {
           await _orderService.updateTracking(
             orderId: order.id,
