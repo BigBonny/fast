@@ -23,6 +23,7 @@ import 'screens/resto/onboarding_screen.dart' as resto_onboarding;
 import 'screens/group_screen.dart';
 import 'screens/livreur_screen.dart';
 import 'screens/driver_account_screen.dart';
+import 'widgets/client_drawer.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -310,13 +311,13 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
     }
 
     return Scaffold(
+      drawer: const ClientDrawer(),
       appBar: AppBar(
         backgroundColor: context.fast.bg.withValues(alpha: 0.95),
         surfaceTintColor: Colors.transparent,
         elevation: 0,
-        titleSpacing: 16,
-        leadingWidth: 0,
-        leading:       SizedBox.shrink(),
+        titleSpacing: 0,
+        iconTheme: IconThemeData(color: context.fast.t1),
         title: GestureDetector(
           onTap: () {
             provider.selectRestaurant(null);
@@ -366,73 +367,6 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
           ),
         ),
         actions: [
-          // Quick settings — ⋮ menu
-          PopupMenuButton<String>(
-            icon: Icon(Icons.more_vert, color: context.fast.t2),
-            color: context.fast.card,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            onSelected: (value) async {
-              if (value == 'account') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const AccountScreen()),
-                );
-              } else if (value == 'theme_light') {
-                provider.setThemeMode(ThemeMode.light);
-              } else if (value == 'theme_dark') {
-                provider.setThemeMode(ThemeMode.dark);
-              } else if (value == 'theme_system') {
-                provider.setThemeMode(ThemeMode.system);
-              }
-            },
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 'account',
-                child: Row(children: [
-                  Icon(Icons.person_outline, size: 18, color: context.fast.t2),
-                  const SizedBox(width: 10),
-                  Text('Mon compte', style: TextStyle(color: context.fast.t1)),
-                ]),
-              ),
-              const PopupMenuDivider(),
-              PopupMenuItem(
-                value: 'theme_system',
-                child: Row(children: [
-                  Icon(Icons.phone_android, size: 18, color: context.fast.t2),
-                  const SizedBox(width: 10),
-                  Text('Thème : Auto', style: TextStyle(color: context.fast.t1)),
-                  if (provider.themeMode == ThemeMode.system) ...[
-                    const Spacer(),
-                    const Icon(Icons.check, size: 16, color: Color(0xFFF59E0B)),
-                  ],
-                ]),
-              ),
-              PopupMenuItem(
-                value: 'theme_light',
-                child: Row(children: [
-                  Icon(Icons.wb_sunny_outlined, size: 18, color: context.fast.t2),
-                  const SizedBox(width: 10),
-                  Text('Thème : Clair', style: TextStyle(color: context.fast.t1)),
-                  if (provider.themeMode == ThemeMode.light) ...[
-                    const Spacer(),
-                    const Icon(Icons.check, size: 16, color: Color(0xFFF59E0B)),
-                  ],
-                ]),
-              ),
-              PopupMenuItem(
-                value: 'theme_dark',
-                child: Row(children: [
-                  Icon(Icons.nightlight_outlined, size: 18, color: context.fast.t2),
-                  const SizedBox(width: 10),
-                  Text('Thème : Sombre', style: TextStyle(color: context.fast.t1)),
-                  if (provider.themeMode == ThemeMode.dark) ...[
-                    const Spacer(),
-                    const Icon(Icons.check, size: 16, color: Color(0xFFF59E0B)),
-                  ],
-                ]),
-              ),
-            ],
-          ),
           IconButton(
             onPressed: () {
               Navigator.push(
