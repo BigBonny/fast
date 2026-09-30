@@ -74,11 +74,11 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
                 leading: Container(
                   width: 38, height: 38,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
+                    color: const Color(0xFF00C8B3).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Icon(Icons.edit_outlined,
-                      color: Color(0xFFF59E0B), size: 20),
+                      color: Color(0xFF00C8B3), size: 20),
                 ),
                 title: Text('Ajout manuel',
                     style: TextStyle(
@@ -112,7 +112,7 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
           backgroundColor: Colors.transparent,
           floatingActionButton: FloatingActionButton.extended(
             onPressed: () => _showAddOptions(context),
-            backgroundColor: const Color(0xFFF59E0B),
+            backgroundColor: const Color(0xFF00C8B3),
             icon: const Icon(Icons.add, color: Colors.black),
             label: const Text('Ajouter',
                 style: TextStyle(
@@ -121,7 +121,7 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
           body: prov.menuLoading
               ? const Center(
                   child: CircularProgressIndicator(
-                      color: Color(0xFFF59E0B)))
+                      color: Color(0xFF00C8B3)))
               : allItems.isEmpty
                   ? _buildEmpty(context)
                   : _buildList(context, prov, categories, filtered),
@@ -214,7 +214,7 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
                                         Row(
                                           children: [
                                             Text('${m.price.toStringAsFixed(2)} €',
-                                                style: const TextStyle(color: Color(0xFFF59E0B), fontWeight: FontWeight.w900, fontSize: 13)),
+                                                style: const TextStyle(color: Color(0xFF00C8B3), fontWeight: FontWeight.w900, fontSize: 13)),
                                             if (m.prepTime > 0) ...[
                                               const SizedBox(width: 8),
                                               Icon(Icons.schedule, size: 11, color: ctx.fast.t3),
@@ -263,7 +263,7 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
           ElevatedButton.icon(
             onPressed: () => _openEdit(context),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFFF59E0B),
+              backgroundColor: Color(0xFF00C8B3),
               foregroundColor: FASTBrand.onAmber,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8)),
@@ -321,7 +321,7 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
                         horizontal: 14, vertical: 6),
                     decoration: BoxDecoration(
                       color: active
-                          ?       Color(0xFFF59E0B)
+                          ?       Color(0xFF00C8B3)
                           : context.fast.line,
                       borderRadius: BorderRadius.circular(6),
                     ),
@@ -443,7 +443,7 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
                   const SizedBox(height: 4), Text(
                     '€${item.price.toStringAsFixed(2)}',
                     style: const TextStyle(
-                        color: Color(0xFFF59E0B),
+                        color: Color(0xFF00C8B3),
                         fontWeight: FontWeight.bold,
                         fontSize: 14),
                   ),
@@ -463,7 +463,7 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ), IconButton(
                 icon: const Icon(Icons.edit_outlined,
-                    color: Color(0xFFF59E0B), size: 20),
+                    color: Color(0xFF00C8B3), size: 20),
                 onPressed: () => _openEdit(context, item: item),
                 padding: const EdgeInsets.all(8),
                 constraints: const BoxConstraints(),

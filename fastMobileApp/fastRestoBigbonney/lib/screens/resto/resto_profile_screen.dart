@@ -63,8 +63,8 @@ class RestoProfileScreen extends StatelessWidget {
                           children: [
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(color: const Color(0xFFF59E0B).withValues(alpha: 0.2), borderRadius: BorderRadius.circular(6)),
-                              child: Text(settings?.cuisineType.toUpperCase() ?? 'CUISINE', style: const TextStyle(color: Color(0xFFF59E0B), fontSize: 12, fontWeight: FontWeight.bold)),
+                              decoration: BoxDecoration(color: const Color(0xFF00C8B3).withValues(alpha: 0.2), borderRadius: BorderRadius.circular(6)),
+                              child: Text(settings?.cuisineType.toUpperCase() ?? 'CUISINE', style: const TextStyle(color: Color(0xFF00C8B3), fontSize: 12, fontWeight: FontWeight.bold)),
                             ),
                                   SizedBox(height: 12), Text(
                               settings?.name ?? 'Mon Restaurant',

@@ -222,7 +222,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
             child: Text(
               existing == null ? 'Ajouter' : 'Sauvegarder',
               style: const TextStyle(
-                  color: Color(0xFFF59E0B), fontWeight: FontWeight.bold),
+                  color: Color(0xFF00C8B3), fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -408,7 +408,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                       _dietary.remove(pref);
                     }
                   }),
-                  selectedColor: Color(0xFFF59E0B),
+                  selectedColor: Color(0xFF00C8B3),
                   backgroundColor: context.fast.line,
                   checkmarkColor: FASTBrand.onAmber,
                   side: BorderSide.none,
@@ -429,10 +429,10 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                 const Spacer(), TextButton.icon(
                   onPressed: () => _showSupplementDialog(),
                   icon: const Icon(Icons.add, size: 16,
-                      color: Color(0xFFF59E0B)),
+                      color: Color(0xFF00C8B3)),
                   label: const Text('Ajouter',
                       style: TextStyle(
-                          color: Color(0xFFF59E0B),
+                          color: Color(0xFF00C8B3),
                           fontSize: 13,
                           fontWeight: FontWeight.w600)),
                   style: TextButton.styleFrom(
@@ -480,7 +480,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                             mainAxisSize: MainAxisSize.min,
                             children: [ Text('+${s.price.toStringAsFixed(2)}€',
                                   style: const TextStyle(
-                                      color: Color(0xFFF59E0B),
+                                      color: Color(0xFF00C8B3),
                                       fontSize: 13,
                                       fontWeight: FontWeight.bold)),
                                     SizedBox(width: 8), IconButton(
@@ -518,7 +518,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
               child: ElevatedButton(
                 onPressed: _loading ? null : _save,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFFF59E0B),
+                  backgroundColor: Color(0xFF00C8B3),
                   foregroundColor: FASTBrand.onAmber,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
@@ -561,7 +561,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFFF59E0B)),
+          borderSide: const BorderSide(color: Color(0xFF00C8B3)),
         ),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -594,7 +594,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFFF59E0B)),
+          borderSide: const BorderSide(color: Color(0xFF00C8B3)),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),

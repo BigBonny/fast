@@ -115,6 +115,12 @@ class FASTBrand {
     colors: [Color(0xFF171410), Color(0xFF20190F)],
   );
 
+  static const LinearGradient proGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF00C8B3), Color(0xFFFF0066)],
+  );
+
   static const LinearGradient accentGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
@@ -314,4 +320,17 @@ class FASTTheme {
       splashFactory: InkSparkle.splashFactory,
     );
   }
+}
+
+/// Base44 Fast Pro palette — teal primary + magenta accent (espace restaurateur).
+class FASTPro {
+  FASTPro._();
+  static const Color teal = Color(0xFF00C8B3);
+  static const Color tealDark = Color(0xFF00A090);
+  static const Color magenta = Color(0xFFFF0066);
+  static const Color darkBg = Color(0xFF0F172A);
+  static const Color header = Color(0xFF020617);
+  static const LinearGradient logoGradient = LinearGradient(
+    colors: [Color(0xFF00C8B3), Color(0xFFFF0066)],
+  );
 }

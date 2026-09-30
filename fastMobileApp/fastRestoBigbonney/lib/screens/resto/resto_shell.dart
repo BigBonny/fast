@@ -164,27 +164,34 @@ class _RestoMainShellState extends State<RestoMainShell> {
             iconTheme: IconThemeData(color: context.fast.t1),
             title: Row(
               children: [
-                Container(
-                  width: 28,
-                  height: 28,
-                  clipBehavior: Clip.antiAlias,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Transform.scale(
-                    scale: 1.35,
-                    child: Image.asset(
-                      'assets/images/logo.png',
-                      fit: BoxFit.cover,
+                ShaderMask(
+                  shaderCallback: (b) => FASTPro.logoGradient.createShader(b),
+                  child: const Text(
+                    '⚡ FAST',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 20,
+                      letterSpacing: 3,
+                      color: Colors.white,
                     ),
                   ),
                 ),
-                      SizedBox(width: 12), Text(
-                  'FAST Pro',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w900,
-                    fontSize: 16,
-                    color: context.fast.t1,
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: FASTPro.teal.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(5),
+                    border: Border.all(color: FASTPro.teal.withValues(alpha: 0.4)),
+                  ),
+                  child: const Text(
+                    'PRO',
+                    style: TextStyle(
+                      color: FASTPro.teal,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 2,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -216,8 +223,8 @@ class _RestoMainShellState extends State<RestoMainShell> {
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: context.fast.line,
-                  foregroundColor: Colors.white,
+                  backgroundColor: FASTPro.teal.withValues(alpha: 0.15),
+                  foregroundColor: FASTPro.teal,
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -233,16 +240,17 @@ class _RestoMainShellState extends State<RestoMainShell> {
               padding: EdgeInsets.zero,
               children: [
                 DrawerHeader(
-                  decoration: BoxDecoration(gradient: FASTBrand.accentGradient),
+                  decoration: const BoxDecoration(gradient: FASTBrand.proGradient),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [ Text(
-                        'FAST',
+                        'FAST Pro',
                         style: TextStyle(
-                          color: Color(0xFFF59E0B),
+                          color: Colors.white,
                           fontSize: 24,
                           fontWeight: FontWeight.w900,
+                          letterSpacing: 2,
                         ),
                       ), Text(
                         provider.settings?.name ?? 'Mon Restaurant',
@@ -263,17 +271,17 @@ class _RestoMainShellState extends State<RestoMainShell> {
                     'Augmente les temps de prépa',
                     style: TextStyle(color: context.fast.t2, fontSize: 12),
                   ),
-                  activeThumbColor: const Color(0xFFEF4444),
+                  activeThumbColor: FASTPro.magenta,
                   value: provider.isRushMode,
                   onChanged: (val) => provider.toggleRushMode(),
                   secondary: const Icon( Icons.local_fire_department,
-                    color: Color(0xFFEF4444),
+                    color: FASTPro.magenta,
                   ),
                 ),
                       Divider(color: context.fast.line),
                 ListTile(
                   leading: Icon( Icons.help_outline,
-                    color: Color(0xFFF59E0B),
+                    color: FASTPro.teal,
                   ),
                   title: Text(
                     'Revoir le tutoriel',
@@ -293,13 +301,13 @@ class _RestoMainShellState extends State<RestoMainShell> {
               if (provider.isRushMode)
                 Container(
                   width: double.infinity,
-                  padding: EdgeInsets.symmetric(vertical: 8),
-                  color: Color(0xFFEF4444),
-                  child: Text(
-                    '🔥 MODE RUSH ACTIF - Temps de préparation augmentés',
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  color: FASTPro.magenta,
+                  child: const Text(
+                    '🔥 MODE RUSH ACTIF — Clients alertés des délais allongés',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: context.fast.t1,
+                      color: Colors.white,
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
                     ),
@@ -312,7 +320,7 @@ class _RestoMainShellState extends State<RestoMainShell> {
             currentIndex: _currentIndex,
             onTap: (index) => setState(() => _currentIndex = index),
             backgroundColor: context.fast.card,
-            selectedItemColor: Color(0xFFF59E0B),
+            selectedItemColor: FASTPro.teal,
             unselectedItemColor: context.fast.t3,
             type: BottomNavigationBarType.fixed,
             items: [
