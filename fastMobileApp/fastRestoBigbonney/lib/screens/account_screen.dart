@@ -215,7 +215,7 @@ class _AccountScreenState extends State<AccountScreen>
         children: [
           _statCell('📦', '${provider.orders.length}', 'Commandes'),
           Container(width: 1, height: 48, color: context.fast.line),
-          _statCell('❤️', '0', 'Favoris'),
+          _statCell('❤️', '${provider.favorites.length}', 'Favoris'),
           Container(width: 1, height: 48, color: context.fast.line),
           _statCell('⚡', '${provider.userPoints}', 'Points'),
         ],

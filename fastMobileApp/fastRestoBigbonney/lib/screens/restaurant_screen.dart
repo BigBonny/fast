@@ -68,6 +68,25 @@ class RestaurantScreen extends StatelessWidget {
                 ),
               ),
             ),
+            // Favorite heart
+            Positioned(
+              top: 12,
+              right: 12,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: context.fast.bg.withValues(alpha: 0.8),
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  onPressed: () => provider.toggleFavorite(rest.id),
+                  icon: Icon(
+                    provider.isFavorite(rest.id) ? Icons.favorite : Icons.favorite_border,
+                    color: provider.isFavorite(rest.id) ? const Color(0xFFEF4444) : context.fast.t1,
+                    size: 20,
+                  ),
+                ),
+              ),
+            ),
             // Title & Info
             Positioned(
               bottom: 16,

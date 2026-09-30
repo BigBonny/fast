@@ -404,6 +404,95 @@ class _HomeScreenState extends State<HomeScreen> {
 
               SizedBox(height: 20),
 
+        // Favorites — synced with website "Mes favoris"
+        if (provider.favorites.isNotEmpty) ...[
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                const Icon(Icons.favorite, color: Color(0xFFEF4444), size: 14),
+                const SizedBox(width: 6),
+                Text(
+                  'MES FAVORIS',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.0,
+                    color: context.fast.t3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 150,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: provider.favorites.length,
+              itemBuilder: (context, index) {
+                final rest = provider.favorites[index];
+                return GestureDetector(
+                  onTap: () {
+                    provider.selectRestaurant(rest.id);
+                    provider.navigateToScreen('restaurant');
+                  },
+                  child: Container(
+                    width: 180,
+                    margin: const EdgeInsets.only(right: 12),
+                    decoration: BoxDecoration(
+                      color: context.fast.card,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: context.fast.line),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        FastImage(
+                          rest.image,
+                          height: 84,
+                          width: double.infinity,
+                          placeholder: Container(
+                            height: 84,
+                            color: context.fast.cardHigh,
+                            child: Icon(Icons.restaurant, color: context.fast.faint, size: 28),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(10),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                rest.name,
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: context.fast.t1),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  const Icon(Icons.star, color: Color(0xFFF59E0B), size: 12),
+                                  const SizedBox(width: 3),
+                                  Text('${rest.rating} • ${rest.pickupPrepTime} min',
+                                      style: TextStyle(fontSize: 10, color: context.fast.t3)),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 20),
+        ],
+
         // Kitchen list section
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 16),
@@ -741,6 +830,27 @@ class _HomeScreenState extends State<HomeScreen> {
                         colors: [Colors.black.withValues(alpha: 0.5), Colors.transparent],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
+                      ),
+                    ),
+                  ),
+                ),
+                // Favorite heart
+                Positioned(
+                  top: 12,
+                  left: 12,
+                  child: GestureDetector(
+                    onTap: () => provider.toggleFavorite(rest.id),
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: context.fast.bg.withValues(alpha: 0.85),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                      ),
+                      child: Icon(
+                        provider.isFavorite(rest.id) ? Icons.favorite : Icons.favorite_border,
+                        color: provider.isFavorite(rest.id) ? const Color(0xFFEF4444) : context.fast.t2,
+                        size: 16,
                       ),
                     ),
                   ),
