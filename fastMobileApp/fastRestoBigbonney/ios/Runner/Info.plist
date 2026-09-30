@@ -61,7 +61,17 @@
 				<string>fast</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.792298746020-61i7cv8gp2cdubrkrim5coqjndfu9tl0</string>
+			</array>
+		</dict>
 	</array>
+	<key>GIDClientID</key>
+	<string>792298746020-61i7cv8gp2cdubrkrim5coqjndfu9tl0.apps.googleusercontent.com</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 </dict>
