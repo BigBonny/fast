@@ -816,6 +816,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   rest.image,
                   height: 140,
                   width: double.infinity,
+                  cacheWidth: 800,
                   placeholder: Container(
                     height: 140,
                     color: context.fast.cardHigh,

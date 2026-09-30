@@ -21,6 +21,9 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
   late final TextEditingController _price;
   late final TextEditingController _image;
   late final TextEditingController _category;
+  late final TextEditingController _prepTime;
+  late final TextEditingController _prepTimeRush;
+  late final TextEditingController _videoUrl;
   late bool _available;
   final Set<DietaryPreference> _dietary = {};
   bool _loading = false;
@@ -40,6 +43,11 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
         text: item != null ? item.price.toStringAsFixed(2) : '');
     _image = TextEditingController(text: item?.image ?? '');
     _category = TextEditingController(text: item?.category ?? '');
+    _prepTime = TextEditingController(
+        text: item != null && item.prepTime > 0 ? '${item.prepTime}' : '');
+    _prepTimeRush = TextEditingController(
+        text: item != null && item.prepTimeRush > 0 ? '${item.prepTimeRush}' : '');
+    _videoUrl = TextEditingController(text: item?.videoUrl ?? '');
     _available = item?.available ?? true;
     if (item != null) _dietary.addAll(item.dietaryTags);
     _supplements = List<MenuItemSupplement>.from(item?.supplements ?? []);
@@ -52,6 +60,9 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
     _price.dispose();
     _image.dispose();
     _category.dispose();
+    _prepTime.dispose();
+    _prepTimeRush.dispose();
+    _videoUrl.dispose();
     super.dispose();
   }
 
@@ -65,6 +76,9 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
       'price': double.parse(_price.text.trim()),
       'image': _image.text.trim(),
       'category': _category.text.trim(),
+      'prepTime': int.tryParse(_prepTime.text.trim()) ?? 0,
+      'prepTimeRush': int.tryParse(_prepTimeRush.text.trim()) ?? 0,
+      'videoUrl': _videoUrl.text.trim(),
       'available': _available,
       'dietaryTags': _dietary.map((d) => d.name.toUpperCase()).toList(),
     };
@@ -301,6 +315,42 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
               controller: _image,
               label: 'URL image (optionnel)',
               icon: Icons.image_outlined,
+            ),
+                  SizedBox(height: 16),
+            _field(
+              controller: _videoUrl,
+              label: 'URL vidéo story (optionnel)',
+              icon: Icons.play_circle_outline,
+            ),
+                  SizedBox(height: 16),
+            // Per-dish prep times (minutes, 0/vide = délai restaurant par défaut)
+            Row(
+              children: [
+                Expanded(
+                  child: _field(
+                    controller: _prepTime,
+                    label: 'Prép. normal (min)',
+                    icon: Icons.schedule,
+                    keyboard: TextInputType.number,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _field(
+                    controller: _prepTimeRush,
+                    label: 'Prép. rush (min)',
+                    icon: Icons.local_fire_department_outlined,
+                    keyboard: TextInputType.number,
+                  ),
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 6, left: 4),
+              child: Text(
+                'Ex. Kebab 8 min, Agneau 15 min normal / 25 min en rush. Vide = délai par défaut du restaurant.',
+                style: TextStyle(color: context.fast.t3, fontSize: 11, height: 1.3),
+              ),
             ),
                   SizedBox(height: 24),
 

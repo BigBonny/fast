@@ -171,7 +171,7 @@ class _AuthScreenState extends State<AuthScreen>
           ),
           title: Text(
             _showRestoFields
-                ? 'Espace Restaurant'
+                ? 'Espace Fast Pro'
                 : widget.initialRole == 'LIVREUR'
                     ? 'Espace Livreur'
                     : 'Espace Client',
@@ -305,8 +305,75 @@ class _AuthScreenState extends State<AuthScreen>
                 );
               },
             ),
+            if (widget.initialRole != 'RESTAURANT' && widget.initialRole != 'LIVREUR')
+              _buildGoogleButton(),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildGoogleButton() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 24),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(child: Divider(color: context.fast.line)),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Text('ou', style: TextStyle(color: context.fast.t3, fontSize: 12)),
+              ),
+              Expanded(child: Divider(color: context.fast.line)),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Consumer<AuthProvider>(
+            builder: (context, auth, _) {
+              return OutlinedButton(
+                onPressed: auth.state == AuthState.loading
+                    ? null
+                    : () async {
+                        final ok = await auth.signInWithGoogle(
+                          role: widget.initialRole ?? 'CLIENT',
+                        );
+                        if (ok && mounted) _navigateToShell();
+                      },
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  side: BorderSide(color: context.fast.line),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 22,
+                      height: 22,
+                      alignment: Alignment.center,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF4285F4),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Text(
+                        'G',
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 12),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Continuer avec Google',
+                      style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold, fontSize: 14),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }

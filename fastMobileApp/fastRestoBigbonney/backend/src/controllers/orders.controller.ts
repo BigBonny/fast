@@ -258,6 +258,7 @@ export const updateOrderStatus = async (req: Request, res: Response): Promise<vo
     include: {
       restaurant: true,
       groupOrder: { select: { status: true } },
+      items: { include: { menuItem: true } },
     },
   });
   if (!order) {
@@ -288,7 +289,20 @@ export const updateOrderStatus = async (req: Request, res: Response): Promise<vo
   const updateData: Record<string, unknown> = { status: data.status };
   if (data.status === 'PREPARING') {
     updateData.prepStartedAt = new Date();
-    const prepTime = rest.isRushMode ? rest.rushPrepTime : rest.normalPrepTime;
+    const isRush = rest.isRushMode;
+    const fallback = isRush ? rest.rushPrepTime : rest.normalPrepTime;
+    // Per-dish prep times: dishes cook in parallel, so the order's prep
+    // time is the longest dish time. Items without a time fall back to
+    // the restaurant default.
+    const itemTimes = order.items
+      .map((it) => {
+        const mi = it.menuItem;
+        if (!mi) return 0;
+        if (isRush) return mi.prepTimeRush > 0 ? mi.prepTimeRush : mi.prepTime;
+        return mi.prepTime;
+      })
+      .filter((t) => t > 0);
+    const prepTime = itemTimes.length > 0 ? Math.max(...itemTimes) : fallback;
     updateData.prepTimerSeconds = prepTime * 60;
   }
   if (data.status === 'CANCELLED' && data.isBilledAnyway) {

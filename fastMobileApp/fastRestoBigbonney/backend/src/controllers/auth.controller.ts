@@ -120,6 +120,59 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   });
 };
 
+export const googleLogin = async (req: Request, res: Response): Promise<void> => {
+  const { idToken, role } = req.body as { idToken?: string; role?: string };
+  if (!idToken || typeof idToken !== 'string') {
+    res.status(400).json({ error: 'idToken requis' });
+    return;
+  }
+
+  // Verify the token signature & claims with Google's public endpoint
+  const verify = await fetch(
+    `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`,
+  );
+  if (!verify.ok) {
+    res.status(401).json({ error: 'Token Google invalide ou expiré' });
+    return;
+  }
+  const payload = (await verify.json()) as {
+    email?: string;
+    name?: string;
+    sub?: string;
+  };
+  if (!payload.email) {
+    res.status(401).json({ error: 'Token Google invalide ou expiré' });
+    return;
+  }
+
+  let user = await prisma.user.findUnique({
+    where: { email: payload.email },
+    include: { driverProfile: true },
+  });
+  if (!user) {
+    user = await prisma.user.create({
+      data: {
+        email: payload.email,
+        name: payload.name?.trim() || payload.email.split('@')[0],
+        password: await bcrypt.hash(`google-${payload.sub}-${Date.now()}`, env.bcryptRounds),
+        role: (role as never) || 'CLIENT',
+      },
+      include: { driverProfile: true },
+    });
+  }
+
+  const token = jwt.sign(
+    { userId: user.id, role: user.role, tokenVersion: user.tokenVersion },
+    env.jwtSecret,
+    { expiresIn: env.jwtExpiresIn as string } as jwt.SignOptions,
+  );
+
+  res.json({
+    token,
+    user: { id: user.id, name: user.name, email: user.email, phone: user.phone, role: user.role, points: user.points, driverProfile: user.driverProfile },
+  });
+};
+
 export const getMe = async (req: Request, res: Response): Promise<void> => {
   const user = await prisma.user.findUnique({
     where: { id: req.user!.userId },

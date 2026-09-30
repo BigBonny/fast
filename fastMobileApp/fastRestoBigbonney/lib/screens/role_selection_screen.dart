@@ -17,22 +17,50 @@ class RoleSelectionScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
                     SizedBox(height: 24),
-              // Logo
+              // Logo — website wordmark style
               Center(
-                child: Container(
-                  width: 100,
-                  height: 100,
-                  clipBehavior: Clip.antiAlias,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Transform.scale(
-                    scale: 1.35,
-                    child: Image.asset(
-                      'assets/images/logo.png',
-                      fit: BoxFit.cover,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFF59E0B), Color(0xFFEA580C)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Icon(Icons.bolt, color: FASTBrand.onAmber, size: 34),
                     ),
-                  ),
+                    const SizedBox(width: 10),
+                    ShaderMask(
+                      shaderCallback: (bounds) => const LinearGradient(
+                        colors: [Color(0xFFF59E0B), Color(0xFFEA580C)],
+                      ).createShader(bounds),
+                      child: const Text(
+                        'FAST',
+                        style: TextStyle(
+                          fontSize: 44,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                          letterSpacing: -1.5,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      width: 8,
+                      height: 8,
+                      margin: const EdgeInsets.only(left: 4, top: 30),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF00C8B3),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ],
                 ),
               ),
                     SizedBox(height: 32), Text(
@@ -82,8 +110,9 @@ class RoleSelectionScreen extends StatelessWidget {
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
                     SizedBox(height: 4), Text(
-                      'Commander à manger',
-                      style: TextStyle(fontSize: 12, color: context.fast.t2, fontWeight: FontWeight.normal),
+                      'Commander, payer, réserver et votre repas est prêt juste à votre arrivée.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 11, color: context.fast.t2, fontWeight: FontWeight.normal, height: 1.4),
                     ),
                   ],
                 ),
@@ -113,11 +142,11 @@ class RoleSelectionScreen extends StatelessWidget {
                 child: const Column(
                   children: [ Icon(Icons.restaurant, size: 36),
                     SizedBox(height: 16), Text(
-                      'Je suis un Restaurant',
+                      'Je suis un Pro',
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
                     SizedBox(height: 4), Text(
-                      'Gérer mes commandes',
+                      'FAST Pro — Gérer mon restaurant',
                       style: TextStyle(fontSize: 12, color: Color(0xCC09090B), fontWeight: FontWeight.normal),
                     ),
                   ],

@@ -89,12 +89,16 @@ export const createMenuItemSchema = z.object({
   description: z.string().max(2000).optional(),
   price: z.number().positive('Prix doit être positif').max(9999.99, 'Prix trop élevé'),
   originalPrice: z.number().positive().max(9999.99).optional(),
-  image: z.string().max(500).optional(),
+  // Accepts https URL or data:image/*;base64 uploads (≈4 MB max)
+  image: z.string().max(4_000_000).optional(),
+  // Story/preview video URL (hosted video, e.g. mp4)
+  videoUrl: z.string().max(2000).optional(),
   category: z.string().max(50).optional(),
   isPlatDuJour: z.boolean().optional(),
   isSpecialOffer: z.boolean().optional(),
   specialOfferLabel: z.string().max(100).optional(),
   prepTime: z.number().int().min(0).max(120).optional(),
+  prepTimeRush: z.number().int().min(0).max(120).optional(),
   dietaryTags: z.array(z.nativeEnum({ VEGAN: 'VEGAN', VEGETARIAN: 'VEGETARIAN', GLUTEN_FREE: 'GLUTEN_FREE', HALAL: 'HALAL', KETO: 'KETO', DAIRY_FREE: 'DAIRY_FREE' })).optional(),
 });
 

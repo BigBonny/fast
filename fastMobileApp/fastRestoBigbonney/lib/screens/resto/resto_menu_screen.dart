@@ -130,6 +130,122 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
     );
   }
 
+  /// Read-only preview of the menu exactly as clients see it.
+  void _showClientPreview(BuildContext context, RestoProvider prov) {
+    final resto = prov.settings;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: context.fast.bg,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) {
+        final items = prov.menu.where((m) => m.available).toList();
+        final categories = {for (final m in items) m.category.isEmpty ? 'Menu' : m.category}.toList();
+        return DraggableScrollableSheet(
+          initialChildSize: 0.9,
+          expand: false,
+          builder: (_, scroll) => Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 8, 4),
+                child: Row(
+                  children: [
+                    const Icon(Icons.visibility_outlined, color: Color(0xFF00C8B3), size: 18),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Aperçu — ${resto?.name ?? 'Mon restaurant'}',
+                        style: TextStyle(color: ctx.fast.t1, fontWeight: FontWeight.bold, fontSize: 16),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.close, color: ctx.fast.t2),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: ListView(
+                  controller: scroll,
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  children: [
+                    for (final cat in categories) ...[
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12, bottom: 8),
+                        child: Text(cat.toUpperCase(),
+                            style: TextStyle(color: ctx.fast.t3, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                      ),
+                      ...items.where((m) => (m.category.isEmpty ? 'Menu' : m.category) == cat).map(
+                            (m) => Container(
+                              margin: const EdgeInsets.only(bottom: 10),
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: ctx.fast.card,
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: ctx.fast.line),
+                              ),
+                              child: Row(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: FastImage(
+                                      m.image,
+                                      width: 56,
+                                      height: 56,
+                                      placeholder: Container(width: 56, height: 56, color: ctx.fast.cardHigh),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(m.name,
+                                            style: TextStyle(color: ctx.fast.t1, fontWeight: FontWeight.bold, fontSize: 14)),
+                                        if (m.description.isNotEmpty)
+                                          Text(m.description,
+                                              style: TextStyle(color: ctx.fast.t3, fontSize: 11),
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis),
+                                        const SizedBox(height: 4),
+                                        Row(
+                                          children: [
+                                            Text('${m.price.toStringAsFixed(2)} €',
+                                                style: const TextStyle(color: Color(0xFFF59E0B), fontWeight: FontWeight.w900, fontSize: 13)),
+                                            if (m.prepTime > 0) ...[
+                                              const SizedBox(width: 8),
+                                              Icon(Icons.schedule, size: 11, color: ctx.fast.t3),
+                                              const SizedBox(width: 2),
+                                              Text('~${m.prepTime} min', style: TextStyle(color: ctx.fast.t3, fontSize: 10)),
+                                            ],
+                                            if (m.videoUrl.isNotEmpty) ...[
+                                              const SizedBox(width: 8),
+                                              const Icon(Icons.play_circle_fill, size: 14, color: Color(0xFF00C8B3)),
+                                            ],
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                    ],
+                    const SizedBox(height: 24),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildEmpty(BuildContext context) {
     return Center(
       child: Column(
@@ -171,6 +287,20 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Client preview — see the menu exactly as customers do
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+          child: OutlinedButton.icon(
+            onPressed: () => _showClientPreview(context, prov),
+            icon: const Icon(Icons.visibility_outlined, size: 16, color: Color(0xFF00C8B3)),
+            label: const Text('Aperçu client — voir mon menu sans commander',
+                style: TextStyle(color: Color(0xFF00C8B3), fontSize: 12, fontWeight: FontWeight.bold)),
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: Color(0xFF00C8B3)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+          ),
+        ),
         // Category filter tabs
         if (categories.length > 2)
           SizedBox(

@@ -8,6 +8,7 @@ import '../provider.dart';
 import '../models.dart';
 import '../services/map_helper.dart';
 import '../theme.dart';
+import 'story_viewer_screen.dart';
 import '../widgets/fast_image.dart';
 
 class RestaurantScreen extends StatelessWidget {
@@ -87,6 +88,34 @@ class RestaurantScreen extends StatelessWidget {
                 ),
               ),
             ),
+            // Stories entry — Snapchat-style menu viewer
+            if (rest.menu.any((m) => m.available && (m.image.isNotEmpty || m.videoUrl.isNotEmpty)))
+              Positioned(
+                top: 64,
+                right: 12,
+                child: GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => StoryViewerScreen(restaurant: rest)),
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.55),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.white24),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.play_circle_fill, color: Colors.white, size: 14),
+                        SizedBox(width: 5),
+                        Text('Stories', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             // Title & Info
             Positioned(
               bottom: 16,
@@ -403,13 +432,35 @@ class RestaurantScreen extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 8), Text(
-                    '€${item.price.toStringAsFixed(2)}',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w900,
-                      fontSize: 13,
-                      color: Color(0xFFF59E0B),
-                    ),
+                  const SizedBox(height: 8), Row(
+                    children: [ Text(
+                        '€${item.price.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 13,
+                          color: Color(0xFFF59E0B),
+                        ),
+                      ),
+                      if (item.prepTime > 0) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: context.fast.cardHigh,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.schedule, size: 10, color: context.fast.t3),
+                              const SizedBox(width: 3),
+                              Text('~${item.prepTime} min',
+                                  style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: context.fast.t3)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ],
               ),
