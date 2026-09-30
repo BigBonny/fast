@@ -209,7 +209,7 @@ Return ONLY valid JSON.
       "Authorization": `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: "pixtral-12b-2409",
+      model: "mistral-small-latest",
       messages: [
         {
           role: "user",
