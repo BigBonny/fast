@@ -184,14 +184,22 @@ class RestoProvider extends ChangeNotifier {
   Future<void> refreshOrders() async {
     try {
       final orders = await _orderService.getRestaurantOrders();
-      _restoOrders = orders;
       _error = null;
+      // Skip rebuild when nothing changed — the 15s poll otherwise
+      // repaints the whole screen for no reason.
+      if (_ordersSignature(orders) == _ordersSignature(_restoOrders)) return;
+      _restoOrders = orders;
       notifyListeners();
     } catch (e) {
       _error = _extractErrorMessage(e);
       notifyListeners();
     }
   }
+
+  static String _ordersSignature(List<Order> orders) => orders
+      .map((o) =>
+          '${o.id}:${o.status}:${o.prepTimerSeconds}:${o.prepStartedAt}:${o.gpsProgress}:${o.isReadyAtEntrance}')
+      .join('|');
 
   void _startPolling() {
     _pollTimer?.cancel();

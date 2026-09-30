@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../resto_provider.dart';
+import '../../provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/resto_spotlight_tutorial.dart';
 import 'kitchen_screen.dart';
@@ -157,12 +158,15 @@ class _RestoMainShellState extends State<RestoMainShell> {
           key: _scaffoldKey,
           backgroundColor: context.fast.bg,
           appBar: AppBar(
-            backgroundColor: context.fast.card,
+            backgroundColor: FASTPro.header,
             surfaceTintColor: Colors.transparent,
             elevation: 0,
             titleSpacing: 16,
-            iconTheme: IconThemeData(color: context.fast.t1),
-            title: Row(
+            iconTheme: const IconThemeData(color: Color(0xFFF1F5F9)),
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
               children: [
                 ShaderMask(
                   shaderCallback: (b) => FASTPro.logoGradient.createShader(b),
@@ -203,6 +207,17 @@ class _RestoMainShellState extends State<RestoMainShell> {
                     shape: BoxShape.circle,
                   ),
                 ),
+              ],
+            ),
+            const Text(
+              'ESPACE RESTAURATEUR',
+              style: TextStyle(
+                color: Color(0xFF94A3B8),
+                fontSize: 9,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 2,
+              ),
+            ),
               ],
             ),
             actions: [
@@ -279,6 +294,71 @@ class _RestoMainShellState extends State<RestoMainShell> {
                   ),
                 ),
                       Divider(color: context.fast.line),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                  child: Text(
+                    'THÈME',
+                    style: TextStyle(
+                      color: context.fast.t3,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ),
+                Builder(
+                  builder: (ctx) {
+                    final fast = ctx.watch<FASTProvider>();
+                    Widget opt(ThemeMode m, IconData icon, String label) {
+                      final sel = fast.themeMode == m;
+                      return Expanded(
+                        child: GestureDetector(
+                          onTap: () => fast.setThemeMode(m),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            decoration: BoxDecoration(
+                              color: sel
+                                  ? FASTPro.teal.withValues(alpha: 0.15)
+                                  : context.fast.bg,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: sel ? FASTPro.teal : context.fast.line,
+                              ),
+                            ),
+                            child: Column(
+                              children: [
+                                Icon(icon,
+                                    size: 18,
+                                    color: sel ? FASTPro.teal : context.fast.t2),
+                                const SizedBox(height: 4),
+                                Text(label,
+                                    style: TextStyle(
+                                        color: sel
+                                            ? FASTPro.teal
+                                            : context.fast.t2,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+                    return Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                      child: Row(
+                        children: [
+                          opt(ThemeMode.system, Icons.phone_android, 'Auto'),
+                          const SizedBox(width: 8),
+                          opt(ThemeMode.light, Icons.wb_sunny_outlined, 'Clair'),
+                          const SizedBox(width: 8),
+                          opt(ThemeMode.dark, Icons.nightlight_outlined, 'Sombre'),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+                Divider(color: context.fast.line),
                 ListTile(
                   leading: Icon( Icons.help_outline,
                     color: FASTPro.teal,
@@ -319,9 +399,9 @@ class _RestoMainShellState extends State<RestoMainShell> {
           bottomNavigationBar: BottomNavigationBar(
             currentIndex: _currentIndex,
             onTap: (index) => setState(() => _currentIndex = index),
-            backgroundColor: context.fast.card,
+            backgroundColor: FASTPro.header,
             selectedItemColor: FASTPro.teal,
-            unselectedItemColor: context.fast.t3,
+            unselectedItemColor: const Color(0xFF94A3B8),
             type: BottomNavigationBarType.fixed,
             items: [
               BottomNavigationBarItem(

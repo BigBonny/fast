@@ -302,7 +302,9 @@ export const updateOrderStatus = async (req: Request, res: Response): Promise<vo
         return mi.prepTime;
       })
       .filter((t) => t > 0);
-    const prepTime = itemTimes.length > 0 ? Math.max(...itemTimes) : fallback;
+    const prepTime =
+      data.prepTimeMinutes ??
+      (itemTimes.length > 0 ? Math.max(...itemTimes) : fallback);
     updateData.prepTimerSeconds = prepTime * 60;
   }
   if (data.status === 'CANCELLED' && data.isBilledAnyway) {

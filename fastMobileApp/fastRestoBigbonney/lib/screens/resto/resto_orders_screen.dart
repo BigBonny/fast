@@ -38,15 +38,18 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
     super.dispose();
   }
 
-  Future<void> _acceptOrder(Order order, RestoProvider rProv) async {
+  Future<void> _acceptOrder(Order order, RestoProvider rProv,
+      {int? prepMinutes}) async {
     try {
-      await _orderService.updateOrderStatus(order.id, 'PREPARING');
+      await _orderService.updateOrderStatus(order.id, 'PREPARING',
+          prepTimeMinutes: prepMinutes);
       if (!mounted) return;
       order.status = OrderStatus.preparing;
       order.prepStartedAt = DateTime.now().toIso8601String();
-      final prepTimeMin = rProv.isRushMode
-        ? (rProv.settings?.rushPrepTime ?? 25)
-        : (rProv.settings?.normalPrepTime ?? 15);
+      final prepTimeMin = prepMinutes ??
+          (rProv.isRushMode
+              ? (rProv.settings?.rushPrepTime ?? 25)
+              : (rProv.settings?.normalPrepTime ?? 15));
       order.prepTimerSeconds = prepTimeMin * 60;
       setState(() {});
     } catch (_) {
@@ -330,14 +333,55 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                 ),
                 const SizedBox(height: 16),
                 
-                if (order.status == OrderStatus.placed)
+                if (order.status == OrderStatus.placed) ...[
+                  Text(
+                    'ACCEPTER EN :',
+                    style: TextStyle(
+                      color: context.fast.t3,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      for (final t in [5, 8, 10, 15, 20, 25])
+                        InkWell(
+                          onTap: () => _acceptOrder(order, rProv, prepMinutes: t),
+                          borderRadius: BorderRadius.circular(6),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF10B981)
+                                  .withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                  color: const Color(0xFF10B981)
+                                      .withValues(alpha: 0.4)),
+                            ),
+                            child: Text(
+                              '$t min',
+                              style: const TextStyle(
+                                color: Color(0xFF10B981),
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
                   Row(
                     children: [
                       Expanded(
                         child: ElevatedButton(
                           onPressed: () => _acceptOrder(order, rProv),
                           style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF10B981), foregroundColor: Colors.white),
-                          child: const Text('Accepter'),
+                          child: const Text('Accepter (auto)'),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -348,7 +392,8 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                       ),
                     ],
                   ),
-                
+                ],
+
                 if (order.status == OrderStatus.preparing)
                   Row(
                     children: [

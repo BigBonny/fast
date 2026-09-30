@@ -146,6 +146,7 @@ export const placeOrderSchema = z.object({
 export const updateOrderStatusSchema = z.object({
   status: z.enum(['PLACED', 'PREPARING', 'READY_FOR_PICKUP', 'COMPLETED', 'CANCELLED']),
   isBilledAnyway: z.boolean().optional(),
+  prepTimeMinutes: z.number().int().min(1).max(180).optional(),
 });
 
 // ─── Review ─────────────────────────────────────────────────
