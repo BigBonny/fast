@@ -1,8 +1,17 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
 android {
@@ -31,6 +40,17 @@ android {
         manifestPlaceholders["appLabel"] = "FAST"
     }
 
+    signingConfigs {
+        create("release") {
+            if (keystorePropertiesFile.exists()) {
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                storeFile = file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"] as String
+            }
+        }
+    }
+
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
@@ -38,16 +58,12 @@ android {
             manifestPlaceholders["appLabel"] = "FAST Dev"
         }
         release {
-            // IMPORTANT: Configure a real release keystore before publishing!
-            // 1. Generate: keytool -genkey -v -keystore release.keystore -keyalg RSA -keysize 2048
-            // 2. Create android/key.properties with:
-            //    storePassword=...
-            //    keyPassword=...
-            //    keyAlias=...
-            //    storeFile=release.keystore
-            // 3. Uncomment signing logic below, or set signingConfig manually.
-            // Using debug keys for dev builds ONLY — never publish with this config.
-            signingConfig = signingConfigs.getByName("debug")
+            // Signed with the release keystore when android/key.properties
+            // is present (locally + Codemagic); falls back to debug keys.
+            signingConfig = if (keystorePropertiesFile.exists())
+                signingConfigs.getByName("release")
+            else
+                signingConfigs.getByName("debug")
 
             // Keep native shrinking off for APK releases; Flutter/Play Core optional
             // classes can otherwise fail R8 when deferred components are unused.

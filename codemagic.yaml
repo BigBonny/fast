@@ -27,6 +27,17 @@ workflows:
         script: |
           cd "fastMobileApp/fastRestoBigbonney"
           flutter packages pub get
+      - name: Set up Android signing
+        script: |
+          cd "fastMobileApp/fastRestoBigbonney"
+          # FAST_KEYSTORE = base64 of fast-release.jks, FAST_KEY_PROPERTIES = key.properties content
+          if [ -n "$FAST_KEYSTORE" ]; then
+            echo "$FAST_KEYSTORE" | base64 --decode > android/app/fast-release.jks
+            printf "%s" "$FAST_KEY_PROPERTIES" > android/key.properties
+            echo "Release keystore configured"
+          else
+            echo "FAST_KEYSTORE not set — falling back to debug signing"
+          fi
       - name: Build APK
         script: |
           cd "fastMobileApp/fastRestoBigbonney"
