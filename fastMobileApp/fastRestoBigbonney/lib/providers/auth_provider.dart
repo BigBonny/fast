@@ -73,7 +73,12 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final google = GoogleSignIn(scopes: const ['email', 'profile']);
+      final google = GoogleSignIn(
+        // Web client ID is required on Android for idToken to be returned.
+        serverClientId:
+            '792298746020-ssfs311jl0k5qt2cdh32hs66p5uooko9.apps.googleusercontent.com',
+        scopes: const ['email', 'profile'],
+      );
       final account = await google.signIn();
       if (account == null) {
         // User cancelled — back to idle without an error
