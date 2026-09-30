@@ -176,7 +176,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       return       Scaffold(
         backgroundColor: context.fast.bg,
         body: Center(
-          child: CircularProgressIndicator(color: Color(0xFFF59E0B)),
+          child: CircularProgressIndicator(color: Color(0xFF00C8B3)),
         ),
       );
     }
@@ -209,7 +209,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Icon(Icons.privacy_tip, size: 64, color: Color(0xFFF59E0B)),
+        const Icon(Icons.privacy_tip, size: 64, color: Color(0xFF00C8B3)),
         const SizedBox(height: 24),
               Text('Confidentialité & CGU',
             style: TextStyle(
@@ -227,7 +227,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         ElevatedButton(
           onPressed: _nextStep,
           style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFF59E0B),
+              backgroundColor: const Color(0xFF00C8B3),
               foregroundColor: Colors.black),
           child: const Text('Accepter et Continuer'),
         ),
@@ -255,7 +255,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         ElevatedButton(
           onPressed: _nextStep,
           style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFF59E0B),
+              backgroundColor: const Color(0xFF00C8B3),
               foregroundColor: Colors.black),
           child: const Text('J\'ai compris'),
         ),
@@ -286,7 +286,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         ElevatedButton(
           onPressed: _nextStep,
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFF59E0B),
+            backgroundColor: const Color(0xFF00C8B3),
             foregroundColor: Colors.black,
             padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
           ),
@@ -348,7 +348,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             'Temps de préparation normal',
             _normalPrepTime,
             5, 60,
-            const Color(0xFFF59E0B),
+            const Color(0xFF00C8B3),
             (val) => setState(() => _normalPrepTime = val),
           ),
           const SizedBox(height: 24),
@@ -372,7 +372,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ElevatedButton(
             onPressed: _formLoading ? null : _nextStep,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFF59E0B),
+              backgroundColor: const Color(0xFF00C8B3),
               foregroundColor: Colors.black,
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),

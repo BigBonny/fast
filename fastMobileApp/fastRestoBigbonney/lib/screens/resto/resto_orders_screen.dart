@@ -257,12 +257,12 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF59E0B).withValues(alpha: 0.18),
+                            color: const Color(0xFF00C8B3).withValues(alpha: 0.18),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
                             order.groupCode!,
-                            style: const TextStyle(color: Color(0xFFF59E0B), fontSize: 10, fontWeight: FontWeight.w900),
+                            style: const TextStyle(color: Color(0xFF00C8B3), fontSize: 10, fontWeight: FontWeight.w900),
                           ),
                         ),
                       ],

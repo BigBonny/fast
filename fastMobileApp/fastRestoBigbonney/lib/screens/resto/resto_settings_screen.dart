@@ -222,7 +222,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Center(child: CircularProgressIndicator(color: Color(0xFFF59E0B)));
+      return const Center(child: CircularProgressIndicator(color: Color(0xFF00C8B3)));
     }
 
     return ListView(
@@ -258,8 +258,8 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
           icon: const Icon(Icons.account_balance),
           label: const Text('Configurer Stripe Connect'),
           style: OutlinedButton.styleFrom(
-            foregroundColor: const Color(0xFFF59E0B),
-            side: const BorderSide(color: Color(0xFFF59E0B)),
+            foregroundColor: const Color(0xFF00C8B3),
+            side: const BorderSide(color: Color(0xFF00C8B3)),
             padding: const EdgeInsets.symmetric(vertical: 14),
           ),
         ),
@@ -311,11 +311,11 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
                   }
                 });
               },
-              selectedColor: Color(0xFFF59E0B),
+              selectedColor: Color(0xFF00C8B3),
               backgroundColor: context.fast.card,
               checkmarkColor: FASTBrand.onAmber,
               side: BorderSide(
-                color: selected ?       Color(0xFFF59E0B) : context.fast.faint,
+                color: selected ?       Color(0xFF00C8B3) : context.fast.faint,
               ),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
             );
@@ -325,7 +325,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
               SizedBox(height: 24),
         _section('Temps de Préparation'),
         _timeSlider('Temps Normal', _normalPrepTime, 5, 60,
-            const Color(0xFFF59E0B), (v) => setState(() => _normalPrepTime = v)),
+            const Color(0xFF00C8B3), (v) => setState(() => _normalPrepTime = v)),
               SizedBox(height: 20),
         _timeSlider('Temps Mode Rush', _rushPrepTime, 10, 90,
             const Color(0xFFEF4444), (v) => setState(() => _rushPrepTime = v)),
@@ -334,9 +334,9 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
         ElevatedButton(
           onPressed: _saving ? null : _save,
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFF59E0B),
+            backgroundColor: const Color(0xFF00C8B3),
             foregroundColor: Colors.black,
-            disabledBackgroundColor: const Color(0xFFF59E0B).withValues(alpha: 0.5),
+            disabledBackgroundColor: const Color(0xFF00C8B3).withValues(alpha: 0.5),
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
@@ -381,7 +381,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
 
   Widget _buildStripeConnectBanner() {
     if (_connectLoading && _connectStatus == null) {
-      return const LinearProgressIndicator(color: Color(0xFFF59E0B));
+      return const LinearProgressIndicator(color: Color(0xFF00C8B3));
     }
     final connected = _connectStatus?['connected'] as bool? ?? false;
     final chargesEnabled = _connectStatus?['chargesEnabled'] as bool? ?? false;
@@ -392,7 +392,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
       decoration: BoxDecoration(
         color: ok
             ? const Color(0xFF10B981).withValues(alpha: 0.12)
-            : const Color(0xFFF59E0B).withValues(alpha: 0.12),
+            : const Color(0xFF00C8B3).withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
           color: ok ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
@@ -427,7 +427,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
         padding: const EdgeInsets.only(bottom: 12),
         child: Text(title,
             style: const TextStyle(
-                color: Color(0xFFF59E0B),
+                color: Color(0xFF00C8B3),
                 fontSize: 13,
                 fontWeight: FontWeight.bold)),
       );
@@ -443,9 +443,9 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
             duration: const Duration(milliseconds: 150),
             padding: const EdgeInsets.symmetric(vertical: 10),
             decoration: BoxDecoration(
-              color: selected ? const Color(0xFFF59E0B) : context.fast.card,
+              color: selected ? const Color(0xFF00C8B3) : context.fast.card,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: selected ? const Color(0xFFF59E0B) : context.fast.line),
+              border: Border.all(color: selected ? const Color(0xFF00C8B3) : context.fast.line),
             ),
             child: Column(
               children: [
@@ -551,7 +551,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: Color(0xFFF59E0B)),
+            borderSide: const BorderSide(color: Color(0xFF00C8B3)),
           ),
           contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         ),
@@ -582,7 +582,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: Color(0xFFF59E0B)),
+            borderSide: const BorderSide(color: Color(0xFF00C8B3)),
           ),
           contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         ),

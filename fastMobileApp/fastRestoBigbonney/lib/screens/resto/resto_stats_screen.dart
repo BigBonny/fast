@@ -12,7 +12,7 @@ import '../../resto_provider.dart';
 import '../../services/stats_service.dart';
 import '../../theme.dart';
 
-const _brand = Color(0xFFF59E0B);
+const _brand = Color(0xFF00C8B3);
 const _positive = Color(0xFF34D399);
 const _negative = Color(0xFFFB7185);
 

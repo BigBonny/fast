@@ -383,7 +383,7 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                       setState(() => _state = 0);
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFFF59E0B),
+                      backgroundColor: Color(0xFF00C8B3),
                       foregroundColor: FASTBrand.onAmber,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),

@@ -191,7 +191,7 @@ class _KitchenScreenState extends State<KitchenScreen> {
                             padding: EdgeInsets.only(bottom: 12.0),
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [ Text('${item.quantity}x', style: const TextStyle(color: Color(0xFFF59E0B), fontWeight: FontWeight.bold, fontSize: 18)),
+                              children: [ Text('${item.quantity}x', style: const TextStyle(color: Color(0xFF00C8B3), fontWeight: FontWeight.bold, fontSize: 18)),
                                       SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
@@ -225,7 +225,7 @@ class _KitchenScreenState extends State<KitchenScreen> {
         child: const Text(
           'TICKER: Aucun résumé actif.',
           style: TextStyle(
-            color: Color(0xFFF59E0B),
+            color: Color(0xFF00C8B3),
             fontFamily: 'monospace',
             fontWeight: FontWeight.bold,
           ),
