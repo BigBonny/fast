@@ -16,7 +16,7 @@ workflows:
     environment:
       flutter: stable
       groups:
-        - android_signing
+        - appstore_credentials
     triggering:
       events:
         - push
