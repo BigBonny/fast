@@ -15,6 +15,7 @@ import '../services/order_service.dart';
 import '../services/delivery_service.dart';
 import 'qr_screen.dart';
 import '../theme.dart';
+import '../widgets/fast_image.dart';
 
 class CommandesScreen extends StatefulWidget {
   const CommandesScreen({super.key});
@@ -309,13 +310,11 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: Image.network(
+            child: FastImage(
               order.restaurantImage,
               width: 56,
               height: 56,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) =>
-                  Container(color: context.fast.cardHigh, width: 56, height: 56),
+              placeholder: Container(color: context.fast.cardHigh, width: 56, height: 56),
             ),
           ),
                 SizedBox(width: 12),
@@ -1180,13 +1179,11 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(10),
-                  child: Image.network(
+                  child: FastImage(
                     order.restaurantImage,
                     width: 44,
                     height: 44,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) =>
-                        Container(color: context.fast.cardHigh, width: 44, height: 44),
+                    placeholder: Container(color: context.fast.cardHigh, width: 44, height: 44),
                   ),
                 ),
                       SizedBox(width: 12),

@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../resto_provider.dart';
+import '../../provider.dart';
 import '../../models.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/restaurant_service.dart';
@@ -245,6 +246,10 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
         ],
 
               SizedBox(height: 24),
+        _section('Personnalisation'),
+        _buildThemePicker(),
+
+              SizedBox(height: 24),
         _section('Paiements Stripe Connect'),
         _buildStripeConnectBanner(),
               SizedBox(height: 12),
@@ -426,6 +431,48 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
                 fontSize: 13,
                 fontWeight: FontWeight.bold)),
       );
+
+  Widget _buildThemePicker() {
+    final fast = context.watch<FASTProvider>();
+    Widget option(ThemeMode mode, IconData icon, String label) {
+      final selected = fast.themeMode == mode;
+      return Expanded(
+        child: GestureDetector(
+          onTap: () => fast.setThemeMode(mode),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              color: selected ? const Color(0xFFF59E0B) : context.fast.card,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: selected ? const Color(0xFFF59E0B) : context.fast.line),
+            ),
+            child: Column(
+              children: [
+                Icon(icon, color: selected ? FASTBrand.onAmber : context.fast.t2, size: 18),
+                const SizedBox(height: 4),
+                Text(label,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: selected ? FASTBrand.onAmber : context.fast.t2,
+                    )),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+    return Row(
+      children: [
+        option(ThemeMode.system, Icons.phone_android, 'Auto'),
+        const SizedBox(width: 8),
+        option(ThemeMode.light, Icons.wb_sunny_outlined, 'Clair'),
+        const SizedBox(width: 8),
+        option(ThemeMode.dark, Icons.nightlight_outlined, 'Sombre'),
+      ],
+    );
+  }
 
   Widget _buildImagePicker() {
     return GestureDetector(

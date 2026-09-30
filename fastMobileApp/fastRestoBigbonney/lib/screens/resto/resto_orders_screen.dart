@@ -214,42 +214,80 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
     if (order.status == OrderStatus.preparing) statusColor =       Color(0xFFF59E0B);
     if (order.status == OrderStatus.readyForPickup) statusColor =       Color(0xFF3B82F6);
 
+    // Client proximity — live gpsProgress pushed by the client app
+    Color? proxColor;
+    String? proxLabel;
+    if (order.fulfillmentType == FulfillmentType.pickup) {
+      if (order.isReadyAtEntrance || order.gpsProgress >= 90) {
+        proxColor = const Color(0xFFEF4444);
+        proxLabel = 'CLIENT PRESQUE LÀ';
+      } else if (order.gpsProgress >= 40) {
+        proxColor = const Color(0xFFF97316);
+        proxLabel = 'CLIENT EN APPROCHE';
+      } else {
+        proxColor = const Color(0xFF10B981);
+        proxLabel = 'CLIENT EN ROUTE';
+      }
+    }
+    final Color accentColor = proxColor ?? statusColor;
+
     return Container(
       margin: EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: context.fast.card,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: statusColor.withValues(alpha: 0.5), width: 2),
+        border: Border.all(color: accentColor.withValues(alpha: proxColor != null ? 0.9 : 0.5), width: 2),
       ),
       child: Column(
         children: [
           Container(
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: statusColor.withValues(alpha: 0.1),
+              color: accentColor.withValues(alpha: 0.1),
               borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [ Text('#${order.id.split('-').last}', style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold, fontSize: 16)),
-                    if (order.groupCode != null) ...[
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF59E0B).withValues(alpha: 0.18),
-                          borderRadius: BorderRadius.circular(6),
+                Expanded(
+                  child: Row(
+                    children: [ Text('#${order.id.split('-').last}', style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold, fontSize: 16)),
+                      if (order.groupCode != null) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF59E0B).withValues(alpha: 0.18),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            order.groupCode!,
+                            style: const TextStyle(color: Color(0xFFF59E0B), fontSize: 10, fontWeight: FontWeight.w900),
+                          ),
                         ),
-                        child: Text(
-                          order.groupCode!,
-                          style: const TextStyle(color: Color(0xFFF59E0B), fontSize: 10, fontWeight: FontWeight.w900),
-                        ),
-                      ),
+                      ],
                     ],
-                  ],
-                ), Text(order.status.name.toUpperCase(), style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 12)),
+                  ),
+                ),
+                if (proxLabel != null) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: proxColor,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.directions_walk, color: Colors.white, size: 12),
+                        const SizedBox(width: 4),
+                        Text(proxLabel, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                Text(order.status.name.toUpperCase(), style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 12)),
               ],
             ),
           ),

@@ -1,8 +1,8 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../resto_provider.dart';
 import '../../theme.dart';
+import '../../widgets/fast_image.dart';
 
 class RestoProfileScreen extends StatelessWidget {
         const RestoProfileScreen({super.key});
@@ -12,15 +12,6 @@ class RestoProfileScreen extends StatelessWidget {
     alignment: Alignment.center,
     child: Icon(Icons.restaurant, color: context.fast.t3, size: 72),
   );
-
-  Widget _buildBase64Image(BuildContext context, String data) {
-    try {
-      final bytes = base64Decode(data.split(',').last);
-      return Image.memory(bytes, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _placeholderImage(context));
-    } catch (_) {
-      return _placeholderImage(context);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,9 +32,7 @@ class RestoProfileScreen extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   settings?.image != null && settings!.image.isNotEmpty
-                      ? (settings.image.startsWith('http')
-                          ? Image.network(settings.image, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _placeholderImage(context))
-                          : _buildBase64Image(context, settings.image))
+                      ? FastImage(settings.image, fit: BoxFit.cover, placeholder: _placeholderImage(context))
                       : _placeholderImage(context),
                   Container(
                     decoration: BoxDecoration(

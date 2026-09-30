@@ -5,6 +5,7 @@ import '../../models.dart';
 import 'menu_ai_scanner_screen.dart';
 import 'menu_item_edit_screen.dart';
 import '../../theme.dart';
+import '../../widgets/fast_image.dart';
 
 class RestoMenuScreen extends StatefulWidget {
   const RestoMenuScreen({super.key});
@@ -254,12 +255,12 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
               bottomLeft: Radius.circular(10),
             ),
             child: item.image.isNotEmpty
-                ? Image.network(
+                ? FastImage(
                     item.image,
                     width: 72,
                     height: 72,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _imagePlaceholder(),
+                    placeholder: _imagePlaceholder(),
                   )
                 : _imagePlaceholder(),
           ),
