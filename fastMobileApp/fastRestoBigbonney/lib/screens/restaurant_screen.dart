@@ -8,6 +8,7 @@ import '../provider.dart';
 import '../models.dart';
 import '../services/map_helper.dart';
 import '../theme.dart';
+import '../widgets/fast_image.dart';
 
 class RestaurantScreen extends StatelessWidget {
         const RestaurantScreen({super.key});
@@ -26,15 +27,12 @@ class RestaurantScreen extends StatelessWidget {
         // Restaurant Banner Header
         Stack(
           children: [
-            Image.network(
+            FastImage(
               rest.image,
               height: 160,
               width: double.infinity,
               cacheWidth: 500,
-              fit: BoxFit.cover,
-              filterQuality: FilterQuality.low,
-              errorBuilder: (context, error, stackTrace) =>
-                  Container(height: 160, color: context.fast.cardHigh),
+              placeholder: Container(height: 160, color: context.fast.cardHigh),
             ),
             // Gradient Overlay
             Positioned.fill(
@@ -403,15 +401,12 @@ class RestaurantScreen extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Image.network(
+                  child: FastImage(
                     item.image,
                     width: 72,
                     height: 72,
                     cacheWidth: 72,
-                    cacheHeight: 72,
-                    fit: BoxFit.cover,
-                    filterQuality: FilterQuality.low,
-                    errorBuilder: (context, error, stackTrace) => Container(
+                    placeholder: Container(
                       width: 72,
                       height: 72,
                       color: context.fast.line,

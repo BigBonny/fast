@@ -113,11 +113,28 @@ class _KitchenScreenState extends State<KitchenScreen> {
             itemCount: activeOrders.length,
             itemBuilder: (context, index) {
               final order = activeOrders[index];
+              // Client proximity — live gpsProgress pushed by the client app
+              Color proxColor;
+              String? proxLabel;
+              if (order.fulfillmentType == FulfillmentType.pickup) {
+                if (order.isReadyAtEntrance || order.gpsProgress >= 90) {
+                  proxColor = const Color(0xFFEF4444);
+                  proxLabel = 'PRESQUE LÀ';
+                } else if (order.gpsProgress >= 40) {
+                  proxColor = const Color(0xFFF97316);
+                  proxLabel = 'EN APPROCHE';
+                } else {
+                  proxColor = const Color(0xFF10B981);
+                  proxLabel = 'EN ROUTE';
+                }
+              } else {
+                proxColor = const Color(0xFFF59E0B);
+              }
               return Container(
                 decoration: BoxDecoration(
                   color: context.fast.card,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFF59E0B), width: 2),
+                  border: Border.all(color: proxColor, width: 2),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -125,7 +142,7 @@ class _KitchenScreenState extends State<KitchenScreen> {
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
+                        color: proxColor.withValues(alpha: 0.1),
                         borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
                       ),
                       child: Row(
@@ -138,12 +155,27 @@ class _KitchenScreenState extends State<KitchenScreen> {
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
+                          if (proxLabel != null) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(color: proxColor, borderRadius: BorderRadius.circular(4)),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.directions_walk, color: Colors.white, size: 10),
+                                  const SizedBox(width: 3),
+                                  Text(proxLabel, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10)),
+                                ],
+                              ),
+                            ),
+                          ],
                           if (order.isUrgent) ...[
                                   SizedBox(width: 8),
                             Container(
                               padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(color: const Color(0xFFEF4444), borderRadius: BorderRadius.circular(4)),
-                              child: Text('URGENT', style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold, fontSize: 10)),
+                              child: const Text('URGENT', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10)),
                             ),
                           ],
                         ],

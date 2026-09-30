@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../provider.dart';
 import '../models.dart';
 import '../theme.dart';
+import '../widgets/fast_image.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -240,13 +241,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         ...matchingRestaurants.map((r) => ListTile(
                               leading: ClipRRect(
                                 borderRadius: BorderRadius.circular(8),
-                                child: Image.network(
+                                child: FastImage(
                                   r.image,
                                   width: 40,
                                   height: 40,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      Container(color: context.fast.faint, width: 40, height: 40),
+                                  placeholder: Container(color: context.fast.faint, width: 40, height: 40),
                                 ),
                               ),
                               title: Text(
@@ -272,14 +271,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           return ListTile(
                             leading: ClipRRect(
                               borderRadius: BorderRadius.circular(8),
-                              child: Image.network(
+                              child: FastImage(
                                 item.image,
                                 width: 40,
                                 height: 40,
-                                fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      Container(color: context.fast.faint, width: 40, height: 40),
-                                ),
+                                placeholder: Container(color: context.fast.faint, width: 40, height: 40),
+                              ),
                               ),
                               title: Text(
                                 item.name,
@@ -726,12 +723,11 @@ class _HomeScreenState extends State<HomeScreen> {
             // Restaurant Image
             Stack(
               children: [
-                Image.network(
+                FastImage(
                   rest.image,
                   height: 140,
                   width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
+                  placeholder: Container(
                     height: 140,
                     color: context.fast.cardHigh,
                     child: Icon(Icons.restaurant, color: context.fast.faint, size: 40),
@@ -976,13 +972,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           ClipRRect(
                             borderRadius: BorderRadius.circular(12),
-                            child: Image.network(
+                            child: FastImage(
                               randRest.image,
                               width: 80,
                               height: 80,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Container(color: context.fast.cardHigh, width: 80, height: 80),
+                              placeholder: Container(color: context.fast.cardHigh, width: 80, height: 80),
                             ),
                           ),
                                 SizedBox(height: 12), Text(
