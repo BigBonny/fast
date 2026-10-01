@@ -22,7 +22,7 @@ class ClientDrawer extends StatelessWidget {
     final provider = context.watch<FASTProvider>();
 
     return Drawer(
-      backgroundColor: context.fast.bg,
+      backgroundColor: const Color(0xFF0F172A),
       child: SafeArea(
         child: Column(
           children: [
@@ -272,7 +272,7 @@ class ClientDrawer extends StatelessWidget {
       title: Text(
         label,
         style: TextStyle(
-          color: context.fast.t1,
+          color: const Color(0xFFF1F5F9),
           fontWeight: FontWeight.w600,
           fontSize: 14,
         ),
@@ -299,13 +299,13 @@ class ClientDrawer extends StatelessWidget {
         title: Text(
           'Réglages',
           style: TextStyle(
-            color: context.fast.t1,
+            color: const Color(0xFFF1F5F9),
             fontWeight: FontWeight.w600,
             fontSize: 14,
           ),
         ),
-        iconColor: context.fast.t3,
-        collapsedIconColor: context.fast.t3,
+        iconColor: const Color(0xFF94A3B8),
+        collapsedIconColor: const Color(0xFF94A3B8),
         childrenPadding: const EdgeInsets.only(left: 16, right: 8, bottom: 8),
         children: [
           Row(
@@ -336,22 +336,22 @@ class ClientDrawer extends StatelessWidget {
           decoration: BoxDecoration(
             color: sel
                 ? FASTBrand.amber.withValues(alpha: 0.15)
-                : context.fast.card,
+                : const Color(0xFF1E293B),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: sel ? FASTBrand.amber : context.fast.line,
+              color: sel ? FASTBrand.amber : const Color(0xFF334155),
             ),
           ),
           child: Column(
             children: [
               Icon(icon,
                   size: 16,
-                  color: sel ? FASTBrand.amber : context.fast.t2),
+                  color: sel ? FASTBrand.amber : const Color(0xFFCBD5E1)),
               const SizedBox(height: 2),
               Text(
                 label,
                 style: TextStyle(
-                  color: sel ? FASTBrand.amber : context.fast.t2,
+                  color: sel ? FASTBrand.amber : const Color(0xFFCBD5E1),
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
                 ),
@@ -377,22 +377,22 @@ class ClientDrawer extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: context.fast.card,
+        backgroundColor: const Color(0xFF1E293B),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: context.fast.line),
+          side: BorderSide(color: const Color(0xFF334155)),
         ),
         title: Text(
           type == 'CGU' ? 'Conditions générales' : 'Confidentialité',
           style: TextStyle(
-            color: context.fast.t1,
+            color: const Color(0xFFF1F5F9),
             fontWeight: FontWeight.bold,
             fontSize: 14,
           ),
         ),
         content: Text(
           content,
-          style: TextStyle(color: context.fast.t2, fontSize: 12, height: 1.5),
+          style: TextStyle(color: const Color(0xFFCBD5E1), fontSize: 12, height: 1.5),
         ),
         actions: [
           ElevatedButton(
