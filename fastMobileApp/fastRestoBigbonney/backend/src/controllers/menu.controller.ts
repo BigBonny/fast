@@ -176,10 +176,49 @@ export const deleteSupplement = async (req: Request, res: Response): Promise<voi
 
 // ─── OCR Menu Scanner ──────────────────────────────────────
 
-async function parseMenuImageWithPixtral(base64Image: string): Promise<Array<{ name: string; price: number; category: string; description: string }>> {
-  const apiKey = env.mistralApiKey;
-  
-  const prompt = `
+// Gemini (free tier via Google AI Studio) — preferred when GEMINI_API_KEY is set.
+async function geminiGenerate(
+  prompt: string,
+  base64Image?: string,
+): Promise<string> {
+  const apiKey = env.geminiApiKey;
+  if (!apiKey) throw new Error('GEMINI_API_KEY non configurée');
+
+  const parts: Record<string, unknown>[] = [{ text: prompt }];
+  if (base64Image) {
+    const raw = base64Image.startsWith('data:')
+      ? base64Image.split(',')[1]
+      : base64Image;
+    parts.push({
+      inline_data: { mime_type: 'image/jpeg', data: raw },
+    });
+  }
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts }],
+        generationConfig: {
+          temperature: 0,
+          maxOutputTokens: 2000,
+          responseMimeType: 'application/json',
+        },
+      }),
+    },
+  );
+
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`Gemini API error: ${response.statusText} - ${errText}`);
+  }
+  const data = (await response.json()) as any;
+  return data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+}
+
+const menuPrompt = `
 You are an expert menu digitizer.
 Read the text from the provided restaurant menu image and extract all the dishes, their prices, and infer their categories (e.g. Entrées, Plats, Desserts, Boissons, Salades, Sandwichs).
 If a description is present, extract it as well.
@@ -198,6 +237,12 @@ Each object must have exactly these keys:
 
 Return ONLY valid JSON.
 `;
+
+async function parseMenuImageWithPixtral(base64Image: string): Promise<Array<{ name: string; price: number; category: string; description: string }>> {
+  const apiKey = env.mistralApiKey;
+  if (!apiKey) throw new Error('MISTRAL_API_KEY non configurée');
+
+  const prompt = menuPrompt;
 
   // Use a data URI if not already formatted
   const imageUrl = base64Image.startsWith('data:') ? base64Image : `data:image/jpeg;base64,${base64Image}`;
@@ -257,12 +302,28 @@ export const scanMenu = async (req: Request, res: Response): Promise<void> => {
   let parsedItems: Array<{ name: string; price: number; category: string; description: string }> = [];
 
   try {
-    parsedItems = await parseMenuImageWithPixtral(imageBase64);
-    console.log('[scanMenu] Pixtral returned items count:', parsedItems.length);
+    if (env.geminiApiKey) {
+      const content = await geminiGenerate(menuPrompt, imageBase64);
+      parsedItems = (JSON.parse(content).items || []) as typeof parsedItems;
+      console.log('[scanMenu] Gemini returned items count:', parsedItems.length);
+    } else {
+      parsedItems = await parseMenuImageWithPixtral(imageBase64);
+      console.log('[scanMenu] Mistral returned items count:', parsedItems.length);
+    }
   } catch (err) {
     console.error('[scanMenu] OCR failed:', (err as Error).message);
-    res.status(500).json({ error: 'Échec de la reconnaissance OCR. Veuillez réessayer avec une image plus nette.' });
-    return;
+    // Fallback to the other provider if the primary one failed
+    try {
+      if (env.geminiApiKey && env.mistralApiKey) {
+        parsedItems = await parseMenuImageWithPixtral(imageBase64);
+        console.log('[scanMenu] Mistral fallback items:', parsedItems.length);
+      } else {
+        throw err;
+      }
+    } catch (fallbackErr) {
+      res.status(500).json({ error: 'Échec de la reconnaissance OCR. Veuillez réessayer avec une image plus nette.' });
+      return;
+    }
   }
 
   if (parsedItems.length === 0) {
@@ -309,46 +370,46 @@ export const suggestPrepTime = async (req: Request, res: Response): Promise<void
     return;
   }
 
-  const apiKey = env.mistralApiKey;
-  if (!apiKey) {
-    res.status(500).json({ error: 'IA non configurée' });
-    return;
-  }
-
-  try {
-    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: 'mistral-small-latest',
-        messages: [
-          {
-            role: 'user',
-            content: `You are a restaurant kitchen expert. Estimate the preparation time in minutes for a dish.
+  const aiPrompt = `You are a restaurant kitchen expert. Estimate the preparation time in minutes for a dish.
 Dish name: "${name}"
 Category: "${category || 'Non spécifié'}"
 Description: "${description || ''}"
 
 Consider typical cooking times for this type of dish in a fast-food/casual restaurant context.
 Return ONLY a JSON object: {"prepTime": <number_in_minutes>, "reasoning": "<short explanation in French>"}
-The prepTime should be between 1 and 60 minutes.`,
-          },
-        ],
-        response_format: { type: 'json_object' },
-        temperature: 0.3,
-        max_tokens: 200,
-      }),
-    });
+The prepTime should be between 1 and 60 minutes.`;
 
-    if (!response.ok) {
-      throw new Error(`Mistral API error: ${response.statusText}`);
+  if (!env.geminiApiKey && !env.mistralApiKey) {
+    res.status(500).json({ error: 'IA non configurée' });
+    return;
+  }
+
+  try {
+    let content: string;
+    if (env.geminiApiKey) {
+      content = await geminiGenerate(aiPrompt);
+    } else {
+      const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${env.mistralApiKey}`,
+        },
+        body: JSON.stringify({
+          model: 'mistral-small-latest',
+          messages: [{ role: 'user', content: aiPrompt }],
+          response_format: { type: 'json_object' },
+          temperature: 0.3,
+          max_tokens: 200,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Mistral API error: ${response.statusText}`);
+      }
+      const data = await response.json() as any;
+      content = data.choices[0].message.content;
     }
-
-    const data = await response.json() as any;
-    const content = data.choices[0].message.content;
     const parsed = JSON.parse(content);
 
     const prepTime = Math.max(1, Math.min(60, Math.round(parsed.prepTime || 8)));
