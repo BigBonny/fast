@@ -177,9 +177,16 @@ export const deleteSupplement = async (req: Request, res: Response): Promise<voi
 // ─── OCR Menu Scanner ──────────────────────────────────────
 
 // Gemini (free tier via Google AI Studio) — preferred when GEMINI_API_KEY is set.
+// 'gemini-flash-lite-latest' is the default: it tracks the current lite model,
+// has the largest free-tier capacity, and is far less prone to 503 overload
+// than the flagship 'gemini-flash-latest' (which is kept as a retry).
+const GEMINI_PRIMARY_MODEL = 'gemini-flash-lite-latest';
+const GEMINI_RETRY_MODEL = 'gemini-flash-latest';
+
 async function geminiGenerate(
   prompt: string,
   base64Image?: string,
+  model: string = GEMINI_PRIMARY_MODEL,
 ): Promise<string> {
   const apiKey = env.geminiApiKey;
   if (!apiKey) throw new Error('GEMINI_API_KEY non configurée');
@@ -195,7 +202,7 @@ async function geminiGenerate(
   }
 
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -203,7 +210,7 @@ async function geminiGenerate(
         contents: [{ parts }],
         generationConfig: {
           temperature: 0,
-          maxOutputTokens: 2000,
+          maxOutputTokens: 4000,
           responseMimeType: 'application/json',
         },
       }),
@@ -212,10 +219,15 @@ async function geminiGenerate(
 
   if (!response.ok) {
     const errText = await response.text();
-    throw new Error(`Gemini API error: ${response.statusText} - ${errText}`);
+    throw new Error(`Gemini ${model} error: ${response.status} ${errText.slice(0, 200)}`);
   }
   const data = (await response.json()) as any;
-  return data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+  // Concatenate all text parts — thinking models may emit several parts.
+  const partsArr = data.candidates?.[0]?.content?.parts ?? [];
+  return partsArr
+    .map((p: any) => (typeof p.text === 'string' ? p.text : ''))
+    .join('')
+    .trim();
 }
 
 const menuPrompt = `
@@ -303,9 +315,17 @@ export const scanMenu = async (req: Request, res: Response): Promise<void> => {
 
   try {
     if (env.geminiApiKey) {
-      const content = await geminiGenerate(menuPrompt, imageBase64);
-      parsedItems = (JSON.parse(content).items || []) as typeof parsedItems;
-      console.log('[scanMenu] Gemini returned items count:', parsedItems.length);
+      try {
+        const content = await geminiGenerate(menuPrompt, imageBase64);
+        parsedItems = (JSON.parse(content).items || []) as typeof parsedItems;
+        console.log('[scanMenu] Gemini returned items count:', parsedItems.length);
+      } catch (primaryErr) {
+        // Lite model can still hit demand spikes — retry on the flagship alias.
+        console.log('[scanMenu] primary Gemini failed, retrying:', (primaryErr as Error).message);
+        const content = await geminiGenerate(menuPrompt, imageBase64, GEMINI_RETRY_MODEL);
+        parsedItems = (JSON.parse(content).items || []) as typeof parsedItems;
+        console.log('[scanMenu] Gemini retry items count:', parsedItems.length);
+      }
     } else {
       parsedItems = await parseMenuImageWithPixtral(imageBase64);
       console.log('[scanMenu] Mistral returned items count:', parsedItems.length);
