@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../resto_provider.dart';
-import '../../provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../widgets/resto_drawer.dart';
 import '../../widgets/resto_spotlight_tutorial.dart';
 import 'kitchen_screen.dart';
 import 'resto_orders_screen.dart';
@@ -249,132 +249,9 @@ class _RestoMainShellState extends State<RestoMainShell> {
               const SizedBox(width: 16),
             ],
           ),
-          drawer: Drawer(
-            backgroundColor: context.fast.card,
-            child: ListView(
-              padding: EdgeInsets.zero,
-              children: [
-                DrawerHeader(
-                  decoration: const BoxDecoration(gradient: FASTBrand.proGradient),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [ Text(
-                        'FAST Pro',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 2,
-                        ),
-                      ), Text(
-                        provider.settings?.name ?? 'Mon Restaurant',
-                        style: TextStyle(
-                          color: context.fast.t1,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SwitchListTile(
-                  title: Text(
-                    'Mode Rush',
-                    style: TextStyle(color: context.fast.t1),
-                  ),
-                  subtitle: Text(
-                    'Augmente les temps de prépa',
-                    style: TextStyle(color: context.fast.t2, fontSize: 12),
-                  ),
-                  activeThumbColor: FASTPro.magenta,
-                  value: provider.isRushMode,
-                  onChanged: (val) => provider.toggleRushMode(),
-                  secondary: const Icon( Icons.local_fire_department,
-                    color: FASTPro.magenta,
-                  ),
-                ),
-                      Divider(color: context.fast.line),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-                  child: Text(
-                    'THÈME',
-                    style: TextStyle(
-                      color: context.fast.t3,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1,
-                    ),
-                  ),
-                ),
-                Builder(
-                  builder: (ctx) {
-                    final fast = ctx.watch<FASTProvider>();
-                    Widget opt(ThemeMode m, IconData icon, String label) {
-                      final sel = fast.themeMode == m;
-                      return Expanded(
-                        child: GestureDetector(
-                          onTap: () => fast.setThemeMode(m),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            decoration: BoxDecoration(
-                              color: sel
-                                  ? FASTPro.teal.withValues(alpha: 0.15)
-                                  : context.fast.bg,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: sel ? FASTPro.teal : context.fast.line,
-                              ),
-                            ),
-                            child: Column(
-                              children: [
-                                Icon(icon,
-                                    size: 18,
-                                    color: sel ? FASTPro.teal : context.fast.t2),
-                                const SizedBox(height: 4),
-                                Text(label,
-                                    style: TextStyle(
-                                        color: sel
-                                            ? FASTPro.teal
-                                            : context.fast.t2,
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w600)),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    }
-                    return Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                      child: Row(
-                        children: [
-                          opt(ThemeMode.system, Icons.phone_android, 'Auto'),
-                          const SizedBox(width: 8),
-                          opt(ThemeMode.light, Icons.wb_sunny_outlined, 'Clair'),
-                          const SizedBox(width: 8),
-                          opt(ThemeMode.dark, Icons.nightlight_outlined, 'Sombre'),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-                Divider(color: context.fast.line),
-                ListTile(
-                  leading: Icon( Icons.help_outline,
-                    color: FASTPro.teal,
-                  ),
-                  title: Text(
-                    'Revoir le tutoriel',
-                    style: TextStyle(color: context.fast.t1),
-                  ),
-                  subtitle: Text(
-                    'Redécouvrir les fonctions principales',
-                    style: TextStyle(color: context.fast.t2, fontSize: 12),
-                  ),
-                  onTap: _startTutorial,
-                ),
-              ],
-            ),
+          drawer: RestoDrawer(
+            onNavigate: (index) => setState(() => _currentIndex = index),
+            onReplayTutorial: _startTutorial,
           ),
           body: Column(
             children: [
