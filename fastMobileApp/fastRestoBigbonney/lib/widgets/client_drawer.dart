@@ -17,12 +17,26 @@ class ClientDrawer extends StatelessWidget {
     colors: [Color(0xFF1E1B4B), Color(0xFF312E81), Color(0xFF1E293B)],
   );
 
+  static bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
+  static Color _bg(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF0F172A) : Colors.white;
+  static Color _text(BuildContext context) =>
+      _isDark(context) ? const Color(0xFFF1F5F9) : const Color(0xFF1E293B);
+  static Color _subtext(BuildContext context) =>
+      _isDark(context) ? const Color(0xFFCBD5E1) : const Color(0xFF64748B);
+  static Color _chipBg(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9);
+  static Color _chipBorder(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<FASTProvider>();
 
     return Drawer(
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: _bg(context),
       child: SafeArea(
         child: Column(
           children: [
@@ -272,7 +286,7 @@ class ClientDrawer extends StatelessWidget {
       title: Text(
         label,
         style: TextStyle(
-          color: const Color(0xFFF1F5F9),
+          color: _text(context),
           fontWeight: FontWeight.w600,
           fontSize: 14,
         ),
@@ -299,7 +313,7 @@ class ClientDrawer extends StatelessWidget {
         title: Text(
           'Réglages',
           style: TextStyle(
-            color: const Color(0xFFF1F5F9),
+            color: _text(context),
             fontWeight: FontWeight.w600,
             fontSize: 14,
           ),
@@ -336,22 +350,22 @@ class ClientDrawer extends StatelessWidget {
           decoration: BoxDecoration(
             color: sel
                 ? FASTBrand.amber.withValues(alpha: 0.15)
-                : const Color(0xFF1E293B),
+                : _chipBg(context),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: sel ? FASTBrand.amber : const Color(0xFF334155),
+              color: sel ? FASTBrand.amber : _chipBorder(context),
             ),
           ),
           child: Column(
             children: [
               Icon(icon,
                   size: 16,
-                  color: sel ? FASTBrand.amber : const Color(0xFFCBD5E1)),
+                  color: sel ? FASTBrand.amber : _subtext(context)),
               const SizedBox(height: 2),
               Text(
                 label,
                 style: TextStyle(
-                  color: sel ? FASTBrand.amber : const Color(0xFFCBD5E1),
+                  color: sel ? FASTBrand.amber : _subtext(context),
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
                 ),
@@ -377,22 +391,22 @@ class ClientDrawer extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1E293B),
+        backgroundColor: _bg(context),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: const Color(0xFF334155)),
+          side: BorderSide(color: _chipBorder(context)),
         ),
         title: Text(
           type == 'CGU' ? 'Conditions générales' : 'Confidentialité',
           style: TextStyle(
-            color: const Color(0xFFF1F5F9),
+            color: _text(context),
             fontWeight: FontWeight.bold,
             fontSize: 14,
           ),
         ),
         content: Text(
           content,
-          style: TextStyle(color: const Color(0xFFCBD5E1), fontSize: 12, height: 1.5),
+          style: TextStyle(color: _subtext(context), fontSize: 12, height: 1.5),
         ),
         actions: [
           ElevatedButton(
