@@ -24,6 +24,20 @@ class RestoDrawer extends StatelessWidget {
     colors: [Color(0xFF1E1B4B), Color(0xFF312E81), Color(0xFF1E293B)],
   );
 
+  static bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
+  static Color _bg(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF0F172A) : Colors.white;
+  static Color _text(BuildContext context) =>
+      _isDark(context) ? const Color(0xFFF1F5F9) : const Color(0xFF1E293B);
+  static Color _subtext(BuildContext context) =>
+      _isDark(context) ? const Color(0xFFCBD5E1) : const Color(0xFF64748B);
+  static Color _chipBg(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9);
+  static Color _chipBorder(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+
   void _go(BuildContext context, int index) {
     Navigator.of(context).pop();
     onNavigate(index);
@@ -39,7 +53,7 @@ class RestoDrawer extends StatelessWidget {
         restoName.isNotEmpty ? restoName.characters.first.toUpperCase() : 'R';
 
     return Drawer(
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: _bg(context),
       child: SafeArea(
         child: Column(
           children: [
@@ -246,7 +260,7 @@ class RestoDrawer extends StatelessWidget {
       title: Text(
         label,
         style: TextStyle(
-          color: const Color(0xFFF1F5F9),
+          color: _text(context),
           fontWeight: FontWeight.w600,
           fontSize: 14,
         ),
@@ -273,7 +287,7 @@ class RestoDrawer extends StatelessWidget {
         title: Text(
           'Réglages',
           style: TextStyle(
-            color: const Color(0xFFF1F5F9),
+            color: _text(context),
             fontWeight: FontWeight.w600,
             fontSize: 14,
           ),
@@ -289,14 +303,14 @@ class RestoDrawer extends StatelessWidget {
             title: Text(
               'Mode Rush',
               style: TextStyle(
-                color: const Color(0xFFF1F5F9),
+                color: _text(context),
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),
             ),
             subtitle: Text(
               'Temps de prépa allongés',
-              style: TextStyle(color: const Color(0xFF94A3B8), fontSize: 11),
+              style: TextStyle(color: _subtext(context), fontSize: 11),
             ),
             secondary: const Icon(Icons.local_fire_department,
                 color: FASTPro.magenta, size: 20),
@@ -345,7 +359,7 @@ class RestoDrawer extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                color: const Color(0xFFCBD5E1),
+                color: _subtext(context),
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
@@ -365,22 +379,23 @@ class RestoDrawer extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color:
-                sel ? FASTPro.teal.withValues(alpha: 0.15) : const Color(0xFF1E293B),
+            color: sel
+                ? FASTPro.teal.withValues(alpha: 0.15)
+                : _chipBg(context),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: sel ? FASTPro.teal : const Color(0xFF334155),
+              color: sel ? FASTPro.teal : _chipBorder(context),
             ),
           ),
           child: Column(
             children: [
               Icon(icon,
-                  size: 16, color: sel ? FASTPro.teal : const Color(0xFFCBD5E1)),
+                  size: 16, color: sel ? FASTPro.teal : _subtext(context)),
               const SizedBox(height: 2),
               Text(
                 label,
                 style: TextStyle(
-                  color: sel ? FASTPro.teal : const Color(0xFFCBD5E1),
+                  color: sel ? FASTPro.teal : _subtext(context),
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
                 ),
@@ -406,22 +421,22 @@ class RestoDrawer extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1E293B),
+        backgroundColor: _bg(context),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: const Color(0xFF334155)),
+          side: BorderSide(color: _chipBorder(context)),
         ),
         title: Text(
           type == 'CGU' ? 'Conditions générales' : 'Confidentialité',
           style: TextStyle(
-            color: const Color(0xFFF1F5F9),
+            color: _text(context),
             fontWeight: FontWeight.bold,
             fontSize: 14,
           ),
         ),
         content: Text(
           content,
-          style: TextStyle(color: const Color(0xFFCBD5E1), fontSize: 12, height: 1.5),
+          style: TextStyle(color: _subtext(context), fontSize: 12, height: 1.5),
         ),
         actions: [
           ElevatedButton(
