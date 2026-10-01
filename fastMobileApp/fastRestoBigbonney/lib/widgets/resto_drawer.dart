@@ -171,20 +171,6 @@ class RestoDrawer extends StatelessWidget {
                   _settingsItem(context, provider, resto),
                   _item(
                     context,
-                    icon: Icons.favorite_border,
-                    iconColor: const Color(0xFFF472B6),
-                    label: 'Mes favoris',
-                    onTap: () => _go(context, 1),
-                  ),
-                  _item(
-                    context,
-                    icon: Icons.location_on_outlined,
-                    iconColor: const Color(0xFF34D399),
-                    label: 'Mes adresses',
-                    onTap: () => _go(context, 3),
-                  ),
-                  _item(
-                    context,
                     icon: Icons.shield_outlined,
                     iconColor: const Color(0xFF38BDF8),
                     label: 'Confidentialité',
