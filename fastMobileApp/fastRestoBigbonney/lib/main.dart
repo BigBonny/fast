@@ -20,6 +20,7 @@ import 'screens/account_screen.dart';
 import 'screens/role_selection_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/resto/onboarding_screen.dart' as resto_onboarding;
+import 'screens/resto/kitchen_screen.dart';
 import 'screens/group_screen.dart';
 import 'screens/livreur_screen.dart';
 import 'screens/driver_account_screen.dart';
@@ -198,6 +199,11 @@ class _FASTAppState extends State<FASTApp> with WidgetsBindingObserver {
 
     final auth = context.watch<AuthProvider>();
     if (auth.isLoggedIn) {
+      // Cook/guest accounts land straight on the kitchen board —
+      // no stats, no payments, no settings.
+      if (auth.user?.isStaff ?? false) {
+        return const KitchenScreen();
+      }
       if (auth.isRestaurant) {
         return const resto_onboarding.OnboardingScreen();
       }

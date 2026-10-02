@@ -305,46 +305,79 @@ export const scanMenu = async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  const { imageBase64 } = req.body as { imageBase64?: string };
-  if (!imageBase64) {
+  // Single photo (imageBase64) or several video frames (imagesBase64)
+  const { imageBase64, imagesBase64 } = req.body as {
+    imageBase64?: string;
+    imagesBase64?: string[];
+  };
+  const images =
+    Array.isArray(imagesBase64) && imagesBase64.length > 0
+      ? imagesBase64.slice(0, 8) // cap payload — Vercel body limit is ~4.5MB
+      : imageBase64
+        ? [imageBase64]
+        : [];
+  if (images.length === 0) {
     res.status(400).json({ error: 'imageBase64 requis' });
     return;
   }
 
-  let parsedItems: Array<{ name: string; price: number; category: string; description: string }> = [];
-
-  try {
+  // Scan one frame through the provider chain: Gemini lite → Gemini flash → Mistral.
+  const scanOne = async (
+    img: string,
+  ): Promise<Array<{ name: string; price: number; category: string; description: string }>> => {
     if (env.geminiApiKey) {
       try {
-        const content = await geminiGenerate(menuPrompt, imageBase64);
-        parsedItems = (JSON.parse(content).items || []) as typeof parsedItems;
-        console.log('[scanMenu] Gemini returned items count:', parsedItems.length);
+        const content = await geminiGenerate(menuPrompt, img);
+        return (JSON.parse(content).items || []) as never[];
       } catch (primaryErr) {
-        // Lite model can still hit demand spikes — retry on the flagship alias.
         console.log('[scanMenu] primary Gemini failed, retrying:', (primaryErr as Error).message);
-        const content = await geminiGenerate(menuPrompt, imageBase64, GEMINI_RETRY_MODEL);
-        parsedItems = (JSON.parse(content).items || []) as typeof parsedItems;
-        console.log('[scanMenu] Gemini retry items count:', parsedItems.length);
+        const content = await geminiGenerate(menuPrompt, img, GEMINI_RETRY_MODEL);
+        return (JSON.parse(content).items || []) as never[];
+      }
+    }
+    return parseMenuImageWithPixtral(img);
+  };
+
+  // Scan every frame; a failed frame doesn't sink the whole batch.
+  const results = await Promise.allSettled(images.map(scanOne));
+  const allItems = results
+    .filter(
+      (r): r is PromiseFulfilledResult<
+        { name: string; price: number; category: string; description: string }[]
+      > => r.status === 'fulfilled',
+    )
+    .flatMap((r) => r.value);
+
+  if (allItems.length === 0 && results.every((r) => r.status === 'rejected')) {
+    // Every frame failed at the provider level (quota/network) — try Mistral
+    // once as a last resort on the first frame.
+    if (env.mistralApiKey) {
+      try {
+        const fallback = await parseMenuImageWithPixtral(images[0]);
+        allItems.push(...fallback);
+        console.log('[scanMenu] Mistral fallback items:', fallback.length);
+      } catch {
+        res.status(500).json({ error: 'Échec de la reconnaissance OCR. Veuillez réessayer avec une image plus nette.' });
+        return;
       }
     } else {
-      parsedItems = await parseMenuImageWithPixtral(imageBase64);
-      console.log('[scanMenu] Mistral returned items count:', parsedItems.length);
-    }
-  } catch (err) {
-    console.error('[scanMenu] OCR failed:', (err as Error).message);
-    // Fallback to the other provider if the primary one failed
-    try {
-      if (env.geminiApiKey && env.mistralApiKey) {
-        parsedItems = await parseMenuImageWithPixtral(imageBase64);
-        console.log('[scanMenu] Mistral fallback items:', parsedItems.length);
-      } else {
-        throw err;
-      }
-    } catch (fallbackErr) {
       res.status(500).json({ error: 'Échec de la reconnaissance OCR. Veuillez réessayer avec une image plus nette.' });
       return;
     }
   }
+
+  // Merge frames: dedupe by normalized dish name (first occurrence wins).
+  const normalize = (s: string) =>
+    s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+
+  const seen = new Set<string>();
+  const parsedItems = allItems.filter((item) => {
+    const key = normalize(item.name ?? '');
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  console.log('[scanMenu] frames:', images.length, 'merged items:', parsedItems.length);
 
   if (parsedItems.length === 0) {
     res.status(400).json({ error: 'Aucun plat détecté. Assurez-vous que les prix sont bien lisibles (ex: 12.50€).' });

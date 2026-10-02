@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../provider.dart';
 import '../resto_provider.dart';
 import '../providers/auth_provider.dart';
+import '../screens/resto/resto_staff_screen.dart';
 import '../theme.dart';
 
 /// Base44-style slide-in menu for Fast Pro (restaurant accounts):
@@ -336,6 +337,12 @@ class RestoDrawer extends StatelessWidget {
           // Advanced settings + tutorial shortcuts
           _miniItem(context, Icons.tune, 'Paramètres avancés',
               () => _go(context, 3)),
+          _miniItem(context, Icons.group_outlined,
+              'Équipe & comptes invités', () {
+            Navigator.of(context).pop();
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (_) => const RestoStaffScreen()));
+          }),
           _miniItem(context, Icons.help_outline, 'Revoir le tutoriel', () {
             Navigator.of(context).pop();
             onReplayTutorial();

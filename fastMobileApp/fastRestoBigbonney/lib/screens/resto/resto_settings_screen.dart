@@ -56,10 +56,15 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
     'DAIRY_FREE': 'Sans Lactose',
   };
 
+  // Same list as the client app's category strip — multi-select.
   static const _categories = [
-    'Burgers', 'Pizza', 'Sushi', 'Tacos', 'Sandwichs',
-    'Salades', 'Pâtes', 'Poulet', 'Végétarien', 'Desserts',
+    'Burger', 'Pizza', 'Sushi', 'Tacos', 'Kebab', 'Sandwich',
+    'Mexicain', 'Africain', 'Arabe', 'Indien', 'Chinois', 'Thaï',
+    'Poulet', 'Hot-dog', 'Pâtes', 'Salade', 'Fruits de mer',
+    'Vegan', 'Dessert', 'Glaces', 'Crêpes', 'Waffle', 'Café',
+    'Smoothie', 'Fast-Food', 'Bols/Healthy', 'Autre',
   ];
+  Set<String> _selectedCategories = {};
 
   @override
   void initState() {
@@ -110,6 +115,11 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
         _descCtrl.text = data['description'] as String? ?? '';
         _cuisineCtrl.text = data['cuisineType'] as String? ?? '';
         _categoryCtrl.text = data['category'] as String? ?? '';
+        _selectedCategories = (data['category'] as String? ?? '')
+            .split(',')
+            .map((s) => s.trim())
+            .where((s) => s.isNotEmpty)
+            .toSet();
         _cityCtrl.text = data['city'] as String? ?? '';
         _addressCtrl.text = data['address'] as String? ?? '';
         _ibanCtrl.text = data['managerIban'] as String? ?? '';
@@ -134,6 +144,11 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
         _descCtrl.text = cached?.description ?? '';
         _cuisineCtrl.text = cached?.cuisineType ?? '';
         _categoryCtrl.text = cached?.category ?? '';
+        _selectedCategories = (cached?.category ?? '')
+            .split(',')
+            .map((s) => s.trim())
+            .where((s) => s.isNotEmpty)
+            .toSet();
         _cityCtrl.text = cached?.city ?? '';
         _addressCtrl.text = cached?.address ?? '';
         _ibanCtrl.text = cached?.managerIban ?? '';
@@ -158,7 +173,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
       'name': _nameCtrl.text.trim(),
       'description': _descCtrl.text.trim(),
       'cuisineType': _cuisineCtrl.text.trim(),
-      'category': _categoryCtrl.text.trim(),
+      'category': _selectedCategories.join(', '),
       'city': _cityCtrl.text.trim(),
       'address': _addressCtrl.text.trim(),
       'managerIban': _ibanCtrl.text.trim(),
@@ -182,7 +197,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
         name: _nameCtrl.text.trim(),
         description: _descCtrl.text.trim(),
         cuisineType: _cuisineCtrl.text.trim(),
-        category: _categoryCtrl.text.trim(),
+        category: _selectedCategories.join(', '),
         city: _cityCtrl.text.trim(),
         address: _addressCtrl.text.trim(),
         managerIban: _ibanCtrl.text.trim(),
@@ -283,8 +298,46 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
               SizedBox(height: 24),
         _section('Cuisine & Catégorie'),
         _field('Type de cuisine', _cuisineCtrl, hint: 'ex: Française, Japonaise, Italienne'),
-              SizedBox(height: 8),
-        _dropdownField('Catégorie', _categoryCtrl, _categories),
+              SizedBox(height: 12),
+        Text('Catégories (plusieurs possibles)',
+            style: TextStyle(
+                color: context.fast.t2,
+                fontSize: 12,
+                fontWeight: FontWeight.w600)),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: _categories.map((c) {
+            final sel = _selectedCategories.contains(c);
+            return FilterChip(
+              label: Text(
+                c,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: sel ? Colors.white : context.fast.t2,
+                  fontWeight: sel ? FontWeight.w700 : FontWeight.normal,
+                ),
+              ),
+              selected: sel,
+              onSelected: (v) => setState(() {
+                if (v) {
+                  _selectedCategories.add(c);
+                } else {
+                  _selectedCategories.remove(c);
+                }
+              }),
+              selectedColor: const Color(0xFF00C8B3),
+              backgroundColor: context.fast.card,
+              checkmarkColor: Colors.white,
+              side: BorderSide(
+                color: sel ? const Color(0xFF00C8B3) : context.fast.faint,
+              ),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+            );
+          }).toList(),
+        ),
 
               SizedBox(height: 24),
         _section('Options alimentaires'),
@@ -555,44 +608,6 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
           ),
           contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         ),
-      ),
-    );
-  }
-
-  Widget _dropdownField(String label, TextEditingController ctrl, List<String> options) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 12),
-      child: DropdownButtonFormField<String>(
-        initialValue: options.contains(ctrl.text) ? ctrl.text : null,
-        hint: Text('Sélectionner', style: TextStyle(color: context.fast.faint, fontSize: 13)),
-        dropdownColor: context.fast.card,
-        style: TextStyle(color: context.fast.t1, fontSize: 14),
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: TextStyle(color: context.fast.t2, fontSize: 13),
-          filled: true,
-          fillColor: context.fast.card,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: context.fast.faint),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: context.fast.faint),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: Color(0xFF00C8B3)),
-          ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        ),
-        items: options
-            .map((o) => DropdownMenuItem(
-                  value: o,
-                  child: Text(o, style: TextStyle(color: context.fast.t1, fontSize: 14)),
-                ))
-            .toList(),
-        onChanged: (v) => setState(() => ctrl.text = v ?? ''),
       ),
     );
   }

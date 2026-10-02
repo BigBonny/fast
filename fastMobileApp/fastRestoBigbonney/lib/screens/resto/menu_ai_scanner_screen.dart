@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:camera/camera.dart';
+import 'package:video_thumbnail/video_thumbnail.dart' as vt;
 import '../../resto_provider.dart';
 import '../../services/restaurant_service.dart';
 import '../../theme.dart';
@@ -16,13 +17,16 @@ class MenuAiScannerScreen extends StatefulWidget {
 }
 
 class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
-  int _state = 0; // 0: Idle/Frame, 1: Scanning, 2: Success, -1: Error
+  int _state = 0; // 0: Idle/Frame, 1: Scanning, 2: Success, -1: Error, 3: Recording
   String _errorMessage = '';
   final ImagePicker _picker = ImagePicker();
 
   List<CameraDescription> _cameras = [];
   CameraController? _cameraController;
   bool _isCameraInitialized = false;
+  Timer? _recordTimer;
+  int _recordElapsed = 0;
+  static const _maxRecordSeconds = 8;
 
   @override
   void initState() {
@@ -63,8 +67,110 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
 
   @override
   void dispose() {
+    _recordTimer?.cancel();
     _cameraController?.dispose();
     super.dispose();
+  }
+
+  // ─── Video menu scan ─────────────────────────────────────────
+  // Records up to 8s panning across the menu screens, samples frames,
+  // and sends them all in one request — the backend merges results.
+
+  Future<void> _toggleVideoRecording() async {
+    if (_cameraController == null || !_cameraController!.value.isInitialized) {
+      return;
+    }
+    if (_isRecording) {
+      await _stopVideoAndProcess();
+      return;
+    }
+    try {
+      await _cameraController!.startVideoRecording();
+      setState(() {
+        _state = 3;
+        _recordElapsed = 0;
+      });
+      _recordTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+        if (!mounted) return;
+        setState(() => _recordElapsed++);
+        if (_recordElapsed >= _maxRecordSeconds) {
+          _stopVideoAndProcess();
+        }
+      });
+    } catch (e) {
+      debugPrint('[Scanner] Video start error: $e');
+    }
+  }
+
+  bool get _isRecording => _state == 3;
+
+  Future<void> _stopVideoAndProcess() async {
+    _recordTimer?.cancel();
+    _recordTimer = null;
+    try {
+      final video = await _cameraController!.stopVideoRecording();
+      if (!mounted) return;
+      setState(() => _state = 1);
+      await _processVideo(video);
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _state = -1;
+          _errorMessage = 'Erreur vidéo: $e';
+        });
+      }
+    }
+  }
+
+  Future<void> _processVideo(XFile video) async {
+    final restoProvider = Provider.of<RestoProvider>(context, listen: false);
+    final restaurantId = restoProvider.restaurantId;
+    if (restaurantId == null) {
+      setState(() {
+        _state = -1;
+        _errorMessage = 'Aucun restaurant connecté.';
+      });
+      return;
+    }
+
+    try {
+      // Sample frames across the clip — pans across menu boards/screens
+      // mean each frame catches different dishes.
+      final frames = <String>[];
+      for (final ms in [400, 1600, 3000, 4500, 6000, 7400]) {
+        final bytes = await vt.VideoThumbnail.thumbnailData(
+          video: video.path,
+          imageFormat: vt.ImageFormat.JPEG,
+          timeMs: ms,
+          quality: 80,
+          maxWidth: 1280,
+        );
+        if (bytes != null && bytes.isNotEmpty) {
+          frames.add(base64Encode(bytes));
+        }
+      }
+      if (frames.isEmpty) {
+        throw Exception('Impossible d\'extraire les images de la vidéo');
+      }
+      debugPrint('[Scanner] extracted ${frames.length} frames');
+
+      final service = RestaurantService();
+      await service.scanMenuFrames(restaurantId, frames);
+
+      await restoProvider.loadMenu();
+      if (!mounted) return;
+      setState(() => _state = 2);
+      Timer(const Duration(seconds: 2), () {
+        if (mounted) Navigator.pop(context);
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _state = -1;
+          _errorMessage = 'Erreur lors de l\'analyse: $e';
+        });
+      }
+    }
   }
 
   Future<void> _takeInAppPicture() async {
@@ -175,8 +281,8 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
       extendBodyBehindAppBar: true,
       body: Stack(
         children: [
-          // Live Camera Preview as the background
-          if (_state == 0)
+          // Live Camera Preview as the background (also while recording)
+          if (_state == 0 || _state == 3)
             Positioned.fill(
               child: _isCameraInitialized && _cameraController != null
                   ? ClipRect(
@@ -276,7 +382,31 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                       size: 28,
                     ),
                   ),
-                        SizedBox(width: 48),
+                  const SizedBox(width: 20),
+                  // Video menu scan — film the menu screens/boards
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        onPressed: _toggleVideoRecording,
+                        icon: Icon(
+                          Icons.videocam_outlined,
+                          color: FASTPro.magenta,
+                          size: 30,
+                        ),
+                      ),
+                      const Text(
+                        'FILMER LE MENU',
+                        style: TextStyle(
+                          color: FASTPro.magenta,
+                          fontSize: 8,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                        SizedBox(width: 20),
                   // Capture camera button in the absolute center
                   Material(
                     color: Colors.transparent,
@@ -309,6 +439,92 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                 ],
               ),
             ),
+
+          // Recording overlay — red REC + elapsed + stop button
+          if (_state == 3) ...[
+            Positioned(
+              top: 60,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.6),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 10,
+                        height: 10,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFEF4444),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'REC ${(_recordElapsed ~/ 60).toString().padLeft(2, '0')}:${(_recordElapsed % 60).toString().padLeft(2, '0')}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontFamily: 'monospace',
+                          fontWeight: FontWeight.w900,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const Positioned(
+              bottom: 130,
+              left: 24,
+              right: 24,
+              child: Text(
+                'Balayez lentement les écrans / ardoises du menu',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  shadows: [Shadow(blurRadius: 6, color: Colors.black)],
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: 48,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: InkWell(
+                  onTap: _toggleVideoRecording,
+                  borderRadius: BorderRadius.circular(38),
+                  child: Container(
+                    width: 76,
+                    height: 76,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 6),
+                    ),
+                    child: Center(
+                      child: Container(
+                        width: 30,
+                        height: 30,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEF4444),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
 
           if (_state == 1)
                   Center(

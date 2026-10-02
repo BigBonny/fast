@@ -55,6 +55,9 @@ class UserData {
   final int points;
   final Map<String, dynamic>? restaurant;
   final DriverProfileData? driverProfile;
+  // For STAFF/GUEST kitchen accounts — the restaurant they're assigned to
+  final String? restaurantId;
+  final String? staffRole;
 
   UserData({
     required this.id,
@@ -65,6 +68,8 @@ class UserData {
     required this.points,
     this.restaurant,
     this.driverProfile,
+    this.restaurantId,
+    this.staffRole,
   });
 
   factory UserData.fromJson(Map<String, dynamic> json) => UserData(
@@ -78,11 +83,15 @@ class UserData {
         driverProfile: json['driverProfile'] is Map<String, dynamic>
             ? DriverProfileData.fromJson(json['driverProfile'] as Map<String, dynamic>)
             : null,
+        restaurantId: json['restaurantId'] as String?,
+        staffRole: json['staffRole'] as String?,
       );
 
   bool get isRestaurant => role == 'RESTAURANT';
   bool get isClient => role == 'CLIENT';
   bool get isLivreur => role == 'LIVREUR';
+  // Kitchen/guest accounts — orders board only, no stats/payments/settings
+  bool get isStaff => role == 'STAFF' || role == 'GUEST';
 }
 
 class DriverProfileData {

@@ -25,7 +25,9 @@ router.post('/:id/feedback', authenticate, asyncHandler(setFastFeedback));
 
 // Restaurant (before /:id to avoid conflict)
 router.get('/restaurant', authenticate, requireRestaurantAccess('GUEST'), asyncHandler(getRestaurantOrders));
-router.patch('/:id/status', authenticate, requireRestaurantAccess('STAFF'), asyncHandler(updateOrderStatus));
+// GUEST (kitchen/cook accounts) can work the order board — accept, prep, ready.
+// Stats/payouts/settings stay STAFF+ only.
+router.patch('/:id/status', authenticate, requireRestaurantAccess('GUEST'), asyncHandler(updateOrderStatus));
 router.post('/:id/verify-pickup', authenticate, requireRestaurantAccess('STAFF'), asyncHandler(verifyPickup));
 
 // Shared / client detail
