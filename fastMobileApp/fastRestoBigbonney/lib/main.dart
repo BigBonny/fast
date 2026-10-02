@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:app_links/app_links.dart';
@@ -171,13 +172,25 @@ class _FASTAppState extends State<FASTApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    final themeMode = context.watch<FASTProvider>().themeMode;
+    final fast = context.watch<FASTProvider>();
     return MaterialApp(
       title: 'FAST - Click & Collect',
       debugShowCheckedModeBanner: false,
-      themeMode: themeMode,
+      themeMode: fast.themeMode,
       theme: FASTTheme.light(),
       darkTheme: FASTTheme.dark(),
+      locale: Locale(fast.appLanguage),
+      supportedLocales: const [
+        Locale('fr'), Locale('en'), Locale('tr'), Locale('ar'),
+        Locale('hi'), Locale('bn'), Locale('ur'), Locale('bm'),
+        Locale('wo'), Locale('ln'), Locale('es'), Locale('pt'),
+        Locale('it'), Locale('zh'),
+      ],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       home: _buildHome(),
     );
   }
@@ -603,7 +616,7 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
                 padding: EdgeInsets.only(bottom: 4),
                 child: Icon(Icons.restaurant),
               ),
-              label: 'Restaurants',
+              label: provider.tr('nav_restaurants'),
             ),
             BottomNavigationBarItem(
               icon: Padding(
@@ -638,7 +651,7 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
                   ],
                 ),
               ),
-              label: 'Panier',
+              label: provider.tr('nav_cart'),
             ),
             BottomNavigationBarItem(
               icon: Padding(
@@ -662,14 +675,14 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
                   ],
                 ),
               ),
-              label: 'Commandes',
+              label: provider.tr('nav_orders'),
             ),
-            const BottomNavigationBarItem(
+            BottomNavigationBarItem(
               icon: Padding(
                 padding: EdgeInsets.only(bottom: 4),
                 child: Icon(Icons.group_outlined),
               ),
-              label: 'Groupe',
+              label: provider.tr('nav_group'),
             ),
           ],
         ),
@@ -722,6 +735,7 @@ class _DriverShellState extends State<DriverShell> {
 
   @override
   Widget build(BuildContext context) {
+    final fast = context.watch<FASTProvider>();
     return Scaffold(
       body: IndexedStack(
         index: _index,
@@ -737,9 +751,9 @@ class _DriverShellState extends State<DriverShell> {
         selectedItemColor: Color(0xFF10B981),
         unselectedItemColor: context.fast.t3,
         type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.delivery_dining), label: 'Courses'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Compte'),
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.delivery_dining), label: fast.tr('nav_deliver')),
+          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: fast.tr('my_account')),
         ],
       ),
     );

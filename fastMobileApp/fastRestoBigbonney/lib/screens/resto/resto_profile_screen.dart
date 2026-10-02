@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../resto_provider.dart';
 import '../../theme.dart';
 import '../../widgets/fast_image.dart';
+import '../../l10n/tr.dart';
 
 class RestoProfileScreen extends StatelessWidget {
         const RestoProfileScreen({super.key});
@@ -93,7 +94,7 @@ class RestoProfileScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                        SizedBox(height: 48), Text('Aperçu public', style: TextStyle(color: context.fast.t1, fontSize: 20, fontWeight: FontWeight.bold)),
+                        SizedBox(height: 48), Text(tr(context, 'public_preview'), style: TextStyle(color: context.fast.t1, fontSize: 20, fontWeight: FontWeight.bold)),
                         SizedBox(height: 16),
                   Container(
                     padding: EdgeInsets.all(16),

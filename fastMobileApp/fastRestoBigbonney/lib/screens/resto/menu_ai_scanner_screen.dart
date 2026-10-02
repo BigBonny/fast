@@ -8,6 +8,7 @@ import 'package:video_thumbnail/video_thumbnail.dart' as vt;
 import '../../resto_provider.dart';
 import '../../services/restaurant_service.dart';
 import '../../theme.dart';
+import '../../l10n/tr.dart';
 
 class MenuAiScannerScreen extends StatefulWidget {
   const MenuAiScannerScreen({super.key});
@@ -609,7 +610,7 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: const Text('Réessayer'),
+                    child: Text(tr(context, 'retry')),
                   ),
                 ],
               ),

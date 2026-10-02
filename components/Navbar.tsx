@@ -9,19 +9,21 @@ import {
   User, Store, Heart, Settings, LogOut, ChevronDown,
 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
+import { useI18n, LANGUAGES } from "@/lib/i18n";
 import { getCart, getCartCount } from "@/lib/localCart";
 
 const navLinks = [
-  { label: "Accueil", href: "/", icon: Home },
-  { label: "Commandes", href: "/orders", icon: ClipboardList },
-  { label: "Groupe", href: "/group-order", icon: Users },
-  { label: "Livrer", href: "/deliver", icon: Bike },
+  { labelKey: "nav_home", href: "/", icon: Home },
+  { labelKey: "nav_orders", href: "/orders", icon: ClipboardList },
+  { labelKey: "nav_group", href: "/group-order", icon: Users },
+  { labelKey: "nav_deliver", href: "/deliver", icon: Bike },
 ];
 
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuth();
+  const { lang, setLang, t } = useI18n();
   const [cartCount, setCartCount] = useState(0);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
@@ -79,7 +81,7 @@ export default function Navbar() {
 
       {/* Nav links */}
       <nav className="flex items-center gap-1">
-        {navLinks.map(({ label, href, icon: Icon }) => {
+        {navLinks.map(({ labelKey, href, icon: Icon }) => {
           const active = isActive(href);
           return (
             <Link
@@ -95,7 +97,7 @@ export default function Navbar() {
                 className="w-4 h-4 transition-colors"
                 style={{ color: active ? "#06b6d4" : "rgba(255,255,255,0.45)" }}
               />
-              {label}
+              {t(labelKey)}
               {active && (
                 <m.div
                   layoutId="navbar-indicator"
@@ -114,13 +116,27 @@ export default function Navbar() {
             style={{ background: "linear-gradient(135deg, #00c8b3, #7c3aed)" }}
           >
             <Store className="w-4 h-4" />
-            Espace Pro
+            {t("pro_space")}
           </Link>
         )}
       </nav>
 
       {/* Right actions */}
       <div className="flex items-center gap-2 shrink-0">
+        {/* Language picker */}
+        <select
+          value={lang}
+          onChange={(e) => setLang(e.target.value)}
+          aria-label="Language"
+          className="h-10 px-2 rounded-xl text-xs font-bold text-white/80 bg-white/5 border border-white/10 cursor-pointer outline-none"
+        >
+          {LANGUAGES.map((l) => (
+            <option key={l.code} value={l.code} className="text-black">
+              {l.label}
+            </option>
+          ))}
+        </select>
+
         {/* Cart */}
         <Link href="/cart">
           <button
@@ -187,25 +203,25 @@ export default function Navbar() {
                     <Link href="/profile" onClick={() => setUserMenuOpen(false)}>
                       <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/8 transition-colors group cursor-pointer">
                         <User className="w-4 h-4 text-violet-400" />
-                        <span className="text-sm text-white/80 group-hover:text-white">Mon compte</span>
+                        <span className="text-sm text-white/80 group-hover:text-white">{t("my_account")}</span>
                       </div>
                     </Link>
                     <Link href="/orders" onClick={() => setUserMenuOpen(false)}>
                       <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/8 transition-colors group cursor-pointer">
                         <ClipboardList className="w-4 h-4 text-cyan-400" />
-                        <span className="text-sm text-white/80 group-hover:text-white">Mes commandes</span>
+                        <span className="text-sm text-white/80 group-hover:text-white">{t("my_orders")}</span>
                       </div>
                     </Link>
                     <Link href="/favorites" onClick={() => setUserMenuOpen(false)}>
                       <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/8 transition-colors group cursor-pointer">
                         <Heart className="w-4 h-4 text-pink-400" />
-                        <span className="text-sm text-white/80 group-hover:text-white">Mes favoris</span>
+                        <span className="text-sm text-white/80 group-hover:text-white">{t("my_favorites")}</span>
                       </div>
                     </Link>
                     <Link href="/profile/settings" onClick={() => setUserMenuOpen(false)}>
                       <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/8 transition-colors group cursor-pointer">
                         <Settings className="w-4 h-4 text-gray-400" />
-                        <span className="text-sm text-white/80 group-hover:text-white">Paramètres</span>
+                        <span className="text-sm text-white/80 group-hover:text-white">{t("settings")}</span>
                       </div>
                     </Link>
                     <div className="border-t border-white/8 mt-1 pt-1">
@@ -214,7 +230,7 @@ export default function Navbar() {
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-red-500/10 transition-colors group"
                       >
                         <LogOut className="w-4 h-4 text-red-400" />
-                        <span className="text-sm text-red-400 group-hover:text-red-300">Se déconnecter</span>
+                        <span className="text-sm text-red-400 group-hover:text-red-300">{t("logout")}</span>
                       </button>
                     </div>
                   </div>
@@ -226,7 +242,7 @@ export default function Navbar() {
           <div className="flex items-center gap-2">
             <Link href="/login">
               <button className="px-4 py-2 rounded-xl text-sm font-semibold text-white/70 hover:text-white hover:bg-white/8 transition-colors">
-                Connexion
+                {t("login_btn")}
               </button>
             </Link>
             <Link href="/register">
@@ -234,7 +250,7 @@ export default function Navbar() {
                 className="px-4 py-2 rounded-xl text-sm font-bold text-white"
                 style={{ background: "linear-gradient(135deg, #7c3aed, #06b6d4)" }}
               >
-                S'inscrire
+                {t("signup_btn")}
               </button>
             </Link>
           </div>

@@ -12,6 +12,7 @@ import 'resto_stats_screen.dart';
 import 'resto_settings_screen.dart';
 import 'resto_profile_screen.dart';
 import '../../theme.dart';
+import '../../l10n/tr.dart';
 
 class RestoMainShell extends StatefulWidget {
   const RestoMainShell({super.key});
@@ -234,7 +235,7 @@ class _RestoMainShellState extends State<RestoMainShell> {
                 },
                 icon: Icon(Icons.soup_kitchen, size: 18),
                 label: Text(
-                  'Cuisine',
+                  tr(context, 'kitchen_btn'),
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 style: ElevatedButton.styleFrom(
@@ -260,8 +261,8 @@ class _RestoMainShellState extends State<RestoMainShell> {
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   color: FASTPro.magenta,
-                  child: const Text(
-                    '🔥 MODE RUSH ACTIF — Clients alertés des délais allongés',
+                  child: Text(
+                    tr(context, 'rush_banner'),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
@@ -286,7 +287,7 @@ class _RestoMainShellState extends State<RestoMainShell> {
                   key: _ordersKey,
                   child: const Icon(Icons.receipt_long),
                 ),
-                label: 'Commandes',
+                label: tr(context, 'nav_orders'),
               ),
               BottomNavigationBarItem(
                 icon: KeyedSubtree(
@@ -300,21 +301,21 @@ class _RestoMainShellState extends State<RestoMainShell> {
                   key: _statsKey,
                   child: const Icon(Icons.bar_chart),
                 ),
-                label: 'Stats',
+                label: tr(context, 'nav_stats'),
               ),
               BottomNavigationBarItem(
                 icon: KeyedSubtree(
                   key: _settingsKey,
                   child: const Icon(Icons.settings),
                 ),
-                label: 'Paramètres',
+                label: tr(context, 'nav_settings'),
               ),
               BottomNavigationBarItem(
                 icon: KeyedSubtree(
                   key: _profileKey,
                   child: const Icon(Icons.storefront),
                 ),
-                label: 'Profil',
+                label: tr(context, 'nav_profile'),
               ),
             ],
           ),

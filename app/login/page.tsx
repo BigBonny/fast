@@ -6,10 +6,12 @@ import { m } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock, ArrowLeft, Zap, Store } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/lib/AuthContext";
+import { useI18n } from "@/lib/i18n";
 
 export default function LoginPage() {
   const router = useRouter();
   const { login, isLoadingAuth } = useAuth();
+  const { t } = useI18n();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -23,7 +25,7 @@ export default function LoginPage() {
       const destination = currentUser?.role === "RESTAURANT" ? "/partner/orders" : "/";
       router.replace(destination);
     } catch (err: any) {
-      setError(err.message || "Email ou mot de passe incorrect");
+      setError(err.message || t("login_err"));
     }
   };
 
@@ -46,10 +48,10 @@ export default function LoginPage() {
         </div>
         <div className="relative z-10">
           <h2 className="text-4xl font-black text-white leading-tight mb-4">
-            Chaque minute<br />compte.
+            {t("tagline")}
           </h2>
           <p className="text-gray-400 text-base max-w-sm">
-            Commandez vos plats préférés et récupérez-les sans attendre. Rapide, simple, efficace.
+            {t("login_hero_sub")}
           </p>
         </div>
         <p className="relative z-10 text-gray-600 text-xs">© {new Date().getFullYear()} FAST</p>
@@ -67,7 +69,7 @@ export default function LoginPage() {
           className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-violet-600 text-white text-sm font-bold hover:opacity-90 transition-opacity"
         >
           <Store className="w-4 h-4" />
-          Espace Restaurateur
+          {t("resto_space")}
         </Link>
       </div>
 
@@ -85,7 +87,7 @@ export default function LoginPage() {
             <h1 className="font-black text-3xl italic tracking-tight text-white">
               FAST
             </h1>
-            <p className="text-gray-400 text-sm mt-2">Connecte-toi pour commander</p>
+            <p className="text-gray-400 text-sm mt-2">{t("login_welcome")}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -95,7 +97,7 @@ export default function LoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email"
+                placeholder={t("email_lbl")}
                 required
                 className="w-full h-14 pl-12 pr-4 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
               />
@@ -107,7 +109,7 @@ export default function LoginPage() {
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Mot de passe"
+                placeholder={t("pwd_lbl")}
                 required
                 className="w-full h-14 pl-12 pr-12 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
               />
@@ -132,21 +134,21 @@ export default function LoginPage() {
               disabled={isLoadingAuth}
               className="w-full h-14 rounded-2xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-black text-lg disabled:opacity-50"
             >
-              {isLoadingAuth ? "Connexion..." : "Se connecter"}
+              {isLoadingAuth ? t("connecting") : t("login_submit")}
             </m.button>
           </form>
 
           <div className="mt-6 text-center space-y-2">
             <p className="text-gray-400 text-sm">
-              Pas encore de compte ?{" "}
+              {t("no_account")}{" "}
               <Link href="/register" className="text-emerald-400 font-bold">
-                S'inscrire
+                {t("signup_btn")}
               </Link>
             </p>
             <p className="text-gray-400 text-sm">
-              Vous êtes restaurateur ?{" "}
+              {t("are_resto")}{" "}
               <Link href="/register?role=restaurant" className="text-violet-400 font-bold">
-                Créer un compte pro
+                {t("create_pro")}
               </Link>
             </p>
           </div>

@@ -16,6 +16,7 @@ import 'services/auth_service.dart';
 import 'services/group_service.dart';
 import 'services/payment_service.dart';
 import 'api/api_exceptions.dart';
+import 'l10n/app_strings.dart';
 
 const _pendingStripeSessionKey = 'fast_pending_stripe_session_id';
 const _activeGroupIdKey = 'fast_active_group_id';
@@ -138,6 +139,9 @@ class FASTProvider extends ChangeNotifier {
     await prefs.setString('fast_app_language', code);
     notifyListeners();
   }
+
+  /// Translate a UI key into the user's chosen language.
+  String tr(String key) => AppStrings.of(_appLanguage, key);
 
   // Favorites (local persistence, like the website's localStorage)
   List<Restaurant> get favorites =>

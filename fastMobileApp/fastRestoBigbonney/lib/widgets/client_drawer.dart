@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../provider.dart';
+import '../l10n/app_strings.dart';
 import '../providers/auth_provider.dart';
 import '../screens/account_screen.dart';
 import '../theme.dart';
+import '../l10n/tr.dart';
 
 /// Base44-style slide-in account menu for the client app:
 /// gradient header with logo + avatar + points pill, tinted icon rows,
@@ -168,7 +170,7 @@ class ClientDrawer extends StatelessWidget {
                     context,
                     icon: Icons.person_outline,
                     iconColor: const Color(0xFFA855F7),
-                    label: 'Mon compte',
+                    label: provider.tr('my_account'),
                     onTap: () {
                       Navigator.of(context).pop();
                       Navigator.of(context).push(MaterialPageRoute(
@@ -179,7 +181,7 @@ class ClientDrawer extends StatelessWidget {
                     context,
                     icon: Icons.shopping_bag_outlined,
                     iconColor: const Color(0xFF60A5FA),
-                    label: 'Mes commandes',
+                    label: provider.tr('my_orders'),
                     onTap: () {
                       Navigator.of(context).pop();
                       provider.navigateToScreen('commandes');
@@ -190,7 +192,7 @@ class ClientDrawer extends StatelessWidget {
                     context,
                     icon: Icons.favorite_border,
                     iconColor: const Color(0xFFF472B6),
-                    label: 'Mes favoris',
+                    label: provider.tr('favorites'),
                     onTap: () {
                       Navigator.of(context).pop();
                       provider.navigateToScreen('home');
@@ -200,7 +202,7 @@ class ClientDrawer extends StatelessWidget {
                     context,
                     icon: Icons.location_on_outlined,
                     iconColor: const Color(0xFF34D399),
-                    label: 'Mes adresses',
+                    label: provider.tr('addresses'),
                     onTap: () {
                       Navigator.of(context).pop();
                       Navigator.of(context).push(MaterialPageRoute(
@@ -213,7 +215,7 @@ class ClientDrawer extends StatelessWidget {
                       context,
                       icon: Icons.storefront,
                       iconColor: const Color(0xFF00C8B3),
-                      label: 'Espace FAST Pro',
+                      label: provider.tr('pro_space'),
                       onTap: () async {
                         await provider.setViewAsClient(false);
                         if (!context.mounted) return;
@@ -225,14 +227,14 @@ class ClientDrawer extends StatelessWidget {
                     context,
                     icon: Icons.shield_outlined,
                     iconColor: const Color(0xFF38BDF8),
-                    label: 'Confidentialité',
+                    label: provider.tr('privacy'),
                     onTap: () => _showLegal(context, 'Confidentialité'),
                   ),
                   _item(
                     context,
                     icon: Icons.description_outlined,
                     iconColor: const Color(0xFFFBBF24),
-                    label: 'CGU',
+                    label: provider.tr('cgu'),
                     onTap: () => _showLegal(context, 'CGU'),
                   ),
                 ],
@@ -255,9 +257,9 @@ class ClientDrawer extends StatelessWidget {
                   },
                   icon: const Icon(Icons.logout,
                       color: Color(0xFFEF4444), size: 18),
-                  label: const Text(
-                    'Se déconnecter',
-                    style: TextStyle(
+                  label: Text(
+                    provider.tr('logout'),
+                    style: const TextStyle(
                       color: Color(0xFFEF4444),
                       fontWeight: FontWeight.bold,
                     ),
@@ -325,7 +327,7 @@ class ClientDrawer extends StatelessWidget {
               color: Color(0xFF94A3B8), size: 18),
         ),
         title: Text(
-          'Réglages',
+          provider.tr('settings'),
           style: TextStyle(
             color: _text(context),
             fontWeight: FontWeight.w600,
@@ -339,17 +341,51 @@ class ClientDrawer extends StatelessWidget {
           Row(
             children: [
               _themeOpt(context, provider, ThemeMode.system,
-                  Icons.phone_android, 'Auto'),
+                  Icons.phone_android, provider.tr('theme_auto')),
               const SizedBox(width: 8),
               _themeOpt(context, provider, ThemeMode.light,
-                  Icons.wb_sunny_outlined, 'Clair'),
+                  Icons.wb_sunny_outlined, provider.tr('theme_light')),
               const SizedBox(width: 8),
               _themeOpt(context, provider, ThemeMode.dark,
-                  Icons.nightlight_outlined, 'Sombre'),
+                  Icons.nightlight_outlined, provider.tr('theme_dark')),
             ],
           ),
+          const SizedBox(height: 8),
+          _languagePicker(context, provider),
         ],
       ),
+    );
+  }
+
+  Widget _languagePicker(BuildContext context, FASTProvider provider) {
+    return DropdownButtonFormField<String>(
+      initialValue: provider.appLanguage,
+      isDense: true,
+      isExpanded: true,
+      icon: Icon(Icons.expand_more, color: _subtext(context), size: 18),
+      decoration: InputDecoration(
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: _chipBorder(context)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: _chipBorder(context)),
+        ),
+        filled: true,
+        fillColor: _chipBg(context),
+      ),
+      style: TextStyle(color: _text(context), fontSize: 12),
+      dropdownColor: _bg(context),
+      items: AppStrings.languages
+          .map((l) =>
+              DropdownMenuItem(value: l.$1, child: Text(l.$2, style: const TextStyle(fontSize: 12))))
+          .toList(),
+      onChanged: (v) {
+        if (v != null) provider.setAppLanguage(v);
+      },
     );
   }
 
@@ -433,7 +469,7 @@ class ClientDrawer extends StatelessWidget {
               ),
               elevation: 0,
             ),
-            child: const Text('Fermer',
+            child: Text(tr(context, 'close'),
                 style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
