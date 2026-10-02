@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'auth_screen.dart';
+import '../provider.dart';
 import '../theme.dart';
 
 class RoleSelectionScreen extends StatelessWidget {
@@ -7,6 +9,7 @@ class RoleSelectionScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final fast = context.watch<FASTProvider>();
     return Scaffold(
       backgroundColor: context.fast.bg,
       body: SafeArea(
@@ -64,7 +67,7 @@ class RoleSelectionScreen extends StatelessWidget {
                 ),
               ),
                     SizedBox(height: 32), Text(
-                'Bienvenue sur FAST',
+                fast.tr('welcome'),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 28,
@@ -74,7 +77,7 @@ class RoleSelectionScreen extends StatelessWidget {
                 ),
               ),
                     SizedBox(height: 8), Text(
-                'Choisissez votre profil pour continuer',
+                fast.tr('choose_profile'),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
@@ -106,11 +109,11 @@ class RoleSelectionScreen extends StatelessWidget {
                 child:       Column(
                   children: [ Icon(Icons.person_outline, size: 36, color: Color(0xFFF59E0B)),
                     SizedBox(height: 16), Text(
-                      'Je suis un Client',
+                      fast.tr('iam_client'),
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
                     SizedBox(height: 4), Text(
-                      'Commander, payer, réserver et votre repas est prêt juste à votre arrivée.',
+                      fast.tr('client_desc'),
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 11, color: context.fast.t2, fontWeight: FontWeight.normal, height: 1.4),
                     ),
@@ -139,14 +142,14 @@ class RoleSelectionScreen extends StatelessWidget {
                   ),
                   elevation: 0,
                 ),
-                child: const Column(
+                child: Column(
                   children: [ Icon(Icons.restaurant, size: 36),
                     SizedBox(height: 16), Text(
-                      'Je suis un Pro',
+                      fast.tr('iam_pro'),
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
                     SizedBox(height: 4), Text(
-                      'FAST Pro — Gérer mon restaurant',
+                      fast.tr('pro_desc'),
                       style: TextStyle(fontSize: 12, color: Color(0xCC09090B), fontWeight: FontWeight.normal),
                     ),
                   ],
@@ -177,15 +180,15 @@ class RoleSelectionScreen extends StatelessWidget {
                 child:       Column(
                   children: [ Icon(Icons.delivery_dining_outlined, size: 34, color: Color(0xFF10B981)),
                     SizedBox(height: 12), Text(
-                      'Je suis un Livreur',
+                      fast.tr('iam_driver'),
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
                     SizedBox(height: 4), Text(
-                      'Occasionnel ou permanent',
+                      fast.tr('driver_desc'),
                       style: TextStyle(fontSize: 12, color: context.fast.t2, fontWeight: FontWeight.normal),
                     ),
                     SizedBox(height: 4), Text(
-                      'Livraison à domicile',
+                      fast.tr('driver_badge'),
                       style: TextStyle(fontSize: 10, color: Color(0xFF10B981), fontWeight: FontWeight.bold),
                     ),
                   ],

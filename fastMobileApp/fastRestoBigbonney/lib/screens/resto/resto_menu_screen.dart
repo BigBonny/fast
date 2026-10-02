@@ -6,6 +6,7 @@ import 'menu_ai_scanner_screen.dart';
 import 'menu_item_edit_screen.dart';
 import '../../theme.dart';
 import '../../widgets/fast_image.dart';
+import '../../l10n/tr.dart';
 
 class RestoMenuScreen extends StatefulWidget {
   const RestoMenuScreen({super.key});
@@ -37,7 +38,7 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [ Text('Ajouter un plat',
+            children: [ Text(tr(context, 'add_dish'),
                   style: TextStyle(
                       color: context.fast.t1,
                       fontSize: 17,
@@ -83,7 +84,7 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
                 title: Text('Ajout manuel',
                     style: TextStyle(
                         color: context.fast.t1, fontWeight: FontWeight.w600)),
-                subtitle: Text('Créer un plat de zéro',
+                subtitle: Text(tr(context, 'create_dish_sub'),
                     style: TextStyle(
                         color: context.fast.t2, fontSize: 12)),
                 onTap: () {
@@ -114,7 +115,7 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
             onPressed: () => _showAddOptions(context),
             backgroundColor: const Color(0xFF00C8B3),
             icon: const Icon(Icons.add, color: Colors.black),
-            label: const Text('Ajouter',
+            label: Text(tr(context, 'add'),
                 style: TextStyle(
                     color: Colors.black, fontWeight: FontWeight.bold)),
           ),
@@ -252,7 +253,7 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [ Icon(Icons.restaurant_menu,
               color: context.fast.faint, size: 56),
-                SizedBox(height: 16), Text('Aucun plat dans le menu',
+                SizedBox(height: 16), Text(tr(context, 'no_dishes'),
               style: TextStyle(
                   color: context.fast.t2,
                   fontSize: 16,
@@ -270,7 +271,7 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
               elevation: 0,
             ),
             icon: const Icon(Icons.add),
-            label: const Text('Ajouter un plat',
+            label: Text(tr(context, 'add_dish'),
                 style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
@@ -293,7 +294,7 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
           child: OutlinedButton.icon(
             onPressed: () => _showClientPreview(context, prov),
             icon: const Icon(Icons.visibility_outlined, size: 16, color: Color(0xFF00C8B3)),
-            label: const Text('Aperçu client — voir mon menu sans commander',
+            label: Text(tr(context, 'preview_client'),
                 style: TextStyle(color: Color(0xFF00C8B3), fontSize: 12, fontWeight: FontWeight.bold)),
             style: OutlinedButton.styleFrom(
               side: const BorderSide(color: Color(0xFF00C8B3)),
@@ -498,16 +499,16 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
                         final confirm = await showDialog<bool>(
                           context: context,
                           builder: (ctx) => AlertDialog(
-                            title: const Text('Supprimer ce plat ?'),
-                            content: Text('« ${item.name} » sera retiré du menu.'),
+                            title: Text(tr(context, 'del_dish_q')),
+                            content: Text(tr(context, 'dish_removed').replaceAll('{n}', item.name)),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(ctx, false),
-                                child: const Text('Annuler'),
+                                child: Text(tr(context, 'cancel')),
                               ),
                               TextButton(
                                 onPressed: () => Navigator.pop(ctx, true),
-                                child: const Text('Supprimer',
+                                child: Text(tr(context, 'del'),
                                     style:
                                         TextStyle(color: Color(0xFFEF4444))),
                               ),

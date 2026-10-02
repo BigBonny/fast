@@ -59,7 +59,7 @@ class _CartScreenState extends State<CartScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [ Text('🛒', style: TextStyle(fontSize: 48)),
                     SizedBox(height: 12), Text(
-                'Votre panier est vide',
+                provider.tr('cart_empty'),
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: context.fast.t1),
               ),
                     SizedBox(height: 6), Text(
@@ -75,7 +75,7 @@ class _CartScreenState extends State<CartScreen> {
                   foregroundColor: FASTBrand.onAmber,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: const Text('Parcourir les restaurants', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: Text(provider.tr('browse'), style: const TextStyle(fontWeight: FontWeight.bold)),
               ),
             ],
           ),
@@ -299,11 +299,11 @@ class _CartScreenState extends State<CartScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [ Text(
-                      'Temps de trajet à pied',
+                      context.read<FASTProvider>().tr('walk_time'),
                       style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: context.fast.t1),
                     ),
                     const SizedBox(height: 2), Text(
-                      'Préparation synchronisée basée sur votre rythme de marche.',
+                      context.read<FASTProvider>().tr('walk_sub'),
                       style: TextStyle(fontSize: 10, color: const Color(0xFFF59E0B).withValues(alpha: 0.8)),
                     ),
                   ],
@@ -361,7 +361,7 @@ class _CartScreenState extends State<CartScreen> {
           children: [
             Expanded(
               child: ChoiceChip(
-                label: Text('Click & Collect', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                label: Text(provider.tr('click_collect'), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                 selected: provider.fulfillmentType == FulfillmentType.pickup,
                 selectedColor: Color(0xFFF59E0B),
                 backgroundColor: context.fast.card,
@@ -374,7 +374,7 @@ class _CartScreenState extends State<CartScreen> {
                   SizedBox(width: 8),
             Expanded(
               child: ChoiceChip(
-                label: Text('Livraison', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                label: Text(provider.tr('delivery'), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                 selected: provider.fulfillmentType == FulfillmentType.delivery,
                 selectedColor: Color(0xFF10B981),
                 backgroundColor: context.fast.card,
@@ -417,12 +417,12 @@ class _CartScreenState extends State<CartScreen> {
               onPressed: _geocodingAddress ? null : () => _useCurrentLocation(provider),
               icon: const Icon(Icons.my_location, size: 16, color: Color(0xFF10B981)),
               label: Text(
-                _geocodingAddress ? 'Localisation…' : 'Ma position',
+                provider.tr(_geocodingAddress ? 'locating' : 'my_position'),
                 style: const TextStyle(color: Color(0xFF10B981), fontSize: 11),
               ),
             ),
                   Spacer(), Text(
-              'Zone ${provider.selectedRestaurant?.deliveryRadiusKm.toStringAsFixed(0) ?? '5'} km',
+              provider.tr('delivery_zone').replaceAll('{n}', provider.selectedRestaurant?.deliveryRadiusKm.toStringAsFixed(0) ?? '5'),
               style: TextStyle(fontSize: 10, color: context.fast.t3),
             ),
           ],
@@ -506,7 +506,7 @@ class _CartScreenState extends State<CartScreen> {
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [ Text('Sous-total du panier', style: TextStyle(fontSize: 12, color: context.fast.t2)), Text('${provider.cartSubtotal.toStringAsFixed(2)} €', style: TextStyle(fontSize: 12, color: context.fast.t1, fontFamily: 'monospace')),
+                    children: [ Text(provider.tr('subtotal'), style: TextStyle(fontSize: 12, color: context.fast.t2)), Text('${provider.cartSubtotal.toStringAsFixed(2)} €', style: TextStyle(fontSize: 12, color: context.fast.t1, fontFamily: 'monospace')),
                     ],
                   ),
                         SizedBox(height: 6),
@@ -514,8 +514,8 @@ class _CartScreenState extends State<CartScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [ Text(
                         provider.fulfillmentType == FulfillmentType.delivery
-                            ? 'Frais de livraison'
-                            : 'Frais de retrait',
+                            ? provider.tr('fee_delivery')
+                            : provider.tr('fee_pickup'),
                         style: TextStyle(fontSize: 12, color: context.fast.t2),
                       ),
                       if (provider.fulfillmentType == FulfillmentType.delivery)
@@ -537,13 +537,13 @@ class _CartScreenState extends State<CartScreen> {
                         SizedBox(height: 6),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [ Text('Frais de service fixes', style: TextStyle(fontSize: 12, color: context.fast.t2)), Text('${provider.flatServiceFee.toStringAsFixed(2)} €', style: TextStyle(fontSize: 12, color: context.fast.t1, fontFamily: 'monospace')),
+                    children: [ Text(provider.tr('service_fee'), style: TextStyle(fontSize: 12, color: context.fast.t2)), Text('${provider.flatServiceFee.toStringAsFixed(2)} €', style: TextStyle(fontSize: 12, color: context.fast.t1, fontFamily: 'monospace')),
                     ],
                   ),
                         Divider(color: context.fast.line, height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [ Text('Montant total', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: context.fast.t1)), Text('${provider.cartTotal.toStringAsFixed(2)} €', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: Color(0xFFF59E0B), fontFamily: 'monospace')),
+                    children: [ Text(provider.tr('total'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: context.fast.t1)), Text('${provider.cartTotal.toStringAsFixed(2)} €', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: Color(0xFFF59E0B), fontFamily: 'monospace')),
                     ],
                   ),
                 ],
@@ -586,7 +586,7 @@ class _CartScreenState extends State<CartScreen> {
                   children: [
                     const Icon(Icons.shield, size: 16),
                     const SizedBox(width: 8), Text(
-                      'Payer ${provider.cartTotal.toStringAsFixed(2)} € avec Stripe',
+                      provider.tr('pay_stripe').replaceAll('{n}', provider.cartTotal.toStringAsFixed(2)),
                       style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13),
                     ),
                   ],
@@ -597,7 +597,7 @@ class _CartScreenState extends State<CartScreen> {
                     SizedBox(height: 8), TextButton(
                 onPressed: () => _confirmStripeCheckout(provider),
                 child: Text(
-                  'Paiement non détecté ? Confirmer manuellement',
+                  provider.tr('confirm_payment'),
                   style: TextStyle(color: context.fast.t3, fontSize: 11),
                 ),
               ),
@@ -608,7 +608,7 @@ class _CartScreenState extends State<CartScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [ Icon(Icons.lock_outline, size: 12, color: context.fast.t3),
                   SizedBox(width: 4), Text(
-                    'Connexion sécurisée PCI-DSS active',
+                    provider.tr('pci'),
                     style: TextStyle(fontSize: 9, color: context.fast.t3, fontWeight: FontWeight.bold),
                   ),
                 ],

@@ -7,6 +7,7 @@ import '../models.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/notification_center.dart';
 import '../theme.dart';
+import '../l10n/tr.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -46,7 +47,7 @@ class _AccountScreenState extends State<AccountScreen>
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          'Mon compte',
+          provider.tr('my_account'),
           style: TextStyle(
             color: context.fast.t1,
             fontWeight: FontWeight.w800,
@@ -84,16 +85,16 @@ class _AccountScreenState extends State<AccountScreen>
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
               ),
-              tabs: const [
-                Tab(icon: Icon(Icons.person_outline, size: 18), text: 'Profil'),
-                Tab(icon: Icon(Icons.bolt, size: 18), text: 'Points'),
+              tabs: [
+                Tab(icon: const Icon(Icons.person_outline, size: 18), text: provider.tr('tab_profile')),
+                Tab(icon: const Icon(Icons.bolt, size: 18), text: provider.tr('tab_points')),
                 Tab(
-                  icon: Icon(Icons.location_on_outlined, size: 18),
-                  text: 'Adresses',
+                  icon: const Icon(Icons.location_on_outlined, size: 18),
+                  text: provider.tr('tab_addresses'),
                 ),
                 Tab(
-                  icon: Icon(Icons.notifications_none, size: 18),
-                  text: 'Notifs',
+                  icon: const Icon(Icons.notifications_none, size: 18),
+                  text: provider.tr('tab_notifs'),
                 ),
               ],
             ),
@@ -147,7 +148,7 @@ class _AccountScreenState extends State<AccountScreen>
               children: [ Text(
                   provider.userName.isNotEmpty
                       ? provider.userName
-                      : 'Votre nom',
+                      : provider.tr('your_name'),
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w900,
@@ -213,11 +214,11 @@ class _AccountScreenState extends State<AccountScreen>
       ),
       child: Row(
         children: [
-          _statCell('📦', '${provider.orders.length}', 'Commandes'),
+          _statCell('📦', '${provider.orders.length}', provider.tr('nav_orders')),
           Container(width: 1, height: 48, color: context.fast.line),
-          _statCell('❤️', '${provider.favorites.length}', 'Favoris'),
+          _statCell('❤️', '${provider.favorites.length}', provider.tr('favorites')),
           Container(width: 1, height: 48, color: context.fast.line),
-          _statCell('⚡', '${provider.userPoints}', 'Points'),
+          _statCell('⚡', '${provider.userPoints}', provider.tr('tab_points')),
         ],
       ),
     );
@@ -255,9 +256,9 @@ class _AccountScreenState extends State<AccountScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Personal info section
-          _sectionLabel('INFORMATIONS PERSONNELLES'),
+          _sectionLabel(provider.tr('personal_info')),
                 SizedBox(height: 4), Text(
-            'Commandez en Click & Collect ou en livraison à domicile.',
+            provider.tr('tagline'),
             style: TextStyle(
               fontSize: 11,
               color: context.fast.t3,
@@ -274,24 +275,24 @@ class _AccountScreenState extends State<AccountScreen>
             child: Column(
               children: [
                 _editableField(
-                  label: 'NOM COMPLET',
+                  label: provider.tr('full_name'),
                   value: provider.userName,
-                  hint: 'Non renseigné',
+                  hint: provider.tr('not_provided'),
                   onEdit: () => _showEditDialog(
                     context,
-                    'Nom complet',
+                    provider.tr('name'),
                     provider.userName,
                     (val) => provider.updateProfile(name: val),
                   ),
                 ),
                       Divider(height: 1, color: context.fast.line),
                 _editableField(
-                  label: 'TÉLÉPHONE',
+                  label: provider.tr('phone').toUpperCase(),
                   value: provider.userPhone,
-                  hint: 'Non renseigné',
+                  hint: provider.tr('not_provided'),
                   onEdit: () => _showEditDialog(
                     context,
-                    'Téléphone',
+                    provider.tr('phone'),
                     provider.userPhone,
                     (val) => provider.updateProfile(phone: val),
                     keyboardType: TextInputType.phone,
@@ -299,12 +300,12 @@ class _AccountScreenState extends State<AccountScreen>
                 ),
                       Divider(height: 1, color: context.fast.line),
                 _editableField(
-                  label: 'EMAIL',
+                  label: provider.tr('email').toUpperCase(),
                   value: provider.userEmail,
-                  hint: 'Non renseigné',
+                  hint: provider.tr('not_provided'),
                   onEdit: () => _showEditDialog(
                     context,
-                    'Email',
+                    provider.tr('email'),
                     provider.userEmail,
                     (val) => provider.updateProfile(email: val),
                     keyboardType: TextInputType.emailAddress,
@@ -317,7 +318,7 @@ class _AccountScreenState extends State<AccountScreen>
                 SizedBox(height: 24),
 
           // Appearance section
-          _sectionLabel('APPARENCE'),
+          _sectionLabel(provider.tr('appearance')),
                 SizedBox(height: 8),
           Container(
             padding: EdgeInsets.all(16),
@@ -353,7 +354,7 @@ class _AccountScreenState extends State<AccountScreen>
                             color: context.fast.t1,
                           ),
                         ), Text(
-                          'Clair, sombre ou selon l\'appareil',
+                          provider.tr('theme_sub'),
                           style: TextStyle(
                             fontSize: 10,
                             color: Color(0xFFF59E0B),
@@ -369,19 +370,19 @@ class _AccountScreenState extends State<AccountScreen>
                     _themeOption(
                       provider,
                       ThemeMode.system, Icons.phone_android,
-                      'Auto',
+                      provider.tr('theme_auto'),
                     ),
                     const SizedBox(width: 8),
                     _themeOption(
                       provider,
                       ThemeMode.light, Icons.wb_sunny_outlined,
-                      'Clair',
+                      provider.tr('theme_light'),
                     ),
                     const SizedBox(width: 8),
                     _themeOption(
                       provider,
                       ThemeMode.dark, Icons.nightlight_outlined,
-                      'Sombre',
+                      provider.tr('theme_dark'),
                     ),
                   ],
                 ),
@@ -392,7 +393,7 @@ class _AccountScreenState extends State<AccountScreen>
                 SizedBox(height: 24),
 
           // Payment methods
-          _sectionLabel('MOYENS DE PAIEMENT'),
+          _sectionLabel(provider.tr('payment_methods')),
                 SizedBox(height: 8),
           Container(
             decoration: BoxDecoration(
@@ -407,7 +408,7 @@ class _AccountScreenState extends State<AccountScreen>
                 size: 20,
               ),
               title: Text(
-                'Carte bancaire',
+                provider.tr('bank_card'),
                 style: TextStyle(
                   color: context.fast.t1,
                   fontWeight: FontWeight.bold,
@@ -415,7 +416,7 @@ class _AccountScreenState extends State<AccountScreen>
                 ),
               ),
               subtitle: Text(
-                'Gérer vos moyens de paiement',
+                provider.tr('manage_payments'),
                 style: TextStyle(
                   color: context.fast.t3,
                   fontSize: 11,
@@ -431,7 +432,7 @@ class _AccountScreenState extends State<AccountScreen>
                 SizedBox(height: 24),
 
           // Account security
-          _sectionLabel('SÉCURITÉ DU COMPTE'),
+          _sectionLabel(provider.tr('account_security')),
                 SizedBox(height: 8),
           Container(
             decoration: BoxDecoration(
@@ -448,7 +449,7 @@ class _AccountScreenState extends State<AccountScreen>
                     size: 20,
                   ),
                   title: Text(
-                    'Modifier le mot de passe',
+                    provider.tr('change_pwd'),
                     style: TextStyle(
                       color: context.fast.t1,
                       fontWeight: FontWeight.bold,
@@ -468,7 +469,7 @@ class _AccountScreenState extends State<AccountScreen>
                     size: 20,
                   ),
                   title: Text(
-                    'Sécurité e-mail',
+                    provider.tr('email_security'),
                     style: TextStyle(
                       color: context.fast.t1,
                       fontWeight: FontWeight.bold,
@@ -476,7 +477,7 @@ class _AccountScreenState extends State<AccountScreen>
                     ),
                   ),
                   subtitle: Text(
-                    'Adresse e-mail et confidentialité',
+                    provider.tr('email_privacy'),
                     style: TextStyle(
                       color: context.fast.t3,
                       fontSize: 11,
@@ -494,7 +495,7 @@ class _AccountScreenState extends State<AccountScreen>
                 SizedBox(height: 24),
 
           // Legal
-          _sectionLabel('INFORMATIONS LÉGALES'),
+          _sectionLabel(provider.tr('legal_info')),
                 SizedBox(height: 8),
           Container(
             decoration: BoxDecoration(
@@ -511,7 +512,7 @@ class _AccountScreenState extends State<AccountScreen>
                     size: 20,
                   ),
                   title: Text(
-                    'Confidentialité',
+                    provider.tr('privacy'),
                     style: TextStyle(
                       color: context.fast.t1,
                       fontWeight: FontWeight.bold,
@@ -531,7 +532,7 @@ class _AccountScreenState extends State<AccountScreen>
                     size: 20,
                   ),
                   title: Text(
-                    'Conditions générales',
+                    provider.tr('terms_title'),
                     style: TextStyle(
                       color: context.fast.t1,
                       fontWeight: FontWeight.bold,
@@ -550,7 +551,7 @@ class _AccountScreenState extends State<AccountScreen>
                 SizedBox(height: 24),
 
           // Session
-          _sectionLabel('SESSION'),
+          _sectionLabel(provider.tr('session')),
                 SizedBox(height: 8),
           Container(
             decoration: BoxDecoration(
@@ -584,7 +585,7 @@ class _AccountScreenState extends State<AccountScreen>
                           ),
                         ),
                         SizedBox(width: 12), Text(
-                          'Déconnexion...',
+                          context.read<FASTProvider>().tr('logging_out'),
                           style: TextStyle(
                             color: context.fast.t1,
                             fontWeight: FontWeight.bold,
@@ -595,7 +596,7 @@ class _AccountScreenState extends State<AccountScreen>
                     );
                   }
                   return       Text(
-                    'Se déconnecter',
+                    provider.tr('logout'),
                     style: TextStyle(
                       color: context.fast.t1,
                       fontWeight: FontWeight.bold,
@@ -815,8 +816,8 @@ class _AccountScreenState extends State<AccountScreen>
               } catch (_) {
                 if (ctx.mounted) {
                   ScaffoldMessenger.of(ctx).showSnackBar(
-                    const SnackBar(
-                      content: Text('Erreur lors de l\'enregistrement'),
+                    SnackBar(
+                      content: Text(tr(context, 'error_save')),
                     ),
                   );
                 }
@@ -1297,7 +1298,7 @@ class _AccountScreenState extends State<AccountScreen>
           ),
           actions: [ TextButton(
               onPressed: loading ? null : () => Navigator.of(ctx).pop(),
-              child: Text('Annuler', style: TextStyle(color: context.fast.t3)),
+              child: Text(tr(context, 'cancel'), style: TextStyle(color: context.fast.t3)),
             ),
             ElevatedButton(
               onPressed: loading
@@ -1323,7 +1324,7 @@ class _AccountScreenState extends State<AccountScreen>
                         if (ctx.mounted) {
                           Navigator.of(ctx).pop();
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Mot de passe mis à jour')),
+                            SnackBar(content: Text(tr(context, 'pwd_updated'))),
                           );
                         }
                       } catch (e) {
@@ -1350,7 +1351,7 @@ class _AccountScreenState extends State<AccountScreen>
                         color: FASTBrand.onAmber,
                       ),
                     )
-                  : const Text('Enregistrer', style: TextStyle(fontWeight: FontWeight.bold)),
+                  : Text(tr(context, 'save'), style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -1441,7 +1442,7 @@ class _AccountScreenState extends State<AccountScreen>
               ),
               elevation: 0,
             ),
-            child: const Text('Fermer', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: Text(tr(context, 'close'), style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -1490,7 +1491,7 @@ class _AccountScreenState extends State<AccountScreen>
               ),
               elevation: 0,
             ),
-            child: const Text('Fermer', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: Text(tr(context, 'close'), style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),

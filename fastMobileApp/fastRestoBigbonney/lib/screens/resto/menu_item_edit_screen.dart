@@ -4,6 +4,7 @@ import '../../models.dart';
 import '../../resto_provider.dart';
 import '../../services/menu_service.dart';
 import '../../theme.dart';
+import '../../l10n/tr.dart';
 
 class MenuItemEditScreen extends StatefulWidget {
   final MenuItem? item; // null = create mode
@@ -112,7 +113,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: context.fast.card,
-        title: Text('Supprimer le plat',
+        title: Text(tr(context, 'del_dish'),
             style: TextStyle(color: context.fast.t1)),
         content: Text(
           'Voulez-vous vraiment supprimer "${widget.item!.name}" ?',
@@ -120,11 +121,11 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
         ),
         actions: [ TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text('Annuler',
+            child: Text(tr(context, 'cancel'),
                 style: TextStyle(color: context.fast.t2)),
           ), TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Supprimer',
+            child: Text(tr(context, 'del'),
                 style: TextStyle(color: Color(0xFFEF4444))),
           ),
         ],
@@ -159,13 +160,13 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
           children: [
             _dialogField('Nom du supplément', nameCtrl),
             const SizedBox(height: 12),
-            _dialogField('Prix (€)', priceCtrl,
+            _dialogField(tr(context, 'price_lbl'), priceCtrl,
                 keyboard: TextInputType.number),
           ],
         ),
         actions: [ TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Annuler',
+            child: Text(tr(context, 'cancel'),
                 style: TextStyle(color: context.fast.t2)),
           ), TextButton(
             onPressed: () async {
@@ -191,8 +192,8 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                     setState(() => _supplements.add(s));
                   } catch (_) {
                     if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                        content: Text('Erreur lors de l\'ajout'),
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(tr(context, 'error_add')),
                         backgroundColor: Color(0xFFEF4444),
                       ));
                     }
@@ -270,7 +271,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
           children: [
             _field(
               controller: _name,
-              label: 'Nom du plat',
+              label: tr(context, 'dish_name_lbl'),
               icon: Icons.restaurant_menu,
               validator: (v) =>
                   v == null || v.trim().isEmpty ? 'Requis' : null,
@@ -288,7 +289,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                 Expanded(
                   child: _field(
                     controller: _price,
-                    label: 'Prix (€)',
+                    label: tr(context, 'price_lbl'),
                     icon: Icons.euro,
                     keyboard: TextInputType.number,
                     validator: (v) {
@@ -421,7 +422,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
 
             // ─── Supplements ──────────────────────────────
             Row(
-              children: [ Text('Suppléments',
+              children: [ Text(tr(context, 'supplements'),
                     style: TextStyle(
                         color: context.fast.t2,
                         fontSize: 13,
@@ -430,7 +431,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                   onPressed: () => _showSupplementDialog(),
                   icon: const Icon(Icons.add, size: 16,
                       color: Color(0xFF00C8B3)),
-                  label: const Text('Ajouter',
+                  label: Text(tr(context, 'add'),
                       style: TextStyle(
                           color: Color(0xFF00C8B3),
                           fontSize: 13,
@@ -451,7 +452,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                   border: Border.all(color: context.fast.line),
                 ),
                 child:       Center(
-                  child: Text('Aucun supplément',
+                  child: Text(tr(context, 'no_supp'),
                       style: TextStyle(
                           color: context.fast.faint, fontSize: 13)),
                 ),

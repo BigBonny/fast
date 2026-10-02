@@ -21,10 +21,12 @@ import { m, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import SafeImage from "@/components/SafeImage";
+import { useI18n } from "@/lib/i18n";
 
 const WALK_TIME_OPTIONS = [5, 10, 15, 20, 30];
 
 export default function CartPage() {
+  const { t } = useI18n();
   const [notes, setNotes] = useState("");
   const [showCheckout, setShowCheckout] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
@@ -59,9 +61,9 @@ export default function CartPage() {
   const placeOrderMutation = useMutation({
     mutationFn: async () => {
       const restaurantId = cartItems[0]?.restaurantId;
-      if (!restaurantId) throw { status: 0, message: "Votre panier est vide." };
+      if (!restaurantId) throw { status: 0, message: t("cart_empty_err") };
       if (hasMixedCart) {
-        throw { status: 0, message: "Votre panier contient plusieurs restaurants." };
+        throw { status: 0, message: t("cart_mixed_err") };
       }
       const order = await orderApi.create({
         restaurantId,
@@ -93,13 +95,13 @@ export default function CartPage() {
         <div className="w-20 h-20 rounded-3xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
           <ShoppingCart className="w-9 h-9 text-gray-300 dark:text-gray-600" />
         </div>
-        <h2 className="font-bold text-gray-900 dark:text-white text-lg mb-1">Panier vide</h2>
+        <h2 className="font-bold text-gray-900 dark:text-white text-lg mb-1">{t("cart_empty")}</h2>
         <p className="text-sm text-gray-400 text-center mb-6">
-          Explorez les restaurants et ajoutez des plats
+          {t("cart_empty_sub")}
         </p>
         <Link href="/">
           <Button className="rounded-xl px-6" style={{ background: "#14b8a6" }}>
-            Découvrir
+            {t("discover")}
           </Button>
         </Link>
       </div>
@@ -112,10 +114,10 @@ export default function CartPage() {
         <div className="w-20 h-20 rounded-3xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center mb-4">
           <PartyPopper className="w-9 h-9 text-emerald-500" />
         </div>
-        <h1 className="text-2xl font-black text-gray-900 dark:text-white mb-2">Commande confirmée !</h1>
-        <p className="text-gray-400 text-center mb-6">Votre commande a été envoyée au restaurant.</p>
+        <h1 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{t("order_confirmed")}</h1>
+        <p className="text-gray-400 text-center mb-6">{t("order_sent")}</p>
         <Button onClick={() => router.push("/orders")} style={{ background: "#14b8a6" }}>
-          Voir mes commandes
+          {t("view_orders")}
         </Button>
       </div>
     );
@@ -130,9 +132,9 @@ export default function CartPage() {
             <ArrowLeft className="w-4 h-4 text-gray-600 dark:text-gray-300" />
           </Link>
           <div>
-            <h1 className="font-bold text-gray-900 dark:text-white">Mon panier</h1>
+            <h1 className="font-bold text-gray-900 dark:text-white">{t("cart_title")}</h1>
             <p className="text-xs text-gray-400">
-              {cartItems.length} article{cartItems.length > 1 ? "s" : ""}
+              {t("items_n", { n: cartItems.length })}
             </p>
           </div>
         </div>
@@ -143,13 +145,13 @@ export default function CartPage() {
           <div className="w-20 h-20 rounded-3xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
             <ShoppingCart className="w-9 h-9 text-gray-300 dark:text-gray-600" />
           </div>
-          <h2 className="font-bold text-gray-900 dark:text-white text-lg mb-1">Panier vide</h2>
+          <h2 className="font-bold text-gray-900 dark:text-white text-lg mb-1">{t("cart_empty")}</h2>
           <p className="text-sm text-gray-400 text-center mb-6">
-            Explorez les restaurants et ajoutez des plats
+            {t("cart_empty_sub")}
           </p>
           <Link href="/">
             <Button className="rounded-xl px-6" style={{ background: "#14b8a6" }}>
-              Découvrir
+              {t("discover")}
             </Button>
           </Link>
         </div>
@@ -163,10 +165,10 @@ export default function CartPage() {
                   <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
                   <div>
                     <p className="text-sm font-bold text-amber-900 dark:text-amber-300">
-                      Plusieurs restaurants dans votre panier
+                      {t("mixed_title")}
                     </p>
                     <p className="text-xs text-amber-700/80 dark:text-amber-400/80 mt-0.5">
-                      Une commande ne peut concerner qu&apos;un seul restaurant. Choisissez lequel garder.
+                      {t("mixed_sub")}
                     </p>
                   </div>
                 </div>
@@ -229,7 +231,7 @@ export default function CartPage() {
 
                     <div className="flex items-center gap-2">
                       <button
-                        aria-label={(item.quantity || 1) <= 1 ? `Retirer ${item.name} du panier` : `Diminuer la quantité de ${item.name}`}
+                        aria-label={(item.quantity || 1) <= 1 ? t("rm_item", { n: item.name }) : t("dec_qty", { n: item.name })}
                         onClick={() => updateQty(item.id, (item.quantity || 1) - 1)}
                         className="w-7 h-7 rounded-lg bg-gray-50 dark:bg-gray-800 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                       >
@@ -241,7 +243,7 @@ export default function CartPage() {
                       </button>
                       <span className="text-sm font-bold w-5 text-center text-gray-900 dark:text-white">{item.quantity || 1}</span>
                       <button
-                        aria-label={`Augmenter la quantité de ${item.name}`}
+                        aria-label={t("inc_qty", { n: item.name })}
                         onClick={() => updateQty(item.id, (item.quantity || 1) + 1)}
                         className="w-7 h-7 rounded-lg flex items-center justify-center hover:opacity-80 transition-colors"
                         style={{ background: "#14b8a6" }}
@@ -259,7 +261,7 @@ export default function CartPage() {
                       onChange={(e) => setItemNotes(item.id, e.target.value)}
                       onBlur={() => setEditingNotesFor(null)}
                       onKeyDown={(e) => e.key === "Enter" && setEditingNotesFor(null)}
-                      placeholder={`Note pour ${item.name}…`}
+                      placeholder={t("note_for", { n: item.name })}
                       aria-label={`Note pour ${item.name}`}
                       className="mt-2.5 w-full text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white outline-none focus:border-teal-400"
                     />
@@ -269,7 +271,7 @@ export default function CartPage() {
                       className="mt-2 flex items-center gap-1.5 text-[11px] font-semibold text-gray-400 hover:text-teal-500 transition-colors"
                     >
                       <StickyNote className="w-3 h-3" />
-                      {item.notes ? item.notes : "Ajouter une note"}
+                      {item.notes ? item.notes : t("add_note")}
                     </button>
                   )}
                 </m.div>
@@ -286,7 +288,7 @@ export default function CartPage() {
               id="order-notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Notes spéciales (allergies, sans sauce...)"
+              placeholder={t("notes_ph")}
               className="bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 dark:text-white rounded-xl text-sm resize-none h-20 placeholder:text-gray-300 dark:placeholder:text-gray-600"
             />
           </div>
@@ -294,7 +296,7 @@ export default function CartPage() {
           {/* Pickup timing */}
           <div className="px-5 mt-4 max-w-2xl mx-auto">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">
-              J&apos;arrive dans
+              {t("arrive_lbl")}
             </p>
             <div className="flex flex-wrap gap-2">
               {WALK_TIME_OPTIONS.map((minutes) => (
@@ -318,16 +320,16 @@ export default function CartPage() {
           <div className="px-5 mt-5 max-w-2xl mx-auto">
             <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-100 dark:border-gray-800">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-400">Sous-total</span>
+                <span className="text-sm text-gray-400">{t("subtotal")}</span>
                 <span className="text-sm font-medium text-gray-900 dark:text-gray-200">{cartTotal.toFixed(2)} €</span>
               </div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-400">Frais de service</span>
-                <span className="text-sm font-medium text-green-500">Gratuit</span>
+                <span className="text-sm text-gray-400">{t("service_fee")}</span>
+                <span className="text-sm font-medium text-green-500">{t("free")}</span>
               </div>
               <div className="h-px bg-gray-100 dark:bg-gray-800 my-3" />
               <div className="flex items-center justify-between">
-                <span className="font-bold text-gray-900 dark:text-white">Total</span>
+                <span className="font-bold text-gray-900 dark:text-white">{t("total")}</span>
                 <span className="font-black text-lg text-gray-900 dark:text-white">{cartTotal.toFixed(2)} €</span>
               </div>
             </div>
@@ -342,7 +344,7 @@ export default function CartPage() {
               style={{ background: "linear-gradient(135deg, #14b8a6, #06b6d4)" }}
             >
               <Zap className="w-5 h-5" fill="currentColor" />
-              {hasMixedCart ? "Choisissez un seul restaurant" : `Commander — ${cartTotal.toFixed(2)} €`}
+              {hasMixedCart ? t("mixed_btn") : t("order_btn", { n: cartTotal.toFixed(2) })}
             </Button>
           </div>
         </>
@@ -365,14 +367,14 @@ export default function CartPage() {
               className="bg-white dark:bg-gray-900 w-full sm:w-[400px] sm:rounded-2xl rounded-t-2xl p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:pb-6"
               onClick={(e) => e.stopPropagation()}
             >
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Confirmer la commande</h2>
-              <p className="text-gray-500 dark:text-gray-400 mb-1">Total: {cartTotal.toFixed(2)} €</p>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">{t("confirm_order")}</h2>
+              <p className="text-gray-500 dark:text-gray-400 mb-1">{t("total")}: {cartTotal.toFixed(2)} €</p>
               <p className="text-gray-400 text-sm mb-6">
-                {cartItems[0]?.restaurantName} · arrivée dans {walkTimeMin} min
+                {cartItems[0]?.restaurantName} · {t("arrive_in", { n: walkTimeMin })}
               </p>
               {placeOrderMutation.isError && (
                 <p role="alert" className="text-sm text-red-500 mb-4">
-                  {getErrorMessage(placeOrderMutation.error, "La commande n'a pas pu être envoyée.")}
+                  {getErrorMessage(placeOrderMutation.error, t("order_fail"))}
                 </p>
               )}
               <div className="flex gap-3">
@@ -385,7 +387,7 @@ export default function CartPage() {
                   onClick={() => placeOrderMutation.mutate()}
                   disabled={placeOrderMutation.isPending}
                 >
-                  {placeOrderMutation.isPending ? "..." : "Confirmer"}
+                  {placeOrderMutation.isPending ? "..." : t("confirm")}
                 </Button>
               </div>
             </m.div>

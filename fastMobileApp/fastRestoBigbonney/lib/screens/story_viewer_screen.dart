@@ -3,6 +3,7 @@ import 'package:video_player/video_player.dart';
 import '../models.dart';
 import '../widgets/fast_image.dart';
 import '../theme.dart';
+import '../l10n/tr.dart';
 
 /// Snapchat-style fullscreen story viewer for a restaurant's menu items.
 /// - Tap right → next, tap left → previous
@@ -132,8 +133,8 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
           backgroundColor: Colors.transparent,
           iconTheme: const IconThemeData(color: Colors.white),
         ),
-        body: const Center(
-          child: Text('Aucun visuel à afficher', style: TextStyle(color: Colors.white70)),
+        body: Center(
+          child: Text(tr(context, 'no_visual'), style: const TextStyle(color: Colors.white70)),
         ),
       );
     }

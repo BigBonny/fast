@@ -10,6 +10,7 @@ import '../../providers/auth_provider.dart';
 import '../../services/restaurant_service.dart';
 import '../../services/payment_service.dart';
 import '../../theme.dart';
+import '../../l10n/tr.dart';
 
 class RestoSettingsScreen extends StatefulWidget {
   const RestoSettingsScreen({super.key});
@@ -216,7 +217,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
         backgroundColor: Color(0xFF10B981),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        content: Text('Profil mis à jour ✓',
+        content: Text(tr(context, 'profile_updated'),
             style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold)),
       ));
     } catch (e) {
@@ -303,7 +304,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
         _section('Cuisine & Catégorie'),
         _field('Type de cuisine', _cuisineCtrl, hint: 'ex: Française, Japonaise, Italienne'),
               SizedBox(height: 12),
-        Text('Catégories (plusieurs possibles)',
+        Text(tr(context, 'categories_multi'),
             style: TextStyle(
                 color: context.fast.t2,
                 fontSize: 12,
@@ -402,7 +403,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
                   height: 20, width: 20,
                   child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
                 )
-              : const Text('Enregistrer', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+              : Text(tr(context, 'save'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
         ),
 
               SizedBox(height: 32),
@@ -428,7 +429,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
                       height: 20, width: 20,
                       child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFEF4444)),
                     )
-                  : const Text('Se déconnecter', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                  : Text(tr(context, 'logout'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
             );
           },
         ),
@@ -567,7 +568,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
             ?       Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [ Icon(Icons.add_a_photo, color: context.fast.t2, size: 40),
-                  SizedBox(height: 12), Text('Ajouter une photo', style: TextStyle(color: context.fast.t2)),
+                  SizedBox(height: 12), Text(tr(context, 'add_photo'), style: TextStyle(color: context.fast.t2)),
                 ],
               )
             : Container(

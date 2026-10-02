@@ -9,6 +9,7 @@ import '../../api/api_client.dart';
 import '../../api/api_config.dart';
 import '../../api/api_exceptions.dart';
 import '../../theme.dart';
+import '../../l10n/tr.dart';
 
 class RestoStaffScreen extends StatefulWidget {
   const RestoStaffScreen({super.key});
@@ -47,16 +48,16 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Supprimer ce compte ?'),
+        title: Text(tr(context, 'del_account_q')),
         content: Text(
             '$name perdra immédiatement l\'accès au tableau des commandes.'),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Annuler')),
+              child: Text(tr(context, 'cancel'))),
           TextButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Supprimer',
+              child: Text(tr(context, 'del'),
                   style: TextStyle(color: Color(0xFFEF4444)))),
         ],
       ),
@@ -95,7 +96,7 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('Nouveau compte cuisinier',
+              Text(tr(context, 'new_cook'),
                   style: TextStyle(
                       color: context.fast.t1,
                       fontWeight: FontWeight.w900,
@@ -235,7 +236,7 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
       appBar: AppBar(
         backgroundColor: context.fast.bg,
         elevation: 0,
-        title: Text('Équipe & comptes invités',
+        title: Text(tr(context, 'team_guests'),
             style: TextStyle(
                 color: context.fast.t1,
                 fontWeight: FontWeight.w900,
@@ -245,7 +246,7 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
         onPressed: _showCreateSheet,
         backgroundColor: FASTPro.teal,
         icon: const Icon(Icons.person_add, color: Colors.white),
-        label: const Text('Ajouter un cuisinier',
+        label: Text(tr(context, 'add_cook'),
             style:
                 TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
       ),
@@ -262,7 +263,7 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
                       const SizedBox(height: 8),
                       TextButton(
                           onPressed: _load,
-                          child: const Text('Réessayer')),
+                          child: Text(tr(context, 'retry'))),
                     ],
                   ),
                 )
@@ -276,7 +277,7 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
                             const Text('🧑‍🍳',
                                 style: TextStyle(fontSize: 44)),
                             const SizedBox(height: 10),
-                            Text('Aucun compte cuisinier',
+                            Text(tr(context, 'no_cooks'),
                                 style: TextStyle(
                                     color: context.fast.t1,
                                     fontWeight: FontWeight.w800,

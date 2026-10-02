@@ -6,6 +6,7 @@ import '../provider.dart';
 import '../models.dart';
 import '../theme.dart';
 import '../widgets/fast_image.dart';
+import '../l10n/tr.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -61,7 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             onChanged: (val) => provider.setKeyword(val),
                             style: TextStyle(fontSize: 13, color: context.fast.t1),
                             decoration: InputDecoration(
-                              hintText: 'Rechercher des cuisines, des plats, des spécialités...',
+                              hintText: provider.tr('search_hint'),
                               hintStyle: TextStyle(color: context.fast.t3),
                               prefixIcon: Icon(Icons.search, color: context.fast.t3, size: 18),
                               suffixIcon: provider.searchKeyword.isNotEmpty
@@ -198,7 +199,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
           // Section 2: Matching Kitchens & Dishes List
  Text(
-            'CUISINES & PLATS CORRESPONDANTS',
+            provider.tr('matching'),
             style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.bold,
@@ -499,7 +500,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [ Text(
-                'CUISINES À PROXIMITÉ',
+                provider.tr('cuisines_near'),
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
@@ -507,7 +508,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: context.fast.t3,
                 ),
               ), Text(
-                '${filteredRest.length} établissements disponibles',
+                provider.tr('restaurants_available').replaceAll('{n}', '${filteredRest.length}'),
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
@@ -565,7 +566,7 @@ class _HomeScreenState extends State<HomeScreen> {
             tag: 'FOOD DROP',
             tagColor: const Color(0xFFFBBF24),
             title: 'Envie de burgers ? Économisez 5 € !',
-            subtitle: 'Code : VELVET5',
+            subtitle: tr(context, 'promo_velvet'),
             cta: 'Profiter',
           ),
           _promoBanner(
@@ -579,7 +580,7 @@ class _HomeScreenState extends State<HomeScreen> {
             emoji: '👥',
             tag: 'AVEC MES AMIS',
             tagColor: const Color(0xFFC4B5FD),
-            title: 'Commande de groupe, chacun paie sa part.',
+            title: tr(context, 'group_tagline'),
             subtitle: 'Partagez un code, commandez ensemble',
             cta: 'Créer un groupe',
             ctaIcon: Icons.group_add,
@@ -1001,8 +1002,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Max search radius picker — 1 / 3 / 5 / 10 km or unlimited
   Widget _buildRadiusFilter(BuildContext context, FASTProvider provider) {
-    const options = <(double?, String)>[
-      (null, 'Tous'),
+    final options = <(double?, String)>[
+      (null, provider.tr('radius_all')),
       (1, '1 km'),
       (3, '3 km'),
       (5, '5 km'),
@@ -1079,7 +1080,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 foregroundColor: FASTBrand.onAmber,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              child: const Text('Réinitialiser les filtres', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(tr(context, 'reset_filters'), style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),

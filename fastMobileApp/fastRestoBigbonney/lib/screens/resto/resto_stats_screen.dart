@@ -11,6 +11,7 @@ import '../../models/resto_stats.dart';
 import '../../resto_provider.dart';
 import '../../services/stats_service.dart';
 import '../../theme.dart';
+import '../../l10n/tr.dart';
 
 const _brand = Color(0xFF00C8B3);
 const _positive = Color(0xFF34D399);
@@ -224,7 +225,7 @@ class _OverviewSection extends StatelessWidget {
                 ),
                 _KpiCard(
                   width: width,
-                  label: 'Commandes',
+                  label: tr(context, 'nav_orders'),
                   value: kpis.orders.toString(),
                   icon: Icons.receipt_long_outlined,
                   delta: stats.comparison.ordersDeltaPercent,
@@ -405,7 +406,7 @@ class _LoyaltySection extends StatelessWidget {
             spacing: 24,
             runSpacing: 20,
             children: [
-              _Metric(label: 'Nouveaux clients', value: '${kpis.newCustomers}'),
+              _Metric(label: tr(context, 'new_clients'), value: '${kpis.newCustomers}'),
               _Metric(
                 label: 'Clients récurrents',
                 value: '${kpis.recurringCustomers}',
@@ -438,9 +439,9 @@ class _OperationsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionTitle(
+        _SectionTitle(
           title: 'Annulations',
-          subtitle: 'Commandes au statut annulé sur toutes les commandes',
+          subtitle: tr(context, 'cancelled_stat_sub'),
         ),
         const SizedBox(height: 12),
         _Panel(
@@ -488,9 +489,9 @@ class _PopularProducts extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionTitle(
+        _SectionTitle(
           title: 'Produits populaires',
-          subtitle: 'Quantités vendues sur la période',
+          subtitle: tr(context, 'qty_sold_sub'),
         ),
         const SizedBox(height: 12),
         _Panel(
@@ -754,7 +755,7 @@ class _LoadingState extends StatelessWidget {
       height: 320,
       child: Center(
         child: Semantics(
-          label: 'Chargement des statistiques',
+          label: tr(context, 'loading_stats'),
           child: const CircularProgressIndicator(color: _brand),
         ),
       ),

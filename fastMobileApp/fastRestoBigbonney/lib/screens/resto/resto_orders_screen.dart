@@ -6,6 +6,7 @@ import '../../resto_provider.dart';
 import '../../models.dart';
 import '../../services/order_service.dart';
 import '../../theme.dart';
+import '../../l10n/tr.dart';
 
 class RestoOrdersScreen extends StatefulWidget {
   const RestoOrdersScreen({super.key});
@@ -55,7 +56,7 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Erreur lors de l\'acceptation')),
+          SnackBar(content: Text(tr(context, 'accept_err'))),
         );
       }
     }
@@ -121,7 +122,7 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
               controller.dispose();
               Navigator.pop(dialogContext);
             },
-            child: Text('Annuler', style: TextStyle(color: context.fast.t2)),
+            child: Text(tr(context, 'cancel'), style: TextStyle(color: context.fast.t2)),
           ),
         ],
       ),
@@ -138,13 +139,13 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
       if (mounted) {
         setState(() {});
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Remise confirmée ✓')),
+          SnackBar(content: Text(tr(context, 'handover_ok'))),
         );
       }
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('QR invalide ou erreur de vérification')),
+          SnackBar(content: Text(tr(context, 'qr_invalid'))),
         );
       }
     }
@@ -164,7 +165,7 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [ Text('Commandes en cours', style: TextStyle(color: context.fast.t1, fontSize: 20, fontWeight: FontWeight.bold)),
+            children: [ Text(tr(context, 'orders_active'), style: TextStyle(color: context.fast.t1, fontSize: 20, fontWeight: FontWeight.bold)),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(color: const Color(0xFF10B981).withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6)),
@@ -182,14 +183,14 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
           if (activeOrders.isEmpty)
                   Center(child: Padding(
               padding: EdgeInsets.all(32.0),
-              child: Text('Aucune commande active', style: TextStyle(color: context.fast.t2)),
+              child: Text(tr(context, 'no_active_orders'), style: TextStyle(color: context.fast.t2)),
             )),
           ...activeOrders.map((o) => _buildOrderCard(o, rProv)),
 
           if (billedCancelledOrders.isNotEmpty) ...[
                   SizedBox(height: 32),
                   Divider(color: context.fast.line),
-                  SizedBox(height: 16), Text('Annulées (Facturées)', style: TextStyle(color: context.fast.t1, fontSize: 16, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 16), Text(tr(context, 'cancelled_billed'), style: TextStyle(color: context.fast.t1, fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             ...billedCancelledOrders.map((o) => _buildCancelledCard(o)),
           ]
@@ -378,7 +379,7 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                       Divider(color: context.fast.line, height: 32),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [ Text('Total: €${order.total.toStringAsFixed(2)}', style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold)),
+                  children: [ Text('${tr(context, 'total_lbl')}: €${order.total.toStringAsFixed(2)}', style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold)),
                     if (order.status == OrderStatus.preparing)
                       Container(
                         padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -457,14 +458,14 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                         child: ElevatedButton(
                           onPressed: () => _markReady(order),
                           style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF3B82F6), foregroundColor: Colors.white),
-                          child: const Text('Prêt à servir'),
+                          child: Text(tr(context, 'ready_serve')),
                         ),
                       ),
                       const SizedBox(width: 12),
                       OutlinedButton(
                         onPressed: () => _cancelOrder(order, true),
                         style: OutlinedButton.styleFrom(foregroundColor: const Color(0xFFEF4444), side: const BorderSide(color: Color(0xFFEF4444))),
-                        child: const Text('Annuler (Facturé)'),
+                        child: Text(tr(context, 'cancel_billed')),
                       ),
                     ],
                   ),

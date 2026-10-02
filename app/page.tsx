@@ -10,6 +10,7 @@ import { m, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/AuthContext";
+import { useI18n } from "@/lib/i18n";
 import CuisineChip from "@/components/fast/CuisineChip";
 import RestaurantCard from "@/components/fast/RestaurantCard";
 import FavoritesSection from "@/components/fast/FavoritesSection";
@@ -25,38 +26,39 @@ function useDebounce<T>(value: T, delay = 200) {
 }
 
 const cuisineTypes = [
-  { type: "burger", label: "Burger" },
-  { type: "pizza", label: "Pizza" },
-  { type: "kebab", label: "Kebab" },
-  { type: "tacos", label: "Tacos" },
-  { type: "mexicain", label: "Mexicain" },
-  { type: "africain", label: "Africain" },
-  { type: "arabe", label: "Arabe" },
-  { type: "sushi", label: "Sushi" },
-  { type: "indien", label: "Indien" },
-  { type: "chinois", label: "Chinois" },
-  { type: "thai", label: "Thaï" },
-  { type: "poulet", label: "Poulet" },
-  { type: "sandwich", label: "Sandwich" },
-  { type: "hotdog", label: "Hot-dog" },
-  { type: "pates", label: "Pâtes" },
-  { type: "salade", label: "Salade" },
-  { type: "vegan", label: "Vegan" },
-  { type: "dessert", label: "Dessert" },
-  { type: "crepes", label: "Crêpes" },
-  { type: "waffle", label: "Waffle" },
-  { type: "cafe", label: "Café" },
-  { type: "smoothie", label: "Smoothie" },
+  { type: "burger", key: "cat_burger" },
+  { type: "pizza", key: "cat_pizza" },
+  { type: "kebab", key: "cat_kebab" },
+  { type: "tacos", key: "cat_tacos" },
+  { type: "mexicain", key: "cat_mexicain" },
+  { type: "africain", key: "cat_africain" },
+  { type: "arabe", key: "cat_arabe" },
+  { type: "sushi", key: "cat_sushi" },
+  { type: "indien", key: "cat_indien" },
+  { type: "chinois", key: "cat_chinois" },
+  { type: "thai", key: "cat_thai" },
+  { type: "poulet", key: "cat_poulet" },
+  { type: "sandwich", key: "cat_sandwich" },
+  { type: "hotdog", key: "cat_hotdog" },
+  { type: "pates", key: "cat_pates" },
+  { type: "salade", key: "cat_salade" },
+  { type: "vegan", key: "cat_vegan" },
+  { type: "dessert", key: "cat_dessert" },
+  { type: "crepes", key: "cat_crepes" },
+  { type: "waffle", key: "cat_waffle" },
+  { type: "cafe", key: "cat_cafe" },
+  { type: "smoothie", key: "cat_smoothie" },
 ];
 
-const quickCategories: { label: string; subtitle: string; Icon: LucideIcon; bg: string; id: string; action: string }[] = [
-  { label: "FOOD DROP", subtitle: "Commande express", Icon: Zap, bg: "linear-gradient(135deg,#dc2626,#b91c1c)", id: "drop", action: "orders" },
-  { label: "AVEC MES AMIS", subtitle: "Commande de groupe", Icon: Users, bg: "linear-gradient(135deg,#7c3aed,#4f46e5)", id: "amis", action: "group" },
-  { label: "SURPRISE ME", subtitle: "Laisse-toi surprendre", Icon: Sparkles, bg: "linear-gradient(135deg,#374151,#1a1f2e)", id: "surprise", action: "surprise" },
+const quickCategories: { labelKey: string; subtitleKey: string; Icon: LucideIcon; bg: string; id: string; action: string }[] = [
+  { labelKey: "promo_drop_t", subtitleKey: "promo_drop_s", Icon: Zap, bg: "linear-gradient(135deg,#dc2626,#b91c1c)", id: "drop", action: "orders" },
+  { labelKey: "promo_friends_t", subtitleKey: "promo_friends_s", Icon: Users, bg: "linear-gradient(135deg,#7c3aed,#4f46e5)", id: "amis", action: "group" },
+  { labelKey: "promo_surprise_t", subtitleKey: "promo_surprise_s", Icon: Sparkles, bg: "linear-gradient(135deg,#374151,#1a1f2e)", id: "surprise", action: "surprise" },
 ];
 
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
+  const { t } = useI18n();
   const [activeCuisine, setActiveCuisine] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -136,11 +138,11 @@ export default function Home() {
       .slice(0, 4)
       .map((r: any) => ({ type: "restaurant", label: r.name, id: r.id }));
     const cuisineSuggestions = cuisineTypes
-      .filter((c) => c.label.toLowerCase().includes(q))
+      .filter((c) => t(c.key).toLowerCase().includes(q) || c.type.includes(q))
       .slice(0, 3)
-      .map((c) => ({ type: "cuisine", label: c.label, cuisine: c.type }));
+      .map((c) => ({ type: "cuisine", label: t(c.key), cuisine: c.type }));
     return [...cuisineSuggestions, ...restSuggestions];
-  }, [debouncedSearch, restaurants]);
+  }, [debouncedSearch, restaurants, t]);
 
   const handleSearchChange = useCallback((value: string) => {
     setSearch(value);
@@ -219,7 +221,7 @@ export default function Home() {
                 <div className="px-3 h-9 rounded-xl flex items-center gap-1.5 text-xs font-black text-white"
                   style={{ background: "linear-gradient(135deg, #00c8b3, #7c3aed)" }}>
                   <Store className="w-4 h-4" />
-                  Espace Pro
+                  {t("pro_space")}
                 </div>
               </Link>
             )}
@@ -255,22 +257,22 @@ export default function Home() {
               <Zap className="w-8 h-8 text-amber-400 fill-amber-400" />
             </div>
           </m.div>
-          <p className="text-gray-400 text-xs font-medium tracking-widest uppercase mt-1">Chaque minute compte.</p>
+          <p className="text-gray-400 text-xs font-medium tracking-widest uppercase mt-1">{t("tagline")}</p>
         </div>
 
         {/* Desktop hero headline */}
         <div className="hidden md:flex relative z-10 flex-col items-center pt-12 pb-8">
-          <p className="text-gray-400 text-xs font-bold tracking-[0.3em] uppercase mb-3">Chaque minute compte</p>
+          <p className="text-gray-400 text-xs font-bold tracking-[0.3em] uppercase mb-3">{t("tagline")}</p>
           <h1 className="font-black text-5xl text-white tracking-tight text-center leading-tight">
-            Commandez.{" "}
+            {t("hero_1")}{" "}
             <span style={{
               background: "linear-gradient(90deg, #f59e0b, #f97316)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
-            }}>Vite.</span>{" "}
-            Maintenant.
+            }}>{t("hero_2")}</span>{" "}
+            {t("hero_3")}
           </h1>
-          <p className="text-gray-500 text-sm mt-3">Vos restaurants préférés, sans attendre.</p>
+          <p className="text-gray-500 text-sm mt-3">{t("hero_sub")}</p>
         </div>
 
         {/* Search avec autocomplétion */}
@@ -281,7 +283,7 @@ export default function Home() {
               value={search}
               onChange={(e) => handleSearchChange(e.target.value)}
               onFocus={() => search && setShowSuggestions(suggestions.length > 0)}
-              placeholder="Rechercher un plat ou restaurant..."
+              placeholder={t("search_ph")}
               className="pl-10 h-11 md:h-12 border border-white/5 rounded-2xl text-sm placeholder:text-gray-500 text-white focus:border-violet-500/50 transition-colors"
               style={{ background: "#1a1f2e" }}
             />
@@ -311,7 +313,7 @@ export default function Home() {
                     </span>
                     <div>
                       <p className="text-white text-sm font-semibold">{s.label}</p>
-                      <p className="text-gray-500 text-xs">{s.type === "cuisine" ? "Catégorie" : "Restaurant"}</p>
+                      <p className="text-gray-500 text-xs">{s.type === "cuisine" ? t("sugg_category") : t("sugg_restaurant")}</p>
                     </div>
                   </button>
                 ))}
@@ -338,8 +340,8 @@ export default function Home() {
                 style={{ background: cat.bg }}
               >
                 <div className="text-left">
-                  <p className="text-sm font-black">{cat.label}</p>
-                  <p className="text-[11px] text-white/75">{cat.subtitle}</p>
+                  <p className="text-sm font-black">{t(cat.labelKey)}</p>
+                  <p className="text-[11px] text-white/75">{t(cat.subtitleKey)}</p>
                 </div>
                 <cat.Icon className="w-7 h-7 text-white/80 shrink-0" strokeWidth={1.8} />
               </m.button>
@@ -348,7 +350,7 @@ export default function Home() {
 
           {/* Cuisine filter sidebar */}
           <div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Catégories</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">{t("cat_title")}</p>
             <div className="space-y-1">
               <button
                 onClick={() => { setSearch(""); setActiveCuisine(null); }}
@@ -356,7 +358,7 @@ export default function Home() {
                   !activeCuisine ? "bg-violet-500 text-white" : "text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
                 }`}
               >
-                Tous les restaurants
+                {t("all_restos")}
               </button>
               {cuisineTypes.map((c) => (
                 <button
@@ -366,7 +368,7 @@ export default function Home() {
                     activeCuisine === c.type ? "bg-violet-500 text-white" : "text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
                   }`}
                 >
-                  {c.label}
+                  {t(c.key)}
                 </button>
               ))}
             </div>
@@ -394,14 +396,14 @@ export default function Home() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                          <span className="text-xs font-black uppercase tracking-wide text-cyan-500 dark:text-cyan-400">Commande en cours</span>
+                          <span className="text-xs font-black uppercase tracking-wide text-cyan-500 dark:text-cyan-400">{t("active_order")}</span>
                         </div>
                         <p className="text-gray-900 dark:text-white text-sm mt-0.5 font-bold truncate">
                           {activeOrder.restaurant?.name || "Restaurant"}
                           <span className="text-gray-400 dark:text-gray-500 font-semibold text-xs ml-2">#{activeOrder.id?.slice(-6).toUpperCase()}</span>
                         </p>
                       </div>
-                      <span className="text-xs font-bold text-violet-500 dark:text-violet-400 shrink-0">Suivre →</span>
+                      <span className="text-xs font-bold text-violet-500 dark:text-violet-400 shrink-0">{t("track")}</span>
                     </div>
                   </div>
                 </Link>
@@ -430,8 +432,8 @@ export default function Home() {
                       style={{ background: cat.bg }}
                     >
                       <div className="flex flex-col items-start gap-1">
-                        <span className="text-xl font-black tracking-wide">{cat.label}</span>
-                        <span className="text-xs text-white/80 font-medium">{cat.subtitle}</span>
+                        <span className="text-xl font-black tracking-wide">{t(cat.labelKey)}</span>
+                        <span className="text-xs text-white/80 font-medium">{t(cat.subtitleKey)}</span>
                       </div>
                       <cat.Icon className="w-12 h-12 text-white/90" strokeWidth={1.8} />
                     </m.button>
@@ -463,7 +465,7 @@ export default function Home() {
                 <CuisineChip
                   key={c.type}
                   type={c.type}
-                  label={c.label}
+                  label={t(c.key)}
                   isActive={activeCuisine === c.type}
                   onClick={() => {
                     setSearch("");
@@ -478,8 +480,8 @@ export default function Home() {
           {favorites.length > 0 && (
             <div className="mb-5">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="font-bold text-gray-900 dark:text-white">Mes favoris</h3>
-                <Link href="/favorites" className="text-xs font-semibold text-violet-500">Voir tout</Link>
+                <h3 className="font-bold text-gray-900 dark:text-white">{t("my_favorites")}</h3>
+                <Link href="/favorites" className="text-xs font-semibold text-violet-500">{t("view_all")}</Link>
               </div>
               <FavoritesSection favoriteIds={favorites} restaurants={restaurants} />
             </div>
@@ -492,12 +494,12 @@ export default function Home() {
                 <div className="w-1 h-5 rounded-full bg-gradient-to-b from-violet-500 to-cyan-400" />
                 <h3 className="font-black text-gray-900 dark:text-white text-lg">
                   {activeCuisine
-                    ? cuisineTypes.find((c) => c.type === activeCuisine)?.label
-                    : "Près de vous"}
+                    ? t(cuisineTypes.find((c) => c.type === activeCuisine)?.key ?? "cat_burger")
+                    : t("near_you")}
                 </h3>
               </div>
               <span className="text-xs font-bold text-gray-400 bg-gray-100 dark:bg-gray-800 dark:text-gray-400 px-2 py-1 rounded-full">
-                {filtered.length} résultat{filtered.length > 1 ? "s" : ""}
+                {t("results_n", { n: filtered.length })}
               </span>
             </div>
 
@@ -528,7 +530,7 @@ export default function Home() {
             ) : filtered.length === 0 ? (
               <div className="text-center py-16 rounded-2xl bg-gray-50 dark:bg-gray-900 border border-dashed border-gray-200 dark:border-gray-700">
                 <SearchX className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-                <p className="text-gray-500 dark:text-gray-400 text-sm font-semibold">Aucun restaurant trouvé</p>
+                <p className="text-gray-500 dark:text-gray-400 text-sm font-semibold">{t("no_restos")}</p>
                 <p className="text-gray-400 text-xs mt-1">Essayez une autre recherche ou catégorie.</p>
               </div>
             ) : (

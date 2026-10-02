@@ -8,6 +8,7 @@ import '../provider.dart';
 import '../providers/auth_provider.dart';
 import '../services/group_service.dart';
 import '../theme.dart';
+import '../l10n/tr.dart';
 
 class GroupScreen extends StatefulWidget {
   const GroupScreen({super.key});
@@ -100,7 +101,7 @@ class _GroupScreenState extends State<GroupScreen> {
   Future<void> _create() async {
     final provider = context.read<FASTProvider>();
     if (provider.restaurants.isEmpty) {
-      setState(() => _error = 'Aucun restaurant disponible.');
+      setState(() => _error = provider.tr('no_resto_avail'));
       return;
     }
     String restaurantId = provider.selectedRestaurant?.id ?? provider.restaurants.first.id;
@@ -114,13 +115,13 @@ class _GroupScreenState extends State<GroupScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [ Text('Choisir le restaurant', style: TextStyle(color: context.fast.t1, fontSize: 20, fontWeight: FontWeight.w900)),
-                      SizedBox(height: 8), Text('Tous les membres commanderont dans ce même restaurant.', style: TextStyle(color: context.fast.t2)),
+              children: [ Text(provider.tr('choose_resto'), style: TextStyle(color: context.fast.t1, fontSize: 20, fontWeight: FontWeight.w900)),
+                      SizedBox(height: 8), Text(provider.tr('group_sub'), style: TextStyle(color: context.fast.t2)),
                       SizedBox(height: 20),
                 DropdownButtonFormField<String>(
                   initialValue: restaurantId,
                   dropdownColor: context.fast.line,
-                  decoration: const InputDecoration(labelText: 'Restaurant', border: OutlineInputBorder()),
+                  decoration: InputDecoration(labelText: provider.tr('restaurant_lbl'), border: const OutlineInputBorder()),
                   items: provider.restaurants.map((restaurant) => DropdownMenuItem(
                     value: restaurant.id,
                     child: Text(restaurant.name),
@@ -135,7 +136,7 @@ class _GroupScreenState extends State<GroupScreen> {
                   height: 48,
                   child: ElevatedButton(
                     onPressed: () => Navigator.pop(sheetContext, restaurantId),
-                    child: const Text('Créer le groupe'),
+                    child: Text(provider.tr('create_group')),
                   ),
                 ),
               ],
@@ -200,21 +201,21 @@ class _GroupScreenState extends State<GroupScreen> {
 
   Future<void> _copyInvite() async {
     final code = _group?['code'] as String? ?? '';
-    final message = 'Rejoins ma commande FAST Click & Collect avec le code $code sur l\'app FAST !';
+    final message = context.read<FASTProvider>().tr('share_msg').replaceAll('{n}', code);
     try {
       await Share.share(message, subject: 'Invitation groupe FAST');
     } catch (_) {
       await Clipboard.setData(ClipboardData(text: message));
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invitation copiée dans le presse-papiers.')),
+        SnackBar(content: Text(context.read<FASTProvider>().tr('copied'))),
       );
     }
   }
 
   String _message(Object error) => error is ApiException
       ? error.message
-      : 'Une erreur est survenue. Réessayez.';
+      : context.read<FASTProvider>().tr('generic_error');
 
   @override
   Widget build(BuildContext context) {
@@ -226,7 +227,7 @@ class _GroupScreenState extends State<GroupScreen> {
       appBar: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: context.fast.bg,
-        title: const Text('Commande en groupe', style: TextStyle(fontWeight: FontWeight.w900)),
+        title: Text(context.watch<FASTProvider>().tr('group_order'), style: const TextStyle(fontWeight: FontWeight.w900)),
       ),
       body: RefreshIndicator(
         onRefresh: () async {
@@ -272,8 +273,8 @@ class _GroupScreenState extends State<GroupScreen> {
         child:       Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [ Icon(Icons.groups_2_outlined, color: Color(0xFFF59E0B), size: 36),
-            SizedBox(height: 16), Text('Un retrait commun, chacun paie sa part', style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.w900, fontSize: 20)),
-            SizedBox(height: 10), Text('1. Choisissez un restaurant\n2. Partagez le code\n3. Chacun compose et paie sa part\n4. L’hôte envoie les parts payées ensemble', style: TextStyle(color: context.fast.t2, height: 1.7)),
+            SizedBox(height: 16), Text(context.watch<FASTProvider>().tr('group_tagline'), style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.w900, fontSize: 20)),
+            SizedBox(height: 10), Text(context.watch<FASTProvider>().tr('group_steps'), style: TextStyle(color: context.fast.t2, height: 1.7)),
           ],
         ),
       ),
@@ -283,10 +284,10 @@ class _GroupScreenState extends State<GroupScreen> {
         child: ElevatedButton.icon(
           onPressed: _create,
           icon: const Icon(Icons.add_circle_outline),
-          label: const Text('Créer un groupe', style: TextStyle(fontWeight: FontWeight.bold)),
+          label: Text(context.watch<FASTProvider>().tr('create_group'), style: const TextStyle(fontWeight: FontWeight.bold)),
         ),
       ),
-            SizedBox(height: 28), Text('REJOINDRE AVEC UN CODE', style: TextStyle(color: context.fast.t2, fontWeight: FontWeight.bold, fontSize: 11, letterSpacing: 0.8)),
+            SizedBox(height: 28), Text(context.watch<FASTProvider>().tr('join_code'), style: TextStyle(color: context.fast.t2, fontWeight: FontWeight.bold, fontSize: 11, letterSpacing: 0.8)),
       const SizedBox(height: 8), TextField(
         controller: _codeController,
         textCapitalization: TextCapitalization.characters,
@@ -294,7 +295,7 @@ class _GroupScreenState extends State<GroupScreen> {
           hintText: 'FAST-XXXXXXXX',
           prefixIcon: const Icon(Icons.key_outlined),
           suffixIcon: IconButton(
-            tooltip: 'Rejoindre',
+            tooltip: context.read<FASTProvider>().tr('join'),
             onPressed: _join,
             icon: const Icon(Icons.arrow_forward),
           ),
@@ -325,7 +326,7 @@ class _GroupScreenState extends State<GroupScreen> {
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [ Text('CODE DU GROUPE', style: TextStyle(color: context.fast.t2, fontSize: 10, fontWeight: FontWeight.bold)), Text(group['code'] as String? ?? '', style: const TextStyle(color: Color(0xFFF59E0B), fontSize: 24, fontWeight: FontWeight.w900)),
+                children: [ Text(context.watch<FASTProvider>().tr('group_code'), style: TextStyle(color: context.fast.t2, fontSize: 10, fontWeight: FontWeight.bold)), Text(group['code'] as String? ?? '', style: const TextStyle(color: Color(0xFFF59E0B), fontSize: 24, fontWeight: FontWeight.w900)),
                 ],
               ),
             ), IconButton.filledTonal(
@@ -333,7 +334,7 @@ class _GroupScreenState extends State<GroupScreen> {
               onPressed: _copyInvite,
               icon: const Icon(Icons.share_outlined),
             ),
-            const SizedBox(width: 8), TextButton(onPressed: _leave, child: const Text('Quitter')),
+            const SizedBox(width: 8), TextButton(onPressed: _leave, child: Text(context.read<FASTProvider>().tr('quit'))),
           ],
         ),
               SizedBox(height: 16),
@@ -369,7 +370,7 @@ class _GroupScreenState extends State<GroupScreen> {
           OutlinedButton.icon(
             onPressed: () => _action(() => _service.lockGroup(group['id'] as String)),
             icon: const Icon(Icons.lock_outline),
-            label: const Text('Fermer les invitations'),
+            label: Text(tr(context, 'close_invites')),
           ),
         ],
         if (isHost && status == 'LOCKED') ...[
@@ -381,7 +382,7 @@ class _GroupScreenState extends State<GroupScreen> {
               label: Text(paidCount == 0 ? 'En attente d’un paiement' : 'Envoyer les $paidCount parts payées'),
             ),
           ),
-                SizedBox(height: 8), Text('Les membres non payés ne seront pas envoyés au restaurant.', textAlign: TextAlign.center, style: TextStyle(color: context.fast.t2, fontSize: 12)),
+                SizedBox(height: 8), Text(tr(context, 'group_unpaid_warn'), textAlign: TextAlign.center, style: TextStyle(color: context.fast.t2, fontSize: 12)),
         ],
         if (status == 'SUBMITTED')
           const _SubmittedCard(),
@@ -458,8 +459,8 @@ class _SubmittedCard extends StatelessWidget {
       border: Border.all(color: const Color(0xFF10B981)),
     ),
     child:       Column(children: [ Icon(Icons.task_alt, color: Color(0xFF10B981), size: 36),
-      SizedBox(height: 10), Text('Commande envoyée ensemble', style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.w900, fontSize: 17)),
-      SizedBox(height: 6), Text('Le restaurant prépare toutes les parts payées pour un retrait commun.', textAlign: TextAlign.center, style: TextStyle(color: context.fast.t2, height: 1.4)),
+      SizedBox(height: 10), Text(tr(context, 'group_sent_title'), style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.w900, fontSize: 17)),
+      SizedBox(height: 6), Text(tr(context, 'group_sent_sub'), textAlign: TextAlign.center, style: TextStyle(color: context.fast.t2, height: 1.4)),
     ]),
   );
 }

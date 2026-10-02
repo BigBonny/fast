@@ -4,6 +4,7 @@ import { m, AnimatePresence } from "framer-motion";
 import { X, User, ShoppingBag, Heart, MapPin, Settings, Shield, FileText, LogOut, Store, LucideIcon, Zap, Star } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/lib/AuthContext";
+import { useI18n, LANGUAGES } from "@/lib/i18n";
 
 interface MenuItem {
   icon: LucideIcon;
@@ -19,6 +20,7 @@ interface SideMenuProps {
 
 export default function SideMenu({ isOpen, onClose }: SideMenuProps) {
   const { user, isAuthenticated, logout } = useAuth();
+  const { lang, setLang, t } = useI18n();
 
   const handleLogout = async () => {
     await logout(true);
@@ -29,18 +31,18 @@ export default function SideMenu({ isOpen, onClose }: SideMenuProps) {
   const menuItems: MenuItem[] = [
     ...(isRestaurant
       ? [
-          { icon: Store, label: "Espace Restaurateur", href: "/partner", isPartner: true },
-          { icon: ShoppingBag, label: "Commandes restaurant", href: "/partner/orders" },
-          { icon: Settings, label: "Paramètres restaurant", href: "/partner/settings" },
+          { icon: Store, label: t("resto_space"), href: "/partner", isPartner: true },
+          { icon: ShoppingBag, label: t("resto_orders"), href: "/partner/orders" },
+          { icon: Settings, label: t("resto_settings"), href: "/partner/settings" },
         ]
       : []),
-    { icon: User, label: "Mon compte", href: "/profile" },
-    { icon: ShoppingBag, label: "Mes commandes", href: "/orders" },
-    { icon: Heart, label: "Mes favoris", href: "/favorites" },
-    { icon: MapPin, label: "Mes adresses", href: "/profile/addresses" },
-    { icon: Settings, label: "Paramètres", href: "/profile/settings" },
-    { icon: Shield, label: "Confidentialité", href: "/privacy-policy" },
-    { icon: FileText, label: "CGU", href: "/terms-of-service" },
+    { icon: User, label: t("my_account"), href: "/profile" },
+    { icon: ShoppingBag, label: t("my_orders"), href: "/orders" },
+    { icon: Heart, label: t("my_favorites"), href: "/favorites" },
+    { icon: MapPin, label: t("my_addresses"), href: "/profile/addresses" },
+    { icon: Settings, label: t("settings"), href: "/profile/settings" },
+    { icon: Shield, label: t("privacy"), href: "/privacy-policy" },
+    { icon: FileText, label: t("cgu"), href: "/terms-of-service" },
   ];
 
   return (
@@ -91,7 +93,7 @@ export default function SideMenu({ isOpen, onClose }: SideMenuProps) {
                   {user?.name ? user.name[0].toUpperCase() : <User className="w-6 h-6" />}
                 </div>
                 <div>
-                  <p className="text-white font-bold text-sm">{user?.name || "Mon compte"}</p>
+                  <p className="text-white font-bold text-sm">{user?.name || t("my_account")}</p>
                   <p className="text-gray-400 text-xs">{user?.email || ""}</p>
                 </div>
               </div>
@@ -101,7 +103,7 @@ export default function SideMenu({ isOpen, onClose }: SideMenuProps) {
                 <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
                 <div>
                   <p className="text-yellow-400 font-black text-sm">{user?.points ?? 0} Points</p>
-                  <p className="text-gray-400 text-xs">Portefeuille FAST</p>
+                  <p className="text-gray-400 text-xs">{t("wallet")}</p>
                 </div>
               </div>
             </div>
@@ -143,6 +145,18 @@ export default function SideMenu({ isOpen, onClose }: SideMenuProps) {
 
             {/* Footer */}
             <div className="px-4 pb-8 space-y-1 border-t border-white/5 pt-4">
+              <select
+                value={lang}
+                onChange={(e) => setLang(e.target.value)}
+                aria-label="Language"
+                className="w-full mb-2 px-4 py-3 rounded-xl bg-white/5 text-white text-sm font-bold border border-white/10 outline-none cursor-pointer"
+              >
+                {LANGUAGES.map((l) => (
+                  <option key={l.code} value={l.code} className="text-black">
+                    {l.label}
+                  </option>
+                ))}
+              </select>
               {isAuthenticated ? (
                 <button
                   className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-500/10 transition-colors"
@@ -151,7 +165,7 @@ export default function SideMenu({ isOpen, onClose }: SideMenuProps) {
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-red-500/20">
                     <LogOut className="w-4 h-4 text-red-400" />
                   </div>
-                  <span className="text-red-400 text-sm font-medium">Se déconnecter</span>
+                  <span className="text-red-400 text-sm font-medium">{t("logout")}</span>
                 </button>
               ) : (
                 <div className="space-y-2">
@@ -160,7 +174,7 @@ export default function SideMenu({ isOpen, onClose }: SideMenuProps) {
                       <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-emerald-500/20">
                         <User className="w-4 h-4 text-emerald-400" />
                       </div>
-                      <span className="text-emerald-400 text-sm font-medium">Se connecter</span>
+                      <span className="text-emerald-400 text-sm font-medium">{t("login_submit")}</span>
                     </div>
                   </Link>
                   <Link href="/register" onClick={onClose}>
@@ -168,7 +182,7 @@ export default function SideMenu({ isOpen, onClose }: SideMenuProps) {
                       <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-violet-500/20">
                         <User className="w-4 h-4 text-violet-400" />
                       </div>
-                      <span className="text-violet-400 text-sm font-medium">S'inscrire</span>
+                      <span className="text-violet-400 text-sm font-medium">{t("signup_btn")}</span>
                     </div>
                   </Link>
                 </div>

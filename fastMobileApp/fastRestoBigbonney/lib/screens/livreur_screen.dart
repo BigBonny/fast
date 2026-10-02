@@ -12,6 +12,7 @@ import '../services/delivery_service.dart';
 import '../services/map_helper.dart';
 import '../api/api_exceptions.dart';
 import '../theme.dart';
+import '../l10n/tr.dart';
 
 class LivreurScreen extends StatefulWidget {
   const LivreurScreen({super.key});
@@ -511,7 +512,7 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
             borderRadius: BorderRadius.circular(12),
             side: const BorderSide(color: Color(0xFF10B981)),
           ),
-          title:       Text('🎉 Livré !',
+          title:       Text(tr(context, 'delivered'),
               style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold, fontSize: 16)),
           content: Text(
             'Revenus crédités : +${gain.toStringAsFixed(2)} €.\nMerci pour cette livraison de proximité !',
@@ -599,9 +600,9 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                        Text('Créneaux permanents', style: TextStyle(color: context.fast.t1, fontSize: 20, fontWeight: FontWeight.w900)),
+                        Text(tr(context, 'sched_perm'), style: TextStyle(color: context.fast.t1, fontSize: 20, fontWeight: FontWeight.w900)),
                   const SizedBox(height: 8),
-                        Text('Sélectionnez vos jours habituels. Vous pourrez mettre le service en pause à tout moment.', style: TextStyle(color: context.fast.t2, height: 1.4)),
+                        Text(tr(context, 'sched_sub'), style: TextStyle(color: context.fast.t2, height: 1.4)),
                   const SizedBox(height: 20),
                   Wrap(
                     spacing: 8,
@@ -623,7 +624,7 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                       Expanded(
                         child: OutlinedButton.icon(
                           icon: const Icon(Icons.schedule),
-                          label: Text('Début ${start.format(context)}'),
+                          label: Text('${tr(context, 'slot_start')} ${start.format(context)}'),
                           onPressed: () async {
                             final value = await showTimePicker(context: context, initialTime: start);
                             if (value != null) setSheetState(() => start = value);
@@ -649,7 +650,7 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                     height: 48,
                     child: ElevatedButton(
                       onPressed: selectedDays.isEmpty ? null : () => Navigator.pop(sheetContext, true),
-                      child: const Text('Enregistrer les créneaux'),
+                      child: Text(tr(context, 'save_slots')),
                     ),
                   ),
                 ],
@@ -937,7 +938,7 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
  TextButton.icon(
                   onPressed: _editPermanentSchedule,
                   icon: const Icon(Icons.edit_calendar_outlined, size: 16),
-                  label: Text('${_schedules.length} créneau${_schedules.length > 1 ? 'x' : ''}'),
+                  label: Text(tr(context, 'slots_count').replaceAll('{n}', '${_schedules.length}')),
                 ),
             ],
           ),
@@ -1166,7 +1167,7 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
-                  child: Text('Décliner', style: TextStyle(color: context.fast.t2, fontWeight: FontWeight.bold)),
+                  child: Text(tr(context, 'decline'), style: TextStyle(color: context.fast.t2, fontWeight: FontWeight.bold)),
                 ),
               ),
                     SizedBox(width: 12),
@@ -1289,7 +1290,7 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   elevation: 0,
                 ),
-                child: const Text('Confirmer la récupération du colis',
+                child: Text(tr(context, 'confirm_pickup_pkg'),
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
               ),
             )
@@ -1305,7 +1306,7 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   elevation: 0,
                 ),
-                child: const Text('Confirmer la remise au client',
+                child: Text(tr(context, 'confirm_delivery_client'),
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
               ),
             )

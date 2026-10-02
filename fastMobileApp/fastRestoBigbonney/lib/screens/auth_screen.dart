@@ -135,7 +135,7 @@ class _AuthScreenState extends State<AuthScreen>
     if (isResto && (widget.initialRole ?? 'CLIENT') == 'CLIENT') {
       fastProv.showToast(
         '⚡ Compte FAST Pro',
-        'Cet email appartient à un compte restaurant. Pour commander en client : ☰ → Mode Client.',
+        fastProv.tr('err_resto_account'),
       );
     }
 
@@ -154,6 +154,7 @@ class _AuthScreenState extends State<AuthScreen>
 
   @override
   Widget build(BuildContext context) {
+    final fast = context.watch<FASTProvider>();
     return PopScope(
       canPop: Navigator.canPop(context),
       onPopInvokedWithResult: (didPop, result) {
@@ -183,10 +184,10 @@ class _AuthScreenState extends State<AuthScreen>
           ),
           title: Text(
             _showRestoFields
-                ? 'Espace Fast Pro'
+                ? fast.tr('space_pro')
                 : widget.initialRole == 'LIVREUR'
-                    ? 'Espace Livreur'
-                    : 'Espace Client',
+                    ? fast.tr('space_driver')
+                    : fast.tr('space_client'),
             style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold),
           ),
         ),
@@ -206,9 +207,9 @@ class _AuthScreenState extends State<AuthScreen>
                       fontWeight: FontWeight.bold, fontSize: 15),
                   unselectedLabelStyle: const TextStyle(
                       fontWeight: FontWeight.bold, fontSize: 15),
-                  tabs: const [
-                    Tab(text: 'Connexion'),
-                    Tab(text: 'Inscription'),
+                  tabs: [
+                    Tab(text: fast.tr('login_tab')),
+                    Tab(text: fast.tr('register_tab')),
                   ],
                 ),
                 const SizedBox(height: 32),
@@ -230,6 +231,7 @@ class _AuthScreenState extends State<AuthScreen>
   }
 
   Widget _buildLoginForm() {
+    final fast = context.watch<FASTProvider>();
     return Form(
       key: _loginFormKey,
       child: SingleChildScrollView(
@@ -238,20 +240,20 @@ class _AuthScreenState extends State<AuthScreen>
           children: [
             _buildTextField(
               controller: _loginEmail,
-              label: 'Email',
+              label: fast.tr('email'),
               hint: 'adresse@exemple.com',
               icon: Icons.email_outlined,
               keyboardType: TextInputType.emailAddress,
               validator: (v) {
-                if (v == null || v.trim().isEmpty) return 'Email requis';
-                if (!v.contains('@')) return 'Email invalide';
+                if (v == null || v.trim().isEmpty) return fast.tr('err_email_required');
+                if (!v.contains('@')) return fast.tr('err_email_invalid');
                 return null;
               },
             ),
                   SizedBox(height: 20),
             _buildTextField(
               controller: _loginPassword,
-              label: 'Mot de passe',
+              label: fast.tr('password'),
               hint: '••••••••',
               icon: Icons.lock_outlined,
               obscureText: _obscureLoginPwd,
@@ -267,7 +269,7 @@ class _AuthScreenState extends State<AuthScreen>
                     setState(() => _obscureLoginPwd = !_obscureLoginPwd),
               ),
               validator: (v) {
-                if (v == null || v.isEmpty) return 'Mot de passe requis';
+                if (v == null || v.isEmpty) return fast.tr('err_pwd_required');
                 return null;
               },
             ),
@@ -309,9 +311,9 @@ class _AuthScreenState extends State<AuthScreen>
                             color: FASTBrand.onAmber,
                           ),
                         )
-                      : const Text(
-                          'Se connecter',
-                          style: TextStyle(
+                      : Text(
+                          fast.tr('login_btn'),
+                          style: const TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 16),
                         ),
                 );
@@ -326,6 +328,7 @@ class _AuthScreenState extends State<AuthScreen>
   }
 
   Widget _buildGoogleButton() {
+    final fast = context.watch<FASTProvider>();
     return Padding(
       padding: const EdgeInsets.only(top: 24),
       child: Column(
@@ -335,7 +338,7 @@ class _AuthScreenState extends State<AuthScreen>
               Expanded(child: Divider(color: context.fast.line)),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Text('ou', style: TextStyle(color: context.fast.t3, fontSize: 12)),
+                child: Text(fast.tr('or'), style: TextStyle(color: context.fast.t3, fontSize: 12)),
               ),
               Expanded(child: Divider(color: context.fast.line)),
             ],
@@ -377,7 +380,7 @@ class _AuthScreenState extends State<AuthScreen>
                     ),
                     const SizedBox(width: 10),
                     Text(
-                      'Continuer avec Google',
+                      fast.tr('google'),
                       style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold, fontSize: 14),
                     ),
                   ],
@@ -391,6 +394,7 @@ class _AuthScreenState extends State<AuthScreen>
   }
 
   Widget _buildRegisterForm() {
+    final fast = context.watch<FASTProvider>();
     return Form(
       key: _registerFormKey,
       child: SingleChildScrollView(
@@ -401,42 +405,42 @@ class _AuthScreenState extends State<AuthScreen>
             const SizedBox(height: 20),
             _buildTextField(
               controller: _registerName,
-              label: 'Nom complet',
+              label: fast.tr('name'),
               hint: 'Jean Dupont',
               icon: Icons.person_outlined,
               validator: (v) {
-                if (v == null || v.trim().isEmpty) return 'Nom requis';
+                if (v == null || v.trim().isEmpty) return fast.tr('err_name_required');
                 return null;
               },
             ),
                   SizedBox(height: 20),
             _buildTextField(
               controller: _registerEmail,
-              label: 'Email',
+              label: fast.tr('email'),
               hint: 'adresse@exemple.com',
               icon: Icons.email_outlined,
               keyboardType: TextInputType.emailAddress,
               validator: (v) {
-                if (v == null || v.trim().isEmpty) return 'Email requis';
-                if (!v.contains('@')) return 'Email invalide';
+                if (v == null || v.trim().isEmpty) return fast.tr('err_email_required');
+                if (!v.contains('@')) return fast.tr('err_email_invalid');
                 return null;
               },
             ),
                   SizedBox(height: 20),
             _buildTextField(
               controller: _registerPhone,
-              label: 'Téléphone',
+              label: fast.tr('phone'),
               hint: '06 12 34 56 78',
               icon: Icons.phone_outlined,
               keyboardType: TextInputType.phone,
               validator: (v) {
-                if (v == null || v.trim().isEmpty) return 'Téléphone requis';
+                if (v == null || v.trim().isEmpty) return fast.tr('err_phone_required');
                 return null;
               },
             ),
                   SizedBox(height: 20),
             if (widget.initialRole == 'LIVREUR') ...[ Text(
-                'Mode de disponibilité',
+                fast.tr('availability_mode'),
                 style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: context.fast.t1),
               ),
                     SizedBox(height: 8),
@@ -445,12 +449,12 @@ class _AuthScreenState extends State<AuthScreen>
                   ButtonSegment(
                     value: 'OCCASIONAL',
                     icon: Icon(Icons.flash_on_outlined),
-                    label: Text('Occasionnel'),
+                    label: Text(fast.tr('occasional')),
                   ),
                   ButtonSegment(
                     value: 'PERMANENT',
                     icon: Icon(Icons.calendar_month_outlined),
-                    label: Text('Permanent'),
+                    label: Text(fast.tr('permanent')),
                   ),
                 ],
                 selected: {_driverType},
@@ -471,16 +475,16 @@ class _AuthScreenState extends State<AuthScreen>
                 ),
               ),
                     SizedBox(height: 8), Text(
-                _driverType == 'OCCASIONAL'
-                    ? 'Connectez-vous librement lorsque vous souhaitez livrer.'
-                    : 'Définissez des créneaux réguliers et mettez-les en pause si besoin.',
+                fast.tr(_driverType == 'OCCASIONAL'
+                    ? 'occasional_desc'
+                    : 'permanent_desc'),
                 style: TextStyle(color: context.fast.t2, fontSize: 12, height: 1.4),
               ),
               const SizedBox(height: 20),
             ],
             _buildTextField(
               controller: _registerPassword,
-              label: 'Mot de passe',
+              label: fast.tr('password'),
               hint: '••••••••',
               icon: Icons.lock_outlined,
               obscureText: _obscureRegisterPwd,
@@ -496,10 +500,10 @@ class _AuthScreenState extends State<AuthScreen>
                     setState(() => _obscureRegisterPwd = !_obscureRegisterPwd),
               ),
               validator: (v) {
-                if (v == null || v.isEmpty) return 'Mot de passe requis';
-                if (v.length < 8) return 'Minimum 8 caractères';
-                if (!v.contains(RegExp(r'[A-Z]'))) return 'Doit contenir une majuscule';
-                if (!v.contains(RegExp(r'[0-9]'))) return 'Doit contenir un chiffre';
+                if (v == null || v.isEmpty) return fast.tr('err_pwd_required');
+                if (v.length < 8) return fast.tr('err_pwd_min');
+                if (!v.contains(RegExp(r'[A-Z]'))) return fast.tr('err_pwd_upper');
+                if (!v.contains(RegExp(r'[0-9]'))) return fast.tr('err_pwd_digit');
                 return null;
               },
             ),
@@ -542,8 +546,8 @@ class _AuthScreenState extends State<AuthScreen>
                             color: FASTBrand.onAmber,
                           ),
                         )
-                      : const Text(
-                          'Créer mon compte',
+                      : Text(
+                          fast.tr('register_btn'),
                           style: TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 16),
                         ),
@@ -580,7 +584,7 @@ class _AuthScreenState extends State<AuthScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Langue / Language',
+          fast.tr('lang_label'),
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w600,

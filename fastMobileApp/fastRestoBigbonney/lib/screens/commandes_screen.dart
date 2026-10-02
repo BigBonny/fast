@@ -16,6 +16,7 @@ import '../services/delivery_service.dart';
 import 'qr_screen.dart';
 import '../theme.dart';
 import '../widgets/fast_image.dart';
+import '../l10n/tr.dart';
 
 class CommandesScreen extends StatefulWidget {
   const CommandesScreen({super.key});
@@ -111,7 +112,7 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
         surfaceTintColor: Colors.transparent,
         automaticallyImplyLeading: false,
         title: Text(
-          'Commandes',
+          provider.tr('nav_orders'),
           style: TextStyle(
             color: context.fast.t1,
             fontWeight: FontWeight.w900,
@@ -126,9 +127,9 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
           unselectedLabelColor: context.fast.t3,
           labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
           unselectedLabelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-          tabs: const [
-            Tab(text: 'Suivi en cours'),
-            Tab(text: 'Historique'),
+          tabs: [
+            Tab(text: provider.tr('tracking_tab')),
+            Tab(text: provider.tr('history_tab')),
           ],
         ),
       ),
@@ -157,11 +158,11 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
             mainAxisAlignment: MainAxisAlignment.center,
             children: [ Text('🚶', style: TextStyle(fontSize: 48)),
                     SizedBox(height: 12), Text(
-                'Aucun suivi actif',
+                provider.tr('no_tracking'),
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: context.fast.t1),
               ),
                     SizedBox(height: 6), Text(
-                'Passez une commande depuis le panier pour activer le suivi de marche !',
+                provider.tr('no_tracking_sub'),
                 style: TextStyle(fontSize: 11, color: context.fast.t2),
                 textAlign: TextAlign.center,
               ),
@@ -174,7 +175,7 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   elevation: 0,
                 ),
-                child: const Text('Découvrir les restaurants', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                child: Text(provider.tr('discover'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
               ),
             ],
           ),
@@ -247,7 +248,7 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                     SizedBox(height: 16),
               if (!isCancelled) ...[
                 if (activeOrder.isDelivery) ...[ Text(
-                    'SUIVI LIVRAISON',
+                    provider.tr('tracking_delivery'),
                     style: TextStyle(
                       fontSize: 9,
                       fontWeight: FontWeight.bold,
@@ -258,7 +259,7 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                   const SizedBox(height: 8),
                   _buildDeliveryTrackingCard(activeOrder),
                 ] else ...[ Text(
-                    'SUIVI GPS — TRAJET VERS LE RESTAURANT',
+                    provider.tr('tracking_walk'),
                     style: TextStyle(
                       fontSize: 9,
                       fontWeight: FontWeight.bold,
@@ -345,10 +346,10 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                   children: [ Icon(Icons.directions_walk, size: 12, color: context.fast.t2),
                           SizedBox(width: 4), Text(
                       isCompleted
-                          ? 'Récupéré'
+                          ? context.read<FASTProvider>().tr('order_picked')
                           : isCancelled
-                              ? 'Annulé'
-                              : 'Arrivée estimée dans : ${_liveEtaMinutes(order)} min',
+                              ? context.read<FASTProvider>().tr('order_cancelled_lbl')
+                              : context.read<FASTProvider>().tr('eta_in').replaceAll('{n}', '${_liveEtaMinutes(order)}'),
                       style: TextStyle(fontSize: 11, color: context.fast.t2, fontWeight: FontWeight.bold),
                     ),
                   ],
@@ -385,17 +386,18 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
     final Color c;
     final String label;
     final IconData icon;
+    final fast = context.read<FASTProvider>();
     if (atDoor) {
       c = const Color(0xFFEF4444);
-      label = 'Devant le restaurant — montrez votre QR';
+      label = fast.tr('at_door');
       icon = Icons.storefront;
     } else if (eta <= 3) {
       c = const Color(0xFFF59E0B);
-      label = 'Presque arrivé (~$eta min)';
+      label = fast.tr('almost').replaceAll('{n}', '$eta');
       icon = Icons.near_me;
     } else {
       c = const Color(0xFF10B981);
-      label = 'En route — la cuisine a le temps';
+      label = fast.tr('en_route');
       icon = Icons.directions_walk;
     }
 
@@ -427,31 +429,32 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
  Color bg;
  Color fg;
     String label;
+    final fast = context.read<FASTProvider>();
     switch (status) {
       case OrderStatus.placed:
         bg = Colors.blue.withValues(alpha: 0.15);
         fg = Colors.blue;
-        label = 'COMMANDÉ';
+        label = fast.tr('st_ordered');
         break;
       case OrderStatus.preparing:
         bg =       Color(0xFFF59E0B).withValues(alpha: 0.15);
         fg =       Color(0xFFF59E0B);
-        label = 'EN COURS';
+        label = fast.tr('st_preparing');
         break;
       case OrderStatus.readyForPickup:
         bg =       Color(0xFF10B981).withValues(alpha: 0.15);
         fg =       Color(0xFF10B981);
-        label = 'PRÊT';
+        label = fast.tr('st_ready');
         break;
       case OrderStatus.completed:
         bg = context.fast.t3.withValues(alpha: 0.15);
         fg = context.fast.t2;
-        label = 'RÉCUPÉRÉ';
+        label = fast.tr('st_picked');
         break;
       case OrderStatus.cancelled:
         bg = Colors.red.withValues(alpha: 0.15);
         fg = Colors.red;
-        label = 'ANNULÉ';
+        label = fast.tr('st_cancelled');
         break;
     }
     return Container(
@@ -542,7 +545,7 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                '${(progress * 100).round()} % du trajet',
+                context.read<FASTProvider>().tr('pct_route').replaceAll('{n}', '${(progress * 100).round()}'),
                 style: const TextStyle(
                   color: Color(0xFFF59E0B),
                   fontWeight: FontWeight.bold,
@@ -601,17 +604,17 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
   String _deliveryStatusToLabel(String? status) {
     switch (status) {
       case 'AVAILABLE':
-        return 'Recherche d\'un livreur…';
+        return context.read<FASTProvider>().tr('drv_search');
       case 'ACCEPTED':
-        return 'Livreur assigné — en route vers le restaurant';
+        return context.read<FASTProvider>().tr('drv_assigned');
       case 'AT_RESTAURANT':
-        return 'Livreur au restaurant';
+        return context.read<FASTProvider>().tr('drv_at_resto');
       case 'PICKED_UP':
-        return 'En route vers vous !';
+        return context.read<FASTProvider>().tr('drv_coming');
       case 'DELIVERED':
-        return 'Livré';
+        return context.read<FASTProvider>().tr('drv_delivered');
       default:
-        return 'Commande en cours de préparation';
+        return context.read<FASTProvider>().tr('drv_preparing');
     }
   }
 
@@ -639,7 +642,7 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
             ],
           ),
           if (_deliveryDriverName != null) ...[
-                  SizedBox(height: 10), Text('Livreur : $_deliveryDriverName', style: TextStyle(fontSize: 12, color: context.fast.t2)),
+                  SizedBox(height: 10), Text(context.read<FASTProvider>().tr('driver_lbl').replaceAll('{n}', '$_deliveryDriverName'), style: TextStyle(fontSize: 12, color: context.fast.t2)),
           ],
           if (order.deliveryAddress.isNotEmpty) ...[
                   SizedBox(height: 8), Text('📍 ${order.deliveryAddress}', style: TextStyle(fontSize: 11, color: context.fast.t3)),
@@ -712,33 +715,34 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
  IconData icon = Icons.info;
  Color iconColor =       Color(0xFFF59E0B);
 
+    final fast = context.read<FASTProvider>();
     if (isCancelled) {
-      title = 'Commande annulée';
-      desc = 'Cette commande a été annulée conformément à notre politique d\'annulation transparente. Consultez l\'historique pour les détails de transaction.';
+      title = fast.tr('cancelled_title');
+      desc = fast.tr('cancelled_desc');
       icon = Icons.cancel;
       iconColor = Colors.red;
     } else if (isCompleted) {
-      title = 'Remise effectuée !';
-      desc = 'Vous avez récupéré votre commande via FAST Click & Collect. Repas frais et chaud entre vos mains. Bon appétit !';
+      title = fast.tr('picked_title');
+      desc = fast.tr('picked_desc');
       icon = Icons.handshake;
       iconColor = const Color(0xFF10B981);
     } else {
       switch (order.status) {
         case OrderStatus.placed:
-          title = 'Commande enregistrée !';
-          desc = 'La cuisine synchronise les terminaux. Mettez-vous en route maintenant !';
+          title = fast.tr('ordered_title');
+          desc = fast.tr('ordered_desc');
           icon = Icons.receipt_long;
           iconColor = Colors.blue;
           break;
         case OrderStatus.preparing:
-          title = 'Vos artisans cuisinent 🍳';
-          desc = 'La cuisine a démarré la préparation. Ils ajustent la cuisson dynamiquement selon votre temps de marche.';
+          title = fast.tr('cooking_title');
+          desc = fast.tr('cooking_desc');
           icon = Icons.restaurant_menu;
           iconColor = const Color(0xFFF59E0B);
           break;
         case OrderStatus.readyForPickup:
-          title = 'Repas chaud et prêt ! 🔥';
-          desc = 'La cuisine a posé votre repas sur le comptoir Click & Collect. Montrez le QR au staff pour confirmer la remise.';
+          title = fast.tr('ready_title');
+          desc = fast.tr('ready_desc');
           icon = Icons.backpack;
           iconColor = const Color(0xFF10B981);
           break;
@@ -803,9 +807,9 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
           icon: const Icon(Icons.qr_code, color: Color(0xFFF59E0B), size: 18),
-          label: const Text(
-            'Montrer le QR au staff',
-            style: TextStyle(
+          label: Text(
+            context.read<FASTProvider>().tr('show_qr'),
+            style: const TextStyle(
               color: Color(0xFFF59E0B),
               fontWeight: FontWeight.bold,
               fontSize: 13,
@@ -822,9 +826,9 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
         padding: const EdgeInsets.only(top: 16),
         child: TextButton(
           onPressed: () => _showHonestCancellationSheet(context, provider, order),
-          child: const Text(
-            'Annuler la commande',
-            style: TextStyle(
+          child: Text(
+            provider.tr('cancel_order'),
+            style: const TextStyle(
               color: Color(0xFFEF4444),
               fontWeight: FontWeight.bold,
               fontSize: 12,
@@ -977,7 +981,7 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         elevation: 0,
                       ),
-                      child: const Text('Confirmer l\'annulation', style: TextStyle(fontWeight: FontWeight.bold)),
+                      child: Text(tr(context, 'confirm_cancel'), style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],

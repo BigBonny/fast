@@ -8,6 +8,7 @@ import '../../api/api_config.dart';
 import '../../api/api_exceptions.dart';
 import 'resto_shell.dart';
 import '../../theme.dart';
+import '../../l10n/tr.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -221,7 +222,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       children: [
         const Icon(Icons.privacy_tip, size: 64, color: Color(0xFF00C8B3)),
         const SizedBox(height: 24),
-              Text('Confidentialité & CGU',
+              Text(tr(context, 'privacy_cgu'),
             style: TextStyle(
                 fontSize: 24, fontWeight: FontWeight.bold, color: context.fast.t1)),
         const SizedBox(height: 16),
@@ -300,7 +301,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             foregroundColor: Colors.black,
             padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
           ),
-          child: const Text('Créer mon espace',
+          child: Text(tr(context, 'create_space'),
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
         ),
       ],
@@ -327,7 +328,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 SizedBox(height: 16), TextFormField(
             style: TextStyle(color: context.fast.t1),
             decoration:       InputDecoration(
-                labelText: 'Nom du Restaurant *',
+                labelText: tr(context, 'resto_name_lbl'),
                 labelStyle: TextStyle(color: context.fast.t2)),
             validator: (val) =>
                 val == null || val.isEmpty ? 'Requis' : null,
@@ -418,7 +419,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     width: 20, height: 20,
                     child: CircularProgressIndicator(
                         strokeWidth: 2, color: Colors.black))
-                : const Text('Enregistrer et accéder au Dashboard',
+                : Text(tr(context, 'save_dashboard'),
                     style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],

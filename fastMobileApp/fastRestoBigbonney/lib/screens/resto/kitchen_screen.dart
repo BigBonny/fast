@@ -8,6 +8,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models.dart';
+import '../../provider.dart';
 import '../../resto_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/order_service.dart';
@@ -113,7 +114,7 @@ class _KitchenScreenState extends State<KitchenScreen> {
     final elapsed =
         DateTime.now().difference(DateTime.parse(o.prepStartedAt!)).inSeconds;
     final remaining = o.prepTimerSeconds - elapsed;
-    if (remaining <= 0) return 'EN RETARD';
+    if (remaining <= 0) return context.read<FASTProvider>().tr('late');
     final m = (remaining ~/ 60).toString().padLeft(2, '0');
     final s = (remaining % 60).toString().padLeft(2, '0');
     return '$m:$s';
@@ -123,6 +124,7 @@ class _KitchenScreenState extends State<KitchenScreen> {
   Widget build(BuildContext context) {
     final prov = context.watch<RestoProvider>();
     final auth = context.watch<AuthProvider>();
+    final fast = context.watch<FASTProvider>();
 
     final active = prov.restoOrders
         .where((o) =>
@@ -140,8 +142,8 @@ class _KitchenScreenState extends State<KitchenScreen> {
         automaticallyImplyLeading: false,
         title: ShaderMask(
           shaderCallback: (b) => FASTPro.logoGradient.createShader(b),
-          child: const Text(
-            '⚡ FAST PRO — CUISINE',
+          child: Text(
+            '⚡ FAST PRO — ${fast.tr('kitchen').toUpperCase()}',
             style: TextStyle(
               fontWeight: FontWeight.w900,
               fontSize: 17,
@@ -159,11 +161,11 @@ class _KitchenScreenState extends State<KitchenScreen> {
               color: const Color(0xFF10B981).withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.circle, size: 8, color: Color(0xFF10B981)),
-                SizedBox(width: 5),
-                Text('EN DIRECT',
+                const Icon(Icons.circle, size: 8, color: Color(0xFF10B981)),
+                const SizedBox(width: 5),
+                Text(fast.tr('live'),
                     style: TextStyle(
                         color: Color(0xFF10B981),
                         fontSize: 10,
@@ -180,7 +182,7 @@ class _KitchenScreenState extends State<KitchenScreen> {
             ),
           ),
           IconButton(
-            tooltip: 'Se déconnecter',
+            tooltip: fast.tr('logout'),
             icon: const Icon(Icons.logout, color: Color(0xFFEF4444), size: 20),
             onPressed: () async {
               context.read<RestoProvider>().stopPolling();
@@ -200,14 +202,14 @@ class _KitchenScreenState extends State<KitchenScreen> {
                     children: [
                       const Text('🧑‍🍳', style: TextStyle(fontSize: 48)),
                       const SizedBox(height: 12),
-                      const Text('Aucune commande en cours',
-                          style: TextStyle(
+                      Text(fast.tr('no_orders'),
+                          style: const TextStyle(
                               color: _t2,
                               fontSize: 16,
                               fontWeight: FontWeight.bold)),
                       const SizedBox(height: 4),
-                      Text('Le tableau se met à jour automatiquement',
-                          style: TextStyle(color: _t3, fontSize: 12)),
+                      Text(fast.tr('no_orders_sub'),
+                          style: const TextStyle(color: _t3, fontSize: 12)),
                     ],
                   ),
                 )
@@ -237,20 +239,21 @@ class _KitchenScreenState extends State<KitchenScreen> {
   }
 
   Widget _orderCard(Order o, RestoProvider prov) {
+    final fast = context.watch<FASTProvider>();
     Color statusColor;
     String statusLabel;
     switch (o.status) {
       case OrderStatus.placed:
         statusColor = const Color(0xFF10B981);
-        statusLabel = 'NOUVELLE';
+        statusLabel = fast.tr('status_new');
         break;
       case OrderStatus.preparing:
         statusColor = const Color(0xFFF59E0B);
-        statusLabel = 'EN PRÉPA';
+        statusLabel = fast.tr('status_prep');
         break;
       default:
         statusColor = const Color(0xFF3B82F6);
-        statusLabel = 'PRÊTE';
+        statusLabel = fast.tr('status_ready');
     }
 
     // Client proximity — green far / orange close / red at the door.
@@ -259,13 +262,13 @@ class _KitchenScreenState extends State<KitchenScreen> {
     if (o.fulfillmentType == FulfillmentType.pickup) {
       if (o.isReadyAtEntrance || o.gpsProgress >= 90) {
         proxColor = const Color(0xFFEF4444);
-        proxLabel = 'CLIENT DEVANT';
+        proxLabel = fast.tr('prox_here');
       } else if (o.gpsProgress >= 40) {
         proxColor = const Color(0xFFF97316);
-        proxLabel = 'CLIENT PROCHE';
+        proxLabel = fast.tr('prox_close');
       } else {
         proxColor = const Color(0xFF10B981);
-        proxLabel = 'CLIENT EN ROUTE';
+        proxLabel = fast.tr('prox_far');
       }
     }
     final accent = proxColor ?? statusColor;
@@ -424,7 +427,7 @@ class _KitchenScreenState extends State<KitchenScreen> {
                                   color: const Color(0xFF10B981)
                                       .withValues(alpha: 0.5)),
                             ),
-                            child: Text('$t min',
+                            child: Text("$t ${fast.tr('min_abbr')}",
                                 style: const TextStyle(
                                     color: Color(0xFF10B981),
                                     fontSize: 13,
@@ -445,8 +448,8 @@ class _KitchenScreenState extends State<KitchenScreen> {
                             padding:
                                 const EdgeInsets.symmetric(vertical: 12),
                           ),
-                          child: const Text('Accepter',
-                              style: TextStyle(
+                          child: Text(fast.tr('accept'),
+                              style: const TextStyle(
                                   fontWeight: FontWeight.w900,
                                   fontSize: 14)),
                         ),
@@ -461,7 +464,7 @@ class _KitchenScreenState extends State<KitchenScreen> {
                           padding:
                               const EdgeInsets.symmetric(vertical: 12),
                         ),
-                        child: const Text('Refuser'),
+                        child: Text(fast.tr('refuse')),
                       ),
                     ],
                   ),
@@ -470,8 +473,8 @@ class _KitchenScreenState extends State<KitchenScreen> {
                   ElevatedButton.icon(
                     onPressed: () => _ready(o),
                     icon: const Icon(Icons.check_circle, size: 20),
-                    label: const Text('PRÊT À SERVIR',
-                        style: TextStyle(
+                    label: Text(fast.tr('ready_serve'),
+                        style: const TextStyle(
                             fontWeight: FontWeight.w900, fontSize: 15)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF3B82F6),
@@ -486,9 +489,9 @@ class _KitchenScreenState extends State<KitchenScreen> {
                       color: const Color(0xFF3B82F6).withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Center(
-                      child: Text('EN ATTENTE DU CLIENT',
-                          style: TextStyle(
+                    child: Center(
+                      child: Text(fast.tr('waiting_client'),
+                          style: const TextStyle(
                               color: Color(0xFF3B82F6),
                               fontWeight: FontWeight.w900,
                               fontSize: 13)),

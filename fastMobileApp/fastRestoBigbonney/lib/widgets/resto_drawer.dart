@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../provider.dart';
+import '../l10n/app_strings.dart';
 import '../resto_provider.dart';
 import '../providers/auth_provider.dart';
 import '../screens/resto/menu_ai_scanner_screen.dart';
 import '../screens/resto/resto_staff_screen.dart';
 import '../theme.dart';
+import '../l10n/tr.dart';
 
 /// Base44-style slide-in menu for Fast Pro: compact gradient wordmark,
 /// flat sectioned rows (Mon Service / Commandes / Menu / Réglages),
@@ -124,21 +126,21 @@ class RestoDrawer extends StatelessWidget {
                 children: [
                   _row(context,
                       emoji: '📋',
-                      label: 'Mon Service',
+                      label: provider.tr('my_service'),
                       onTap: () => _go(context, 4)),
                   _row(context,
                       emoji: '🛍️',
-                      label: 'Commandes',
+                      label: provider.tr('nav_orders'),
                       onTap: () => _go(context, 0)),
                   _row(context,
                       emoji: '🍽️',
-                      label: 'Menu',
+                      label: provider.tr('menu'),
                       onTap: () => _go(context, 1)),
                   _settingsItem(context, provider, resto),
                   _row(context,
                       emoji: '🛒',
-                      label: 'Mode Client',
-                      subtitle: 'Commander comme un client',
+                      label: provider.tr('client_mode'),
+                      subtitle: provider.tr('client_mode_sub'),
                       onTap: () async {
                         await provider.setViewAsClient(true);
                         if (!context.mounted) return;
@@ -151,7 +153,7 @@ class RestoDrawer extends StatelessWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     child: Text(
-                      'OUTILS AVANCÉS',
+                      provider.tr('advanced_tools'),
                       style: TextStyle(
                         color: _subtext(context),
                         fontSize: 10,
@@ -162,18 +164,18 @@ class RestoDrawer extends StatelessWidget {
                   ),
                   _row(context,
                       emoji: '📈',
-                      label: 'Statistiques',
+                      label: provider.tr('stats'),
                       onTap: () => _go(context, 2)),
                   _row(context,
                       emoji: '🤖',
-                      label: 'Intelligence IA',
-                      subtitle: 'Importer la carte par photo ou vidéo',
+                      label: provider.tr('ai_intel'),
+                      subtitle: provider.tr('ai_intel_sub'),
                       onTap: () =>
                           _push(context, const MenuAiScannerScreen())),
                   _row(context,
                       emoji: '👥',
-                      label: 'Mon équipe',
-                      subtitle: 'Comptes cuisiniers invités',
+                      label: provider.tr('my_team'),
+                      subtitle: provider.tr('my_team_sub'),
                       onTap: () =>
                           _push(context, const RestoStaffScreen())),
 
@@ -182,7 +184,7 @@ class RestoDrawer extends StatelessWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     child: Text(
-                      'LÉGAL',
+                      provider.tr('legal'),
                       style: TextStyle(
                         color: _subtext(context),
                         fontSize: 10,
@@ -193,11 +195,11 @@ class RestoDrawer extends StatelessWidget {
                   ),
                   _row(context,
                       emoji: '📄',
-                      label: 'CGU',
+                      label: provider.tr('cgu'),
                       onTap: () => _showLegal(context, 'CGU')),
                   _row(context,
                       emoji: '🔐',
-                      label: 'Confidentialité',
+                      label: provider.tr('privacy'),
                       onTap: () => _showLegal(context, 'Confidentialité')),
                 ],
               ),
@@ -218,9 +220,9 @@ class RestoDrawer extends StatelessWidget {
                   },
                   icon: const Icon(Icons.logout,
                       color: Color(0xFFEF4444), size: 18),
-                  label: const Text(
-                    'Se déconnecter',
-                    style: TextStyle(
+                  label: Text(
+                    provider.tr('logout'),
+                    style: const TextStyle(
                       color: Color(0xFFEF4444),
                       fontWeight: FontWeight.bold,
                     ),
@@ -306,7 +308,7 @@ class RestoDrawer extends StatelessWidget {
         child: ExpansionTile(
           leading: const Text('⚙️', style: TextStyle(fontSize: 18)),
           title: Text(
-            'Réglages',
+            provider.tr('settings'),
             style: TextStyle(
               color: _text(context),
               fontWeight: FontWeight.w600,
@@ -323,7 +325,7 @@ class RestoDrawer extends StatelessWidget {
               dense: true,
               contentPadding: EdgeInsets.zero,
               title: Text(
-                'Mode Rush',
+                provider.tr('rush_mode'),
                 style: TextStyle(
                   color: _text(context),
                   fontSize: 13,
@@ -331,7 +333,7 @@ class RestoDrawer extends StatelessWidget {
                 ),
               ),
               subtitle: Text(
-                'Temps de prépa allongés',
+                provider.tr('rush_desc'),
                 style: TextStyle(color: _subtext(context), fontSize: 11),
               ),
               secondary: const Icon(Icons.local_fire_department,
@@ -345,20 +347,22 @@ class RestoDrawer extends StatelessWidget {
             Row(
               children: [
                 _themeOpt(context, provider, ThemeMode.system,
-                    Icons.phone_android, 'Auto'),
+                    Icons.phone_android, provider.tr('theme_auto')),
                 const SizedBox(width: 8),
                 _themeOpt(context, provider, ThemeMode.light,
-                    Icons.wb_sunny_outlined, 'Clair'),
+                    Icons.wb_sunny_outlined, provider.tr('theme_light')),
                 const SizedBox(width: 8),
                 _themeOpt(context, provider, ThemeMode.dark,
-                    Icons.nightlight_outlined, 'Sombre'),
+                    Icons.nightlight_outlined, provider.tr('theme_dark')),
               ],
             ),
             const SizedBox(height: 8),
+            _languagePicker(context, provider),
+            const SizedBox(height: 8),
             // Advanced settings + tutorial shortcuts
-            _miniItem(context, Icons.tune, 'Paramètres avancés',
+            _miniItem(context, Icons.tune, provider.tr('advanced_settings'),
                 () => _go(context, 3)),
-            _miniItem(context, Icons.help_outline, 'Revoir le tutoriel', () {
+            _miniItem(context, Icons.help_outline, provider.tr('replay_tutorial'), () {
               Navigator.of(context).pop();
               onReplayTutorial();
             }),
@@ -390,6 +394,38 @@ class RestoDrawer extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _languagePicker(BuildContext context, FASTProvider provider) {
+    return DropdownButtonFormField<String>(
+      initialValue: provider.appLanguage,
+      isDense: true,
+      isExpanded: true,
+      icon: Icon(Icons.expand_more, color: _subtext(context), size: 18),
+      decoration: InputDecoration(
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: _chipBorder(context)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: _chipBorder(context)),
+        ),
+        filled: true,
+        fillColor: _chipBg(context),
+      ),
+      style: TextStyle(color: _text(context), fontSize: 12),
+      dropdownColor: _bg(context),
+      items: AppStrings.languages
+          .map((l) =>
+              DropdownMenuItem(value: l.$1, child: Text(l.$2, style: const TextStyle(fontSize: 12))))
+          .toList(),
+      onChanged: (v) {
+        if (v != null) provider.setAppLanguage(v);
+      },
     );
   }
 
@@ -471,7 +507,7 @@ class RestoDrawer extends StatelessWidget {
               ),
               elevation: 0,
             ),
-            child: const Text('Fermer',
+            child: Text(tr(context, 'close'),
                 style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
