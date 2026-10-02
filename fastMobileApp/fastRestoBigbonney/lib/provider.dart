@@ -62,7 +62,12 @@ class FASTProvider extends ChangeNotifier {
   String _userEmail = '';
   String _userPhone = '';
   int _userPoints = 0;
-  ThemeMode _themeMode = ThemeMode.light;
+  // Theme follows the phone by default — 'Auto' stays Auto across restarts.
+  ThemeMode _themeMode = ThemeMode.system;
+  // Owners can flip to the client experience with the same account.
+  bool _viewAsClient = false;
+  // Preferred interface language chosen at signup.
+  String _appLanguage = 'fr';
   Set<String> _favoriteIds = {};
 
   // User location
@@ -116,6 +121,23 @@ class FASTProvider extends ChangeNotifier {
   String get userPhone => _userPhone;
   int get userPoints => _userPoints;
   ThemeMode get themeMode => _themeMode;
+  bool get viewAsClient => _viewAsClient;
+  String get appLanguage => _appLanguage;
+
+  /// Restaurant owners can use the app as a client without a second account.
+  Future<void> setViewAsClient(bool value) async {
+    _viewAsClient = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('fast_view_as_client', value);
+    notifyListeners();
+  }
+
+  Future<void> setAppLanguage(String code) async {
+    _appLanguage = code;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('fast_app_language', code);
+    notifyListeners();
+  }
 
   // Favorites (local persistence, like the website's localStorage)
   List<Restaurant> get favorites =>
@@ -284,31 +306,44 @@ class FASTProvider extends ChangeNotifier {
   // Categories definition — matches the cuisine types used across web/backend
   final List<CategoryItem> categories = [
     CategoryItem(id: 'all', name: 'Tous', icon: '🍽️'),
-    CategoryItem(id: 'burger', name: 'Burger', icon: '🍔'),
-    CategoryItem(id: 'pizza', name: 'Pizza', icon: '🍕'),
+    CategoryItem(id: 'burger', name: 'Burgers', icon: '🍔'),
+    CategoryItem(id: 'tacos', name: 'Tacos', icon: '🌯'),
     CategoryItem(id: 'kebab', name: 'Kebab', icon: '🥙'),
-    CategoryItem(id: 'tacos', name: 'Tacos', icon: '🌮'),
-    CategoryItem(id: 'mexicain', name: 'Mexicain', icon: '🌯'),
-    CategoryItem(id: 'africain', name: 'Africain', icon: '🥘'),
-    CategoryItem(id: 'arabe', name: 'Arabe', icon: '🧆'),
-    CategoryItem(id: 'sushi', name: 'Sushi', icon: '🍣'),
-    CategoryItem(id: 'indien', name: 'Indien', icon: '🍛'),
-    CategoryItem(id: 'chinois', name: 'Chinois', icon: '🥡'),
-    CategoryItem(id: 'thai', name: 'Thaï', icon: '🍜'),
+    CategoryItem(id: 'pizza', name: 'Pizza', icon: '🍕'),
     CategoryItem(id: 'poulet', name: 'Poulet', icon: '🍗'),
-    CategoryItem(id: 'sandwich', name: 'Sandwich', icon: '🥪'),
-    CategoryItem(id: 'hotdog', name: 'Hot-dog', icon: '🌭'),
-    CategoryItem(id: 'pates', name: 'Pâtes', icon: '🍝'),
-    CategoryItem(id: 'salade', name: 'Salade', icon: '🥗'),
-    CategoryItem(id: 'fruits_de_mer', name: 'Fruits de mer', icon: '🦐'),
-    CategoryItem(id: 'vegan', name: 'Vegan', icon: '🌱'),
-    CategoryItem(id: 'dessert', name: 'Dessert', icon: '🍰'),
+    CategoryItem(id: 'sandwich', name: 'Sandwichs', icon: '🥪'),
+    CategoryItem(id: 'fast-food', name: 'Fast-food', icon: '🍟'),
+    CategoryItem(id: 'hot-dogs', name: 'Hot-dogs', icon: '🌭'),
+    CategoryItem(id: 'sushi', name: 'Sushi', icon: '🍣'),
+    CategoryItem(id: 'poke', name: 'Poke', icon: '🥗'),
+    CategoryItem(id: 'chinois', name: 'Chinois', icon: '🥢'),
+    CategoryItem(id: 'vietnamien', name: 'Vietnamien', icon: '🍜'),
+    CategoryItem(id: 'indien', name: 'Indien', icon: '🍛'),
+    CategoryItem(id: 'thailandais', name: 'Thaïlandais', icon: '🍤'),
+    CategoryItem(id: 'coreen', name: 'Coréen', icon: '🍚'),
+    CategoryItem(id: 'mexicain', name: 'Mexicain', icon: '🌮'),
+    CategoryItem(id: 'italien', name: 'Italien', icon: '🍝'),
+    CategoryItem(id: 'grec', name: 'Grec', icon: '🫒'),
+    CategoryItem(id: 'monde', name: 'Cuisine du monde', icon: '🌍'),
+    CategoryItem(id: 'grillades', name: 'Grillades & Viandes', icon: '🥩'),
+    CategoryItem(id: 'poisson', name: 'Poisson & Fruits de mer', icon: '🐟'),
+    CategoryItem(id: 'vegan', name: 'Vegan & Végétarien', icon: '🥦'),
+    CategoryItem(id: 'halal', name: 'Halal', icon: '🍖'),
+    CategoryItem(id: 'boulangerie', name: 'Boulangerie', icon: '🥐'),
+    CategoryItem(id: 'sandwicherie', name: 'Sandwicherie', icon: '🥖'),
+    CategoryItem(id: 'crepes', name: 'Crêpes & Gaufres', icon: '🥞'),
+    CategoryItem(id: 'dessert', name: 'Desserts', icon: '🍰'),
     CategoryItem(id: 'glaces', name: 'Glaces', icon: '🍦'),
-    CategoryItem(id: 'crepes', name: 'Crêpes', icon: '🥞'),
-    CategoryItem(id: 'waffle', name: 'Waffle', icon: '🧇'),
+    CategoryItem(id: 'bubble-tea', name: 'Bubble Tea', icon: '🧋'),
     CategoryItem(id: 'cafe', name: 'Café', icon: '☕'),
-    CategoryItem(id: 'smoothie', name: 'Smoothie', icon: '🥤'),
-    CategoryItem(id: 'autre', name: 'Autre', icon: '🍴'),
+    CategoryItem(id: 'brasserie', name: 'Brasserie', icon: '🍺'),
+    CategoryItem(id: 'traditionnel', name: 'Traditionnel', icon: '🍴'),
+    CategoryItem(id: 'gastronomique', name: 'Gastronomique', icon: '🍷'),
+    CategoryItem(id: 'buffet', name: 'Buffet', icon: '🍱'),
+    CategoryItem(id: 'mediterraneen', name: 'Méditerranéen', icon: '🥘'),
+    CategoryItem(id: 'africain', name: 'Africain', icon: '🍲'),
+    CategoryItem(id: 'antillais', name: 'Antillais & Créole', icon: '🌴'),
+    CategoryItem(id: 'autre', name: 'Autres', icon: '➕'),
   ];
 
   FASTProvider() {
@@ -360,7 +395,9 @@ class FASTProvider extends ChangeNotifier {
     _userPhone = prefs.getString('fast_user_phone') ?? '';
     _activeGroupId = prefs.getString(_activeGroupIdKey);
     _activeGroupCode = prefs.getString(_activeGroupCodeKey);
-    final themePref = prefs.getString('fast_theme_mode') ?? 'light';
+    final themePref = prefs.getString('fast_theme_mode') ?? 'system';
+    _viewAsClient = prefs.getBool('fast_view_as_client') ?? false;
+    _appLanguage = prefs.getString('fast_app_language') ?? 'fr';
     _themeMode = themePref == 'light'
         ? ThemeMode.light
         : themePref == 'system'
@@ -427,7 +464,6 @@ class FASTProvider extends ChangeNotifier {
     if (mode == ThemeMode.light) val = 'light';
     if (mode == ThemeMode.system) val = 'system';
     prefs.setString('fast_theme_mode', val);
-    prefs.setBool('fast_theme_dark', mode != ThemeMode.light);
     notifyListeners();
   }
 
@@ -602,35 +638,87 @@ class FASTProvider extends ChangeNotifier {
         .replaceAll('ù', 'u')
         .replaceAll('ç', 'c');
     const aliases = {
+      // Display names → ids (a resto can store several, comma-separated)
       'burgers': 'burger',
-      'italien': 'pizza',
-      'italienne': 'pizza',
-      'italian': 'pizza',
-      'halal': 'kebab',
       'kebabs': 'kebab',
+      'sandwichs': 'sandwich',
+      'sandwiches': 'sandwich',
+      'hot-dog': 'hot-dogs',
+      'hotdog': 'hot-dogs',
+      'hot dog': 'hot-dogs',
+      'hot dogs': 'hot-dogs',
+      'thai': 'thailandais',
+      'thaï': 'thailandais',
+      'thailande': 'thailandais',
+      'korean': 'coreen',
+      'coreenne': 'coreen',
+      'viet': 'vietnamien',
+      'vietnamienne': 'vietnamien',
+      'italienne': 'italien',
+      'italian': 'italien',
+      'pates': 'italien',
+      'pasta': 'italien',
+      'grecque': 'grec',
+      'greek': 'grec',
+      'cuisine du monde': 'monde',
+      'world': 'monde',
+      'grillades & viandes': 'grillades',
+      'viande': 'grillades',
+      'viandes': 'grillades',
+      'grill': 'grillades',
+      'grillade': 'grillades',
+      'bbq': 'grillades',
+      'steakhouse': 'grillades',
+      'poisson & fruits de mer': 'poisson',
+      'fruits de mer': 'poisson',
+      'vegan & vegetarien': 'vegan',
+      'vegetarien': 'vegan',
+      'vegetarienne': 'vegan',
+      'vegetalien': 'vegan',
+      'veggie': 'vegan',
+      'salade': 'poke',
+      'salades': 'poke',
+      'bols': 'poke',
+      'healthy': 'poke',
+      'bols/healthy': 'poke',
+      'bowls': 'poke',
+      'bowl': 'poke',
+      'sandwicheries': 'sandwicherie',
+      'crepes & gaufres': 'crepes',
+      'crepe': 'crepes',
+      'gaufre': 'crepes',
+      'gaufres': 'crepes',
+      'waffle': 'crepes',
+      'waffles': 'crepes',
+      'desserts': 'dessert',
+      'glace': 'glaces',
+      'bubble tea': 'bubble-tea',
+      'bubbletea': 'bubble-tea',
+      'boba': 'bubble-tea',
+      'smoothie': 'bubble-tea',
+      'smoothies': 'bubble-tea',
+      'restaurant traditionnel': 'traditionnel',
+      'traditionnelle': 'traditionnel',
+      'restaurant gastronomique': 'gastronomique',
+      'gastro': 'gastronomique',
+      'gastronomie': 'gastronomique',
+      'cuisine mediterraneenne': 'mediterraneen',
+      'mediterraneenne': 'mediterraneen',
+      'cuisine africaine': 'africain',
+      'africaine': 'africain',
+      'cuisine antillaise & creole': 'antillais',
+      'antillaise': 'antillais',
+      'creole': 'antillais',
+      'antillais & creole': 'antillais',
+      'arabe': 'kebab',
+      'orientale': 'kebab',
       'asiatique': 'sushi',
       'asian': 'sushi',
       'japonais': 'sushi',
-      'bols': 'salade',
-      'healthy': 'salade',
-      'bols/healthy': 'salade',
-      'bowls': 'salade',
-      'salades': 'salade',
-      'sandwichs': 'sandwich',
-      'sandwiches': 'sandwich',
-      'hot-dog': 'hotdog',
-      'hot dog': 'hotdog',
-      'pates ': 'pates',
-      'pasta': 'pates',
-      'crepe': 'crepes',
-      'gauffre': 'waffle',
-      'gaufre': 'waffle',
-      'waffles': 'waffle',
-      'glace': 'glaces',
-      'desserts': 'dessert',
-      'francais': 'autre',
-      'francaise': 'autre',
+      'francais': 'traditionnel',
+      'francaise': 'traditionnel',
       'other': 'autre',
+      'autres': 'autre',
     };
     return aliases[s] ?? s;
   }

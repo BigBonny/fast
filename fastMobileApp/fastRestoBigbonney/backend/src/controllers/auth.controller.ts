@@ -161,15 +161,27 @@ export const googleLogin = async (req: Request, res: Response): Promise<void> =>
     });
   }
 
+  // For STAFF/GUEST roles, resolve restaurant assignment (same as login)
+  let restaurantId: string | undefined;
+  let staffRole: 'STAFF' | 'GUEST' | undefined;
+  if (user.role === 'STAFF' || user.role === 'GUEST') {
+    const assignment = await prisma.restaurantStaff.findUnique({
+      where: { userId: user.id },
+      select: { restaurantId: true, staffRole: true },
+    });
+    restaurantId = assignment?.restaurantId;
+    staffRole = assignment?.staffRole;
+  }
+
   const token = jwt.sign(
-    { userId: user.id, role: user.role, tokenVersion: user.tokenVersion },
+    { userId: user.id, role: user.role, tokenVersion: user.tokenVersion, restaurantId, staffRole },
     env.jwtSecret,
     { expiresIn: env.jwtExpiresIn as string } as jwt.SignOptions,
   );
 
   res.json({
     token,
-    user: { id: user.id, name: user.name, email: user.email, phone: user.phone, role: user.role, points: user.points, driverProfile: user.driverProfile },
+    user: { id: user.id, name: user.name, email: user.email, phone: user.phone, role: user.role, points: user.points, driverProfile: user.driverProfile, restaurantId, staffRole },
   });
 };
 

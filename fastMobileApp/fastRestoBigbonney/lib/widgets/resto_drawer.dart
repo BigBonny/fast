@@ -135,6 +135,16 @@ class RestoDrawer extends StatelessWidget {
                       label: 'Menu',
                       onTap: () => _go(context, 1)),
                   _settingsItem(context, provider, resto),
+                  _row(context,
+                      emoji: '🛒',
+                      label: 'Mode Client',
+                      subtitle: 'Commander comme un client',
+                      onTap: () async {
+                        await provider.setViewAsClient(true);
+                        if (!context.mounted) return;
+                        Navigator.of(context)
+                            .popUntil((route) => route.isFirst);
+                      }),
 
                   const SizedBox(height: 14),
                   Padding(
