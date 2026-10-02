@@ -34,7 +34,7 @@ workflows:
           cd "fastMobileApp/fastRestoBigbonney"
           # FAST_KEYSTORE = base64 of fast-release.jks, FAST_KEYSTORE_PASSWORD = its password
           if [ -n "$FAST_KEYSTORE" ]; then
-            echo "$FAST_KEYSTORE" | base64 --decode > android/app/fast-release.jks
+            echo "$FAST_KEYSTORE" | base64 --decode > android/fast-release.jks
             printf "storePassword=%s\nkeyPassword=%s\nkeyAlias=fast\nstoreFile=fast-release.jks\n" \
               "$FAST_KEYSTORE_PASSWORD" "$FAST_KEYSTORE_PASSWORD" > android/key.properties
             echo "Release keystore configured"
