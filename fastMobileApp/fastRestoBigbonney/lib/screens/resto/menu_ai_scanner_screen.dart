@@ -76,12 +76,12 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
   // Records up to 8s panning across the menu screens, samples frames,
   // and sends them all in one request — the backend merges results.
 
-  Future<void> _toggleVideoRecording() async {
-    if (_cameraController == null || !_cameraController!.value.isInitialized) {
-      return;
-    }
-    if (_isRecording) {
-      await _stopVideoAndProcess();
+  // Snapchat-style shutter: tap = photo, press-and-hold = video.
+  // Releasing the finger stops the recording automatically.
+  Future<void> _startVideoRecording() async {
+    if (_cameraController == null ||
+        !_cameraController!.value.isInitialized ||
+        _isRecording) {
       return;
     }
     try {
@@ -100,6 +100,14 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
     } catch (e) {
       debugPrint('[Scanner] Video start error: $e');
     }
+  }
+
+  Future<void> _toggleVideoRecording() async {
+    if (_isRecording) {
+      await _stopVideoAndProcess();
+      return;
+    }
+    await _startVideoRecording();
   }
 
   bool get _isRecording => _state == 3;
@@ -347,7 +355,7 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                     ),
                   ),
                         SizedBox(height: 40), Text(
-                    'Prenez une photo nette du menu',
+                    'Photo nette, ou maintenez pour filmer',
                     style: TextStyle(
                       color: context.fast.t1,
                       fontWeight: FontWeight.w600,
@@ -383,58 +391,54 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                     ),
                   ),
                   const SizedBox(width: 20),
-                  // Video menu scan — film the menu screens/boards
+                  // Capture button in the absolute center — Snapchat style:
+                  // tap = photo, press & hold = video (release to stop).
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      IconButton(
-                        onPressed: _toggleVideoRecording,
-                        icon: Icon(
-                          Icons.videocam_outlined,
-                          color: FASTPro.magenta,
-                          size: 30,
+                      GestureDetector(
+                        onTap: _takeInAppPicture,
+                        onLongPressStart: (_) => _startVideoRecording(),
+                        onLongPressEnd: (_) => _stopVideoAndProcess(),
+                        onLongPressCancel: () {
+                          if (_isRecording) _stopVideoAndProcess();
+                        },
+                        child: Container(
+                          width: 76,
+                          height: 76,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: context.fast.line,
+                              width: 6,
+                            ),
+                          ),
+                          child: const Center(
+                            child: Icon(
+                              Icons.camera_alt,
+                              color: Color(0xFF17171B),
+                              size: 28,
+                            ),
+                          ),
                         ),
                       ),
+                      const SizedBox(height: 6),
                       const Text(
-                        'FILMER LE MENU',
+                        'APPUYEZ = PHOTO · MAINTENEZ = VIDÉO',
                         style: TextStyle(
-                          color: FASTPro.magenta,
+                          color: Colors.white70,
                           fontSize: 8,
                           fontWeight: FontWeight.w900,
                           letterSpacing: 0.5,
+                          shadows: [
+                            Shadow(blurRadius: 4, color: Colors.black),
+                          ],
                         ),
                       ),
                     ],
                   ),
-                        SizedBox(width: 20),
-                  // Capture camera button in the absolute center
-                  Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: _takeInAppPicture,
-                      borderRadius: BorderRadius.circular(38),
-                      child: Container(
-                        width: 76,
-                        height: 76,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: context.fast.line,
-                            width: 6,
-                          ),
-                        ),
-                        child:       Center(
-                          child: Icon( Icons.camera_alt,
-                            color: FASTBrand.onAmber,
-                            size: 28,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 48),
-                  // Spacing balance (matches the gallery button width of 48px)
+                  // Spacing balance (matches the gallery button width)
                   const SizedBox(width: 48),
                 ],
               ),

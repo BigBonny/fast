@@ -131,11 +131,12 @@ class _FASTAppState extends State<FASTApp> with WidgetsBindingObserver {
 
     if (!mounted) return;
 
-    // Sync theme dark pref for legacy reads
+    // Theme is loaded by FASTProvider from 'fast_theme_mode' (auto is the
+    // default and persists). The legacy 'fast_theme_dark' bool is ignored —
+    // it used to override the choice on every cold start.
     final fastProv = context.read<FASTProvider>();
     if (prefs.containsKey('fast_theme_dark')) {
-      final isDark = prefs.getBool('fast_theme_dark') ?? true;
-      await fastProv.setThemeMode(isDark ? ThemeMode.dark : ThemeMode.light);
+      await prefs.remove('fast_theme_dark');
     }
 
     // Connect 401 handler to trigger logout (guard against re-entrancy)
@@ -198,13 +199,14 @@ class _FASTAppState extends State<FASTApp> with WidgetsBindingObserver {
     }
 
     final auth = context.watch<AuthProvider>();
+    final fast = context.watch<FASTProvider>();
     if (auth.isLoggedIn) {
       // Cook/guest accounts land straight on the kitchen board —
       // no stats, no payments, no settings.
       if (auth.user?.isStaff ?? false) {
         return const KitchenScreen();
       }
-      if (auth.isRestaurant) {
+      if (auth.isRestaurant && !fast.viewAsClient) {
         return const resto_onboarding.OnboardingScreen();
       }
       if (auth.isLivreur) {

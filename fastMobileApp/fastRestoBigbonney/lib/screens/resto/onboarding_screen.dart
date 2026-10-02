@@ -34,13 +34,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   double _rushPrepTime = 25;
 
   // Same list as the client app's category strip — a restaurant can
-  // pick several (e.g. "Burger, Tacos").
+  // pick several (e.g. "Burgers, Tacos").
   final List<String> _cuisines = [
-    'Burger', 'Pizza', 'Sushi', 'Tacos', 'Kebab', 'Sandwich',
-    'Mexicain', 'Africain', 'Arabe', 'Indien', 'Chinois', 'Thaï',
-    'Poulet', 'Hot-dog', 'Pâtes', 'Salade', 'Fruits de mer',
-    'Vegan', 'Dessert', 'Glaces', 'Crêpes', 'Waffle', 'Café',
-    'Smoothie', 'Fast-Food', 'Bols/Healthy', 'Autre',
+    'Burgers', 'Tacos', 'Kebab', 'Pizza', 'Poulet', 'Sandwichs',
+    'Fast-food', 'Hot-dogs', 'Sushi', 'Poke', 'Chinois', 'Vietnamien',
+    'Indien', 'Thaïlandais', 'Coréen', 'Mexicain', 'Italien', 'Grec',
+    'Cuisine du monde', 'Grillades & Viandes', 'Poisson & Fruits de mer',
+    'Vegan & Végétarien', 'Halal', 'Boulangerie', 'Sandwicherie',
+    'Crêpes & Gaufres', 'Desserts', 'Glaces', 'Bubble Tea', 'Café',
+    'Brasserie', 'Restaurant traditionnel', 'Restaurant gastronomique',
+    'Buffet', 'Cuisine méditerranéenne', 'Cuisine africaine',
+    'Cuisine antillaise & créole', 'Autres',
   ];
 
   @override

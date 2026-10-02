@@ -207,6 +207,20 @@ class ClientDrawer extends StatelessWidget {
                           builder: (_) => const AccountScreen()));
                     },
                   ),
+                  // Owners who switched to client mode get a way back
+                  if (context.watch<AuthProvider>().isRestaurant)
+                    _item(
+                      context,
+                      icon: Icons.storefront,
+                      iconColor: const Color(0xFF00C8B3),
+                      label: 'Espace FAST Pro',
+                      onTap: () async {
+                        await provider.setViewAsClient(false);
+                        if (!context.mounted) return;
+                        Navigator.of(context)
+                            .popUntil((route) => route.isFirst);
+                      },
+                    ),
                   _item(
                     context,
                     icon: Icons.shield_outlined,

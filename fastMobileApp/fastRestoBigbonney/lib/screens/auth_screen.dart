@@ -116,6 +116,8 @@ class _AuthScreenState extends State<AuthScreen>
 
     final isResto = auth.isRestaurant;
     final isLivreur = auth.isLivreur;
+    // An owner who chose "Mode Client" stays on the client side.
+    final goClient = isResto && fastProv.viewAsClient;
 
     // Load data from API after auth
     fastProv.loadFromApi();
@@ -127,11 +129,21 @@ class _AuthScreenState extends State<AuthScreen>
       restoProv.loadFromApi(restaurantId: restoId);
     }
 
+    // Signed in from the client form but the email belongs to a FAST Pro
+    // account — explain the mode switch instead of confusingly landing
+    // on the restaurant side.
+    if (isResto && (widget.initialRole ?? 'CLIENT') == 'CLIENT') {
+      fastProv.showToast(
+        '⚡ Compte FAST Pro',
+        'Cet email appartient à un compte restaurant. Pour commander en client : ☰ → Mode Client.',
+      );
+    }
+
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
         builder: (_) =>
-            isResto
+            isResto && !goClient
                 ? const OnboardingScreen()
                 : isLivreur
                     ? const DriverShell()
@@ -385,6 +397,8 @@ class _AuthScreenState extends State<AuthScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            _buildLanguagePicker(),
+            const SizedBox(height: 20),
             _buildTextField(
               controller: _registerName,
               label: 'Nom complet',
@@ -539,6 +553,68 @@ class _AuthScreenState extends State<AuthScreen>
           ],
         ),
       ),
+    );
+  }
+
+  /// Languages commonly spoken in FAST restaurants — picked at signup.
+  static const List<(String, String)> _languages = [
+    ('fr', '🇫🇷  Français'),
+    ('en', '🇬🇧  English'),
+    ('tr', '🇹🇷  Türkçe'),
+    ('ar', '🇸🇦  العربية'),
+    ('hi', '🇮🇳  हिन्दी'),
+    ('bn', '🇧🇩  বাংলা'),
+    ('ur', '🇵🇰  اردو'),
+    ('bm', '🇲🇱  Bambara'),
+    ('wo', '🇸🇳  Wolof'),
+    ('ln', '🇨🇩  Lingala'),
+    ('es', '🇪🇸  Español'),
+    ('pt', '🇵🇹  Português'),
+    ('it', '🇮🇹  Italiano'),
+    ('zh', '🇨🇳  中文'),
+  ];
+
+  Widget _buildLanguagePicker() {
+    final fast = context.watch<FASTProvider>();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Langue / Language',
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: context.fast.t1,
+          ),
+        ),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<String>(
+          initialValue: fast.appLanguage,
+          dropdownColor: context.fast.card,
+          style: TextStyle(color: context.fast.t1, fontSize: 14),
+          icon: Icon(Icons.keyboard_arrow_down, color: context.fast.t3),
+          decoration: InputDecoration(
+            prefixIcon: Icon(Icons.language, color: context.fast.t3, size: 18),
+            filled: true,
+            fillColor: context.fast.card,
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: context.fast.line, width: 1),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide:
+                  const BorderSide(color: Color(0xFFF59E0B), width: 1.5),
+            ),
+          ),
+          items: _languages
+              .map((l) => DropdownMenuItem(value: l.$1, child: Text(l.$2)))
+              .toList(),
+          onChanged: (v) => fast.setAppLanguage(v ?? 'fr'),
+        ),
+      ],
     );
   }
 

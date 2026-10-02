@@ -58,11 +58,15 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
 
   // Same list as the client app's category strip — multi-select.
   static const _categories = [
-    'Burger', 'Pizza', 'Sushi', 'Tacos', 'Kebab', 'Sandwich',
-    'Mexicain', 'Africain', 'Arabe', 'Indien', 'Chinois', 'Thaï',
-    'Poulet', 'Hot-dog', 'Pâtes', 'Salade', 'Fruits de mer',
-    'Vegan', 'Dessert', 'Glaces', 'Crêpes', 'Waffle', 'Café',
-    'Smoothie', 'Fast-Food', 'Bols/Healthy', 'Autre',
+    'Burgers', 'Tacos', 'Kebab', 'Pizza', 'Poulet', 'Sandwichs',
+    'Fast-food', 'Hot-dogs', 'Sushi', 'Poke', 'Chinois', 'Vietnamien',
+    'Indien', 'Thaïlandais', 'Coréen', 'Mexicain', 'Italien', 'Grec',
+    'Cuisine du monde', 'Grillades & Viandes', 'Poisson & Fruits de mer',
+    'Vegan & Végétarien', 'Halal', 'Boulangerie', 'Sandwicherie',
+    'Crêpes & Gaufres', 'Desserts', 'Glaces', 'Bubble Tea', 'Café',
+    'Brasserie', 'Restaurant traditionnel', 'Restaurant gastronomique',
+    'Buffet', 'Cuisine méditerranéenne', 'Cuisine africaine',
+    'Cuisine antillaise & créole', 'Autres',
   ];
   Set<String> _selectedCategories = {};
 
