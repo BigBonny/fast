@@ -210,7 +210,7 @@ class _RestoMainShellState extends State<RestoMainShell> {
               ],
             ),
             const Text(
-              'ESPACE RESTAURATEUR',
+              'RESTAURATEUR PRO',
               style: TextStyle(
                 color: Color(0xFF94A3B8),
                 fontSize: 9,
