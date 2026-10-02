@@ -452,26 +452,78 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
             ),
           ),
 
-          // Actions
-          Column(
-            children: [
-              Switch(
-                value: item.available,
-                onChanged: (v) =>
-                    prov.toggleMenuItemAvailability(item.id, v),
-                activeThumbColor: const Color(0xFF10B981),
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ), IconButton(
-                icon: const Icon(Icons.edit_outlined,
-                    color: Color(0xFF00C8B3), size: 20),
-                onPressed: () => _openEdit(context, item: item),
-                padding: const EdgeInsets.all(8),
-                constraints: const BoxConstraints(),
-              ),
-              const SizedBox(height: 4),
-            ],
+          // Actions — Base44 style: Épuiser (red) / Dispo (green) + edit + delete
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: Column(
+              children: [
+                GestureDetector(
+                  onTap: () => prov.toggleMenuItemAvailability(
+                      item.id, !item.available),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: item.available
+                          ? const Color(0xFFEF4444)
+                          : const Color(0xFF34D399),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      item.available ? 'Épuiser' : 'Dispo',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.edit_outlined,
+                          color: Color(0xFF00C8B3), size: 19),
+                      onPressed: () => _openEdit(context, item: item),
+                      padding: const EdgeInsets.all(6),
+                      constraints: const BoxConstraints(),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline,
+                          color: Color(0xFF94A3B8), size: 19),
+                      padding: const EdgeInsets.all(6),
+                      constraints: const BoxConstraints(),
+                      onPressed: () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('Supprimer ce plat ?'),
+                            content: Text('« ${item.name} » sera retiré du menu.'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx, false),
+                                child: const Text('Annuler'),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx, true),
+                                child: const Text('Supprimer',
+                                    style:
+                                        TextStyle(color: Color(0xFFEF4444))),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (confirm == true) {
+                          await prov.deleteMenuItem(item.id);
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-          const SizedBox(width: 4),
         ],
       ),
     );

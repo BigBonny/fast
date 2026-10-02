@@ -3,12 +3,14 @@ import 'package:provider/provider.dart';
 import '../provider.dart';
 import '../resto_provider.dart';
 import '../providers/auth_provider.dart';
+import '../screens/resto/menu_ai_scanner_screen.dart';
 import '../screens/resto/resto_staff_screen.dart';
 import '../theme.dart';
 
-/// Base44-style slide-in menu for Fast Pro (restaurant accounts):
-/// gradient header with wordmark + restaurant avatar, tinted icon rows,
-/// expandable Réglages (theme + rush mode + tutorial), red outlined logout.
+/// Base44-style slide-in menu for Fast Pro: compact gradient wordmark,
+/// flat sectioned rows (Mon Service / Commandes / Menu / Réglages),
+/// OUTILS AVANCÉS section (Statistiques, Intelligence IA, Mon équipe),
+/// legal links and red-outlined logout.
 class RestoDrawer extends StatelessWidget {
   final void Function(int tabIndex) onNavigate;
   final VoidCallback onReplayTutorial;
@@ -19,21 +21,17 @@ class RestoDrawer extends StatelessWidget {
     required this.onReplayTutorial,
   });
 
-  static const _headerGradient = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0xFF1E1B4B), Color(0xFF312E81), Color(0xFF1E293B)],
-  );
-
   static bool _isDark(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark;
 
   static Color _bg(BuildContext context) =>
       _isDark(context) ? const Color(0xFF0F172A) : Colors.white;
+  static Color _surface(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC);
   static Color _text(BuildContext context) =>
       _isDark(context) ? const Color(0xFFF1F5F9) : const Color(0xFF1E293B);
   static Color _subtext(BuildContext context) =>
-      _isDark(context) ? const Color(0xFFCBD5E1) : const Color(0xFF64748B);
+      _isDark(context) ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
   static Color _chipBg(BuildContext context) =>
       _isDark(context) ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9);
   static Color _chipBorder(BuildContext context) =>
@@ -44,35 +42,42 @@ class RestoDrawer extends StatelessWidget {
     onNavigate(index);
   }
 
+  void _push(BuildContext context, Widget screen) {
+    Navigator.of(context).pop();
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<FASTProvider>();
     final resto = context.watch<RestoProvider>();
-    final settings = resto.settings;
-    final restoName = settings?.name ?? 'Mon Restaurant';
-    final initial =
-        restoName.isNotEmpty ? restoName.characters.first.toUpperCase() : 'R';
+    final restoName = resto.settings?.name ?? 'Mon Restaurant';
 
     return Drawer(
       backgroundColor: _bg(context),
       child: SafeArea(
         child: Column(
           children: [
-            // ─── Header ───
+            // ─── Compact header — matches the app bar wordmark ───
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(16, 12, 8, 20),
-              decoration: const BoxDecoration(gradient: _headerGradient),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              padding: const EdgeInsets.fromLTRB(16, 10, 4, 14),
+              decoration: const BoxDecoration(
+                color: Color(0xFF020617),
+                border: Border(
+                  bottom: BorderSide(color: Color(0xFF1E293B)),
+                ),
+              ),
+              child: Row(
                 children: [
-                  Row(
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       ShaderMask(
                         shaderCallback: (b) =>
                             FASTPro.logoGradient.createShader(b),
                         child: const Text(
-                          '⚡ FAST PRO',
+                          '⚡ FAST',
                           style: TextStyle(
                             fontWeight: FontWeight.w900,
                             fontSize: 20,
@@ -81,123 +86,109 @@ class RestoDrawer extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const Spacer(),
-                      IconButton(
-                        icon: const Icon(Icons.close, color: Colors.white70),
-                        onPressed: () => Navigator.of(context).pop(),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Container(
-                        width: 52,
-                        height: 52,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: FASTPro.logoGradient,
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          initial,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              restoName,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w800,
-                                fontSize: 16,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            if (settings != null && settings.city.isNotEmpty)
-                              Text(
-                                '${settings.cuisineType} · ${settings.city}',
-                                style: const TextStyle(
-                                  color: Color(0xFFCBD5E1),
-                                  fontSize: 12,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                          ],
+                      const Text(
+                        'RESTAURATEUR PRO',
+                        style: TextStyle(
+                          color: Color(0xFF94A3B8),
+                          fontSize: 8,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 2,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 14),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: FASTPro.teal,
-                      borderRadius: BorderRadius.circular(10),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      restoName,
+                      style: TextStyle(
+                        color: _subtext(context),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.bolt, color: Colors.white, size: 16),
-                        SizedBox(width: 6),
-                        Text(
-                          'Partenaire · FAST Pro',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w900,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white70),
+                    onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],
               ),
             ),
 
-            // ─── Menu items ───
+            // ─── Main navigation ───
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.symmetric(vertical: 8),
+                padding: const EdgeInsets.all(10),
                 children: [
-                  _item(
-                    context,
-                    icon: Icons.person_outline,
-                    iconColor: const Color(0xFFA855F7),
-                    label: 'Mon compte',
-                    onTap: () => _go(context, 4),
-                  ),
-                  _item(
-                    context,
-                    icon: Icons.shopping_bag_outlined,
-                    iconColor: const Color(0xFF60A5FA),
-                    label: 'Mes commandes',
-                    onTap: () => _go(context, 0),
-                  ),
+                  _row(context,
+                      emoji: '📋',
+                      label: 'Mon Service',
+                      onTap: () => _go(context, 4)),
+                  _row(context,
+                      emoji: '🛍️',
+                      label: 'Commandes',
+                      onTap: () => _go(context, 0)),
+                  _row(context,
+                      emoji: '🍽️',
+                      label: 'Menu',
+                      onTap: () => _go(context, 1)),
                   _settingsItem(context, provider, resto),
-                  _item(
-                    context,
-                    icon: Icons.shield_outlined,
-                    iconColor: const Color(0xFF38BDF8),
-                    label: 'Confidentialité',
-                    onTap: () => _showLegal(context, 'Confidentialité'),
+
+                  const SizedBox(height: 14),
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    child: Text(
+                      'OUTILS AVANCÉS',
+                      style: TextStyle(
+                        color: _subtext(context),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 2,
+                      ),
+                    ),
                   ),
-                  _item(
-                    context,
-                    icon: Icons.description_outlined,
-                    iconColor: const Color(0xFFFBBF24),
-                    label: 'CGU',
-                    onTap: () => _showLegal(context, 'CGU'),
+                  _row(context,
+                      emoji: '📈',
+                      label: 'Statistiques',
+                      onTap: () => _go(context, 2)),
+                  _row(context,
+                      emoji: '🤖',
+                      label: 'Intelligence IA',
+                      subtitle: 'Importer la carte par photo ou vidéo',
+                      onTap: () =>
+                          _push(context, const MenuAiScannerScreen())),
+                  _row(context,
+                      emoji: '👥',
+                      label: 'Mon équipe',
+                      subtitle: 'Comptes cuisiniers invités',
+                      onTap: () =>
+                          _push(context, const RestoStaffScreen())),
+
+                  const SizedBox(height: 14),
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    child: Text(
+                      'LÉGAL',
+                      style: TextStyle(
+                        color: _subtext(context),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 2,
+                      ),
+                    ),
                   ),
+                  _row(context,
+                      emoji: '📄',
+                      label: 'CGU',
+                      onTap: () => _showLegal(context, 'CGU')),
+                  _row(context,
+                      emoji: '🔐',
+                      label: 'Confidentialité',
+                      onTap: () => _showLegal(context, 'Confidentialité')),
                 ],
               ),
             ),
@@ -240,33 +231,58 @@ class RestoDrawer extends StatelessWidget {
     );
   }
 
-  Widget _item(
+  /// Base44 row: emoji in a rounded tile + label, full-width card.
+  Widget _row(
     BuildContext context, {
-    required IconData icon,
-    required Color iconColor,
+    required String emoji,
     required String label,
+    String? subtitle,
     VoidCallback? onTap,
   }) {
-    return ListTile(
-      onTap: onTap,
-      leading: Container(
-        width: 34,
-        height: 34,
-        decoration: BoxDecoration(
-          color: iconColor.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(8),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Material(
+        color: _surface(context),
+        borderRadius: BorderRadius.circular(10),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(10),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            child: Row(
+              children: [
+                Text(emoji, style: const TextStyle(fontSize: 18)),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        label,
+                        style: TextStyle(
+                          color: _text(context),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
+                      if (subtitle != null)
+                        Text(
+                          subtitle,
+                          style: TextStyle(
+                            color: _subtext(context),
+                            fontSize: 11,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_right,
+                    size: 18, color: _subtext(context)),
+              ],
+            ),
+          ),
         ),
-        child: Icon(icon, color: iconColor, size: 18),
       ),
-      title: Text(
-        label,
-        style: TextStyle(
-          color: _text(context),
-          fontWeight: FontWeight.w600,
-          fontSize: 14,
-        ),
-      ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
     );
   }
 
@@ -274,80 +290,70 @@ class RestoDrawer extends StatelessWidget {
       BuildContext context, FASTProvider provider, RestoProvider resto) {
     return Theme(
       data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-      child: ExpansionTile(
-        leading: Container(
-          width: 34,
-          height: 34,
-          decoration: BoxDecoration(
-            color: const Color(0xFF94A3B8).withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(8),
+      child: Material(
+        color: _surface(context),
+        borderRadius: BorderRadius.circular(10),
+        child: ExpansionTile(
+          leading: const Text('⚙️', style: TextStyle(fontSize: 18)),
+          title: Text(
+            'Réglages',
+            style: TextStyle(
+              color: _text(context),
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+            ),
           ),
-          child: const Icon(Icons.settings_outlined,
-              color: Color(0xFF94A3B8), size: 18),
-        ),
-        title: Text(
-          'Réglages',
-          style: TextStyle(
-            color: _text(context),
-            fontWeight: FontWeight.w600,
-            fontSize: 14,
-          ),
-        ),
-        iconColor: const Color(0xFF94A3B8),
-        collapsedIconColor: const Color(0xFF94A3B8),
-        childrenPadding: const EdgeInsets.only(left: 16, right: 8, bottom: 8),
-        children: [
-          // Rush mode toggle
-          SwitchListTile(
-            dense: true,
-            contentPadding: EdgeInsets.zero,
-            title: Text(
-              'Mode Rush',
-              style: TextStyle(
-                color: _text(context),
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
+          iconColor: _subtext(context),
+          collapsedIconColor: _subtext(context),
+          childrenPadding:
+              const EdgeInsets.only(left: 16, right: 8, bottom: 8),
+          children: [
+            // Rush mode toggle
+            SwitchListTile(
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              title: Text(
+                'Mode Rush',
+                style: TextStyle(
+                  color: _text(context),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
+              subtitle: Text(
+                'Temps de prépa allongés',
+                style: TextStyle(color: _subtext(context), fontSize: 11),
+              ),
+              secondary: const Icon(Icons.local_fire_department,
+                  color: FASTPro.magenta, size: 20),
+              activeThumbColor: FASTPro.magenta,
+              value: resto.isRushMode,
+              onChanged: (_) => resto.toggleRushMode(),
             ),
-            subtitle: Text(
-              'Temps de prépa allongés',
-              style: TextStyle(color: _subtext(context), fontSize: 11),
+            const SizedBox(height: 8),
+            // Theme picker
+            Row(
+              children: [
+                _themeOpt(context, provider, ThemeMode.system,
+                    Icons.phone_android, 'Auto'),
+                const SizedBox(width: 8),
+                _themeOpt(context, provider, ThemeMode.light,
+                    Icons.wb_sunny_outlined, 'Clair'),
+                const SizedBox(width: 8),
+                _themeOpt(context, provider, ThemeMode.dark,
+                    Icons.nightlight_outlined, 'Sombre'),
+              ],
             ),
-            secondary: const Icon(Icons.local_fire_department,
-                color: FASTPro.magenta, size: 20),
-            activeThumbColor: FASTPro.magenta,
-            value: resto.isRushMode,
-            onChanged: (_) => resto.toggleRushMode(),
-          ),
-          const SizedBox(height: 8),
-          // Theme picker
-          Row(
-            children: [
-              _themeOpt(context, provider, ThemeMode.system,
-                  Icons.phone_android, 'Auto'),
-              const SizedBox(width: 8),
-              _themeOpt(context, provider, ThemeMode.light,
-                  Icons.wb_sunny_outlined, 'Clair'),
-              const SizedBox(width: 8),
-              _themeOpt(context, provider, ThemeMode.dark,
-                  Icons.nightlight_outlined, 'Sombre'),
-            ],
-          ),
-          const SizedBox(height: 8),
-          // Advanced settings + tutorial shortcuts
-          _miniItem(context, Icons.tune, 'Paramètres avancés',
-              () => _go(context, 3)),
-          _miniItem(context, Icons.group_outlined,
-              'Équipe & comptes invités', () {
-            Navigator.of(context).pop();
-            Navigator.of(context).push(MaterialPageRoute(
-                builder: (_) => const RestoStaffScreen()));
-          }),
-          _miniItem(context, Icons.help_outline, 'Revoir le tutoriel', () {
-            Navigator.of(context).pop();
-            onReplayTutorial();
-          }),
-        ],
+            const SizedBox(height: 8),
+            // Advanced settings + tutorial shortcuts
+            _miniItem(context, Icons.tune, 'Paramètres avancés',
+                () => _go(context, 3)),
+            _miniItem(context, Icons.help_outline, 'Revoir le tutoriel', () {
+              Navigator.of(context).pop();
+              onReplayTutorial();
+            }),
+          ],
+        ),
       ),
     );
   }
@@ -386,9 +392,8 @@ class RestoDrawer extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: sel
-                ? FASTPro.teal.withValues(alpha: 0.15)
-                : _chipBg(context),
+            color:
+                sel ? FASTPro.teal.withValues(alpha: 0.15) : _chipBg(context),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
               color: sel ? FASTPro.teal : _chipBorder(context),

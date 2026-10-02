@@ -319,6 +319,62 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                     ],
                   ),
                 )),
+                if (order.fulfillmentType == FulfillmentType.pickup) ...[
+                  const SizedBox(height: 4),
+                  // Base44-style approach bar: teal → magenta gradient fill
+                  // showing how far along their walk the client is.
+                  Row(
+                    children: [
+                      Icon(Icons.location_on,
+                          size: 13,
+                          color: proxColor ?? context.fast.t3),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Client à ~${(order.userWalkTimeMinutes * (1 - order.gpsProgress / 100)).ceil().clamp(0, 999)} min',
+                        style: TextStyle(
+                            color: context.fast.t2,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600),
+                      ),
+                      const Spacer(),
+                      Text(
+                        '${order.gpsProgress.clamp(0, 100).round()}% du trajet',
+                        style: TextStyle(
+                            color: proxColor ?? context.fast.t3,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: SizedBox(
+                      height: 6,
+                      child: Stack(
+                        children: [
+                          Container(
+                              color:
+                                  context.fast.faint.withValues(alpha: 0.3)),
+                          FractionallySizedBox(
+                            widthFactor:
+                                (order.gpsProgress / 100).clamp(0.0, 1.0),
+                            child: Container(
+                              decoration: const BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Color(0xFF00C8B3),
+                                    Color(0xFFFF0066),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
                       Divider(color: context.fast.line, height: 32),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
