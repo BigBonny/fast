@@ -28,13 +28,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   // ignore: prefer_final_fields
   String _managerPhone = '';
   String _restoName = '';
-  String _cuisineType = 'Burger';
+  final Set<String> _cuisineTypes = {'Burger'};
   String _city = '';
   double _normalPrepTime = 15;
   double _rushPrepTime = 25;
 
+  // Same list as the client app's category strip — a restaurant can
+  // pick several (e.g. "Burger, Tacos").
   final List<String> _cuisines = [
-    'Burger', 'Pizza', 'Sushi', 'Italien', 'Kebab', 'Bols/Healthy', 'Autre'
+    'Burger', 'Pizza', 'Sushi', 'Tacos', 'Kebab', 'Sandwich',
+    'Mexicain', 'Africain', 'Arabe', 'Indien', 'Chinois', 'Thaï',
+    'Poulet', 'Hot-dog', 'Pâtes', 'Salade', 'Fruits de mer',
+    'Vegan', 'Dessert', 'Glaces', 'Crêpes', 'Waffle', 'Café',
+    'Smoothie', 'Fast-Food', 'Bols/Healthy', 'Autre',
   ];
 
   @override
@@ -130,7 +136,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       final data = await ApiClient().post(ApiConfig.restaurants, body: {
         'name': _restoName,
         'description': '',
-        'category': _cuisineType,
+        'category': _cuisineTypes.join(', '),
         'address': _city,
         'normalPrepTime': _normalPrepTime.toInt(),
         'rushPrepTime': _rushPrepTime.toInt(),
@@ -143,7 +149,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         managerFirstName: _managerFirstName,
         managerPhone: _managerPhone,
         name: _restoName,
-        cuisineType: _cuisineType,
+        cuisineType: _cuisineTypes.join(', '),
         city: _city,
         normalPrepTime: _normalPrepTime.toInt(),
         rushPrepTime: _rushPrepTime.toInt(),
@@ -331,17 +337,44 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             onSaved: (val) => _city = val ?? '',
           ),
                 SizedBox(height: 16),
-          DropdownButtonFormField<String>(
-            initialValue: _cuisineType,
-            dropdownColor: context.fast.card,
-            style: TextStyle(color: context.fast.t1),
-            decoration:       InputDecoration(
-                labelText: 'Type de cuisine',
-                labelStyle: TextStyle(color: context.fast.t2)),
-            items: _cuisines
-                .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                .toList(),
-            onChanged: (val) => setState(() => _cuisineType = val!),
+          Text('Type(s) de cuisine',
+              style: TextStyle(
+                  color: context.fast.t2,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600)),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: _cuisines.map((c) {
+              final sel = _cuisineTypes.contains(c);
+              return FilterChip(
+                label: Text(
+                  c,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: sel ? Colors.white : context.fast.t2,
+                    fontWeight: sel ? FontWeight.w700 : FontWeight.normal,
+                  ),
+                ),
+                selected: sel,
+                onSelected: (v) => setState(() {
+                  if (v) {
+                    _cuisineTypes.add(c);
+                  } else if (_cuisineTypes.length > 1) {
+                    _cuisineTypes.remove(c);
+                  }
+                }),
+                selectedColor: const Color(0xFF00C8B3),
+                backgroundColor: context.fast.card,
+                checkmarkColor: Colors.white,
+                side: BorderSide(
+                  color: sel ? const Color(0xFF00C8B3) : context.fast.faint,
+                ),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
+              );
+            }).toList(),
           ),
           const SizedBox(height: 32),
           _buildTimeSlider(

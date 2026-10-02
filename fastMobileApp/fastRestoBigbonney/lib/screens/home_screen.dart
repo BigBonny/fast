@@ -517,8 +517,10 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
+        const SizedBox(height: 8),
+        _buildRadiusFilter(context, provider),
         const SizedBox(height: 12),
-        
+
         // List of Restaurants
         filteredRest.isEmpty
             ? _buildNoKitchens(context, provider)
@@ -630,10 +632,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Positioned(
               right: -10,
               bottom: -10,
-              child: Opacity(
-                opacity: 0.15,
-                child: Text(emoji, style: const TextStyle(fontSize: 64)),
-              ),
+              child: _PulsingEmoji(emoji),
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -704,6 +703,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ],
+            ),
+            // Animated light sweep across the card
+            Positioned.fill(
+              child: IgnorePointer(
+                child: _LightSweep(borderRadius: BorderRadius.circular(20)),
+              ),
             ),
           ],
         ),
@@ -994,6 +999,63 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // Max search radius picker — 1 / 3 / 5 / 10 km or unlimited
+  Widget _buildRadiusFilter(BuildContext context, FASTProvider provider) {
+    const options = <(double?, String)>[
+      (null, 'Tous'),
+      (1, '1 km'),
+      (3, '3 km'),
+      (5, '5 km'),
+      (10, '10 km'),
+    ];
+    final hasGps = provider.userLocation != null;
+    return SizedBox(
+      height: 30,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: options.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (context, i) {
+          final (km, label) = options[i];
+          final active = provider.searchRadiusKm == km;
+          return GestureDetector(
+            onTap: () => provider.setSearchRadius(km),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: active ? const Color(0xFF00C8B3) : context.fast.card,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: active ? const Color(0xFF00C8B3) : context.fast.line,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    km == null ? Icons.all_inclusive : Icons.near_me,
+                    size: 11,
+                    color: active ? Colors.white : context.fast.t3,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    km != null && !hasGps ? '$label (GPS…)' : label,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: active ? Colors.white : context.fast.t2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   Widget _buildNoKitchens(BuildContext context, FASTProvider provider) {
     return Padding(
       padding: EdgeInsets.all(32),
@@ -1005,7 +1067,7 @@ class _HomeScreenState extends State<HomeScreen> {
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: context.fast.t1),
             ),
                   SizedBox(height: 6), Text(
-              'Essayez de supprimer les restrictions alimentaires ou de modifier les filtres.',
+              'Essayez d\'élargir le rayon de recherche ou de modifier les filtres.',
               style: TextStyle(fontSize: 11, color: context.fast.t3),
               textAlign: TextAlign.center,
             ),
@@ -1115,6 +1177,115 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Diagonal light band sweeping across a promo card, forever looping.
+class _LightSweep extends StatefulWidget {
+  final BorderRadius borderRadius;
+  const _LightSweep({required this.borderRadius});
+
+  @override
+  State<_LightSweep> createState() => _LightSweepState();
+}
+
+class _LightSweepState extends State<_LightSweep>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 2800),
+  )..repeat();
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: widget.borderRadius,
+      child: AnimatedBuilder(
+        animation: _ctrl,
+        builder: (context, _) {
+          // Sweep position: -1.4 → 1.4 (off-left to off-right)
+          final t = _ctrl.value * 2.8 - 1.4;
+          return FractionallySizedBox(
+            widthFactor: 0.5,
+            heightFactor: 1.6,
+            alignment: Alignment(t, 0),
+            child: Transform.rotate(
+              angle: -0.35,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      Colors.white.withValues(alpha: 0),
+                      Colors.white.withValues(alpha: 0.20),
+                      Colors.white.withValues(alpha: 0),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Softly pulsing decorative emoji with a light glow.
+class _PulsingEmoji extends StatefulWidget {
+  final String emoji;
+  const _PulsingEmoji(this.emoji);
+
+  @override
+  State<_PulsingEmoji> createState() => _PulsingEmojiState();
+}
+
+class _PulsingEmojiState extends State<_PulsingEmoji>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1600),
+  )..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _ctrl,
+      builder: (context, _) {
+        final v = Curves.easeInOut.transform(_ctrl.value);
+        return Transform.scale(
+          scale: 1 + v * 0.18,
+          child: Opacity(
+            opacity: 0.15 + v * 0.15,
+            child: Text(
+              widget.emoji,
+              style: TextStyle(
+                fontSize: 64,
+                shadows: [
+                  Shadow(
+                    color: Colors.white.withValues(alpha: 0.35 + v * 0.3),
+                    blurRadius: 18 + v * 14,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

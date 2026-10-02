@@ -317,16 +317,39 @@ export const createCheckoutSession = async (req: Request, res: Response): Promis
       },
     });
 
-    const paymentIntentData: Stripe.Checkout.SessionCreateParams.PaymentIntentData = {};
+    const paymentIntentData: Stripe.Checkout.SessionCreateParams.PaymentIntentData = {
+      // Keep the card on file so returning customers can pay with one tap.
+      setup_future_usage: 'off_session',
+    };
     if (restaurant.stripeAccountId && restaurant.stripeChargesEnabled) {
       paymentIntentData.application_fee_amount = cents(serviceFee);
       paymentIntentData.transfer_data = { destination: restaurant.stripeAccountId };
     }
 
+    // Reuse the user's Stripe Customer (matched by email) so saved cards
+    // resurface at checkout; Stripe creates one on the first payment.
+    const user = await prisma.user.findUnique({
+      where: { id: req.user!.userId },
+      select: { email: true },
+    });
+    let stripeCustomerId: string | null = null;
+    if (user?.email) {
+      const existing = await stripe.customers.list({ email: user.email, limit: 1 });
+      stripeCustomerId = existing.data[0]?.id ?? null;
+    }
+
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       currency: env.stripeCurrency,
-      customer_email: undefined,
+      ...(stripeCustomerId
+        ? { customer: stripeCustomerId }
+        : {
+            customer_email: user?.email,
+            customer_creation: 'always' as const,
+          }),
+      saved_payment_method_options: {
+        allow_redisplay_filters: ['always'],
+      },
       client_reference_id: checkout.id,
       metadata: {
         checkoutId: checkout.id,

@@ -34,6 +34,7 @@ class FASTProvider extends ChangeNotifier {
   String _selectedCategory = 'all';
   String _searchKeyword = '';
   List<DietaryPreference> _selectedDietary = [];
+  double? _searchRadiusKm; // null = no limit
   List<CartItem> _cart = [];
   List<PushNotification> _notifications = [];
   List<Order> _orders = [];
@@ -90,6 +91,7 @@ class FASTProvider extends ChangeNotifier {
   String get selectedCategory => _selectedCategory;
   String get searchKeyword => _searchKeyword;
   List<DietaryPreference> get selectedDietary => _selectedDietary;
+  double? get searchRadiusKm => _searchRadiusKm;
   List<CartItem> get cart => _cart;
   List<PushNotification> get notifications => _notifications;
   List<Order> get orders => _orders;
@@ -285,16 +287,16 @@ class FASTProvider extends ChangeNotifier {
     CategoryItem(id: 'burger', name: 'Burger', icon: '🍔'),
     CategoryItem(id: 'pizza', name: 'Pizza', icon: '🍕'),
     CategoryItem(id: 'kebab', name: 'Kebab', icon: '🥙'),
-    CategoryItem(id: 'tacos', name: 'Tacos', icon: '�'),
+    CategoryItem(id: 'tacos', name: 'Tacos', icon: '🌮'),
     CategoryItem(id: 'mexicain', name: 'Mexicain', icon: '🌯'),
     CategoryItem(id: 'africain', name: 'Africain', icon: '🥘'),
     CategoryItem(id: 'arabe', name: 'Arabe', icon: '🧆'),
     CategoryItem(id: 'sushi', name: 'Sushi', icon: '🍣'),
-    CategoryItem(id: 'indien', name: 'Indien', icon: '�'),
+    CategoryItem(id: 'indien', name: 'Indien', icon: '🍛'),
     CategoryItem(id: 'chinois', name: 'Chinois', icon: '🥡'),
     CategoryItem(id: 'thai', name: 'Thaï', icon: '🍜'),
     CategoryItem(id: 'poulet', name: 'Poulet', icon: '🍗'),
-    CategoryItem(id: 'sandwich', name: 'Sandwich', icon: '�'),
+    CategoryItem(id: 'sandwich', name: 'Sandwich', icon: '🥪'),
     CategoryItem(id: 'hotdog', name: 'Hot-dog', icon: '🌭'),
     CategoryItem(id: 'pates', name: 'Pâtes', icon: '🍝'),
     CategoryItem(id: 'salade', name: 'Salade', icon: '🥗'),
@@ -306,7 +308,7 @@ class FASTProvider extends ChangeNotifier {
     CategoryItem(id: 'waffle', name: 'Waffle', icon: '🧇'),
     CategoryItem(id: 'cafe', name: 'Café', icon: '☕'),
     CategoryItem(id: 'smoothie', name: 'Smoothie', icon: '🥤'),
-    CategoryItem(id: 'autre', name: 'Autre', icon: '�'),
+    CategoryItem(id: 'autre', name: 'Autre', icon: '🍴'),
   ];
 
   FASTProvider() {
@@ -512,10 +514,17 @@ class FASTProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Radius filter (km). Pass null for unlimited.
+  void setSearchRadius(double? km) {
+    _searchRadiusKm = km;
+    notifyListeners();
+  }
+
   void resetFilters() {
     _selectedCategory = 'all';
     _searchKeyword = '';
     _selectedDietary = [];
+    _searchRadiusKm = null;
     notifyListeners();
   }
 
@@ -534,14 +543,19 @@ class FASTProvider extends ChangeNotifier {
 
   // List filter logic
   List<Restaurant> getFilteredRestaurants() {
-    final filterKey = '$_selectedCategory|$_searchKeyword|${_selectedDietary.length}|${_restaurants.length}';
+    final filterKey =
+        '$_selectedCategory|$_searchKeyword|${_selectedDietary.length}|${_restaurants.length}|$_searchRadiusKm|$_userLocation';
     if (_cachedFiltered != null && _cachedFilterKey == filterKey) {
       return _cachedFiltered!;
     }
     _cachedFilterKey = filterKey;
-    _cachedFiltered = _restaurants.where((rest) {
+    final list = _restaurants.where((rest) {
+      // A restaurant can carry several categories ("Burger, Tacos") —
+      // match if ANY of them equals the selected filter.
       final matchesCategory = _selectedCategory == 'all' ||
-          normalizeCategoryId(rest.category) == _selectedCategory;
+          rest.category
+              .split(',')
+              .any((c) => normalizeCategoryId(c) == _selectedCategory);
 
       final kw = _searchKeyword.toLowerCase();
       final matchesSearch = rest.name.toLowerCase().contains(kw) ||
@@ -554,8 +568,19 @@ class FASTProvider extends ChangeNotifier {
               rest.dietaryOptions.contains(pref) ||
               rest.menu.any((item) => item.dietaryTags.contains(pref)));
 
-      return matchesCategory && matchesSearch && matchesDietary;
+      // Radius only applies when we actually have a GPS fix
+      final matchesRadius = _searchRadiusKm == null ||
+          _userLocation == null ||
+          getRealDistance(rest) <= _searchRadiusKm!;
+
+      return matchesCategory && matchesSearch && matchesDietary && matchesRadius;
     }).toList();
+
+    // Nearest first when we have a real position
+    if (_userLocation != null) {
+      list.sort((a, b) => getRealDistance(a).compareTo(getRealDistance(b)));
+    }
+    _cachedFiltered = list;
     return _cachedFiltered!;
   }
 

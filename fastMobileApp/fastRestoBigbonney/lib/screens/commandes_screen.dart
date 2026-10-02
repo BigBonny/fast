@@ -348,12 +348,74 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                           ? 'Récupéré'
                           : isCancelled
                               ? 'Annulé'
-                              : 'Arrivée estimée dans : ${order.userWalkTimeMinutes} min',
+                              : 'Arrivée estimée dans : ${_liveEtaMinutes(order)} min',
                       style: TextStyle(fontSize: 11, color: context.fast.t2, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
+                // Live proximity chip — syncs with actual GPS progress:
+                // green = still far, orange ≈ 3 min out, red = at the door.
+                if (!isCompleted && !isCancelled) ...[
+                  const SizedBox(height: 6),
+                  _buildProximityChip(order),
+                ],
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Live ETA in minutes — counts down with real GPS progress along the
+  /// walking route; falls back to the walk time declared at order time.
+  int _liveEtaMinutes(Order order) {
+    if (_trackingOrderId == order.id && _walkProgress > 0) {
+      return (order.userWalkTimeMinutes * (1 - _walkProgress)).ceil();
+    }
+    return order.userWalkTimeMinutes;
+  }
+
+  /// green = still far (kitchen has time), orange ≈ 3 min out,
+  /// red = right at the restaurant.
+  Widget _buildProximityChip(Order order) {
+    final eta = _liveEtaMinutes(order);
+    final atDoor = _walkProgress >= 0.92 || eta <= 1;
+
+    final Color c;
+    final String label;
+    final IconData icon;
+    if (atDoor) {
+      c = const Color(0xFFEF4444);
+      label = 'Devant le restaurant — montrez votre QR';
+      icon = Icons.storefront;
+    } else if (eta <= 3) {
+      c = const Color(0xFFF59E0B);
+      label = 'Presque arrivé (~$eta min)';
+      icon = Icons.near_me;
+    } else {
+      c = const Color(0xFF10B981);
+      label = 'En route — la cuisine a le temps';
+      icon = Icons.directions_walk;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: c.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: c.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: c),
+          const SizedBox(width: 5),
+          Flexible(
+            child: Text(
+              label,
+              style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: c),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],

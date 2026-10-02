@@ -51,6 +51,20 @@ class RestaurantService {
     return list;
   }
 
+  /// Video menu import — send several frames at once; the backend scans
+  /// them all and merges/dedupes the dishes before writing to the DB.
+  Future<List<MenuItem>> scanMenuFrames(
+      String restaurantId, List<String> framesBase64) async {
+    final data = await _api.post(
+      ApiConfig.scanMenu(restaurantId),
+      body: {'imagesBase64': framesBase64},
+    );
+    final list = (data as List<dynamic>)
+        .map((e) => MenuItem.fromApiJson(e as Map<String, dynamic>))
+        .toList();
+    return list;
+  }
+
   Future<Map<String, dynamic>> getMyRestaurant() async {
     final data = await _api.get(ApiConfig.myRestaurant);
     return data as Map<String, dynamic>;

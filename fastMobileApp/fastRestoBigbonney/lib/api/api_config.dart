@@ -58,6 +58,10 @@ class ApiConfig {
   static String readNotification(String id) => '/notifications/$id/read';
   static String deleteNotification(String id) => '/notifications/$id';
 
+  // Staff / cook accounts (restaurant owner only)
+  static const String staff = '/staff';
+  static String staffMember(String id) => '/staff/$id';
+
   // Stats
   static const String stats = '/stats';
   static const String statsExport = '/stats/export';
