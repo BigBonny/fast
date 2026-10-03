@@ -98,7 +98,7 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: context.fast.card,
-        title: Text('Scanner QR client', style: TextStyle(color: context.fast.t1)),
+        title: Text(tr(context, 'scan_qr_title'), style: TextStyle(color: context.fast.t1)),
         content: SizedBox(
           height: 280,
           width: 280,
@@ -173,7 +173,7 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                   children: [
                     Container(width: 6, height: 6, decoration: const BoxDecoration(color: Color(0xFF10B981), shape: BoxShape.circle)),
                     const SizedBox(width: 6),
-                    const Text('En direct', style: TextStyle(color: Color(0xFF10B981), fontSize: 12, fontWeight: FontWeight.bold)),
+                    Text(tr(context, 'live_lbl'), style: TextStyle(color: Color(0xFF10B981), fontSize: 12, fontWeight: FontWeight.bold)),
                   ],
                 ),
               ),
@@ -224,7 +224,7 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
     if (order.fulfillmentType == FulfillmentType.pickup) {
       if (order.isReadyAtEntrance || order.gpsProgress >= 90) {
         proxColor = const Color(0xFFEF4444);
-        proxLabel = 'CLIENT PRESQUE LÀ';
+        proxLabel = tr(context, 'client_almost');
       } else if (order.gpsProgress >= 40) {
         proxColor = const Color(0xFFF97316);
         proxLabel = 'CLIENT EN APPROCHE';
@@ -313,7 +313,7 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                             if (item.selectedOptions.isNotEmpty)
  Text(item.selectedOptions.join(', '), style: TextStyle(color: context.fast.t2, fontSize: 12)),
                             if (item.allergyNotes.isNotEmpty)
- Text('Note: ${item.allergyNotes}', style: const TextStyle(color: Color(0xFFEF4444), fontSize: 12)),
+ Text('${tr(context, 'note_lbl')}: ${item.allergyNotes}', style: const TextStyle(color: Color(0xFFEF4444), fontSize: 12)),
                           ],
                         ),
                       ),
@@ -331,7 +331,7 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                           color: proxColor ?? context.fast.t3),
                       const SizedBox(width: 4),
                       Text(
-                        'Client à ~${(order.userWalkTimeMinutes * (1 - order.gpsProgress / 100)).ceil().clamp(0, 999)} min',
+                        tr(context, 'client_near').replaceAll('{n}', '${(order.userWalkTimeMinutes * (1 - order.gpsProgress / 100)).ceil().clamp(0, 999)}'),
                         style: TextStyle(
                             color: context.fast.t2,
                             fontSize: 11,
@@ -438,14 +438,14 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                         child: ElevatedButton(
                           onPressed: () => _acceptOrder(order, rProv),
                           style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF10B981), foregroundColor: Colors.white),
-                          child: const Text('Accepter (auto)'),
+                          child: Text(tr(context, 'accept_auto')),
                         ),
                       ),
                       const SizedBox(width: 12),
                       OutlinedButton(
                         onPressed: () => _refuseOrder(order),
                         style: OutlinedButton.styleFrom(foregroundColor: const Color(0xFFEF4444), side: const BorderSide(color: Color(0xFFEF4444))),
-                        child: const Text('Refuser'),
+                        child: Text(tr(context, 'decline')),
                       ),
                     ],
                   ),
@@ -480,10 +480,10 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                           color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [ Icon(Icons.directions_walk, color: Color(0xFF3B82F6), size: 16),
-                            SizedBox(width: 6), Text('Client en route — attendez le scan', style: TextStyle(color: Color(0xFF3B82F6), fontWeight: FontWeight.w600, fontSize: 13)),
+                            SizedBox(width: 6), Text(tr(context, 'client_enroute'), style: TextStyle(color: Color(0xFF3B82F6), fontWeight: FontWeight.w600, fontSize: 13)),
                           ],
                         ),
                       ),
@@ -493,7 +493,7 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                         child: ElevatedButton.icon(
                           onPressed: () => _showQrScanDialog(order),
                           icon: const Icon(Icons.qr_code_scanner, size: 20),
-                          label: const Text('Scanner le QR du client', style: TextStyle(fontWeight: FontWeight.bold)),
+                          label: Text(tr(context, 'scan_qr_btn'), style: TextStyle(fontWeight: FontWeight.bold)),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF10B981),
                             foregroundColor: Colors.white,

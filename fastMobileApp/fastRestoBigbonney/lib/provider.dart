@@ -135,6 +135,7 @@ class FASTProvider extends ChangeNotifier {
 
   Future<void> setAppLanguage(String code) async {
     _appLanguage = code;
+    AppStrings.currentLanguage = code;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('fast_app_language', code);
     notifyListeners();
@@ -402,6 +403,7 @@ class FASTProvider extends ChangeNotifier {
     final themePref = prefs.getString('fast_theme_mode') ?? 'system';
     _viewAsClient = prefs.getBool('fast_view_as_client') ?? false;
     _appLanguage = prefs.getString('fast_app_language') ?? 'fr';
+    AppStrings.currentLanguage = _appLanguage;
     _themeMode = themePref == 'light'
         ? ThemeMode.light
         : themePref == 'system'
@@ -753,8 +755,8 @@ class FASTProvider extends ChangeNotifier {
         _surpriseMeRolledRestaurant = null;
         
         showToast(
-          '🎯 Coup de surprise !',
-          'Nous avons sélectionné ${_selectedRestaurant!.name} pour vous !',
+          AppStrings.trNow('surprise_title'),
+          AppStrings.trNow('surprise_msg').replaceAll('{n}', _selectedRestaurant!.name),
         );
         notifyListeners();
       }
@@ -797,7 +799,7 @@ class FASTProvider extends ChangeNotifier {
     } else {
       _cart.add(CartItem(menuItem: item, quantity: qty, selectedOptions: selectedOptions, allergyNotes: allergyNotes));
     }
-    showToast('Ajouté au panier ! 🛒', '${qty}x ${item.name} ajouté.');
+    showToast(AppStrings.trNow('added_cart'), AppStrings.trNow('added_cart_msg').replaceAll('{n}', '$qty').replaceAll('{item}', item.name));
     notifyListeners();
   }
 
@@ -831,10 +833,10 @@ class FASTProvider extends ChangeNotifier {
     clearCart();
     _currentScreen = wasGroupOrder ? 'commandes' : 'commandes';
     addNotification(
-      'Paiement confirmé !',
+      AppStrings.trNow('payment_confirmed'),
       wasGroupOrder
-          ? 'Votre part est payée et attend l’envoi du groupe.'
-          : 'Votre commande Click & Collect chez ${order.restaurantName} a été enregistrée.',
+          ? AppStrings.trNow('part_paid_waiting')
+          : AppStrings.trNow('order_registered_at').replaceAll('{n}', order.restaurantName),
       'success',
     );
     _saveOrders();
@@ -918,8 +920,8 @@ class FASTProvider extends ChangeNotifier {
       _currentScreen = 'commandes';
 
       addNotification(
-        'Commande passée ! ⚡',
-        'Votre commande Click & Collect chez ${_selectedRestaurant!.name} a été enregistrée.',
+        AppStrings.trNow('order_placed_notif'),
+        AppStrings.trNow('order_registered_at').replaceAll('{n}', _selectedRestaurant!.name),
         'success',
       );
 
@@ -977,14 +979,14 @@ class FASTProvider extends ChangeNotifier {
       }
 
       addNotification(
-        'Avis soumis ! ⭐',
-        'Merci pour votre évaluation.',
+        AppStrings.trNow('review_submitted'),
+        AppStrings.trNow('review_thanks'),
         'success',
       );
       notifyListeners();
     } catch (e) {
       _error = _extractErrorMessage(e);
-      showToast('Erreur d\'envoi', _error!);
+      showToast(AppStrings.trNow('send_error'), _error!);
       notifyListeners();
     }
   }
@@ -1048,6 +1050,6 @@ class FASTProvider extends ChangeNotifier {
   String _extractErrorMessage(dynamic e) {
     if (e is ApiException) return e.message;
     if (e is String) return e;
-    return 'Une erreur est survenue. Veuillez réessayer.';
+    return AppStrings.trNow('generic_error');
   }
 }

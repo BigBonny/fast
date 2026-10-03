@@ -10,6 +10,7 @@ import 'models/resto_stats.dart';
 import 'api/api_exceptions.dart';
 import 'api/api_client.dart';
 import 'api/api_config.dart';
+import 'l10n/app_strings.dart';
 
 class RestoProvider extends ChangeNotifier {
   RestaurantSettings? _settings;
@@ -301,7 +302,7 @@ class RestoProvider extends ChangeNotifier {
   String _extractErrorMessage(dynamic e) {
     if (e is ApiException) return e.message;
     if (e is String) return e;
-    return 'Une erreur est survenue. Veuillez réessayer.';
+    return AppStrings.trNow('generic_error');
   }
 
   @override

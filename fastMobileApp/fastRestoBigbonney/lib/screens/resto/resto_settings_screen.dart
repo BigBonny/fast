@@ -48,14 +48,6 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
   static const _dietaryAll = [
     'VEGAN', 'VEGETARIAN', 'GLUTEN_FREE', 'HALAL', 'KETO', 'DAIRY_FREE',
   ];
-  static const _dietaryLabels = {
-    'VEGAN': 'Végétalien',
-    'VEGETARIAN': 'Végétarien',
-    'GLUTEN_FREE': 'Sans Gluten',
-    'HALAL': 'Halal',
-    'KETO': 'Céto',
-    'DAIRY_FREE': 'Sans Lactose',
-  };
 
   // Same list as the client app's category strip — multi-select.
   static const _categories = [
@@ -101,7 +93,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Stripe Connect: $e')),
+          SnackBar(content: Text(tr(context, 'stripe_err').replaceAll('{n}', '$e'))),
         );
       }
     } finally {
@@ -162,14 +154,14 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
         _rushPrepTime = (cached?.rushPrepTime ?? 25).toDouble();
         _selectedDietary = cached?.dietaryOptions ?? [];
         _loading = false;
-        _error = 'Impossible de charger depuis le serveur. Données locales affichées.';
+        _error = tr(context, 'load_fallback');
       });
     }
   }
 
   Future<void> _save() async {
     if (_restaurantId == null) {
-      setState(() => _error = 'Aucun restaurant trouvé.');
+      setState(() => _error = tr(context, 'no_resto_found'));
       return;
     }
     setState(() { _saving = true; _error = null; });
@@ -221,7 +213,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
             style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold)),
       ));
     } catch (e) {
-      setState(() => _error = 'Erreur: ${e.toString()}');
+      setState(() => _error = tr(context, 'error_colon').replaceAll('{n}', e.toString()));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -247,9 +239,9 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
 
     return ListView(
       padding: EdgeInsets.fromLTRB(16, 16, 16, 48),
-      children: [ Text('Profil Restaurant',
+      children: [ Text(tr(context, 'profil_resto'),
             style: TextStyle(color: context.fast.t1, fontSize: 24, fontWeight: FontWeight.bold)),
-              SizedBox(height: 4), Text('Ces informations sont visibles par vos clients.',
+              SizedBox(height: 4), Text(tr(context, 'visible_clients'),
             style: TextStyle(color: context.fast.t2, fontSize: 13)),
 
         if (_error != null) ...[
@@ -266,17 +258,17 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
         ],
 
               SizedBox(height: 24),
-        _section('Personnalisation'),
+        _section(tr(context, 'customization')),
         _buildThemePicker(),
 
               SizedBox(height: 24),
-        _section('Paiements Stripe Connect'),
+        _section(tr(context, 'stripe_payments')),
         _buildStripeConnectBanner(),
               SizedBox(height: 12),
         OutlinedButton.icon(
           onPressed: _connectLoading ? null : _configureStripeConnect,
           icon: const Icon(Icons.account_balance),
-          label: const Text('Configurer Stripe Connect'),
+          label: Text(tr(context, 'stripe_connect')),
           style: OutlinedButton.styleFrom(
             foregroundColor: const Color(0xFF00C8B3),
             side: const BorderSide(color: Color(0xFF00C8B3)),
@@ -285,24 +277,24 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
         ),
 
               SizedBox(height: 24),
-        _section('Image de couverture'),
+        _section(tr(context, 'cover_image')),
         _buildImagePicker(),
 
               SizedBox(height: 24),
-        _section('Identité'),
-        _field('Nom du restaurant *', _nameCtrl),
-        _field('Description', _descCtrl, maxLines: 3,
-            hint: 'Décrivez votre restaurant, votre spécialité...'),
+        _section(tr(context, 'identity')),
+        _field(tr(context, 'resto_name_lbl'), _nameCtrl),
+        _field(tr(context, 'description'), _descCtrl, maxLines: 3,
+            hint: tr(context, 'desc_hint')),
 
               SizedBox(height: 24),
-        _section('Coordonnées & Banque'),
-        _field('Ville', _cityCtrl),
-        _field('Adresse complète', _addressCtrl, hint: '12 rue des Lilas, 75001 Paris'),
+        _section(tr(context, 'contact_bank')),
+        _field(tr(context, 'city'), _cityCtrl),
+        _field(tr(context, 'full_address'), _addressCtrl, hint: tr(context, 'addr_example')),
         _field('IBAN', _ibanCtrl, hint: 'FR76 **** **** **** **** 1234'),
 
               SizedBox(height: 24),
-        _section('Cuisine & Catégorie'),
-        _field('Type de cuisine', _cuisineCtrl, hint: 'ex: Française, Japonaise, Italienne'),
+        _section(tr(context, 'cuisine_category')),
+        _field(tr(context, 'cuisine_type'), _cuisineCtrl, hint: tr(context, 'cuisine_example')),
               SizedBox(height: 12),
         Text(tr(context, 'categories_multi'),
             style: TextStyle(
@@ -317,7 +309,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
             final sel = _selectedCategories.contains(c);
             return FilterChip(
               label: Text(
-                c,
+                catLabel(context, c),
                 style: TextStyle(
                   fontSize: 12,
                   color: sel ? Colors.white : context.fast.t2,
@@ -345,7 +337,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
         ),
 
               SizedBox(height: 24),
-        _section('Options alimentaires'),
+        _section(tr(context, 'dietary_options')),
               SizedBox(height: 8),
         Wrap(
           spacing: 8,
@@ -353,7 +345,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
           children: _dietaryAll.map((key) {
             final selected = _selectedDietary.contains(key);
             return FilterChip(
-              label: Text(_dietaryLabels[key] ?? key,
+              label: Text(tr(context, 'diet_' + key.toLowerCase().replaceAll('_', '')),
                   style: TextStyle(
                     fontSize: 12,
                     color: selected ? context.fast.bg : context.fast.t2,
@@ -381,11 +373,11 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
         ),
 
               SizedBox(height: 24),
-        _section('Temps de Préparation'),
-        _timeSlider('Temps Normal', _normalPrepTime, 5, 60,
+        _section(tr(context, 'prep_time_title')),
+        _timeSlider(tr(context, 'normal_time'), _normalPrepTime, 5, 60,
             const Color(0xFF00C8B3), (v) => setState(() => _normalPrepTime = v)),
               SizedBox(height: 20),
-        _timeSlider('Temps Mode Rush', _rushPrepTime, 10, 90,
+        _timeSlider(tr(context, 'rush_time'), _rushPrepTime, 10, 90,
             const Color(0xFFEF4444), (v) => setState(() => _rushPrepTime = v)),
 
               SizedBox(height: 32),
@@ -465,10 +457,10 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
           Expanded(
             child: Text(
               ok
-                  ? 'Stripe Connect actif — paiements activés'
+                  ? tr(context, 'stripe_active')
                   : connected
-                      ? 'Compte connecté — finalisez l’activation des paiements'
-                      : 'Stripe Connect non configuré — requis pour recevoir les paiements',
+                      ? tr(context, 'stripe_connected')
+                      : tr(context, 'stripe_required'),
               style: TextStyle(
                 color: ok ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
                 fontWeight: FontWeight.bold,
@@ -523,11 +515,11 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
     }
     return Row(
       children: [
-        option(ThemeMode.system, Icons.phone_android, 'Auto'),
+        option(ThemeMode.system, Icons.phone_android, tr(context, 'theme_auto')),
         const SizedBox(width: 8),
-        option(ThemeMode.light, Icons.wb_sunny_outlined, 'Clair'),
+        option(ThemeMode.light, Icons.wb_sunny_outlined, tr(context, 'theme_light')),
         const SizedBox(width: 8),
-        option(ThemeMode.dark, Icons.nightlight_outlined, 'Sombre'),
+        option(ThemeMode.dark, Icons.nightlight_outlined, tr(context, 'theme_dark')),
       ],
     );
   }

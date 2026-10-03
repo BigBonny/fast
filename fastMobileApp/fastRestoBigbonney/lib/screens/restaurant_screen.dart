@@ -355,7 +355,7 @@ class RestaurantScreen extends StatelessWidget {
     if (!hasValidCoordinates && address.isEmpty) {
       _showDirectionsError(
         context,
-        'Impossible de calculer l’itinéraire : les coordonnées et l’adresse du restaurant sont indisponibles.',
+        tr(context, 'route_fail'),
       );
       return;
     }
@@ -375,14 +375,14 @@ class RestaurantScreen extends StatelessWidget {
       if (!didLaunch && context.mounted) {
         _showDirectionsError(
           context,
-          'Impossible d’ouvrir Google Maps. Vérifiez qu’une application de navigation est disponible.',
+          tr(context, 'gmaps_unavailable'),
         );
       }
     } catch (_) {
       if (context.mounted) {
         _showDirectionsError(
           context,
-          'Impossible d’ouvrir Google Maps. Réessayez dans quelques instants.',
+          tr(context, 'gmaps_fail'),
         );
       }
     }
@@ -694,7 +694,7 @@ class RestaurantScreen extends StatelessWidget {
                             ),
                             decoration: InputDecoration(
                               hintText:
-                                  'ex. Allergie aux noix, sans lactose...',
+                                  tr(context, 'allergy_hint'),
                               hintStyle:       TextStyle(
                                 color: context.fast.t3,
                                 fontSize: 11,
@@ -817,7 +817,7 @@ class RestaurantScreen extends StatelessWidget {
                                   elevation: 0,
                                 ),
                                 child: Text(
-                                  'Ajouter au panier • ${total.toStringAsFixed(2)} €',
+                                  tr(context, 'add_cart_price').replaceAll('{n}', total.toStringAsFixed(2)),
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w900,
                                     fontSize: 13,

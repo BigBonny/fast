@@ -68,7 +68,7 @@ class RestoProfileScreen extends StatelessWidget {
                               child: Text(settings?.cuisineType.toUpperCase() ?? 'CUISINE', style: const TextStyle(color: Color(0xFF00C8B3), fontSize: 12, fontWeight: FontWeight.bold)),
                             ),
                                   SizedBox(height: 12), Text(
-                              settings?.name ?? 'Mon Restaurant',
+                              settings?.name ?? tr(context, 'my_restaurant'),
                               style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: context.fast.t1),
                             ),
                           ],
@@ -89,7 +89,7 @@ class RestoProfileScreen extends StatelessWidget {
                   Row(
                     children: [ Icon(Icons.location_on, color: context.fast.t2, size: 16),
                             SizedBox(width: 6), Text(
-                        '${settings?.city ?? 'Ville'} • À 2.4 km',
+                        '${settings?.city ?? tr(context, 'city')} • ${tr(context, 'at_km').replaceAll('{n}', '2.4')}',
                         style: TextStyle(color: context.fast.t2, fontSize: 16),
                       ),
                     ],
@@ -104,7 +104,7 @@ class RestoProfileScreen extends StatelessWidget {
                         SizedBox(width: 16),
                         Expanded(
                           child: Text(
-                            'Ceci est un aperçu de la vitrine que vos clients voient sur l\'application FAST. Modifiez ces informations depuis l\'onglet Paramètres.', 
+                            tr(context, 'preview_notice'), 
                             style: TextStyle(color: context.fast.t2, height: 1.5)
                           ),
                         ),

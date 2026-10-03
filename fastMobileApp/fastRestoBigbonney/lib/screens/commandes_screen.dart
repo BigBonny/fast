@@ -858,13 +858,13 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                     Row(
                 children: [ Icon(Icons.warning, color: Color(0xFFEF4444)),
                   SizedBox(width: 8), Text(
-                    'Politique d\'annulation',
+                    tr(context, 'cancel_policy'),
                     style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: context.fast.t1),
                   ),
                 ],
               ),
                     SizedBox(height: 12), Text(
-                'Chez FAST, notre politique d\'annulation est transparente et simple. Pas de petits caractères :',
+                tr(context, 'cancel_policy_intro'),
                 style: TextStyle(fontSize: 11, color: context.fast.t2, height: 1.4),
               ),
                     SizedBox(height: 16),
@@ -891,11 +891,11 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [ Text(
-                            'Cas 1 : Annulation avant préparation',
+                            tr(context, 'cancel_case1'),
                             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: context.fast.t1),
                           ),
                                 SizedBox(height: 2), Text(
-                            'Remboursement intégral (hors frais de service 1,50 € utilisés pour le traitement).',
+                            tr(context, 'cancel_case1_desc'),
                             style: TextStyle(fontSize: 10, color: context.fast.t2, height: 1.3),
                           ),
                           if (!prepStarted) ...[
@@ -932,16 +932,16 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [ Text(
-                            'Cas 2 : Annulation après préparation',
+                            tr(context, 'cancel_case2'),
                             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: context.fast.t1),
                           ),
                                 SizedBox(height: 2), Text(
-                            'Débit total appliqué. La cuisine a déjà utilisé les ingrédients frais pour votre repas.',
+                            tr(context, 'cancel_case2_desc'),
                             style: TextStyle(fontSize: 10, color: context.fast.t2, height: 1.3),
                           ),
                           if (prepStarted) ...[
                             const SizedBox(height: 6), Text(
-                              '👉 ACTIF. Débit : ${order.total.toStringAsFixed(2)} €',
+                              tr(context, 'active_debit').replaceAll('{n}', order.total.toStringAsFixed(2)),
                               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: Color(0xFFEF4444)),
                             ),
                           ],
@@ -964,7 +964,7 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
-                      child: Text('Garder la commande', style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold)),
+                      child: Text(tr(context, 'keep_order'), style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold)),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -1066,7 +1066,7 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [ Text(
-                      'Récupéré !',
+                      tr(context, 'picked_up_excl'),
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w900,
@@ -1085,7 +1085,7 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
             ],
           ),
                 SizedBox(height: 20), Text(
-            'Comment s\'est passée votre expérience ?',
+            tr(context, 'review_prompt'),
             style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: context.fast.t1),
           ),
                 SizedBox(height: 10),
@@ -1116,7 +1116,7 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
             maxLines: 2,
             style: TextStyle(fontSize: 13, color: context.fast.t1),
             decoration: InputDecoration(
-              hintText: 'Laissez un commentaire (optionnel)...',
+              hintText: tr(context, 'comment_ph'),
               hintStyle: TextStyle(color: context.fast.faint, fontSize: 12),
               filled: true,
               fillColor: context.fast.bg,
@@ -1143,7 +1143,7 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                 child: TextButton(
                   onPressed: () => setState(() => _ratingSubmitted = true),
                   child: Text(
-                    'Passer',
+                    tr(context, 'skip_tuto'),
                     style: TextStyle(color: context.fast.t3, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -1197,11 +1197,11 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
             mainAxisAlignment: MainAxisAlignment.center,
             children: [ Text('📜', style: TextStyle(fontSize: 48)),
                     SizedBox(height: 12), Text(
-                'Aucun historique de commande',
+                tr(context, 'no_history'),
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: context.fast.t1),
               ),
                     SizedBox(height: 6), Text(
-                'Une fois que vous aurez récupéré des commandes Click & Collect, l\'historique apparaîtra ici.',
+                tr(context, 'history_hint'),
                 style: TextStyle(fontSize: 11, color: context.fast.t2),
                 textAlign: TextAlign.center,
               ),
@@ -1276,7 +1276,7 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: context.fast.t1),
                       ),
                             SizedBox(height: 4), Text(
-                        'Commandé le : $formattedDate',
+                        tr(context, 'ordered_on').replaceAll('{n}', formattedDate),
                         style: TextStyle(fontSize: 10, color: context.fast.t3),
                       ),
                     ],
@@ -1314,7 +1314,7 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                 // commission flat fee
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [ Text('Frais de service FAST', style: TextStyle(fontSize: 11, color: context.fast.t3)), Text('€${order.serviceFee.toStringAsFixed(2)}', style: TextStyle(fontSize: 11, color: context.fast.t3, fontFamily: 'monospace')),
+                  children: [ Text(tr(context, 'service_fee_fast'), style: TextStyle(fontSize: 11, color: context.fast.t3)), Text('€${order.serviceFee.toStringAsFixed(2)}', style: TextStyle(fontSize: 11, color: context.fast.t3, fontFamily: 'monospace')),
                   ],
                 ),
                       SizedBox(height: 6),
@@ -1322,7 +1322,7 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [ Text(
-                      'Total payé',
+                      tr(context, 'total_paid'),
                       style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: context.fast.t1),
                     ), Text(
                       '€${order.total.toStringAsFixed(2)}',
@@ -1350,7 +1350,7 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [ Icon(Icons.check_circle_outline, color: Color(0xFF10B981), size: 16),
                         SizedBox(width: 8), Text(
-                          'Avis envoyé avec succès !',
+                          tr(context, 'review_sent_ok'),
                           style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF10B981)),
                         ),
                       ],
@@ -1358,7 +1358,7 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [ Text(
-                          'ÉVALUER CE POINT DE VENTE',
+                          tr(context, 'rate_venue'),
                           style: TextStyle(
                             fontSize: 9,
                             fontWeight: FontWeight.bold,
@@ -1398,7 +1398,7 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                           maxLines: 1,
                           style: TextStyle(fontSize: 11, color: context.fast.t1),
                           decoration: InputDecoration(
-                            hintText: 'Votre avis sur la température de la nourriture, rapidité...',
+                            hintText: tr(context, 'review_ph'),
                             hintStyle: TextStyle(color: context.fast.t3, fontSize: 10),
                             filled: true,
                             fillColor: context.fast.bg,
@@ -1438,8 +1438,8 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                               elevation: 0,
                             ),
-                            child: const Text(
-                              'Soumettre mon avis',
+                            child: Text(
+                              tr(context, 'submit_review'),
                               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
                             ),
                           ),
@@ -1467,7 +1467,7 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
         break;
     }
     return Text(
-      status.label.toUpperCase(),
+      orderStatusLabel(context, status).toUpperCase(),
       style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: fg),
     );
   }
@@ -1475,11 +1475,11 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
   String _parseIsoDate(String isoString) {
     try {
       final dt = DateTime.parse(isoString);
-      final monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+      final monthNames = tr(context, 'months_csv').split('|');
       final m = monthNames[dt.month - 1];
       final h = dt.hour.toString().padLeft(2, '0');
       final min = dt.minute.toString().padLeft(2, '0');
-      return '${dt.day} $m, ${dt.year} à ${h}h$min';
+      return '${dt.day} $m ${dt.year} · ${h}h$min';
     } catch (e) {
       return isoString.split('T')[0];
     }

@@ -67,7 +67,8 @@ export default function Navbar() {
       <Link href="/" className="flex items-center gap-1.5 shrink-0">
         <Zap className="w-6 h-6 text-amber-400 fill-amber-400" />
         <span
-          className="font-black text-2xl italic tracking-tight"
+          className="font-black text-2xl italic tracking-tight notranslate"
+          translate="no"
           style={{
             background: "linear-gradient(90deg, #f59e0b, #fbbf24, #f97316)",
             WebkitBackgroundClip: "text",

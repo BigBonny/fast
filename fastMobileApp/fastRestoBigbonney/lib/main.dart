@@ -544,14 +544,14 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
                             children: [ Text(
-                                'Voir le panier',
+                                provider.tr('view_cart'),
                                 style: TextStyle(
                                   color: FASTBrand.onAmber,
                                   fontWeight: FontWeight.w900,
                                   fontSize: 13,
                                 ),
                               ), Text(
-                                'Chez : ${provider.selectedRestaurant!.name}',
+                                '${provider.tr('at_restaurant')} ${provider.selectedRestaurant!.name}',
                                 style: TextStyle(
                                   color: FASTBrand.onAmber.withValues(alpha: 0.7),
                                   fontWeight: FontWeight.bold,

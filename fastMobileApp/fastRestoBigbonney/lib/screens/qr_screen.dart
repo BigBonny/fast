@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../models.dart';
 import '../theme.dart';
+import '../l10n/tr.dart';
 
 /// Shown as a full-screen modal: client shows QR to staff for verification.
 class QRVerificationScreen extends StatefulWidget {
@@ -49,7 +50,7 @@ class _QRVerificationScreenState extends State<QRVerificationScreen>
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          'Vérification du staff',
+          tr(context, 'staff_check'),
           style: TextStyle(
             color: context.fast.t1,
             fontWeight: FontWeight.w800,
@@ -74,7 +75,7 @@ class _QRVerificationScreenState extends State<QRVerificationScreen>
                   SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      'Présentez ce QR code au membre du staff au comptoir Click & Collect.',
+                      tr(context, 'qr_present'),
                       style: TextStyle(
                         fontSize: 12,
                         color: context.fast.t2,
@@ -150,7 +151,7 @@ class _QRVerificationScreenState extends State<QRVerificationScreen>
               ),
             ),
                   SizedBox(height: 6), Text(
-              'Valable chez : ${order.restaurantName}',
+              tr(context, 'valid_at').replaceAll('{n}', order.restaurantName),
               style: TextStyle(
                 fontSize: 12,
                 color: context.fast.t2,
@@ -167,11 +168,11 @@ class _QRVerificationScreenState extends State<QRVerificationScreen>
               ),
               child: Column(
                 children: [
-                  _summaryRow('Restaurant', order.restaurantName),
+                  _summaryRow(tr(context, 'restaurant_lbl'), order.restaurantName),
                   const SizedBox(height: 8),
-                  _summaryRow('Articles', '${order.items.length} article(s)'),
+                  _summaryRow(tr(context, 'articles'), tr(context, 'articles_count').replaceAll('{n}', '${order.items.length}')),
                   const SizedBox(height: 8),
-                  _summaryRow('Total', '${order.total.toStringAsFixed(2)} €'),
+                  _summaryRow(tr(context, 'total'), '${order.total.toStringAsFixed(2)} €'),
                 ],
               ),
             ),
@@ -203,27 +204,27 @@ class _QRVerificationScreenState extends State<QRVerificationScreen>
     switch (status) {
       case OrderStatus.placed:
         color = Colors.blue;
-        label = 'Commandé — Cuisine notifiée';
+        label = tr(context, 'qs_ordered');
         icon = Icons.receipt_long;
         break;
       case OrderStatus.preparing:
         color =       Color(0xFFF59E0B);
-        label = 'En préparation — Venez !';
+        label = tr(context, 'qs_preparing');
         icon = Icons.restaurant_menu;
         break;
       case OrderStatus.readyForPickup:
         color =       Color(0xFF10B981);
-        label = 'Prêt — Récupérez maintenant !';
+        label = tr(context, 'qs_ready');
         icon = Icons.check_circle;
         break;
       case OrderStatus.completed:
         color = context.fast.t3;
-        label = 'Récupéré — Bon appétit !';
+        label = tr(context, 'qs_done');
         icon = Icons.handshake;
         break;
       case OrderStatus.cancelled:
         color = const Color(0xFFEF4444);
-        label = 'Annulé';
+        label = tr(context, 'ost_cancelled');
         icon = Icons.cancel;
         break;
     }

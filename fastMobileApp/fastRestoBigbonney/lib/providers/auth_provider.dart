@@ -73,13 +73,13 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final google = GoogleSignIn(
-        // Web client ID is required on Android for idToken to be returned.
-        serverClientId:
-            '792298746020-ssfs311jl0k5qt2cdh32hs66p5uooko9.apps.googleusercontent.com',
-        scopes: const ['email', 'profile'],
-      );
-      final account = await google.signIn();
+      // Clear the cached account so the picker is always shown —
+      // otherwise signIn() silently returns the previous account.
+      try {
+        await _googleSignIn.signOut();
+      } catch (_) {}
+
+      final account = await _googleSignIn.signIn();
       if (account == null) {
         // User cancelled — back to idle without an error
         _state = AuthState.idle;
@@ -142,6 +142,15 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  // GoogleSignIn is a singleton-backed plugin; keep one instance so
+  // signOut() clears the cached account before the next sign-in.
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    // Web client ID is required on Android for idToken to be returned.
+    serverClientId:
+        '792298746020-ssfs311jl0k5qt2cdh32hs66p5uooko9.apps.googleusercontent.com',
+    scopes: const ['email', 'profile'],
+  );
+
   bool _isLoggingOut = false;
   bool get isLoggingOut => _isLoggingOut;
 
@@ -162,6 +171,11 @@ class AuthProvider extends ChangeNotifier {
       // Proceed with local logout even if API call fails
     }
 
+    // Forget the Google account too so the next login shows the picker
+    try {
+      await _googleSignIn.signOut();
+    } catch (_) {}
+
     // Clear only the token, not all secure storage
     await ApiClient().clearSecureData();
     _user = null;
@@ -177,6 +191,9 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
     try {
       await AuthService().deleteAccount();
+      try {
+        await _googleSignIn.signOut();
+      } catch (_) {}
       await ApiClient().clearSecureData();
       _user = null;
       _state = AuthState.unauthenticated;

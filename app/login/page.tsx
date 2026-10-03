@@ -44,7 +44,7 @@ export default function LoginPage() {
             background: "linear-gradient(90deg, #f59e0b, #fbbf24, #f97316)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
-          }}>FAST</span>
+          }}><span className="notranslate" translate="no">FAST</span></span>
         </div>
         <div className="relative z-10">
           <h2 className="text-4xl font-black text-white leading-tight mb-4">
@@ -54,7 +54,7 @@ export default function LoginPage() {
             {t("login_hero_sub")}
           </p>
         </div>
-        <p className="relative z-10 text-gray-600 text-xs">© {new Date().getFullYear()} FAST</p>
+        <p className="relative z-10 text-gray-600 text-xs">© {new Date().getFullYear()} <span className="notranslate" translate="no">FAST</span></p>
       </div>
 
       {/* Form side */}
@@ -85,7 +85,7 @@ export default function LoginPage() {
               <Zap className="w-7 h-7 text-white fill-white" />
             </div>
             <h1 className="font-black text-3xl italic tracking-tight text-white">
-              FAST
+              <span className="notranslate" translate="no">FAST</span>
             </h1>
             <p className="text-gray-400 text-sm mt-2">{t("login_welcome")}</p>
           </div>

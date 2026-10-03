@@ -154,7 +154,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           // Section 1: Categories Autocomplete Suggestions
           if (suggCategories.isNotEmpty) ...[ Text(
-              'CATÉGORIES CORRESPONDANTES',
+              tr(context, 'matching_cats'),
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
@@ -177,7 +177,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       side: BorderSide(color: context.fast.line),
                       avatar: Text(cat.icon),
                       label: Text(
-                        cat.name,
+                        catLabel(context, cat.id),
                         style: TextStyle(
                           color: context.fast.t1,
                           fontSize: 12,
@@ -218,7 +218,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: TextStyle(fontSize: 32),
                         ),
                               SizedBox(height: 12), Text(
-                          'Aucun article trouvé',
+                          tr(context, 'no_items'),
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 13,
@@ -226,7 +226,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                               SizedBox(height: 4), Text(
-                          'Essayez de rechercher burger, pizza, wrap, salade, etc.',
+                          tr(context, 'search_suggest'),
                           style: TextStyle(
                             fontSize: 10,
                             color: context.fast.t3,
@@ -254,7 +254,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: context.fast.t1),
                               ),
                               subtitle: Text(
-                                '${r.pickupPrepTime} min prép • ${provider.getRealDistance(r).toStringAsFixed(1)} km',
+                                '${r.pickupPrepTime} ${tr(context, 'min_prep')} • ${provider.getRealDistance(r).toStringAsFixed(1)} km',
                                 style: TextStyle(fontSize: 11, color: context.fast.t3),
                               ),
                               trailing: Icon(Icons.chevron_right, size: 16, color: context.fast.t3),
@@ -284,7 +284,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: context.fast.t1),
                               ),
                               subtitle: Text(
-                                'De : ${r.name} • ${item.price.toStringAsFixed(2)} €',
+                                '${tr(context, 'from_resto').replaceAll('{n}', r.name)} • ${item.price.toStringAsFixed(2)} €',
                                 style: TextStyle(fontSize: 11, color: context.fast.t3),
                               ),
                               trailing: Container(
@@ -293,8 +293,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: const Text(
-                                  'Commander',
+                                child: Text(
+                                  tr(context, 'order_btn'),
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
@@ -348,19 +348,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: context.fast.t1,
                     height: 1.15,
                   ),
-                  children: const [
-                    TextSpan(text: 'Commandez. '),
+                  children: [
+                    TextSpan(text: tr(context, 'hero_order')),
                     TextSpan(
-                      text: 'Vite.',
+                      text: tr(context, 'hero_fast'),
                       style: TextStyle(color: Color(0xFFF59E0B)),
                     ),
-                    TextSpan(text: ' Maintenant.'),
+                    TextSpan(text: tr(context, 'hero_now')),
                   ],
                 ),
               ),
               const SizedBox(height: 4),
               Text(
-                'Vos restaurants préférés, sans attendre.',
+                tr(context, 'hero_sub'),
                 style: TextStyle(fontSize: 12, color: context.fast.t2),
               ),
             ],
@@ -377,7 +377,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [ Text(
-                'PARCOURIR PAR CATÉGORIE',
+                tr(context, 'browse_by_cat'),
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
@@ -388,8 +388,8 @@ class _HomeScreenState extends State<HomeScreen> {
               if (provider.selectedCategory != 'all')
                 GestureDetector(
                   onTap: () => provider.resetFilters(),
-                  child: const Text(
-                    'Effacer le filtre',
+                  child: Text(
+                    tr(context, 'clear_filter'),
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
@@ -565,9 +565,9 @@ class _HomeScreenState extends State<HomeScreen> {
             emoji: '🍔',
             tag: 'FOOD DROP',
             tagColor: const Color(0xFFFBBF24),
-            title: 'Envie de burgers ? Économisez 5 € !',
+            title: tr(context, 'promo_burger_t'),
             subtitle: tr(context, 'promo_velvet'),
-            cta: 'Profiter',
+            cta: tr(context, 'cta_enjoy'),
           ),
           _promoBanner(
             context: context,
@@ -581,8 +581,8 @@ class _HomeScreenState extends State<HomeScreen> {
             tag: 'AVEC MES AMIS',
             tagColor: const Color(0xFFC4B5FD),
             title: tr(context, 'group_tagline'),
-            subtitle: 'Partagez un code, commandez ensemble',
-            cta: 'Créer un groupe',
+            subtitle: tr(context, 'promo_group_s'),
+            cta: tr(context, 'cta_group'),
             ctaIcon: Icons.group_add,
           ),
           _promoBanner(
@@ -596,9 +596,9 @@ class _HomeScreenState extends State<HomeScreen> {
             emoji: '🎯',
             tag: 'SURPRISE ME',
             tagColor: const Color(0xFFF59E0B),
-            title: 'Indécis ? Laissez-nous choisir votre repas.',
-            subtitle: 'Découverte aléatoire',
-            cta: 'Surprenez-moi',
+            title: tr(context, 'promo_surprise_t2'),
+            subtitle: tr(context, 'promo_surprise_s2'),
+            cta: tr(context, 'cta_surprise'),
             ctaIcon: Icons.shuffle,
           ),
         ],
@@ -770,7 +770,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: const TextStyle(fontSize: 22),
                   ),
                         SizedBox(height: 4), Text(
-                    cat.name,
+                    catLabel(context, cat.id),
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
@@ -898,7 +898,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      '⚡ ${rest.pickupPrepTime} min prép • ${provider.getRealDistance(rest).toStringAsFixed(1)} km',
+                      '⚡ ${rest.pickupPrepTime} ${tr(context, 'min_prep')} • ${provider.getRealDistance(rest).toStringAsFixed(1)} km',
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
@@ -946,7 +946,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           border: Border.all(color: context.fast.line),
                         ),
                         child: Text(
-                          tag.label,
+                          dietLabel(context, tag),
                           style: TextStyle(
                             fontSize: 9,
                             fontWeight: FontWeight.bold,
@@ -1064,11 +1064,11 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           children: [ Text('🥙', style: TextStyle(fontSize: 48)),
                   SizedBox(height: 12), Text(
-              'Aucune cuisine trouvée',
+              tr(context, 'no_cuisine'),
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: context.fast.t1),
             ),
                   SizedBox(height: 6), Text(
-              'Essayez d\'élargir le rayon de recherche ou de modifier les filtres.',
+              tr(context, 'widen_radius'),
               style: TextStyle(fontSize: 11, color: context.fast.t3),
               textAlign: TextAlign.center,
             ),
@@ -1126,7 +1126,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
                     SizedBox(height: 6), Text(
-                'Lancement de la machine à sous...',
+                tr(context, 'slot_launch'),
                 style: TextStyle(color: context.fast.t2, fontSize: 11),
               ),
                     SizedBox(height: 24),

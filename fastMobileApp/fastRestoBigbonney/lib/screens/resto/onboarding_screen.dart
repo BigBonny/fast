@@ -166,7 +166,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         _finishOnboarding();
       }
     } catch (e) {
-      String msg = 'Erreur lors de la création du restaurant';
+      String msg = tr(context, 'create_resto_err');
       if (e is ApiException) msg = e.message;
       if (e is ValidationException) msg = e.message;
       if (mounted) setState(() { _formError = msg; _formLoading = false; });
@@ -229,7 +229,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               Padding(
           padding: EdgeInsets.symmetric(horizontal: 32.0),
           child: Text(
-            'En continuant, vous acceptez nos conditions générales d\'utilisation et notre politique de confidentialité (RGPD).',
+            tr(context, 'accept_terms'),
             textAlign: TextAlign.center,
             style: TextStyle(color: context.fast.t2),
           ),
@@ -240,7 +240,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF00C8B3),
               foregroundColor: Colors.black),
-          child: const Text('Accepter et Continuer'),
+          child: Text(tr(context, 'accept_continue')),
         ),
       ],
     );
@@ -250,14 +250,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [ Icon(Icons.swipe, size: 64, color: Color(0xFF10B981)),
-              SizedBox(height: 24), Text('Tutoriel FAST',
+              SizedBox(height: 24), Text(tr(context, 'tutorial_fast'),
             style: TextStyle(
                 fontSize: 24, fontWeight: FontWeight.bold, color: context.fast.t1)),
               SizedBox(height: 16),
               Padding(
           padding: EdgeInsets.symmetric(horizontal: 32.0),
           child: Text(
-            'Gérez vos commandes en temps réel, activez le Mode Rush, et suivez vos statistiques via votre espace dédié.',
+            tr(context, 'manage_intro'),
             textAlign: TextAlign.center,
             style: TextStyle(color: context.fast.t2),
           ),
@@ -268,7 +268,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF00C8B3),
               foregroundColor: Colors.black),
-          child: const Text('J\'ai compris'),
+          child: Text(tr(context, 'understood')),
         ),
       ],
     );
@@ -288,7 +288,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: Image.asset('assets/images/logo.png', fit: BoxFit.cover)),
         ),
               SizedBox(height: 32), Text(
-          'Faites grandir votre\nrestaurant avec FAST',
+          tr(context, 'grow_title'),
           textAlign: TextAlign.center,
           style: TextStyle(
               fontSize: 28, fontWeight: FontWeight.w900, color: context.fast.t1),
@@ -313,7 +313,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       key: _formKey,
       child: ListView(
         padding: EdgeInsets.all(24.0),
-        children: [ Text('Configuration',
+        children: [ Text(tr(context, 'configuration'),
               style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w900,
@@ -321,7 +321,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 SizedBox(height: 24), TextFormField(
             style: TextStyle(color: context.fast.t1),
             decoration:       InputDecoration(
-                labelText: 'Prénom du gérant',
+                labelText: tr(context, 'manager_name'),
                 labelStyle: TextStyle(color: context.fast.t2)),
             onSaved: (val) => _managerFirstName = val ?? '',
           ),
@@ -331,18 +331,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 labelText: tr(context, 'resto_name_lbl'),
                 labelStyle: TextStyle(color: context.fast.t2)),
             validator: (val) =>
-                val == null || val.isEmpty ? 'Requis' : null,
+                val == null || val.isEmpty ? tr(context, 'required_f') : null,
             onSaved: (val) => _restoName = val ?? '',
           ),
                 SizedBox(height: 16), TextFormField(
             style: TextStyle(color: context.fast.t1),
             decoration:       InputDecoration(
-                labelText: 'Ville',
+                labelText: tr(context, 'city'),
                 labelStyle: TextStyle(color: context.fast.t2)),
             onSaved: (val) => _city = val ?? '',
           ),
                 SizedBox(height: 16),
-          Text('Type(s) de cuisine',
+          Text(tr(context, 'cuisine_types_lbl'),
               style: TextStyle(
                   color: context.fast.t2,
                   fontSize: 12,
@@ -355,7 +355,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               final sel = _cuisineTypes.contains(c);
               return FilterChip(
                 label: Text(
-                  c,
+                  catLabel(context, c),
                   style: TextStyle(
                     fontSize: 12,
                     color: sel ? Colors.white : context.fast.t2,
@@ -383,7 +383,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           const SizedBox(height: 32),
           _buildTimeSlider(
-            'Temps de préparation normal',
+            tr(context, 'normal_prep'),
             _normalPrepTime,
             5, 60,
             const Color(0xFF00C8B3),
@@ -391,7 +391,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           const SizedBox(height: 24),
           _buildTimeSlider(
-            'Temps en Mode Rush',
+            tr(context, 'rush_prep'),
             _rushPrepTime,
             10, 90,
             const Color(0xFFEF4444),

@@ -55,7 +55,7 @@ export default function RegisterPage() {
             background: "linear-gradient(90deg, #f59e0b, #fbbf24, #f97316)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
-          }}>FAST</span>
+          }}><span className="notranslate" translate="no">FAST</span></span>
         </div>
         <div className="relative z-10">
           <h2 className="text-4xl font-black text-white leading-tight mb-4">
@@ -65,7 +65,7 @@ export default function RegisterPage() {
             Client ou restaurateur, crée ton compte en quelques secondes et gagne du temps à chaque commande.
           </p>
         </div>
-        <p className="relative z-10 text-gray-600 text-xs">© {new Date().getFullYear()} FAST</p>
+        <p className="relative z-10 text-gray-600 text-xs">© {new Date().getFullYear()} <span className="notranslate" translate="no">FAST</span></p>
       </div>
 
       {/* Form side */}
@@ -86,7 +86,7 @@ export default function RegisterPage() {
             <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
               <Zap className="w-7 h-7 text-white fill-white" />
             </div>
-            <h1 className="font-black text-3xl italic tracking-tight text-white">FAST</h1>
+            <h1 className="font-black text-3xl italic tracking-tight text-white"><span className="notranslate" translate="no">FAST</span></h1>
             <p className="text-gray-400 text-sm mt-2">Crée ton compte</p>
           </div>
 

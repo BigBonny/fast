@@ -13,6 +13,7 @@ import '../../resto_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/order_service.dart';
 import '../../theme.dart';
+import '../../l10n/tr.dart';
 
 class KitchenScreen extends StatefulWidget {
   const KitchenScreen({super.key});
@@ -87,7 +88,7 @@ class _KitchenScreenState extends State<KitchenScreen> {
       o.status = OrderStatus.readyForPickup;
       setState(() {});
     } catch (_) {
-      _toast('Erreur — réessayez');
+      _toast(tr(context, 'err_retry'));
     }
   }
 
@@ -97,7 +98,7 @@ class _KitchenScreenState extends State<KitchenScreen> {
       o.status = OrderStatus.cancelled;
       setState(() {});
     } catch (_) {
-      _toast('Erreur — réessayez');
+      _toast(tr(context, 'err_retry'));
     }
   }
 

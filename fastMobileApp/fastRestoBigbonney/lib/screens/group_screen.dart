@@ -203,7 +203,7 @@ class _GroupScreenState extends State<GroupScreen> {
     final code = _group?['code'] as String? ?? '';
     final message = context.read<FASTProvider>().tr('share_msg').replaceAll('{n}', code);
     try {
-      await Share.share(message, subject: 'Invitation groupe FAST');
+      await Share.share(message, subject: tr(context, 'group_invite'));
     } catch (_) {
       await Clipboard.setData(ClipboardData(text: message));
       if (!mounted) return;
@@ -330,7 +330,7 @@ class _GroupScreenState extends State<GroupScreen> {
                 ],
               ),
             ), IconButton.filledTonal(
-              tooltip: 'Copier l’invitation',
+              tooltip: tr(context, 'copy_invite'),
               onPressed: _copyInvite,
               icon: const Icon(Icons.share_outlined),
             ),
@@ -346,13 +346,13 @@ class _GroupScreenState extends State<GroupScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _summary('Membres', '${members.length}', Icons.people_outline),
-              _summary('Parts payées', '$paidCount/${members.length}', Icons.verified_outlined),
-              _summary('Total', '${total.toStringAsFixed(2)} €', Icons.receipt_long_outlined),
+              _summary(tr(context, 'members'), '${members.length}', Icons.people_outline),
+              _summary(tr(context, 'parts_paid'), '$paidCount/${members.length}', Icons.verified_outlined),
+              _summary(tr(context, 'total'), '${total.toStringAsFixed(2)} €', Icons.receipt_long_outlined),
             ],
           ),
         ),
-              SizedBox(height: 20), Text('PARTICIPANTS', style: TextStyle(color: context.fast.t2, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.8)),
+              SizedBox(height: 20), Text(tr(context, 'participants'), style: TextStyle(color: context.fast.t2, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.8)),
               SizedBox(height: 8),
         ...members.map(_memberCard),
               SizedBox(height: 20),
@@ -362,7 +362,7 @@ class _GroupScreenState extends State<GroupScreen> {
             child: ElevatedButton.icon(
               onPressed: _orderMyPart,
               icon: const Icon(Icons.restaurant_menu),
-              label: const Text('Composer et payer ma part'),
+              label: Text(tr(context, 'pay_share')),
             ),
           ),
         if (isHost && status == 'OPEN') ...[
@@ -379,7 +379,7 @@ class _GroupScreenState extends State<GroupScreen> {
             child: ElevatedButton.icon(
               onPressed: paidCount == 0 ? null : () => _action(() => _service.submitGroup(group['id'] as String)),
               icon: const Icon(Icons.send_outlined),
-              label: Text(paidCount == 0 ? 'En attente d’un paiement' : 'Envoyer les $paidCount parts payées'),
+              label: Text(paidCount == 0 ? tr(context, 'waiting_payment') : tr(context, 'send_parts').replaceAll('{n}', '$paidCount')),
             ),
           ),
                 SizedBox(height: 8), Text(tr(context, 'group_unpaid_warn'), textAlign: TextAlign.center, style: TextStyle(color: context.fast.t2, fontSize: 12)),
@@ -393,7 +393,7 @@ class _GroupScreenState extends State<GroupScreen> {
   Widget _progress(String status) {
           final steps = ['OPEN', 'LOCKED', 'SUBMITTED'];
     final current = steps.indexOf(status).clamp(0, 2);
-          final labels = ['Invitations', 'Paiements', 'Envoyé'];
+          final labels = [tr(context, 'invites_lbl'), tr(context, 'payments_lbl'), tr(context, 'sent_lbl')];
     return Row(
       children: List.generate(3, (index) => Expanded(
         child: Column(
@@ -419,7 +419,7 @@ class _GroupScreenState extends State<GroupScreen> {
 
   Widget _memberCard(Map<String, dynamic> member) {
     final user = member['user'] as Map<String, dynamic>?;
-    final name = user?['name'] as String? ?? 'Participant';
+    final name = user?['name'] as String? ?? tr(context, 'participant');
     final paymentStatus = member['paymentStatus'] as String? ?? 'DRAFT';
     final paid = paymentStatus == 'PAID';
     return Container(
@@ -435,7 +435,7 @@ class _GroupScreenState extends State<GroupScreen> {
                 SizedBox(width: 12),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [ Text(name, style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold)), Text(
-                paid ? 'Part payée' : paymentStatus == 'READY' ? 'Paiement en cours' : 'Compose sa part',
+                paid ? tr(context, 'part_paid') : paymentStatus == 'READY' ? tr(context, 'paying') : tr(context, 'compose_part'),
                 style: TextStyle(color: paid ?       Color(0xFF10B981) : context.fast.t2, fontSize: 11),
               ),
             ]),

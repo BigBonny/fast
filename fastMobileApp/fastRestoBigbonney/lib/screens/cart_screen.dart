@@ -9,6 +9,7 @@ import '../models.dart';
 import '../services/payment_service.dart';
 import '../services/group_service.dart';
 import '../theme.dart';
+import '../l10n/tr.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -63,7 +64,7 @@ class _CartScreenState extends State<CartScreen> {
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: context.fast.t1),
               ),
                     SizedBox(height: 6), Text(
-                'Ajoutez de bons plats d\'un restaurant local pour passer commande !',
+                tr(context, 'cart_empty_hint'),
                 style: TextStyle(fontSize: 11, color: context.fast.t2),
                 textAlign: TextAlign.center,
               ),
@@ -111,7 +112,7 @@ class _CartScreenState extends State<CartScreen> {
                         SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Part individuelle du groupe ${provider.activeGroupCode ?? ''}\nVous paierez uniquement vos articles.',
+                      tr(context, 'group_share').replaceAll('{n}', provider.activeGroupCode ?? ''),
                       style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold, height: 1.4),
                     ),
                   ),
@@ -143,7 +144,7 @@ class _CartScreenState extends State<CartScreen> {
             _buildDeliveryAddressSection(provider),
           ] else ...[
                   SizedBox(height: 20), Text(
-              'CHOISIR LE TEMPS DE MARCHE ESTIMÉ',
+              tr(context, 'walk_time_title'),
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
@@ -334,7 +335,7 @@ class _CartScreenState extends State<CartScreen> {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                _buildWalkChip('DÈS QUE POSS. (${minPrepTime}m)', minPrepTime),
+                _buildWalkChip(tr(context, 'asap').replaceAll('{n}', '$minPrepTime'), minPrepTime),
                 const SizedBox(width: 8),
                 _buildWalkChip('+10 min', minPrepTime + 10),
                 const SizedBox(width: 8),
@@ -353,7 +354,7 @@ class _CartScreenState extends State<CartScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [ Text(
-          'MODE DE RÉCUPÉRATION',
+          tr(context, 'pickup_mode_title'),
           style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.0, color: context.fast.t3),
         ),
               SizedBox(height: 10),
@@ -394,7 +395,7 @@ class _CartScreenState extends State<CartScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [ Text(
-          'ADRESSE DE LIVRAISON',
+          tr(context, 'delivery_addr_title'),
           style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.0, color: context.fast.t3),
         ),
               SizedBox(height: 10), TextField(
@@ -402,7 +403,7 @@ class _CartScreenState extends State<CartScreen> {
           style: TextStyle(color: context.fast.t1, fontSize: 13),
           maxLines: 2,
           decoration: InputDecoration(
-            hintText: '12 rue Example, 75001 Paris',
+            hintText: tr(context, 'addr_example'),
             hintStyle: TextStyle(color: context.fast.t3),
             filled: true,
             fillColor: context.fast.card,
@@ -437,7 +438,7 @@ class _CartScreenState extends State<CartScreen> {
       await provider.fetchUserLocation();
       final loc = provider.userLocation;
       if (loc == null) {
-        provider.showToast('GPS', 'Impossible d\'obtenir votre position.');
+        provider.showToast('GPS', tr(context, 'no_position'));
         return;
       }
       final places = await placemarkFromCoordinates(loc.latitude, loc.longitude);
@@ -447,7 +448,7 @@ class _CartScreenState extends State<CartScreen> {
       _deliveryAddressCtrl.text = addr;
       provider.setDeliveryAddress(addr, latitude: loc.latitude, longitude: loc.longitude);
     } catch (e) {
-      provider.showToast('Adresse', 'Erreur de géolocalisation.');
+      provider.showToast(tr(context, 'address_lbl'), tr(context, 'geo_error'));
     } finally {
       if (mounted) setState(() => _geocodingAddress = false);
     }
@@ -485,7 +486,7 @@ class _CartScreenState extends State<CartScreen> {
       child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [ Text(
-              'DÉTAILS DU PAIEMENT',
+              tr(context, 'payment_details'),
               style: TextStyle(
                 fontSize: 9,
                 fontWeight: FontWeight.bold,
@@ -530,7 +531,7 @@ class _CartScreenState extends State<CartScreen> {
                             color: const Color(0xFF10B981).withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(4),
                           ),
-                          child: const Text('GRATUIT', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF10B981))),
+                          child: Text(tr(context, 'free_upper'), style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF10B981))),
                         ),
                     ],
                   ),
@@ -553,7 +554,7 @@ class _CartScreenState extends State<CartScreen> {
             
             // Stripe Checkout
  Text(
-              'PAIEMENT SÉCURISÉ STRIPE',
+              tr(context, 'stripe_secure_title'),
               style: TextStyle(
                 fontSize: 9,
                 fontWeight: FontWeight.bold,
@@ -562,7 +563,7 @@ class _CartScreenState extends State<CartScreen> {
               ),
             ),
                   SizedBox(height: 12), Text(
-              'Les informations bancaires sont saisies directement chez Stripe. FAST ne stocke jamais les numéros de carte.',
+              tr(context, 'bank_info'),
               style: TextStyle(fontSize: 11, color: context.fast.t2, height: 1.35),
             ),
                   SizedBox(height: 20),
@@ -645,7 +646,7 @@ class _CartScreenState extends State<CartScreen> {
             textAlign: TextAlign.center,
           ),
                 SizedBox(height: 6), Text(
-            'Sécurisation des jetons d\'autorisation...',
+            tr(context, 'securing_tokens'),
             style: TextStyle(fontSize: 10, color: context.fast.t3),
             textAlign: TextAlign.center,
           ),
@@ -658,7 +659,7 @@ class _CartScreenState extends State<CartScreen> {
     if (provider.fulfillmentType == FulfillmentType.delivery) {
       final addr = provider.deliveryAddress.trim();
       if (addr.isEmpty) {
-        provider.showToast('Adresse requise', 'Saisissez une adresse de livraison.');
+        provider.showToast(tr(context, 'addr_required'), tr(context, 'addr_enter'));
         return;
       }
       if (provider.deliveryLatitude == null || provider.deliveryLongitude == null) {
@@ -666,12 +667,12 @@ class _CartScreenState extends State<CartScreen> {
         try {
           final locations = await locationFromAddress(addr);
           if (locations.isEmpty) {
-            provider.showToast('Adresse', 'Adresse introuvable — précisez ville et code postal.');
+            provider.showToast(tr(context, 'address_lbl'), tr(context, 'addr_notfound'));
             return;
           }
           provider.setDeliveryAddress(addr, latitude: locations.first.latitude, longitude: locations.first.longitude);
         } catch (_) {
-          provider.showToast('Adresse', 'Impossible de géolocaliser cette adresse.');
+          provider.showToast(tr(context, 'address_lbl'), tr(context, 'addr_nolocate'));
           return;
         } finally {
           if (mounted) setState(() => _geocodingAddress = false);
@@ -681,7 +682,7 @@ class _CartScreenState extends State<CartScreen> {
 
     setState(() {
       _isProcessing = true;
-      _processStep = 'CRÉATION DU PAIEMENT STRIPE...';
+      _processStep = tr(context, 'creating_payment');
     });
 
     try {
@@ -721,10 +722,10 @@ class _CartScreenState extends State<CartScreen> {
         mode: LaunchMode.externalApplication,
       );
       if (!launched && mounted) {
-        provider.showToast('Stripe', 'Impossible d’ouvrir la page de paiement.');
+        provider.showToast('Stripe', tr(context, 'stripe_open_fail'));
       }
     } catch (e) {
-      if (mounted) provider.showToast('Paiement impossible', e.toString());
+      if (mounted) provider.showToast(tr(context, 'payment_fail'), e.toString());
     } finally {
       if (mounted) {
         setState(() {
@@ -751,7 +752,7 @@ class _CartScreenState extends State<CartScreen> {
         });
       }
     } catch (e) {
-      if (mounted) provider.showToast('Paiement non confirmé', 'Terminez le paiement Stripe puis réessayez.');
+      if (mounted) provider.showToast(tr(context, 'payment_unconfirmed'), tr(context, 'finish_stripe'));
     } finally {
       if (mounted) {
         setState(() {

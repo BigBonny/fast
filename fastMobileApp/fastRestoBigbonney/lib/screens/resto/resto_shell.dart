@@ -42,48 +42,48 @@ class _RestoMainShellState extends State<RestoMainShell> {
     const RestoProfileScreen(),
   ];
 
-  late final List<_TutorialStep> _tutorialSteps = [
+  List<_TutorialStep> get _tutorialSteps => [
     _TutorialStep(
       key: _ordersKey,
       navigationIndex: 0,
-      title: 'Pilotez vos commandes',
+      title: tr(context, 'tuto1_t'),
       description:
-          'Les nouvelles commandes payées arrivent ici. Faites-les passer de reçue à en préparation, puis prête et récupérée.',
+          tr(context, 'tuto1_d'),
     ),
     _TutorialStep(
       key: _kitchenKey,
       navigationIndex: 0,
-      title: 'Ouvrez le mode Cuisine',
+      title: tr(context, 'tuto2_t'),
       description:
-          'Affichez une vue opérationnelle pensée pour la préparation et gardez les commandes prioritaires sous les yeux.',
+          tr(context, 'tuto2_d'),
     ),
     _TutorialStep(
       key: _menuKey,
       navigationIndex: 1,
-      title: 'Construisez votre menu',
+      title: tr(context, 'tuto3_t'),
       description:
-          'Ajoutez vos plats, prix et photos, puis rendez un article indisponible en un geste lorsqu’il est en rupture.',
+          tr(context, 'tuto3_d'),
     ),
     _TutorialStep(
       key: _statsKey,
       navigationIndex: 2,
-      title: 'Suivez vos performances',
+      title: tr(context, 'tuto4_t'),
       description:
-          'Consultez les ventes, les commandes et les plats populaires pour prendre de meilleures décisions.',
+          tr(context, 'tuto4_d'),
     ),
     _TutorialStep(
       key: _settingsKey,
       navigationIndex: 3,
-      title: 'Configurez votre restaurant',
+      title: tr(context, 'tuto5_t'),
       description:
-          'Complétez votre identité, vos horaires de préparation, vos coordonnées et vos options alimentaires.',
+          tr(context, 'tuto5_d'),
     ),
     _TutorialStep(
       key: _profileKey,
       navigationIndex: 4,
-      title: 'Vérifiez votre vitrine',
+      title: tr(context, 'tuto6_t'),
       description:
-          'Prévisualisez exactement ce que les clients voient. Vous êtes prêt à recevoir vos premières commandes.',
+          tr(context, 'tuto6_d'),
     ),
   ];
 
@@ -294,7 +294,7 @@ class _RestoMainShellState extends State<RestoMainShell> {
                   key: _menuKey,
                   child: const Icon(Icons.restaurant_menu),
                 ),
-                label: 'Menu',
+                label: tr(context, 'menu'),
               ),
               BottomNavigationBarItem(
                 icon: KeyedSubtree(

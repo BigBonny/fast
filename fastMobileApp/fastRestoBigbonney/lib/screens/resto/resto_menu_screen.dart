@@ -55,10 +55,10 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
                   child: const Icon(Icons.smart_toy,
                       color: Color(0xFF8B5CF6), size: 20),
                 ),
-                title: Text('Scanner un menu (IA)',
+                title: Text(tr(context, 'scan_menu_ai'),
                     style: TextStyle(
                         color: context.fast.t1, fontWeight: FontWeight.w600)),
-                subtitle: Text('Import automatique via photo',
+                subtitle: Text(tr(context, 'scan_menu_sub'),
                     style: TextStyle(
                         color: context.fast.t2, fontSize: 12)),
                 onTap: () {
@@ -81,7 +81,7 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
                   child: const Icon(Icons.edit_outlined,
                       color: Color(0xFF00C8B3), size: 20),
                 ),
-                title: Text('Ajout manuel',
+                title: Text(tr(context, 'manual_add'),
                     style: TextStyle(
                         color: context.fast.t1, fontWeight: FontWeight.w600)),
                 subtitle: Text(tr(context, 'create_dish_sub'),
@@ -142,7 +142,7 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
           borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) {
         final items = prov.menu.where((m) => m.available).toList();
-        final categories = {for (final m in items) m.category.isEmpty ? 'Menu' : m.category}.toList();
+        final categories = {for (final m in items) m.category.isEmpty ? tr(context, 'menu') : m.category}.toList();
         return DraggableScrollableSheet(
           initialChildSize: 0.9,
           expand: false,
@@ -156,7 +156,7 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Aperçu — ${resto?.name ?? 'Mon restaurant'}',
+                        tr(context, 'preview_of').replaceAll('{n}', resto?.name ?? tr(context, 'my_restaurant')),
                         style: TextStyle(color: ctx.fast.t1, fontWeight: FontWeight.bold, fontSize: 16),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -179,7 +179,7 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
                         child: Text(cat.toUpperCase(),
                             style: TextStyle(color: ctx.fast.t3, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1)),
                       ),
-                      ...items.where((m) => (m.category.isEmpty ? 'Menu' : m.category) == cat).map(
+                      ...items.where((m) => (m.category.isEmpty ? tr(context, 'menu') : m.category) == cat).map(
                             (m) => Container(
                               margin: const EdgeInsets.only(bottom: 10),
                               padding: const EdgeInsets.all(12),
@@ -258,7 +258,7 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
                   color: context.fast.t2,
                   fontSize: 16,
                   fontWeight: FontWeight.w600)),
-                SizedBox(height: 8), Text('Ajoutez votre premier plat',
+                SizedBox(height: 8), Text(tr(context, 'first_dish'),
               style: TextStyle(color: context.fast.t3, fontSize: 13)),
                 SizedBox(height: 24),
           ElevatedButton.icon(
@@ -327,7 +327,7 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      cat == 'all' ? 'Tout' : cat,
+                      cat == 'all' ? tr(context, 'all_lbl') : cat,
                       style: TextStyle(
                         color: active
                             ? context.fast.bg
@@ -428,7 +428,7 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
                                 context.fast.faint,
                             borderRadius: BorderRadius.circular(4),
                           ),
-                          child: Text('Indispo',
+                          child: Text(tr(context, 'indispo'),
                               style: TextStyle(
                                   color: context.fast.t3,
                                   fontSize: 10,
@@ -471,7 +471,7 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      item.available ? 'Épuiser' : 'Dispo',
+                      item.available ? tr(context, 'soldout') : tr(context, 'dispo'),
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 11,

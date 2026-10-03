@@ -125,7 +125,7 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
       if (mounted) {
         setState(() {
           _state = -1;
-          _errorMessage = 'Erreur vidéo: $e';
+          _errorMessage = tr(context, 'video_err').replaceAll('{n}', '$e');
         });
       }
     }
@@ -137,7 +137,7 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
     if (restaurantId == null) {
       setState(() {
         _state = -1;
-        _errorMessage = 'Aucun restaurant connecté.';
+        _errorMessage = tr(context, 'no_resto_connected');
       });
       return;
     }
@@ -159,7 +159,7 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
         }
       }
       if (frames.isEmpty) {
-        throw Exception('Impossible d\'extraire les images de la vidéo');
+        throw Exception(tr(context, 'extract_fail'));
       }
       debugPrint('[Scanner] extracted ${frames.length} frames');
 
@@ -176,7 +176,7 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
       if (mounted) {
         setState(() {
           _state = -1;
-          _errorMessage = 'Erreur lors de l\'analyse: $e';
+          _errorMessage = tr(context, 'analysis_err').replaceAll('{n}', '$e');
         });
       }
     }
@@ -242,7 +242,7 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
     if (restaurantId == null) {
       setState(() {
         _state = -1;
-        _errorMessage = 'Aucun restaurant connecté.';
+        _errorMessage = tr(context, 'no_resto_connected');
       });
       return;
     }
@@ -268,7 +268,7 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
       if (mounted) {
         setState(() {
           _state = -1;
-          _errorMessage = 'Erreur lors de l\'analyse: ${e.toString()}';
+          _errorMessage = tr(context, 'analysis_err').replaceAll('{n}', e.toString());
         });
       }
     }
@@ -283,7 +283,7 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
         elevation: 0,
         iconTheme: IconThemeData(color: context.fast.t1),
         title: Text(
-          'Assistant IA FAST',
+          tr(context, 'ai_assistant'),
           style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold),
         ),
       ),
@@ -337,11 +337,11 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                         _scannerCorner(top: 0, right: 0),
                         _scannerCorner(bottom: 0, left: 0),
                         _scannerCorner(bottom: 0, right: 0),
-                        const Center(
+                        Center(
                           child: Padding(
-                            padding: EdgeInsets.all(24.0),
+                            padding: const EdgeInsets.all(24.0),
                             child: Text(
-                              'Cadrez le menu\npapier ou l\'ardoise\npour l\'importation',
+                              tr(context, 'frame_menu'),
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: Color(0xFF10B981),
@@ -356,7 +356,7 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                     ),
                   ),
                         SizedBox(height: 40), Text(
-                    'Photo nette, ou maintenez pour filmer',
+                    tr(context, 'scan_hint'),
                     style: TextStyle(
                       color: context.fast.t1,
                       fontWeight: FontWeight.w600,
@@ -425,8 +425,8 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                         ),
                       ),
                       const SizedBox(height: 6),
-                      const Text(
-                        'APPUYEZ = PHOTO · MAINTENEZ = VIDÉO',
+                      Text(
+                        tr(context, 'scan_gesture'),
                         style: TextStyle(
                           color: Colors.white70,
                           fontSize: 8,
@@ -485,12 +485,12 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                 ),
               ),
             ),
-            const Positioned(
+            Positioned(
               bottom: 130,
               left: 24,
               right: 24,
               child: Text(
-                'Balayez lentement les écrans / ardoises du menu',
+                tr(context, 'scan_sweep'),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white,
@@ -538,7 +538,7 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                 children: [
                   CircularProgressIndicator(color: Color(0xFF8B5CF6)),
                   SizedBox(height: 24), Text(
-                    'L\'IA analyse votre menu...',
+                    tr(context, 'ai_analyzing'),
                     style: TextStyle(
                       color: Color(0xFF8B5CF6),
                       fontSize: 18,
@@ -546,7 +546,7 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                     ),
                   ),
                   SizedBox(height: 8), Text(
-                    'Extraction des plats et des prix en cours',
+                    tr(context, 'extracting'),
                     style: TextStyle(color: context.fast.t2),
                   ),
                 ],
@@ -559,7 +559,7 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [ Icon(Icons.check_circle, color: Color(0xFF10B981), size: 80),
                   SizedBox(height: 24), Text(
-                    'Menu importé avec succès !',
+                    tr(context, 'menu_imported'),
                     style: TextStyle(
                       color: Color(0xFF10B981),
                       fontSize: 20,

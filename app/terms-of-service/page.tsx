@@ -20,13 +20,13 @@ export default function TermsOfServicePage() {
           </div>
           <h2 className="font-black text-lg text-gray-900 dark:text-white mb-2">Conditions générales d'utilisation</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-            En utilisant FAST, vous acceptez les conditions suivantes.
+            En utilisant <span className="notranslate" translate="no">FAST</span>, vous acceptez les conditions suivantes.
           </p>
 
           <div className="space-y-4 text-sm text-gray-600 dark:text-gray-300">
             <div>
               <h3 className="font-bold text-gray-900 dark:text-white mb-1">Service</h3>
-              <p>FAST met en relation des clients et des restaurants pour la commande et le retrait de repas. Les restaurants sont responsables de la préparation et de la disponibilité des articles.</p>
+              <p><span className="notranslate" translate="no">FAST</span> met en relation des clients et des restaurants pour la commande et le retrait de repas. Les restaurants sont responsables de la préparation et de la disponibilité des articles.</p>
             </div>
             <div>
               <h3 className="font-bold text-gray-900 dark:text-white mb-1">Compte</h3>

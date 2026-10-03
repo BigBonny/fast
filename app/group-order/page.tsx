@@ -68,7 +68,7 @@ export default function GroupOrderPage() {
             <Users className="w-10 h-10 text-violet-400 mx-auto mb-3" />
             <h2 className="font-bold text-gray-900 dark:text-white mb-1">Connectez-vous</h2>
             <p className="text-sm text-gray-400 mb-5">
-              Les commandes de groupe nécessitent un compte FAST.
+              Les commandes de groupe nécessitent un compte <span className="notranslate" translate="no">FAST</span>.
             </p>
             <Link href="/login">
               <Button className="rounded-xl px-6" style={{ background: "#7c3aed" }}>

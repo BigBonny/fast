@@ -347,7 +347,7 @@ class _AccountScreenState extends State<AccountScreen>
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children:       [ Text(
-                          "Thème de l'interface",
+                          tr(context, 'theme_interface'),
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
@@ -506,7 +506,7 @@ class _AccountScreenState extends State<AccountScreen>
             child: Column(
               children: [
                 ListTile(
-                  onTap: () => _showLegalInfo(context, 'Confidentialité'),
+                  onTap: () => _showLegalInfo(context, tr(context, 'privacy')),
                   leading: Icon( Icons.shield_outlined,
                     color: Color(0xFFF59E0B),
                     size: 20,
@@ -611,7 +611,7 @@ class _AccountScreenState extends State<AccountScreen>
                 SizedBox(height: 24),
 
           // Danger zone
-          _sectionLabel('ZONE DE DANGER'),
+          _sectionLabel(tr(context, 'zone_danger')),
                 SizedBox(height: 8),
           Container(
             decoration: BoxDecoration(
@@ -625,8 +625,8 @@ class _AccountScreenState extends State<AccountScreen>
                 color: Color(0xFFEF4444),
                 size: 20,
               ),
-              title: const Text(
-                'Supprimer mon compte',
+              title: Text(
+                tr(context, 'del_my_account'),
                 style: TextStyle(
                   color: Color(0xFFEF4444),
                   fontWeight: FontWeight.bold,
@@ -643,7 +643,7 @@ class _AccountScreenState extends State<AccountScreen>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children:       [ Text(
-                  'FAST Client v1.0 · Fait avec ',
+                  'FAST Client v1.0 · ${tr(context, 'made_with')} ',
                   style: TextStyle(fontSize: 11, color: context.fast.faint),
                 ), Icon(Icons.bolt, color: Color(0xFFF59E0B), size: 14),
               ],
@@ -766,7 +766,7 @@ class _AccountScreenState extends State<AccountScreen>
           side: BorderSide(color: context.fast.line),
         ),
         title: Text(
-          'Modifier $fieldName',
+          tr(context, 'edit_field').replaceAll('{n}', fieldName),
           style: TextStyle(
             color: context.fast.t1,
             fontWeight: FontWeight.bold,
@@ -859,7 +859,7 @@ class _AccountScreenState extends State<AccountScreen>
           ),
         ),
         content: Text(
-          'Votre accès, votre profil et vos données personnelles seront supprimés. Les données de transaction légalement requises seront anonymisées. Cette action est irréversible.',
+          tr(context, 'del_account_warn'),
           style: TextStyle(color: context.fast.t2, fontSize: 12, height: 1.4),
         ),
         actions: [ TextButton(
@@ -882,7 +882,7 @@ class _AccountScreenState extends State<AccountScreen>
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
-                      auth.error ?? 'Suppression impossible. Réessayez.',
+                      auth.error ?? tr(context, 'del_fail'),
                     ),
                   ),
                 );
@@ -969,7 +969,7 @@ class _AccountScreenState extends State<AccountScreen>
 
                 SizedBox(height: 20),
 
-          _sectionLabel('HISTORIQUE DES POINTS'),
+          _sectionLabel(tr(context, 'points_history')),
                 SizedBox(height: 8),
 
           if (completedOrders.isEmpty)
@@ -982,7 +982,7 @@ class _AccountScreenState extends State<AccountScreen>
               ),
               child:       Center(
                 child: Text(
-                  'Aucun point encore.\nComplétez votre première commande pour gagner des points !',
+                  tr(context, 'no_points'),
                   style: TextStyle(
                     fontSize: 12,
                     color: context.fast.t3,
@@ -1039,7 +1039,7 @@ class _AccountScreenState extends State<AccountScreen>
                                       color: context.fast.t1,
                                     ),
                                   ), Text(
-                                    'Commande récupérée · ${order.id}',
+                                    tr(context, 'order_done_id').replaceAll('{n}', order.id),
                                     style: TextStyle(
                                       fontSize: 10,
                                       color: context.fast.t3,
@@ -1094,10 +1094,10 @@ class _AccountScreenState extends State<AccountScreen>
             color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
           ),
         ),
-        child: const Row(
+        child: Row(
           children: [ Icon(Icons.workspace_premium, color: Color(0xFFF59E0B)),
             SizedBox(width: 10), Text(
-              'Niveau maximum atteint — FAST Gold !',
+              tr(context, 'max_level'),
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 12,
@@ -1126,7 +1126,7 @@ class _AccountScreenState extends State<AccountScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [ Text(
-                'Vers $nextLevel',
+                tr(context, 'to_next_level').replaceAll('{n}', nextLevel),
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
@@ -1174,7 +1174,7 @@ class _AccountScreenState extends State<AccountScreen>
                     color: context.fast.faint,
                   ),
                   SizedBox(height: 12), Text(
-                    'Aucune adresse enregistrée',
+                    tr(context, 'no_addresses'),
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
@@ -1182,7 +1182,7 @@ class _AccountScreenState extends State<AccountScreen>
                     ),
                   ),
                   SizedBox(height: 4), Text(
-                    'Vos adresses de livraison favorites seront enregistrées ici.',
+                    tr(context, 'addresses_hint'),
                     style: TextStyle(
                       fontSize: 11,
                       color: context.fast.t3,
@@ -1217,7 +1217,7 @@ class _AccountScreenState extends State<AccountScreen>
         title:       Row(
           children: [ Icon(Icons.credit_card, color: Color(0xFFF59E0B), size: 20),
             SizedBox(width: 8), Text(
-              'Moyens de paiement',
+              tr(context, 'payment_methods'),
               style: TextStyle(
                 color: context.fast.t1,
                 fontWeight: FontWeight.bold,
@@ -1227,8 +1227,7 @@ class _AccountScreenState extends State<AccountScreen>
           ],
         ),
         content: Text(
-          'Vos paiements sont sécurisés par Stripe. Aucune carte bancaire n\'est stockée sur l\'app. '
-          'Vos informations de paiement sont saisies directement sur la page sécurisée Stripe lors de chaque commande.',
+          tr(context, 'stripe_secure') + tr(context, 'stripe_info'),
           style: TextStyle(color: context.fast.t2, fontSize: 12, height: 1.5),
         ),
         actions: [
@@ -1242,7 +1241,7 @@ class _AccountScreenState extends State<AccountScreen>
               ),
               elevation: 0,
             ),
-            child: const Text('Compris', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: Text(tr(context, 'understood'), style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -1268,7 +1267,7 @@ class _AccountScreenState extends State<AccountScreen>
             side: BorderSide(color: context.fast.line),
           ),
           title: Text(
-            'Modifier le mot de passe',
+            tr(context, 'change_pwd'),
             style: TextStyle(
               color: context.fast.t1,
               fontWeight: FontWeight.bold,
@@ -1279,11 +1278,11 @@ class _AccountScreenState extends State<AccountScreen>
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _passwordField(currentCtrl, 'Mot de passe actuel', obscure: true),
+              _passwordField(currentCtrl, tr(context, 'pwd_current'), obscure: true),
                     SizedBox(height: 12),
-              _passwordField(newCtrl, 'Nouveau mot de passe', obscure: true),
+              _passwordField(newCtrl, tr(context, 'pwd_new'), obscure: true),
                     SizedBox(height: 12),
-              _passwordField(confirmCtrl, 'Confirmer le nouveau', obscure: true),
+              _passwordField(confirmCtrl, tr(context, 'pwd_confirm'), obscure: true),
               if (error != null) ...[
                 const SizedBox(height: 12), Text(
                   error!,
@@ -1291,7 +1290,7 @@ class _AccountScreenState extends State<AccountScreen>
                 ),
               ],
                     SizedBox(height: 8), Text(
-                'Minimum 8 caractères, 1 majuscule, 1 chiffre.',
+                tr(context, 'pwd_rules'),
                 style: TextStyle(color: context.fast.faint, fontSize: 10),
               ),
             ],
@@ -1310,7 +1309,7 @@ class _AccountScreenState extends State<AccountScreen>
                       });
                       if (newCtrl.text != confirmCtrl.text) {
                         setState(() {
-                          error = 'Les mots de passe ne correspondent pas.';
+                          error = tr(context, 'pwd_mismatch');
                           loading = false;
                         });
                         return;
@@ -1400,7 +1399,7 @@ class _AccountScreenState extends State<AccountScreen>
         title:       Row(
           children: [ Icon(Icons.mail_lock_outlined, color: Color(0xFFF59E0B), size: 20),
             SizedBox(width: 8), Text(
-              'Sécurité e-mail',
+              tr(context, 'email_security'),
               style: TextStyle(
                 color: context.fast.t1,
                 fontWeight: FontWeight.bold,
@@ -1413,11 +1412,11 @@ class _AccountScreenState extends State<AccountScreen>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [ Text(
-              'Adresse e-mail associée :',
+              tr(context, 'email_assoc'),
               style: TextStyle(color: context.fast.t3, fontSize: 11),
             ),
                   SizedBox(height: 4), Text(
-              provider.userEmail.isNotEmpty ? provider.userEmail : 'Non renseigné',
+              provider.userEmail.isNotEmpty ? provider.userEmail : tr(context, 'not_provided'),
               style: TextStyle(
                 color: context.fast.t1,
                 fontWeight: FontWeight.bold,
@@ -1425,8 +1424,7 @@ class _AccountScreenState extends State<AccountScreen>
               ),
             ),
                   SizedBox(height: 16), Text(
-              'Pour modifier votre e-mail, rendez-vous dans l\'onglet Profil ci-dessus. '
-              'Votre e-mail est utilisé pour la connexion et les notifications de commande.',
+              tr(context, 'email_change_hint') + tr(context, 'email_used_for'),
               style: TextStyle(color: context.fast.t2, fontSize: 11, height: 1.5),
             ),
           ],
@@ -1452,13 +1450,12 @@ class _AccountScreenState extends State<AccountScreen>
   // ─── Legal info ─────────────────────────────────────────────────────────────
   void _showLegalInfo(BuildContext context, String type) {
     final content = type == 'CGU'
-        ? 'En utilisant FAST, vous acceptez nos conditions générales d\'utilisation. '
-            'FAST est un service de commande Click & Collect et de livraison pour restaurants. '
-            'Les commandes sont préparées par les restaurants partenaires. Les paiements sont '
-            'sécurisés par Stripe. Vous pouvez demander la suppression de votre compte à tout moment.'
-        : 'FAST collecte votre nom, e-mail, téléphone et position (avec votre accord) pour '
-            'permettre la commande et la livraison. Vos données ne sont jamais vendues. '
-            'Vous pouvez les modifier ou supprimer votre compte à tout moment depuis cette page.';
+        ? tr(context, 'terms_intro') +
+            tr(context, 'fast_service_desc') +
+            tr(context, 'legal_orders')
+        : tr(context, 'privacy_collect') +
+            tr(context, 'privacy_data') +
+            tr(context, 'data_rights');
 
     showDialog(
       context: context,
@@ -1469,7 +1466,7 @@ class _AccountScreenState extends State<AccountScreen>
           side: BorderSide(color: context.fast.line),
         ),
         title: Text(
-          type == 'CGU' ? 'Conditions générales' : 'Confidentialité',
+          type == 'CGU' ? tr(context, 'terms_title') : tr(context, 'privacy'),
           style: TextStyle(
             color: context.fast.t1,
             fontWeight: FontWeight.bold,
