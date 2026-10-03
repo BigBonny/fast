@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme.dart';
+import '../l10n/tr.dart';
 
 class RestoSpotlightTutorial extends StatelessWidget {
   final Rect? targetRect;
@@ -39,7 +40,7 @@ class RestoSpotlightTutorial extends StatelessWidget {
     final card = Semantics(
       liveRegion: true,
       namesRoute: true,
-      label: 'Tutoriel étape ${step + 1} sur $totalSteps. $title. $description',
+      label: tr(context, 'tutor_step').replaceAll('{a}', '${step + 1}').replaceAll('{b}', '$totalSteps') + ' $title. $description',
       child: Material(
         color: context.fast.card,
         elevation: 18,
@@ -81,7 +82,7 @@ class RestoSpotlightTutorial extends StatelessWidget {
                       minimumSize:       Size(48, 48),
                       foregroundColor: context.fast.t2,
                     ),
-                    child: const Text('Passer'),
+                    child: Text(tr(context, 'skip_tuto')),
                   ),
                 ],
               ),

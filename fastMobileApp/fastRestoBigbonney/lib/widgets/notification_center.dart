@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../provider.dart';
 import '../theme.dart';
+import '../l10n/tr.dart';
 
 class NotificationCenter extends StatelessWidget {
         NotificationCenter({super.key});
@@ -92,7 +93,7 @@ class NotificationCenterList extends StatelessWidget {
                 color: context.fast.line,
               ),
                     SizedBox(height: 12), Text(
-                'Vous êtes à jour !',
+                tr(context, 'no_notifs'),
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 13,
@@ -100,7 +101,7 @@ class NotificationCenterList extends StatelessWidget {
                 ),
               ),
                     SizedBox(height: 4), Text(
-                'Les notifications sur le statut de vos commandes apparaîtront ici.',
+                tr(context, 'notifs_hint'),
                 style: TextStyle(
                   fontSize: 11,
                   color: context.fast.t3,
@@ -197,8 +198,8 @@ class NotificationCenterList extends StatelessWidget {
               activeProvider.clearNotifications();
             },
             icon: const Icon(Icons.delete_outline, size: 16, color: Color(0xFFEF4444)),
-            label: const Text(
-              'Tout effacer',
+            label: Text(
+              tr(context, 'clear_all'),
               style: TextStyle(
                 color: Color(0xFFEF4444),
                 fontWeight: FontWeight.bold,

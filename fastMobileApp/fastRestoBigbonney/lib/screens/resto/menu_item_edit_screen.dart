@@ -101,7 +101,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(provider.error ?? 'Erreur lors de la sauvegarde'),
+          content: Text(provider.error ?? tr(context, 'error_save')),
           backgroundColor: const Color(0xFFEF4444),
         ),
       );
@@ -116,7 +116,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
         title: Text(tr(context, 'del_dish'),
             style: TextStyle(color: context.fast.t1)),
         content: Text(
-          'Voulez-vous vraiment supprimer "${widget.item!.name}" ?',
+          tr(context, 'del_dish_confirm').replaceAll('{n}', widget.item!.name),
           style: TextStyle(color: context.fast.t2),
         ),
         actions: [ TextButton(
@@ -152,13 +152,13 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: context.fast.card,
         title: Text(
-          existing == null ? 'Ajouter un supplément' : 'Modifier le supplément',
+          existing == null ? tr(context, 'add_supp') : tr(context, 'edit_supp'),
           style: TextStyle(color: context.fast.t1, fontSize: 16),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _dialogField('Nom du supplément', nameCtrl),
+            _dialogField(tr(context, 'supp_name'), nameCtrl),
             const SizedBox(height: 12),
             _dialogField(tr(context, 'price_lbl'), priceCtrl,
                 keyboard: TextInputType.number),
@@ -252,7 +252,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          _isEdit ? 'Modifier le plat' : 'Nouveau plat',
+          _isEdit ? tr(context, 'edit_dish') : tr(context, 'new_dish'),
           style: TextStyle(
               color: context.fast.t1, fontWeight: FontWeight.bold, fontSize: 18),
         ),
@@ -274,12 +274,12 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
               label: tr(context, 'dish_name_lbl'),
               icon: Icons.restaurant_menu,
               validator: (v) =>
-                  v == null || v.trim().isEmpty ? 'Requis' : null,
+                  v == null || v.trim().isEmpty ? tr(context, 'required_f') : null,
             ),
                   SizedBox(height: 16),
             _field(
               controller: _description,
-              label: 'Description',
+              label: tr(context, 'description'),
               icon: Icons.notes,
               maxLines: 3,
             ),
@@ -293,8 +293,8 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                     icon: Icons.euro,
                     keyboard: TextInputType.number,
                     validator: (v) {
-                      if (v == null || v.trim().isEmpty) return 'Requis';
-                      if (double.tryParse(v.trim()) == null) return 'Invalide';
+                      if (v == null || v.trim().isEmpty) return tr(context, 'required_f');
+                      if (double.tryParse(v.trim()) == null) return tr(context, 'invalid_f');
                       return null;
                     },
                   ),
@@ -303,10 +303,10 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                 Expanded(
                   child: _field(
                     controller: _category,
-                    label: 'Catégorie',
+                    label: tr(context, 'category_lbl'),
                     icon: Icons.category_outlined,
                     validator: (v) =>
-                        v == null || v.trim().isEmpty ? 'Requis' : null,
+                        v == null || v.trim().isEmpty ? tr(context, 'required_f') : null,
                   ),
                 ),
               ],
@@ -320,7 +320,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                   SizedBox(height: 16),
             _field(
               controller: _videoUrl,
-              label: 'URL vidéo story (optionnel)',
+              label: tr(context, 'video_url_lbl'),
               icon: Icons.play_circle_outline,
             ),
                   SizedBox(height: 16),
@@ -330,7 +330,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                 Expanded(
                   child: _field(
                     controller: _prepTime,
-                    label: 'Prép. normal (min)',
+                    label: tr(context, 'prep_normal_min'),
                     icon: Icons.schedule,
                     keyboard: TextInputType.number,
                   ),
@@ -339,7 +339,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                 Expanded(
                   child: _field(
                     controller: _prepTimeRush,
-                    label: 'Prép. rush (min)',
+                    label: tr(context, 'prep_rush_min'),
                     icon: Icons.local_fire_department_outlined,
                     keyboard: TextInputType.number,
                   ),
@@ -349,7 +349,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
             Padding(
               padding: const EdgeInsets.only(top: 6, left: 4),
               child: Text(
-                'Ex. Kebab 8 min, Agneau 15 min normal / 25 min en rush. Vide = délai par défaut du restaurant.',
+                tr(context, 'prep_example'),
                 style: TextStyle(color: context.fast.t3, fontSize: 11, height: 1.3),
               ),
             ),
@@ -368,7 +368,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                       color: context.fast.t3, size: 20),
                         SizedBox(width: 12),
                         Expanded(
-                    child: Text('Disponible',
+                    child: Text(tr(context, 'available'),
                         style: TextStyle(color: context.fast.t1, fontSize: 15)),
                   ),
                   Switch(
@@ -382,7 +382,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                   SizedBox(height: 24),
 
             // Dietary tags
- Text('Labels alimentaires',
+ Text(tr(context, 'food_labels'),
                 style: TextStyle(
                     color: context.fast.t2,
                     fontSize: 13,
@@ -532,7 +532,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                         child: CircularProgressIndicator(
                             strokeWidth: 2, color: FASTBrand.onAmber))
                     : Text(
-                        _isEdit ? 'Sauvegarder' : 'Créer le plat',
+                        _isEdit ? 'Sauvegarder' : tr(context, 'create_dish'),
                         style: const TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 16),
                       ),

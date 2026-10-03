@@ -228,7 +228,7 @@ class ClientDrawer extends StatelessWidget {
                     icon: Icons.shield_outlined,
                     iconColor: const Color(0xFF38BDF8),
                     label: provider.tr('privacy'),
-                    onTap: () => _showLegal(context, 'Confidentialité'),
+                    onTap: () => _showLegal(context, tr(context, 'privacy')),
                   ),
                   _item(
                     context,
@@ -429,13 +429,12 @@ class ClientDrawer extends StatelessWidget {
 
   void _showLegal(BuildContext context, String type) {
     final content = type == 'CGU'
-        ? 'En utilisant FAST, vous acceptez nos conditions générales d\'utilisation. '
-            'FAST est un service de commande Click & Collect et de livraison pour restaurants. '
-            'Les commandes sont préparées par les restaurants partenaires. Les paiements sont '
-            'sécurisés par Stripe. Vous pouvez demander la suppression de votre compte à tout moment.'
-        : 'FAST collecte votre nom, e-mail, téléphone et position (avec votre accord) pour '
-            'permettre la commande et la livraison. Vos données ne sont jamais vendues. '
-            'Vous pouvez les modifier ou supprimer votre compte à tout moment depuis cette page.';
+        ? tr(context, 'terms_intro') +
+            tr(context, 'fast_service_desc') +
+            tr(context, 'legal_orders')
+        : tr(context, 'privacy_collect') +
+            tr(context, 'privacy_data') +
+            tr(context, 'data_rights');
 
     Navigator.of(context).pop();
     showDialog(
@@ -447,7 +446,7 @@ class ClientDrawer extends StatelessWidget {
           side: BorderSide(color: _chipBorder(context)),
         ),
         title: Text(
-          type == 'CGU' ? 'Conditions générales' : 'Confidentialité',
+          type == 'CGU' ? tr(context, 'terms_title') : tr(context, 'privacy'),
           style: TextStyle(
             color: _text(context),
             fontWeight: FontWeight.bold,

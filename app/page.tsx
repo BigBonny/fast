@@ -253,7 +253,7 @@ export default function Home() {
                 background: "linear-gradient(90deg, #f59e0b, #fbbf24, #f97316)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
-              }}>FAST</span>
+              }}><span className="notranslate" translate="no">FAST</span></span>
               <Zap className="w-8 h-8 text-amber-400 fill-amber-400" />
             </div>
           </m.div>

@@ -44,19 +44,19 @@ class _RestoStatsScreenState extends State<RestoStatsScreen> {
     setState(() => _exporting = true);
     try {
       final csv = await _statsService.exportStats(periodDays: periodDays);
-      if (csv.isEmpty) throw Exception('Export vide');
+      if (csv.isEmpty) throw Exception(tr(context, 'export_empty'));
       final dir = await getTemporaryDirectory();
       final file = File('${dir.path}/fast-stats-$periodDays-j.csv');
       await file.writeAsString(csv);
       await Share.shareXFiles(
         [XFile(file.path)],
-        subject: 'Export statistiques FAST',
-        text: 'Statistiques restaurant — $periodDays jours',
+        subject: tr(context, 'export_title'),
+        text: tr(context, 'stats_range').replaceAll('{n}', '$periodDays'),
       );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Export impossible: $e')),
+          SnackBar(content: Text(tr(context, 'export_fail').replaceAll('{n}', '$e'))),
         );
       }
     } finally {
@@ -79,7 +79,7 @@ class _RestoStatsScreenState extends State<RestoStatsScreen> {
           padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
           children: [
                   Text(
-              'Analytics restaurant',
+              tr(context, 'analytics'),
               style: TextStyle(
                 color: context.fast.t1,
                 fontSize: 26,
@@ -88,7 +88,7 @@ class _RestoStatsScreenState extends State<RestoStatsScreen> {
             ),
             const SizedBox(height: 6),
                   Text(
-              'Chiffre d’affaires basé sur les commandes payées et terminées.',
+              tr(context, 'revenue_note'),
               style: TextStyle(color: context.fast.t2, fontSize: 14),
             ),
             const SizedBox(height: 20),
@@ -110,7 +110,7 @@ class _RestoStatsScreenState extends State<RestoStatsScreen> {
                         child: CircularProgressIndicator(strokeWidth: 2, color: _brand),
                       )
                     : const Icon(Icons.download_outlined, size: 18),
-                label: Text(_exporting ? 'Export...' : 'Exporter CSV'),
+                label: Text(_exporting ? tr(context, 'exporting') : tr(context, 'export_csv')),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: _brand,
                   side: const BorderSide(color: _brand),
@@ -163,12 +163,12 @@ class _PeriodSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: 'Période des statistiques',
+      label: tr(context, 'stats_period'),
       child: SegmentedButton<int>(
-        segments: const [
-          ButtonSegment(value: 7, label: Text('7 jours')),
-          ButtonSegment(value: 30, label: Text('30 jours')),
-          ButtonSegment(value: 90, label: Text('90 jours')),
+        segments: [
+          ButtonSegment(value: 7, label: Text(tr(context, 'days_n').replaceAll('{n}', '7'))),
+          ButtonSegment(value: 30, label: Text(tr(context, 'days_n').replaceAll('{n}', '30'))),
+          ButtonSegment(value: 90, label: Text(tr(context, 'days_n').replaceAll('{n}', '90'))),
         ],
         selected: {selected},
         showSelectedIcon: false,
@@ -202,9 +202,9 @@ class _OverviewSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionTitle(
-          title: 'Vue d’ensemble',
-          subtitle: 'Comparaison avec la période précédente',
+        _SectionTitle(
+          title: tr(context, 'stats_overview_t'),
+          subtitle: tr(context, 'stats_overview_s'),
         ),
         const SizedBox(height: 12),
         LayoutBuilder(
@@ -218,7 +218,7 @@ class _OverviewSection extends StatelessWidget {
               children: [
                 _KpiCard(
                   width: width,
-                  label: 'Chiffre d’affaires',
+                  label: tr(context, 'revenue'),
                   value: _money(kpis.revenue),
                   icon: Icons.payments_outlined,
                   delta: kpis.revenueDeltaPercent,
@@ -232,13 +232,13 @@ class _OverviewSection extends StatelessWidget {
                 ),
                 _KpiCard(
                   width: width,
-                  label: 'Panier moyen',
+                  label: tr(context, 'avg_basket'),
                   value: _money(kpis.averageBasket),
                   icon: Icons.shopping_bag_outlined,
                 ),
                 _KpiCard(
                   width: width,
-                  label: 'Clients uniques',
+                  label: tr(context, 'unique_clients'),
                   value: kpis.uniqueCustomers.toString(),
                   icon: Icons.people_alt_outlined,
                 ),
@@ -272,14 +272,14 @@ class _RevenueChart extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionTitle(
-          title: 'Évolution du CA',
-          subtitle: 'Montant restaurant hors frais de service',
+        _SectionTitle(
+          title: tr(context, 'ca_evo_t'),
+          subtitle: tr(context, 'ca_evo_s'),
         ),
         const SizedBox(height: 12),
         Semantics(
           label:
-              'Courbe du chiffre d’affaires sur ${stats.periodDays} jours, total ${_money(stats.kpis.revenue)}.',
+              tr(context, 'revenue_curve').replaceAll('{n}', '${stats.periodDays}').replaceAll('{m}', _money(stats.kpis.revenue)),
           image: true,
           child: _Panel(
             child: SizedBox(
@@ -396,9 +396,9 @@ class _LoyaltySection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionTitle(
-          title: 'Fidélisation',
-          subtitle: 'Clients déjà connus avant cette période',
+        _SectionTitle(
+          title: tr(context, 'retention_t'),
+          subtitle: tr(context, 'retention_s'),
         ),
         const SizedBox(height: 12),
         _Panel(
@@ -408,15 +408,15 @@ class _LoyaltySection extends StatelessWidget {
             children: [
               _Metric(label: tr(context, 'new_clients'), value: '${kpis.newCustomers}'),
               _Metric(
-                label: 'Clients récurrents',
+                label: tr(context, 'repeat_clients'),
                 value: '${kpis.recurringCustomers}',
               ),
               _Metric(
-                label: 'Taux de réachat',
+                label: tr(context, 'repurchase_rate'),
                 value: _percent(kpis.repurchaseRate),
               ),
               _Metric(
-                label: 'CA clients récurrents',
+                label: tr(context, 'recurring_revenue'),
                 value: _money(kpis.recurringCustomerRevenue),
               ),
             ],
@@ -440,7 +440,7 @@ class _OperationsSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _SectionTitle(
-          title: 'Annulations',
+          title: tr(context, 'annulations'),
           subtitle: tr(context, 'cancelled_stat_sub'),
         ),
         const SizedBox(height: 12),
@@ -463,7 +463,7 @@ class _OperationsSection extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${_percent(kpis.cancellationRate)} · ${_signedPoints(delta)} vs période précédente',
+                      '${_percent(kpis.cancellationRate)} · ${_signedPoints(delta)} ${tr(context, 'vs_prev_period')}',
                       style:       TextStyle(color: context.fast.t2),
                     ),
                   ],
@@ -490,7 +490,7 @@ class _PopularProducts extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _SectionTitle(
-          title: 'Produits populaires',
+          title: tr(context, 'popular_products'),
           subtitle: tr(context, 'qty_sold_sub'),
         ),
         const SizedBox(height: 12),
@@ -598,11 +598,11 @@ class _KpiCard extends StatelessWidget {
     final isPositive = (delta ?? 0) >= 0;
     final deltaColor = isPositive ? _positive : _negative;
     final deltaLabel = delta == null
-        ? 'pas de référence'
+        ? tr(context, 'no_ref')
         : '${isPositive ? '+' : ''}${_number(delta!)} %';
 
     return Semantics(
-      label: '$label, $value${hasDelta ? ', évolution $deltaLabel' : ''}',
+      label: '$label, $value${hasDelta ? ', ${tr(context, 'evolution_lbl')} $deltaLabel' : ''}',
       child: Container(
         width: width,
         constraints: const BoxConstraints(minHeight: 154),
@@ -773,9 +773,9 @@ class _ErrorState extends StatelessWidget {
   Widget build(BuildContext context) {
     return _StatePanel(
       icon: Icons.cloud_off_outlined,
-      title: 'Statistiques indisponibles',
+      title: tr(context, 'stats_unavail'),
       message: message,
-      actionLabel: 'Réessayer',
+      actionLabel: tr(context, 'retry'),
       onPressed: onRetry,
     );
   }
@@ -790,10 +790,10 @@ class _EmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return _StatePanel(
       icon: Icons.query_stats_outlined,
-      title: 'Pas encore de données',
+      title: tr(context, 'no_data'),
       message:
-          'Aucune activité n’a été enregistrée pour cette période. Essayez une période plus longue.',
-      actionLabel: 'Actualiser',
+          tr(context, 'no_activity'),
+      actionLabel: tr(context, 'refresh'),
       onPressed: onRetry,
     );
   }

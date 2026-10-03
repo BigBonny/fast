@@ -78,7 +78,7 @@ export default function SideMenu({ isOpen, onClose }: SideMenuProps) {
                     WebkitTextFillColor: "transparent",
                     transform: "skewX(-8deg)",
                     display: "inline-block"
-                  }}>FAST</span>
+                  }}><span className="notranslate" translate="no">FAST</span></span>
                   <Zap className="w-5 h-5 text-pink-500 fill-pink-500" />
                 </div>
                 <button onClick={onClose} className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">

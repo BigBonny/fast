@@ -31,7 +31,7 @@ export default function KitchenScreen({ open, onClose, orders = [] }: { open: bo
             <ChefHat className="w-6 h-6 text-white" />
           </div>
           <div className="font-bebas text-[34px] tracking-[5px] bg-gradient-to-br from-[#00c8b3] to-[#ff0066] bg-clip-text text-transparent">
-            FAST CUISINE
+            <span className="notranslate" translate="no">FAST</span> CUISINE
           </div>
         </div>
         <div className="flex items-center gap-4">
@@ -100,7 +100,7 @@ export default function KitchenScreen({ open, onClose, orders = [] }: { open: bo
             </span>
           ))}
           {pending.length === 0 && (
-            <span className="text-sm text-slate-500 font-black inline-flex items-center gap-2"><UtensilsCrossed className="w-4 h-4" /> FAST — En attente de commandes...</span>
+            <span className="text-sm text-slate-500 font-black inline-flex items-center gap-2"><UtensilsCrossed className="w-4 h-4" /> <span className="notranslate" translate="no">FAST</span> — En attente de commandes...</span>
           )}
         </div>
       </div>

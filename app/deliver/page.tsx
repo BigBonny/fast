@@ -67,7 +67,7 @@ export default function DeliverPage() {
         <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-500/15 dark:to-orange-500/15 flex items-center justify-center mb-6">
           <Bike className="w-12 h-12 text-orange-500" />
         </div>
-        <h1 className="text-2xl font-black text-gray-900 dark:text-white mb-2">Devenez livreur FAST</h1>
+        <h1 className="text-2xl font-black text-gray-900 dark:text-white mb-2">Devenez livreur <span className="notranslate" translate="no">FAST</span></h1>
         <p className="text-gray-400 text-sm leading-relaxed mb-8 max-w-xs">
           Vous êtes près d'un restaurant ? Livrez des commandes autour de vous et gagnez de l'argent facilement.
         </p>

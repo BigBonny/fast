@@ -20,7 +20,7 @@ export default function PrivacyPolicyPage() {
           </div>
           <h2 className="font-black text-lg text-gray-900 dark:text-white mb-2">Politique de confidentialité</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-            Chez FAST, nous prenons la protection de vos données très au sérieux.
+            Chez <span className="notranslate" translate="no">FAST</span>, nous prenons la protection de vos données très au sérieux.
           </p>
 
           <div className="space-y-4 text-sm text-gray-600 dark:text-gray-300">

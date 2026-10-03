@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../providers/auth_provider.dart';
 import '../services/delivery_service.dart';
 import '../theme.dart';
+import '../l10n/tr.dart';
 
 class DriverAccountScreen extends StatefulWidget {
   const DriverAccountScreen({super.key});
@@ -61,7 +62,7 @@ class _DriverAccountScreenState extends State<DriverAccountScreen> {
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         title: Text(
-          'Compte livreur',
+          tr(context, 'driver_account'),
           style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.w900, fontSize: 16),
         ),
       ),
@@ -94,7 +95,7 @@ class _DriverAccountScreenState extends State<DriverAccountScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [ Text(
-                            user?.name ?? 'Livreur',
+                            user?.name ?? tr(context, 'driver_lbl'),
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w900,
@@ -132,7 +133,7 @@ class _DriverAccountScreenState extends State<DriverAccountScreen> {
                               fontWeight: FontWeight.w900,
                             ),
                           ), Text(
-                            'Gains (aperçu)',
+                            tr(context, 'earnings_preview'),
                             style: TextStyle(color: context.fast.t2, fontSize: 12),
                           ),
                         ],
@@ -151,11 +152,11 @@ class _DriverAccountScreenState extends State<DriverAccountScreen> {
                     children: [
                       ListTile(
                         leading: Icon(Icons.calendar_month_outlined, color: Color(0xFF10B981)),
-                        title: Text('Mon planning', style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold)),
+                        title: Text(tr(context, 'my_planning'), style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold)),
                         subtitle: Text(
                           _schedules.isEmpty
-                              ? 'Aucun créneau configuré'
-                              : '${_schedules.length} créneau(x) enregistré(s)',
+                              ? tr(context, 'no_slots')
+                              : tr(context, 'slots_count').replaceAll('{n}', '${_schedules.length}'),
                           style: TextStyle(color: context.fast.t2, fontSize: 11),
                         ),
                         trailing: Icon(Icons.open_in_new, color: context.fast.t3, size: 18),
@@ -170,7 +171,7 @@ class _DriverAccountScreenState extends State<DriverAccountScreen> {
                         title: Consumer<AuthProvider>(
                           builder: (context, auth, _) {
                             if (auth.isLoggingOut) {
-                              return const Row(
+                              return Row(
                                 children: [
                                   SizedBox(
                                     width: 16,
@@ -181,14 +182,14 @@ class _DriverAccountScreenState extends State<DriverAccountScreen> {
                                     ),
                                   ),
                                   SizedBox(width: 12), Text(
-                                    'Déconnexion...',
+                                    tr(context, 'logging_out'),
                                     style: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.bold),
                                   ),
                                 ],
                               );
                             }
-                            return const Text(
-                              'Se déconnecter',
+                            return Text(
+                              tr(context, 'logout'),
                               style: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.bold),
                             );
                           },
@@ -201,7 +202,7 @@ class _DriverAccountScreenState extends State<DriverAccountScreen> {
                       SizedBox(height: 24),
                       Center(
                   child: Text(
-                    'FAST Livreur · Livraison à domicile',
+                    tr(context, 'driver_tagline'),
                     style: TextStyle(color: context.fast.faint, fontSize: 11),
                   ),
                 ),

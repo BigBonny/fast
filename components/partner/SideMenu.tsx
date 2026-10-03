@@ -71,7 +71,7 @@ export default function SideMenu({
             <div className="p-4 border-b border-white/[0.07]" style={{ background: "linear-gradient(180deg, rgba(0,200,179,0.08), transparent)" }}>
               <div className="flex justify-between items-center mb-4">
                 <div className="font-bebas text-[18px] tracking-[4px] bg-gradient-to-br from-[#00c8b3] to-[#ff0066] bg-clip-text text-transparent flex items-center gap-1.5">
-                  <Zap className="w-5 h-5 fill-current" /> FAST
+                  <Zap className="w-5 h-5 fill-current" /> <span className="notranslate" translate="no">FAST</span>
                 </div>
                 <button
                   onClick={onClose}
@@ -86,7 +86,7 @@ export default function SideMenu({
                 </div>
                 <div>
                   <div className="text-sm font-black text-white">{settings?.name || "Mon Restaurant"}</div>
-                  <div className="text-[11px] text-slate-400 font-medium">{settings?.cuisineType || "Restaurateur"} — FAST Pro</div>
+                  <div className="text-[11px] text-slate-400 font-medium">{settings?.cuisineType || "Restaurateur"} — <span className="notranslate" translate="no">FAST</span> Pro</div>
                 </div>
               </div>
             </div>

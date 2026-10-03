@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'role_selection_screen.dart';
 import '../theme.dart';
+import '../l10n/tr.dart';
 
 class OnboardingScreen extends StatefulWidget {
   final VoidCallback? onDone;
@@ -15,32 +16,23 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
-  final List<_OnboardingSlide> _slides = [
+  List<_OnboardingSlide> get _slides => [
     _OnboardingSlide(
       icon: Icons.shopping_bag_outlined,
-      title: 'Click & Collect\nen 3 étapes',
-      description:
-          '1. Commandez depuis votre restaurant préféré\n'
-          '2. Marchez jusqu\'au restaurant\n'
-          '3. Récupérez votre commande sans faire la queue',
+      title: tr(context, 'ob1_title'),
+      description: tr(context, 'ob1_d'),
       gradientColors: [Color(0xFFF59E0B), Color(0xFFD97706)],
     ),
     _OnboardingSlide(
       icon: Icons.map_outlined,
-      title: 'Suivi GPS\nen temps réel',
-      description:
-          'Suivez votre commande à la trace grâce au GPS.\n'
-          'Sachez exactement quand partir pour que tout\n'
-          'soit prêt à votre arrivée.',
+      title: tr(context, 'ob2_title'),
+      description: tr(context, 'ob2_d'),
       gradientColors: [Color(0xFF10B981), Color(0xFF059669)],
     ),
     _OnboardingSlide(
       icon: Icons.emoji_events_outlined,
-      title: 'Gagnez des\nrécompenses FAST',
-      description:
-          'Cumulez des points à chaque commande.\n'
-          'Débloquez le statut FAST Gold et\n'
-          'bénéficiez d\'avantages exclusifs !',
+      title: tr(context, 'ob3_title'),
+      description: tr(context, 'ob3_d'),
       gradientColors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
     ),
   ];
@@ -80,7 +72,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 children: [ TextButton(
                     onPressed: _finishOnboarding,
                     child: Text(
-                      'Passer',
+                      tr(context, 'skip_tuto'),
                       style: TextStyle(
                         color: context.fast.t3,
                         fontWeight: FontWeight.bold,
@@ -157,8 +149,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       ),
                       child: Text(
                         _currentPage < _slides.length - 1
-                            ? 'Suivant'
-                            : 'Commencer !',
+                            ? tr(context, 'next')
+                            : tr(context, 'get_started'),
                         style: const TextStyle(
                           fontWeight: FontWeight.w900,
                           fontSize: 16,

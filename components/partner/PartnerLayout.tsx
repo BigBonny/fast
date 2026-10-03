@@ -103,7 +103,7 @@ export default function PartnerLayout({ children }: { children: React.ReactNode 
     return (
       <div className="fixed inset-0 flex items-center justify-center" style={{ background: "#020617" }}>
         <div className="font-bebas text-3xl tracking-[8px] animate-pulse flex items-center gap-2" style={{ color: "#00c8b3" }}>
-          <Zap className="w-7 h-7 fill-current" /> FAST
+          <Zap className="w-7 h-7 fill-current" /> <span className="notranslate" translate="no">FAST</span>
         </div>
       </div>
     );
@@ -130,7 +130,7 @@ export default function PartnerLayout({ children }: { children: React.ReactNode 
       <header className="bg-[#020617] px-4 h-[56px] flex items-center justify-between sticky top-0 z-[1000] border-b border-white/[0.08] shadow-[0_8px_30px_rgba(0,0,0,0.3)]">
         <Link href="/partner/orders" className="no-underline group">
           <div className="font-bebas text-[24px] tracking-[5px] bg-gradient-to-br from-[#00c8b3] via-[#00c8b3] to-[#ff0066] bg-clip-text text-transparent leading-none group-hover:brightness-110 transition-all flex items-center gap-1.5">
-            <Zap className="w-6 h-6 fill-current" /> FAST
+            <Zap className="w-6 h-6 fill-current" /> <span className="notranslate" translate="no">FAST</span>
           </div>
           <div className="text-[9px] text-slate-500 font-semibold tracking-[2px] uppercase">RESTAURATEUR PRO</div>
         </Link>

@@ -75,7 +75,7 @@ export default function ProfilePage() {
             <div className="w-11 h-11 rounded-xl bg-yellow-100 flex items-center justify-center shrink-0"><Star className="w-5 h-5 text-yellow-500 fill-yellow-400" /></div>
             <div className="min-w-0">
               <p className={`font-black text-lg leading-tight ${darkMode ? "text-white" : "text-gray-900"}`}>{user?.points ?? 0}</p>
-              <p className="text-[11px] text-gray-400 font-semibold">Points FAST</p>
+              <p className="text-[11px] text-gray-400 font-semibold">Points <span className="notranslate" translate="no">FAST</span></p>
             </div>
           </div>
           <div className={`rounded-2xl p-4 flex items-center gap-3 border transition-shadow hover:shadow-md ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100 shadow-sm"}`}>
@@ -145,7 +145,7 @@ export default function ProfilePage() {
             <LogOut className="w-4 h-4" />
             Se déconnecter
           </m.button>
-          <p className="text-center text-[11px] text-gray-400 mt-4 font-medium">FAST — Chaque minute compte</p>
+          <p className="text-center text-[11px] text-gray-400 mt-4 font-medium"><span className="notranslate" translate="no">FAST</span> — Chaque minute compte</p>
         </div>
       </div>
     </div>

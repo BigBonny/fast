@@ -39,7 +39,7 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
       final data = await _api.get(ApiConfig.staff);
       _staff = data as List<dynamic>;
     } catch (e) {
-      _error = e is ApiException ? e.message : 'Erreur de chargement';
+      _error = e is ApiException ? e.message : tr(context, 'load_err');
     }
     if (mounted) setState(() => _loading = false);
   }
@@ -50,7 +50,7 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
       builder: (ctx) => AlertDialog(
         title: Text(tr(context, 'del_account_q')),
         content: Text(
-            '$name perdra immédiatement l\'accès au tableau des commandes.'),
+            tr(context, 'staff_lose_access').replaceAll('{n}', name)),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
@@ -67,7 +67,7 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
       await _api.delete(ApiConfig.staffMember(staffId));
       _load();
     } catch (e) {
-      _toast(e is ApiException ? e.message : 'Erreur de suppression');
+      _toast(e is ApiException ? e.message : tr(context, 'delete_err'));
     }
   }
 
@@ -103,26 +103,26 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
                       fontSize: 16)),
               const SizedBox(height: 4),
               Text(
-                'Le compte donne accès uniquement au tableau des commandes.',
+                tr(context, 'staff_access'),
                 style: TextStyle(color: context.fast.t3, fontSize: 11),
               ),
               const SizedBox(height: 16),
-              _field(nameC, 'Nom (ex: Karim)', Icons.person_outline),
+              _field(nameC, tr(context, 'name_example'), Icons.person_outline),
               const SizedBox(height: 10),
-              _field(emailC, 'Email', Icons.mail_outline,
+              _field(emailC, tr(context, 'email'), Icons.mail_outline,
                   type: TextInputType.emailAddress),
               const SizedBox(height: 10),
-              _field(passC, 'Mot de passe', Icons.lock_outline,
+              _field(passC, tr(context, 'password'), Icons.lock_outline,
                   obscure: true),
               const SizedBox(height: 14),
               // Role picker
               Row(
                 children: [
-                  _roleChip(ctx, setSheet, 'GUEST', 'Cuisinier',
-                      'Tableau uniquement', role, (r) => role = r),
+                  _roleChip(ctx, setSheet, 'GUEST', tr(context, 'cook'),
+                      tr(context, 'board_only'), role, (r) => role = r),
                   const SizedBox(width: 8),
-                  _roleChip(ctx, setSheet, 'STAFF', 'Manager',
-                      'Commandes + menu', role, (r) => role = r),
+                  _roleChip(ctx, setSheet, 'STAFF', tr(context, 'manager'),
+                      tr(context, 'orders_menu'), role, (r) => role = r),
                 ],
               ),
               const SizedBox(height: 18),
@@ -133,7 +133,7 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
                         if (nameC.text.trim().isEmpty ||
                             emailC.text.trim().isEmpty ||
                             passC.text.length < 6) {
-                          _toast('Nom, email et mot de passe (6+) requis');
+                          _toast(tr(context, 'staff_required'));
                           return;
                         }
                         setSheet(() => saving = true);
@@ -150,7 +150,7 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
                           setSheet(() => saving = false);
                           _toast(e is ApiException
                               ? e.message
-                              : 'Erreur de création');
+                              : tr(context, 'create_err'));
                         }
                       },
                 style: ElevatedButton.styleFrom(
@@ -160,7 +160,7 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10)),
                 ),
-                child: Text(saving ? 'Création…' : 'Créer le compte',
+                child: Text(saving ? tr(context, 'creating') : tr(context, 'create_account'),
                     style: const TextStyle(fontWeight: FontWeight.w900)),
               ),
             ],
@@ -284,7 +284,7 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
                                     fontSize: 15)),
                             const SizedBox(height: 6),
                             Text(
-                              'Créez des comptes pour vos cuisiniers : ils auront accès uniquement au tableau des commandes, sans statistiques ni paiements.',
+                              tr(context, 'staff_intro'),
                               style: TextStyle(
                                   color: context.fast.t3, fontSize: 11),
                               textAlign: TextAlign.center,
