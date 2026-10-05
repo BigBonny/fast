@@ -177,7 +177,7 @@ class _FASTAppState extends State<FASTApp> with WidgetsBindingObserver {
     return MaterialApp(
       title: 'FAST - Click & Collect',
       debugShowCheckedModeBanner: false,
-      themeMode: fast.themeMode,
+      themeMode: fast.resolvedThemeMode,
       theme: FASTTheme.light(),
       darkTheme: FASTTheme.dark(),
       locale: Locale(fast.appLanguage),

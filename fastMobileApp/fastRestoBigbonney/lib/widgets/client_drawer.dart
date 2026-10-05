@@ -211,18 +211,7 @@ class ClientDrawer extends StatelessWidget {
                   ),
                   // Owners who switched to client mode get a way back
                   if (context.watch<AuthProvider>().isRestaurant)
-                    _item(
-                      context,
-                      icon: Icons.storefront,
-                      iconColor: const Color(0xFF00C8B3),
-                      label: provider.tr('pro_space'),
-                      onTap: () async {
-                        await provider.setViewAsClient(false);
-                        if (!context.mounted) return;
-                        Navigator.of(context)
-                            .popUntil((route) => route.isFirst);
-                      },
-                    ),
+                    _proBanner(context, provider),
                   _item(
                     context,
                     icon: Icons.shield_outlined,
@@ -386,6 +375,74 @@ class ClientDrawer extends StatelessWidget {
       onChanged: (v) {
         if (v != null) provider.setAppLanguage(v);
       },
+    );
+  }
+
+  /// Big branded card so restaurant owners instantly spot the way
+  /// back into FAST Pro while browsing the client experience.
+  Widget _proBanner(BuildContext context, FASTProvider provider) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Material(
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () async {
+            await provider.setViewAsClient(false);
+            if (!context.mounted) return;
+            Navigator.of(context).popUntil((route) => route.isFirst);
+          },
+          child: Ink(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              gradient: const LinearGradient(
+                colors: [Color(0xFF00C8B3), Color(0xFF0EA5E9)],
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.storefront,
+                      color: Colors.white, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'FAST PRO',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 14,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                      Text(
+                        provider.tr('pro_space'),
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.85),
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.arrow_forward,
+                    color: Colors.white, size: 18),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 

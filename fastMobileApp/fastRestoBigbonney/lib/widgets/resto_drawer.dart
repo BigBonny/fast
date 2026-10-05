@@ -137,16 +137,64 @@ class RestoDrawer extends StatelessWidget {
                       label: provider.tr('menu'),
                       onTap: () => _go(context, 1)),
                   _settingsItem(context, provider, resto),
-                  _row(context,
-                      emoji: '🛒',
-                      label: provider.tr('client_mode'),
-                      subtitle: provider.tr('client_mode_sub'),
-                      onTap: () async {
-                        await provider.setViewAsClient(true);
-                        if (!context.mounted) return;
-                        Navigator.of(context)
-                            .popUntil((route) => route.isFirst);
-                      }),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Material(
+                      borderRadius: BorderRadius.circular(10),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(10),
+                        onTap: () async {
+                          await provider.setViewAsClient(true);
+                          if (!context.mounted) return;
+                          Navigator.of(context)
+                              .popUntil((route) => route.isFirst);
+                        },
+                        child: Ink(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 12),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF00C8B3), Color(0xFF0EA5E9)],
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.shopping_bag_outlined,
+                                  color: Colors.white, size: 18),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      provider.tr('client_mode'),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    Text(
+                                      provider.tr('client_mode_sub'),
+                                      style: TextStyle(
+                                        color: Colors.white
+                                            .withValues(alpha: 0.85),
+                                        fontSize: 11,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Icon(Icons.arrow_forward,
+                                  color: Colors.white, size: 18),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
 
                   const SizedBox(height: 14),
                   Padding(

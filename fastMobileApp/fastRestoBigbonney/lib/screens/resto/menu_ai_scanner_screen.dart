@@ -146,13 +146,13 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
       // Sample frames across the clip — pans across menu boards/screens
       // mean each frame catches different dishes.
       final frames = <String>[];
-      for (final ms in [400, 1600, 3000, 4500, 6000, 7400]) {
+      for (final ms in [600, 1600, 2800, 4000, 5200, 6500, 7400]) {
         final bytes = await vt.VideoThumbnail.thumbnailData(
           video: video.path,
           imageFormat: vt.ImageFormat.JPEG,
           timeMs: ms,
-          quality: 80,
-          maxWidth: 1280,
+          quality: 90,
+          maxWidth: 1600,
         );
         if (bytes != null && bytes.isNotEmpty) {
           frames.add(base64Encode(bytes));

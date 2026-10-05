@@ -337,12 +337,14 @@ export const scanMenu = async (req: Request, res: Response): Promise<void> => {
     if (env.geminiApiKey) {
       try {
         const content = await geminiGenerate(menuPrompt, img);
-        return (JSON.parse(content).items || []) as never[];
+        const items = (JSON.parse(content).items || []) as never[];
+        if (items.length > 0) return items;
       } catch (primaryErr) {
         console.log('[scanMenu] primary Gemini failed, retrying:', (primaryErr as Error).message);
-        const content = await geminiGenerate(menuPrompt, img, GEMINI_RETRY_MODEL);
-        return (JSON.parse(content).items || []) as never[];
       }
+      // Empty result or provider error — retry once with the flash model.
+      const content = await geminiGenerate(menuPrompt, img, GEMINI_RETRY_MODEL);
+      return (JSON.parse(content).items || []) as never[];
     }
     return parseMenuImageWithPixtral(img);
   };
@@ -372,6 +374,17 @@ export const scanMenu = async (req: Request, res: Response): Promise<void> => {
     } else {
       res.status(500).json({ error: 'Échec de la reconnaissance OCR. Veuillez réessayer avec une image plus nette.' });
       return;
+    }
+  } else if (allItems.length === 0 && env.mistralApiKey) {
+    // Providers responded but found nothing — Mistral gets a second
+    // opinion on the middle frame (usually the steadiest shot).
+    try {
+      const mid = images[Math.floor(images.length / 2)];
+      const fallback = await parseMenuImageWithPixtral(mid);
+      allItems.push(...fallback);
+      console.log('[scanMenu] Mistral second-opinion items:', fallback.length);
+    } catch {
+      // best effort only
     }
   }
 
@@ -406,9 +419,13 @@ export const scanMenu = async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  const created = await Promise.all(
-    validItems.map(item =>
-      prisma.menuItem.create({
+  // Insert one-by-one and collect failures — a single bad row
+  // shouldn't sink the whole scan.
+  const created = [] as unknown[];
+  const failed = [] as string[];
+  for (const item of validItems) {
+    try {
+      created.push(await prisma.menuItem.create({
         data: {
           name: item.name,
           price: item.price,
@@ -417,9 +434,20 @@ export const scanMenu = async (req: Request, res: Response): Promise<void> => {
           restaurantId,
         },
         include: { dietaryTags: true },
-      })
-    )
-  );
+      }));
+    } catch (dbErr) {
+      console.error('[scanMenu] menuItem.create failed for', item.name, dbErr);
+      failed.push(item.name);
+    }
+  }
+
+  if (created.length === 0) {
+    res.status(500).json({
+      error: 'Erreur lors de l\'enregistrement des plats détectés. Réessayez.',
+    });
+    return;
+  }
+  console.log('[scanMenu] created:', created.length, 'failed:', failed);
 
   res.status(201).json(created);
 };
