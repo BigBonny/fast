@@ -131,6 +131,7 @@ class FASTProvider extends ChangeNotifier {
     _deliveryAddress = '';
     _deliveryLatitude = null;
     _deliveryLongitude = null;
+    _favoriteIds = {};
     _currentScreen = 'home';
     _toast = null;
     _isSurpriseMeRolling = false;
@@ -139,6 +140,7 @@ class FASTProvider extends ChangeNotifier {
     _error = null;
     _orderError = null;
     notifyListeners();
+    _loadFavorites();
   }
 
   // Getters
@@ -246,17 +248,50 @@ class FASTProvider extends ChangeNotifier {
   /// Translate a UI key into the user's chosen language.
   String tr(String key) => AppStrings.of(_appLanguage, key);
 
-  // Favorites (local persistence, like the website's localStorage)
+  // Favorites (local persistence, like the website's localStorage).
+  // Scoped per account so accounts sharing a device don't see each
+  // other's favorites; logged-out browsing uses the 'guest' bucket.
+  String get _favoritesKey =>
+      'fast_favorites_${_userId.isEmpty ? 'guest' : _userId}';
+
   List<Restaurant> get favorites =>
       _restaurants.where((r) => _favoriteIds.contains(r.id)).toList();
   bool isFavorite(String restaurantId) => _favoriteIds.contains(restaurantId);
 
   void toggleFavorite(String restaurantId) {
     if (!_favoriteIds.add(restaurantId)) _favoriteIds.remove(restaurantId);
+    final key = _favoritesKey;
     SharedPreferences.getInstance().then(
-      (prefs) =>
-          prefs.setString('fast_favorites', json.encode(_favoriteIds.toList())),
+      (prefs) => prefs.setString(key, json.encode(_favoriteIds.toList())),
     );
+    notifyListeners();
+  }
+
+  Future<void> _loadFavorites() async {
+    final userId = _userId;
+    final key = _favoritesKey;
+    final prefs = await SharedPreferences.getInstance();
+    var saved = prefs.getString(key);
+    // One-time migration: the legacy device-wide list is attributed to
+    // the first account that signs in, then removed so other accounts
+    // on this device start with an empty list.
+    if (saved == null && userId.isNotEmpty) {
+      saved = prefs.getString('fast_favorites');
+      if (saved != null) {
+        await prefs.setString(key, saved);
+        await prefs.remove('fast_favorites');
+      }
+    }
+    Set<String> loaded = {};
+    if (saved != null) {
+      try {
+        loaded = (json.decode(saved) as List<dynamic>).cast<String>().toSet();
+      } catch (_) {}
+    }
+    // Discard if the signed-in user changed while prefs were loading
+    // (resetSession + syncFromAuth can race on login).
+    if (_userId != userId) return;
+    _favoriteIds = loaded;
     notifyListeners();
   }
 
@@ -292,6 +327,7 @@ class FASTProvider extends ChangeNotifier {
     _userPhone = phone;
     _userPoints = points;
     notifyListeners();
+    _loadFavorites();
   }
 
   void syncPoints(int points) {
@@ -529,8 +565,10 @@ class FASTProvider extends ChangeNotifier {
         ? ThemeMode.system
         : ThemeMode.dark;
 
-    // 5. Load favorites
-    final savedFavs = prefs.getString('fast_favorites');
+    // 5. Load favorites for the current session bucket (guest until
+    // auth syncs and swaps in the account-scoped list)
+    var savedFavs = prefs.getString(_favoritesKey);
+    savedFavs ??= prefs.getString('fast_favorites');
     if (savedFavs != null) {
       try {
         _favoriteIds = (json.decode(savedFavs) as List<dynamic>)
