@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../resto_provider.dart';
@@ -63,7 +64,7 @@ class _RestoMainShellState extends State<RestoMainShell> {
     ),
     _TutorialStep(
       key: _statsKey,
-      navigationIndex: 2,
+      navigationIndex: 1,
       title: tr(context, 'tuto4_t'),
       description: tr(context, 'tuto4_d'),
     ),
@@ -154,6 +155,7 @@ class _RestoMainShellState extends State<RestoMainShell> {
           backgroundColor: context.fast.bg,
           appBar: AppBar(
             backgroundColor: FASTPro.header,
+            systemOverlayStyle: SystemUiOverlayStyle.light,
             surfaceTintColor: Colors.transparent,
             elevation: 0,
             titleSpacing: 16,
@@ -225,13 +227,9 @@ class _RestoMainShellState extends State<RestoMainShell> {
               ElevatedButton.icon(
                 key: _kitchenKey,
                 onPressed: () {
-                  showGeneralDialog(
-                    context: context,
-                    barrierDismissible: true,
-                    barrierLabel: 'Kitchen',
-                    pageBuilder: (context, anim1, anim2) =>
-                        const KitchenScreen(),
-                  );
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) => const KitchenScreen(),
+                  ));
                 },
                 icon: Icon(Icons.soup_kitchen, size: 18),
                 label: Text(

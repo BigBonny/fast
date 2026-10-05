@@ -3,8 +3,6 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../provider.dart';
 import '../resto_provider.dart';
-import '../main.dart';
-import 'resto/onboarding_screen.dart';
 import 'role_selection_screen.dart';
 import '../theme.dart';
 
@@ -115,18 +113,15 @@ class _AuthScreenState extends State<AuthScreen>
     );
 
     final isResto = auth.isRestaurant;
-    final isLivreur = auth.isLivreur;
     // An owner who chose "Mode Client" stays on the client side.
     final goClient = isResto && fastProv.viewAsClient;
 
     // Load data from API after auth
-    fastProv.loadFromApi();
+    if (!user.isStaff) fastProv.loadFromApi();
 
-    if (isResto) {
+    if (isResto && !goClient) {
       // Sync resto provider
-      final restoProv = context.read<RestoProvider>();
-      final restoId = user.restaurant?['id'] as String?;
-      restoProv.loadFromApi(restaurantId: restoId);
+      context.read<RestoProvider>().stopPolling();
     }
 
     // Signed in from the client form but the email belongs to a FAST Pro
@@ -136,16 +131,7 @@ class _AuthScreenState extends State<AuthScreen>
       fastProv.showToast('⚡ Compte FAST Pro', fastProv.tr('err_resto_account'));
     }
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => isResto && !goClient
-            ? const OnboardingScreen()
-            : isLivreur
-            ? const DriverShell()
-            : const MainShell(),
-      ),
-    );
+    Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
   @override
@@ -297,7 +283,7 @@ class _AuthScreenState extends State<AuthScreen>
             Consumer<AuthProvider>(
               builder: (context, auth, _) {
                 return ElevatedButton(
-                  onPressed: auth.state == AuthState.loading
+                  onPressed: auth.isBusy
                       ? null
                       : _handleLogin,
                   style: ElevatedButton.styleFrom(
@@ -309,7 +295,7 @@ class _AuthScreenState extends State<AuthScreen>
                     ),
                     elevation: 0,
                   ),
-                  child: auth.state == AuthState.loading
+                  child: auth.isBusy
                       ? SizedBox(
                           width: 20,
                           height: 20,
@@ -360,7 +346,7 @@ class _AuthScreenState extends State<AuthScreen>
           Consumer<AuthProvider>(
             builder: (context, auth, _) {
               return OutlinedButton(
-                onPressed: auth.state == AuthState.loading
+                onPressed: auth.isBusy
                     ? null
                     : () async {
                         final ok = await auth.signInWithGoogle(
@@ -571,7 +557,7 @@ class _AuthScreenState extends State<AuthScreen>
             Consumer<AuthProvider>(
               builder: (context, auth, _) {
                 return ElevatedButton(
-                  onPressed: auth.state == AuthState.loading
+                  onPressed: auth.isBusy
                       ? null
                       : _handleRegister,
                   style: ElevatedButton.styleFrom(
@@ -583,7 +569,7 @@ class _AuthScreenState extends State<AuthScreen>
                     ),
                     elevation: 0,
                   ),
-                  child: auth.state == AuthState.loading
+                  child: auth.isBusy
                       ? SizedBox(
                           width: 20,
                           height: 20,

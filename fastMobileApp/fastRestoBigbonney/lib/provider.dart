@@ -2,7 +2,7 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:math' show Random;
+import 'dart:math' show Random, cos, sin;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:latlong2/latlong.dart';
@@ -93,6 +93,53 @@ class FASTProvider extends ChangeNotifier {
 
   // Periodic order polling
   Timer? _orderPollTimer;
+  Timer? _surpriseTimer;
+  String _userId = '';
+  int _requestGeneration = 0;
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    _autoThemeTimer?.cancel();
+    _surpriseTimer?.cancel();
+    stopOrderPolling();
+    super.dispose();
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) super.notifyListeners();
+  }
+
+  void resetSession() {
+    _requestGeneration++;
+    stopOrderPolling();
+    _surpriseTimer?.cancel();
+    _userId = '';
+    _userName = '';
+    _userEmail = '';
+    _userPhone = '';
+    _userPoints = 0;
+    _orders = [];
+    _notifications = [];
+    _cart = [];
+    _selectedRestaurant = null;
+    _activeGroupId = null;
+    _activeGroupCode = null;
+    _activeOrderId = null;
+    _deliveryAddress = '';
+    _deliveryLatitude = null;
+    _deliveryLongitude = null;
+    _currentScreen = 'home';
+    _toast = null;
+    _isSurpriseMeRolling = false;
+    _surpriseMeRolledRestaurant = null;
+    _isLoading = false;
+    _error = null;
+    _orderError = null;
+    notifyListeners();
+  }
 
   // Getters
   List<Restaurant> get restaurants => _restaurants;
@@ -129,8 +176,36 @@ class FASTProvider extends ChangeNotifier {
   /// daytime (07:00–19:00), dark at night. Manual picks pass through.
   ThemeMode get resolvedThemeMode {
     if (_themeMode != ThemeMode.system) return _themeMode;
-    final h = DateTime.now().hour;
+    final now = DateTime.now();
+    if (_userLocation != null) {
+      return isDaylightAt(now, _userLocation!) ? ThemeMode.light : ThemeMode.dark;
+    }
+    final h = now.hour;
     return (h >= 7 && h < 19) ? ThemeMode.light : ThemeMode.dark;
+  }
+
+  static bool isDaylightAt(DateTime instant, LatLng location) {
+    final utc = instant.toUtc();
+    final day = utc.difference(DateTime.utc(utc.year)).inDays + 1;
+    final yearDays = DateTime.utc(utc.year + 1).difference(DateTime.utc(utc.year)).inDays;
+    final gamma = 2 * pi / yearDays * (day - 1 + (utc.hour - 12) / 24);
+    final declination = 0.006918 - 0.399912 * cos(gamma) + 0.070257 * sin(gamma)
+        - 0.006758 * cos(2 * gamma) + 0.000907 * sin(2 * gamma)
+        - 0.002697 * cos(3 * gamma) + 0.00148 * sin(3 * gamma);
+    final equation = 229.18 * (0.000075 + 0.001868 * cos(gamma) - 0.032077 * sin(gamma)
+        - 0.014615 * cos(2 * gamma) - 0.040849 * sin(2 * gamma));
+    final solarMinutes = (utc.hour * 60 + utc.minute + equation + 4 * location.longitude) % 1440;
+    final hourAngle = (solarMinutes / 4 - 180) * pi / 180;
+    final latitude = location.latitude * pi / 180;
+    final elevation = sin(latitude) * sin(declination) + cos(latitude) * cos(declination) * cos(hourAngle);
+    return elevation > sin(-0.833 * pi / 180);
+  }
+
+  void refreshAutoTheme() {
+    final resolved = resolvedThemeMode;
+    if (resolved == _lastResolvedTheme) return;
+    _lastResolvedTheme = resolved;
+    notifyListeners();
   }
 
   /// Checks once a minute whether Auto should flip light↔dark so the
@@ -153,10 +228,11 @@ class FASTProvider extends ChangeNotifier {
 
   /// Restaurant owners can use the app as a client without a second account.
   Future<void> setViewAsClient(bool value) async {
+    if (_viewAsClient == value) return;
     _viewAsClient = value;
+    notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('fast_view_as_client', value);
-    notifyListeners();
   }
 
   Future<void> setAppLanguage(String code) async {
@@ -210,6 +286,7 @@ class FASTProvider extends ChangeNotifier {
     required String phone,
     int points = 0,
   }) {
+    _userId = id;
     _userName = name;
     _userEmail = email;
     _userPhone = phone;
@@ -251,6 +328,7 @@ class FASTProvider extends ChangeNotifier {
 
   /// Load all data from the backend API
   Future<void> loadFromApi() async {
+    final generation = _requestGeneration;
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -262,6 +340,7 @@ class FASTProvider extends ChangeNotifier {
         _notificationService.listNotifications(),
       ], eagerError: false);
 
+      if (_disposed || generation != _requestGeneration) return;
       final restaurants = results[0] as List<Restaurant>;
       final orders = results[1] as List<Order>;
       final notifications = results[2] as List<PushNotification>;
@@ -288,8 +367,12 @@ class FASTProvider extends ChangeNotifier {
 
   /// Refresh just orders
   Future<void> refreshOrders() async {
+    if (_userId.isEmpty) return;
+    final generation = _requestGeneration;
     try {
-      _orders = await _orderService.getMyOrders();
+      final orders = await _orderService.getMyOrders();
+      if (_disposed || generation != _requestGeneration) return;
+      _orders = orders;
       await _saveOrders();
       notifyListeners();
     } catch (_) {}
@@ -332,8 +415,12 @@ class FASTProvider extends ChangeNotifier {
 
   /// Refresh just notifications
   Future<void> refreshNotifications() async {
+    if (_userId.isEmpty) return;
+    final generation = _requestGeneration;
     try {
-      _notifications = await _notificationService.listNotifications();
+      final notifications = await _notificationService.listNotifications();
+      if (_disposed || generation != _requestGeneration) return;
+      _notifications = notifications;
       await _saveNotifications();
       notifyListeners();
     } catch (_) {}
@@ -403,7 +490,7 @@ class FASTProvider extends ChangeNotifier {
     }
 
     // 2. Load orders
-    final savedOrders = prefs.getString('fast_resto_orders');
+    final savedOrders = prefs.getString('fast_resto_orders_anonymous');
     if (savedOrders != null) {
       try {
         final List<dynamic> list = json.decode(savedOrders);
@@ -416,7 +503,7 @@ class FASTProvider extends ChangeNotifier {
     }
 
     // 3. Load notifications
-    final savedNotifs = prefs.getString('fast_resto_notifications');
+    final savedNotifs = prefs.getString('fast_resto_notifications_anonymous');
     if (savedNotifs != null) {
       try {
         final List<dynamic> list = json.decode(savedNotifs);
@@ -427,11 +514,11 @@ class FASTProvider extends ChangeNotifier {
     }
 
     // 4. Load user profile
-    _userName = prefs.getString('fast_user_name') ?? '';
-    _userEmail = prefs.getString('fast_user_email') ?? '';
-    _userPhone = prefs.getString('fast_user_phone') ?? '';
-    _activeGroupId = prefs.getString(_activeGroupIdKey);
-    _activeGroupCode = prefs.getString(_activeGroupCodeKey);
+    _userName = '';
+    _userEmail = '';
+    _userPhone = '';
+    _activeGroupId = null;
+    _activeGroupCode = null;
     final themePref = prefs.getString('fast_theme_mode') ?? 'system';
     _viewAsClient = prefs.getBool('fast_view_as_client') ?? false;
     _appLanguage = prefs.getString('fast_app_language') ?? 'fr';
@@ -468,7 +555,7 @@ class FASTProvider extends ChangeNotifier {
   Future<void> _saveOrders() async {
     final prefs = await SharedPreferences.getInstance();
     prefs.setString(
-      'fast_resto_orders',
+      'fast_resto_orders_$_userId',
       json.encode(_orders.map((x) => x.toJson()).toList()),
     );
   }
@@ -476,7 +563,7 @@ class FASTProvider extends ChangeNotifier {
   Future<void> _saveNotifications() async {
     final prefs = await SharedPreferences.getInstance();
     prefs.setString(
-      'fast_resto_notifications',
+      'fast_resto_notifications_$_userId',
       json.encode(_notifications.map((x) => x.toJson()).toList()),
     );
   }
@@ -804,7 +891,7 @@ class FASTProvider extends ChangeNotifier {
     const totalTicks = 12; // 1.5 seconds roll with 125ms interval
     final rand = Random();
 
-    Timer.periodic(const Duration(milliseconds: 125), (timer) {
+    _surpriseTimer = Timer.periodic(const Duration(milliseconds: 125), (timer) {
       ticks++;
       // Select random restaurant to show in rolling ticker
       _surpriseMeRolledRestaurant =

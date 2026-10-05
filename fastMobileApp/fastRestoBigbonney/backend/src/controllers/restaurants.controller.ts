@@ -18,6 +18,14 @@ async function applyGeocoding(
   return {};
 }
 
+function publicRestaurant(restaurant: Record<string, unknown>): Record<string, unknown> {
+  const result = { ...restaurant };
+  for (const key of ['ownerId', 'managerIban', 'stripeAccountId', 'stripeChargesEnabled', 'stripePayoutsEnabled', 'payoutFrequency']) {
+    delete result[key];
+  }
+  return result;
+}
+
 export const listRestaurants = async (req: Request, res: Response): Promise<void> => {
   const { category, search, dietary } = req.query;
 
@@ -50,7 +58,7 @@ export const listRestaurants = async (req: Request, res: Response): Promise<void
     orderBy: { rating: 'desc' },
   });
 
-  res.json(restaurants);
+  res.json(restaurants.map(publicRestaurant));
 };
 
 export const getRestaurant = async (req: Request, res: Response): Promise<void> => {
@@ -71,7 +79,7 @@ export const getRestaurant = async (req: Request, res: Response): Promise<void> 
     return;
   }
 
-  res.json(restaurant);
+  res.json(publicRestaurant(restaurant));
 };
 
 export const createRestaurant = async (req: Request, res: Response): Promise<void> => {

@@ -272,7 +272,7 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
         final s = (remaining % 60).toString().padLeft(2, '0');
         timerText = '$m:$s';
       } else {
-        timerText = 'EN RETARD';
+        timerText = tr(context, 'late');
       }
     }
     Color statusColor = context.fast.faint;
@@ -291,10 +291,10 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
         proxLabel = tr(context, 'client_almost');
       } else if (order.gpsProgress >= 40) {
         proxColor = const Color(0xFFF97316);
-        proxLabel = 'CLIENT EN APPROCHE';
+        proxLabel = tr(context, 'prox_close');
       } else {
         proxColor = const Color(0xFF10B981);
-        proxLabel = 'CLIENT EN ROUTE';
+        proxLabel = tr(context, 'prox_far');
       }
     }
     final Color accentColor = proxColor ?? statusColor;
@@ -319,86 +319,23 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                 top: Radius.circular(10),
               ),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Wrap(
+              spacing: 12,
+              runSpacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      Text(
-                        '#${order.id.split('-').last}',
-                        style: TextStyle(
-                          color: context.fast.t1,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      if (order.groupCode != null) ...[
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(
-                              0xFF00C8B3,
-                            ).withValues(alpha: 0.18),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            order.groupCode!,
-                            style: const TextStyle(
-                              color: Color(0xFF00C8B3),
-                              fontSize: 10,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                if (proxLabel != null) ...[
+                Text('#${order.id.substring(order.id.length > 6 ? order.id.length - 6 : 0)}',
+                    style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold, fontSize: 16)),
+                if (order.groupCode != null)
+                  Text(order.groupCode!, style: const TextStyle(color: FASTPro.teal, fontWeight: FontWeight.w900)),
+                if (proxLabel != null)
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: proxColor,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.directions_walk,
-                          color: Colors.white,
-                          size: 12,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          proxLabel,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 10,
-                          ),
-                        ),
-                      ],
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(color: proxColor, borderRadius: BorderRadius.circular(6)),
+                    child: Text(proxLabel, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10)),
                   ),
-                  const SizedBox(width: 8),
-                ],
-                Text(
-                  order.status.name.toUpperCase(),
-                  style: TextStyle(
-                    color: statusColor,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                  ),
-                ),
+                Text(orderStatusLabel(context, order.status),
+                    style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 12)),
               ],
             ),
           ),
@@ -477,7 +414,7 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                       ),
                       const Spacer(),
                       Text(
-                        '${order.gpsProgress.clamp(0, 100).round()}% du trajet',
+                        tr(context, 'pct_route').replaceAll('{n}', '${order.gpsProgress.clamp(0, 100).round()}'),
                         style: TextStyle(
                           color: proxColor ?? context.fast.t3,
                           fontSize: 11,
@@ -553,7 +490,7 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
 
                 if (order.status == OrderStatus.placed) ...[
                   Text(
-                    'ACCEPTER EN :',
+                    tr(context, 'accept_in'),
                     style: TextStyle(
                       color: context.fast.t3,
                       fontSize: 11,

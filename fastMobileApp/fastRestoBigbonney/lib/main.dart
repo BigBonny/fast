@@ -68,11 +68,37 @@ class _FASTAppState extends State<FASTApp> with WidgetsBindingObserver {
   bool _onboardingDone = false;
   final _appLinks = AppLinks();
   StreamSubscription<Uri>? _linkSub;
+  late AuthProvider _authProvider;
+  String? _sessionUserId;
+  final _navigatorKey = GlobalKey<NavigatorState>();
+
+  void _syncSession() {
+    final auth = _authProvider;
+    final user = auth.user;
+    final fast = context.read<FASTProvider>();
+    final resto = context.read<RestoProvider>();
+    if (auth.isLoggedIn && user != null && user.id != _sessionUserId) {
+      _sessionUserId = user.id;
+      fast.resetSession();
+      resto.resetSession();
+      fast.syncFromAuth(id: user.id, name: user.name, email: user.email,
+          phone: user.phone, points: user.points);
+    } else if (auth.state == AuthState.unauthenticated && _sessionUserId != null) {
+      _sessionUserId = null;
+      fast.resetSession();
+      resto.resetSession();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _navigatorKey.currentState?.popUntil((route) => route.isFirst);
+      });
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _authProvider = context.read<AuthProvider>();
+    _authProvider.addListener(_syncSession);
     _initApp();
     _initDeepLinks();
   }
@@ -80,6 +106,7 @@ class _FASTAppState extends State<FASTApp> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _authProvider.removeListener(_syncSession);
     _linkSub?.cancel();
     super.dispose();
   }
@@ -87,6 +114,7 @@ class _FASTAppState extends State<FASTApp> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
+      context.read<FASTProvider>().refreshAutoTheme();
       _handleStripeReturn();
     }
   }
@@ -164,7 +192,7 @@ class _FASTAppState extends State<FASTApp> with WidgetsBindingObserver {
         );
       }
       // Load restaurants, orders, notifications from API
-      fastProv.loadFromApi();
+      if (!(user?.isStaff ?? false)) fastProv.loadFromApi();
     }
 
     if (mounted) {
@@ -178,6 +206,12 @@ class _FASTAppState extends State<FASTApp> with WidgetsBindingObserver {
     final fast = context.watch<FASTProvider>();
     return MaterialApp(
       title: 'FAST - Click & Collect',
+      navigatorKey: _navigatorKey,
+      builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
+        value: Theme.of(context).brightness == Brightness.dark
+            ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+        child: child ?? const SizedBox.shrink(),
+      ),
       debugShowCheckedModeBanner: false,
       themeMode: fast.resolvedThemeMode,
       theme: FASTTheme.light(),
@@ -230,7 +264,7 @@ class _FASTAppState extends State<FASTApp> with WidgetsBindingObserver {
       // Staff accounts land on the kitchen board — no stats, no
       // payments, no settings. Guest accounts land on the menu screen
       // where they can only mark dishes sold out / available.
-      if (auth.user?.role == 'GUEST') {
+      if (auth.user?.isGuest ?? false) {
         return const GuestMenuShell();
       }
       if (auth.user?.isStaff ?? false) {

@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'api_config.dart';
 import 'api_exceptions.dart';
+import '../l10n/app_strings.dart';
 
 class ApiClient {
   static final ApiClient _instance = ApiClient._internal();
@@ -128,6 +129,12 @@ class ApiClient {
           'Erreur serveur';
     } else {
       errorMessage = 'Erreur serveur (${response.statusCode})';
+    }
+
+    if (body is Map<String, dynamic> && body['code'] is String) {
+      final key = (body['code'] as String).toLowerCase();
+      final translated = AppStrings.trNow(key);
+      if (translated != key) errorMessage = translated;
     }
 
     if (response.statusCode == 401) {

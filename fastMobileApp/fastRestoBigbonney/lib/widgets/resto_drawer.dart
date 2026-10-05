@@ -53,7 +53,7 @@ class RestoDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = context.watch<FASTProvider>();
     final resto = context.watch<RestoProvider>();
-    final restoName = resto.settings?.name ?? 'Mon Restaurant';
+    final restoName = resto.settings?.name ?? provider.tr('my_service');
 
     return Drawer(
       backgroundColor: _bg(context),
@@ -147,12 +147,9 @@ class RestoDrawer extends StatelessWidget {
                       borderRadius: BorderRadius.circular(10),
                       child: InkWell(
                         borderRadius: BorderRadius.circular(10),
-                        onTap: () async {
-                          await provider.setViewAsClient(true);
-                          if (!context.mounted) return;
-                          Navigator.of(
-                            context,
-                          ).popUntil((route) => route.isFirst);
+                        onTap: () {
+                          Navigator.of(context).popUntil((r) => r.isFirst);
+                          provider.setViewAsClient(true);
                         },
                         child: Ink(
                           padding: const EdgeInsets.symmetric(
@@ -229,6 +226,7 @@ class RestoDrawer extends StatelessWidget {
                     context,
                     emoji: '📈',
                     label: provider.tr('stats'),
+                    color: FASTBrand.error,
                     onTap: () => _go(context, 2),
                   ),
                   _row(
@@ -284,12 +282,10 @@ class RestoDrawer extends StatelessWidget {
               child: SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  onPressed: () async {
-                    Navigator.of(context).pop();
+                  onPressed: context.watch<AuthProvider>().isLoggingOut ? null : () {
                     final auth = context.read<AuthProvider>();
-                    await auth.logout();
-                    if (!context.mounted) return;
-                    Navigator.of(context).popUntil((route) => route.isFirst);
+                    Navigator.of(context).popUntil((r) => r.isFirst);
+                    auth.logout();
                   },
                   icon: const Icon(
                     Icons.logout,
@@ -325,6 +321,7 @@ class RestoDrawer extends StatelessWidget {
     required String emoji,
     required String label,
     String? subtitle,
+    Color? color,
     VoidCallback? onTap,
   }) {
     return Padding(
@@ -348,7 +345,7 @@ class RestoDrawer extends StatelessWidget {
                       Text(
                         label,
                         style: TextStyle(
-                          color: _text(context),
+                          color: color ?? _text(context),
                           fontWeight: FontWeight.w600,
                           fontSize: 14,
                         ),
@@ -364,7 +361,7 @@ class RestoDrawer extends StatelessWidget {
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right, size: 18, color: _subtext(context)),
+                Icon(Icons.chevron_right, size: 18, color: color ?? _subtext(context)),
               ],
             ),
           ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../resto_provider.dart';
 import '../../providers/auth_provider.dart';
@@ -29,7 +30,7 @@ class _GuestMenuShellState extends State<GuestMenuShell> {
     final restoId =
         auth.user?.restaurantId ?? auth.user?.restaurant?['id'] as String?;
     if (restoId != null) {
-      await prov.loadFromApi(restaurantId: restoId);
+      await prov.loadFromApi(restaurantId: restoId, menuOnly: true);
     }
   }
 
@@ -39,6 +40,7 @@ class _GuestMenuShellState extends State<GuestMenuShell> {
       backgroundColor: context.fast.bg,
       appBar: AppBar(
         backgroundColor: FASTPro.header,
+        systemOverlayStyle: SystemUiOverlayStyle.light,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         automaticallyImplyLeading: false,

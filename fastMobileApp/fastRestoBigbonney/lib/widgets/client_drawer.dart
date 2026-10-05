@@ -147,7 +147,7 @@ class ClientDrawer extends StatelessWidget {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          '${provider.userPoints} Points',
+                          '${provider.userPoints} ${provider.tr('tab_points')}',
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w900,
@@ -421,10 +421,9 @@ class ClientDrawer extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
-          onTap: () async {
-            await provider.setViewAsClient(false);
-            if (!context.mounted) return;
-            Navigator.of(context).popUntil((route) => route.isFirst);
+          onTap: () {
+            Navigator.of(context).popUntil((r) => r.isFirst);
+            provider.setViewAsClient(false);
           },
           child: Ink(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),

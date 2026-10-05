@@ -222,7 +222,7 @@ class RestaurantScreen extends StatelessWidget {
                   Icon(Icons.location_on, color: context.fast.t2, size: 14),
                   SizedBox(width: 4),
                   Text(
-                    '${rest.distance} km',
+                    '${provider.getRealDistance(rest).toStringAsFixed(1)} km',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 12,

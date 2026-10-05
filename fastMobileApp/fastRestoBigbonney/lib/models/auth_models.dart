@@ -85,8 +85,10 @@ class UserData {
             json['driverProfile'] as Map<String, dynamic>,
           )
         : null,
-    restaurantId: json['restaurantId'] as String?,
-    staffRole: json['staffRole'] as String?,
+    restaurantId: json['restaurantId'] as String? ??
+        (json['staffAssignment'] as Map<String, dynamic>?)?['restaurantId'] as String?,
+    staffRole: json['staffRole'] as String? ??
+        (json['staffAssignment'] as Map<String, dynamic>?)?['staffRole'] as String?,
   );
 
   bool get isRestaurant => role == 'RESTAURANT';
@@ -94,6 +96,7 @@ class UserData {
   bool get isLivreur => role == 'LIVREUR';
   // Kitchen/guest accounts — orders board only, no stats/payments/settings
   bool get isStaff => role == 'STAFF' || role == 'GUEST';
+  bool get isGuest => role == 'GUEST' || staffRole == 'GUEST';
 }
 
 class DriverProfileData {

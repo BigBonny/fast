@@ -6,6 +6,7 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../models.dart';
 import '../../provider.dart';
@@ -52,7 +53,7 @@ class _KitchenScreenState extends State<KitchenScreen> {
     final auth = context.read<AuthProvider>();
     final prov = context.read<RestoProvider>();
     final restoId =
-        auth.user?.restaurantId ?? auth.user?.restaurant?['id'] as String?;
+        auth.user?.restaurantId ?? auth.user?.restaurant?['id'] as String? ?? prov.restaurantId;
     if (restoId != null) {
       await prov.loadFromApi(restaurantId: restoId);
     }
@@ -80,9 +81,9 @@ class _KitchenScreenState extends State<KitchenScreen> {
               ? (prov.settings?.rushPrepTime ?? 25)
               : (prov.settings?.normalPrepTime ?? 15));
       o.prepTimerSeconds = min * 60;
-      setState(() {});
+      if (mounted) setState(() {});
     } catch (_) {
-      _toast('Erreur lors de l\'acceptation');
+      if (mounted) _toast(tr(context, 'err_retry'));
     }
   }
 
@@ -145,6 +146,7 @@ class _KitchenScreenState extends State<KitchenScreen> {
     return Scaffold(
       backgroundColor: _bg,
       appBar: AppBar(
+        systemOverlayStyle: SystemUiOverlayStyle.light,
         backgroundColor: _bg,
         elevation: 0,
         automaticallyImplyLeading: false,
@@ -185,7 +187,8 @@ class _KitchenScreenState extends State<KitchenScreen> {
             ),
           ),
           const SizedBox(width: 8),
-          Center(
+          if (MediaQuery.sizeOf(context).width >= 600)
+            Center(
             child: Text(
               auth.user?.name ?? '',
               style: const TextStyle(
@@ -196,11 +199,22 @@ class _KitchenScreenState extends State<KitchenScreen> {
             ),
           ),
           IconButton(
-            tooltip: fast.tr('logout'),
-            icon: const Icon(Icons.logout, color: Color(0xFFEF4444), size: 20),
-            onPressed: () async {
-              context.read<RestoProvider>().stopPolling();
-              await auth.logout();
+            tooltip: fast.tr(auth.isRestaurant ? 'leave_kitchen' : 'logout'),
+            icon: Icon(auth.isRestaurant ? Icons.close : Icons.logout,
+                color: const Color(0xFFEF4444), size: 20),
+            onPressed: auth.isLoggingOut ? null : () async {
+              if (auth.isRestaurant) {
+                // Kitchen is pushed over the pro shell for owners — pop
+                // back to it, falling back to the root if it somehow
+                // became the first route.
+                final popped = await Navigator.of(context).maybePop();
+                if (!popped && context.mounted) {
+                  Navigator.of(context).popUntil((r) => r.isFirst);
+                }
+              } else {
+                context.read<RestoProvider>().stopPolling();
+                auth.logout();
+              }
             },
           ),
           const SizedBox(width: 4),
@@ -245,7 +259,7 @@ class _KitchenScreenState extends State<KitchenScreen> {
                       crossAxisCount: cols,
                       crossAxisSpacing: 12,
                       mainAxisSpacing: 12,
-                      childAspectRatio: cols == 2 ? 1.05 : 1.35,
+                      mainAxisExtent: (cols == 2 ? 330 : 360) * MediaQuery.textScalerOf(ctx).scale(1),
                     ),
                     itemCount: active.length,
                     itemBuilder: (_, i) => _orderCard(active[i], prov),
@@ -307,7 +321,7 @@ class _KitchenScreenState extends State<KitchenScreen> {
             child: Row(
               children: [
                 Text(
-                  '#${o.id.split('-').last}',
+                  '#${o.id.substring(o.id.length > 6 ? o.id.length - 6 : 0)}',
                   style: const TextStyle(
                     color: _t1,
                     fontWeight: FontWeight.w900,

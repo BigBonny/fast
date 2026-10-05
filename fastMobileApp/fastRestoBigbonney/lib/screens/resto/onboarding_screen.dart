@@ -21,6 +21,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   // 0: RGPD, 1: Tutorial, 2: Splash, 3: Form
   int _currentStep = -1; // -1 = checking
   bool _checkingBackend = true;
+  bool _ready = false;
   String? _formError;
   bool _formLoading = false;
 
@@ -121,7 +122,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     if (auth.user?.restaurant != null) {
       final restoId = auth.user!.restaurant!['id'] as String?;
       if (restoId != null) {
-        prov.loadFromApi(restaurantId: restoId);
+        await prov.updateSettings(RestaurantSettings.fromApiJson(auth.user!.restaurant!));
+        await prov.loadFromApi(restaurantId: restoId);
         return true;
       }
     }
@@ -132,7 +134,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       if (data != null) {
         final restoId = (data as Map<String, dynamic>)['id'] as String?;
         if (restoId != null) {
-          prov.loadFromApi(restaurantId: restoId);
+          await prov.updateSettings(RestaurantSettings.fromApiJson(data));
+          await prov.loadFromApi(restaurantId: restoId);
           return true;
         }
       }
@@ -218,14 +221,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   void _finishOnboarding() {
     if (!mounted) return;
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const RestoMainShell()),
-    );
+    setState(() {
+      _ready = true;
+      _checkingBackend = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_ready) return const RestoMainShell();
     if (_checkingBackend) {
       return Scaffold(
         backgroundColor: context.fast.bg,

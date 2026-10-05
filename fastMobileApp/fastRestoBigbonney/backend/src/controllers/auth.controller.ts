@@ -215,6 +215,8 @@ export const getMe = async (req: Request, res: Response): Promise<void> => {
     restaurant: user.restaurant,
     driverProfile: user.driverProfile,
     staffAssignment,
+    restaurantId: staffAssignment?.restaurantId,
+    staffRole: staffAssignment?.staffRole,
   });
 };
 

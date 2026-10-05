@@ -39,6 +39,32 @@ class RestoProvider extends ChangeNotifier {
   String? _restaurantId;
   String? _error;
   Timer? _pollTimer;
+  int _sessionGeneration = 0;
+  bool _menuOnly = false;
+  bool _disposed = false;
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) super.notifyListeners();
+  }
+
+  void resetSession() {
+    _sessionGeneration++;
+    _statsRequestId++;
+    stopPolling();
+    _settings = null;
+    _restaurantId = null;
+    _restoOrders = [];
+    _menu = [];
+    _stats = null;
+    _statsError = null;
+    _menuLoading = false;
+    _statsLoading = false;
+    _isApiLoaded = false;
+    _isRushMode = false;
+    _error = null;
+    notifyListeners();
+  }
   final _orderService = OrderService();
   final _menuService = MenuService();
   final _statsService = StatsService();
@@ -72,11 +98,20 @@ class RestoProvider extends ChangeNotifier {
   }
 
   /// Load orders from API and start polling
-  Future<void> loadFromApi({String? restaurantId}) async {
+  Future<void> loadFromApi({String? restaurantId, bool menuOnly = false}) async {
+    final generation = ++_sessionGeneration;
+    stopPolling();
     _restaurantId = restaurantId;
-    await Future.wait([refreshOrders(), loadMenu()]);
+    _menuOnly = menuOnly;
+    if (menuOnly) {
+      _restoOrders = [];
+      await loadMenu();
+    } else {
+      await Future.wait([refreshOrders(), loadMenu()]);
+    }
+    if (_disposed || generation != _sessionGeneration) return;
     _isApiLoaded = true;
-    _startPolling();
+    if (!menuOnly) _startPolling();
     notifyListeners();
   }
 
@@ -87,7 +122,10 @@ class RestoProvider extends ChangeNotifier {
     _menuLoading = true;
     notifyListeners();
     try {
-      _menu = await _menuService.getMenuByRestaurant(_restaurantId!);
+      final generation = _sessionGeneration;
+      final items = await _menuService.getMenuByRestaurant(_restaurantId!);
+      if (_disposed || generation != _sessionGeneration) return;
+      _menu = items;
       _error = null;
     } catch (e) {
       _error = _extractErrorMessage(e);
@@ -183,8 +221,11 @@ class RestoProvider extends ChangeNotifier {
 
   /// Fetch the latest orders from the API
   Future<void> refreshOrders() async {
+    if (_menuOnly || _restaurantId == null) return;
+    final generation = _sessionGeneration;
     try {
       final orders = await _orderService.getRestaurantOrders();
+      if (_disposed || generation != _sessionGeneration) return;
       _error = null;
       // Skip rebuild when nothing changed — the 15s poll otherwise
       // repaints the whole screen for no reason.
@@ -217,7 +258,9 @@ class RestoProvider extends ChangeNotifier {
   }
 
   Future<void> _loadState() async {
+    final generation = _sessionGeneration;
     final prefs = await SharedPreferences.getInstance();
+    if (_disposed || generation != _sessionGeneration) return;
 
     // Load Settings
     final settingsJson = prefs.getString('fast_resto_settings');
@@ -309,6 +352,8 @@ class RestoProvider extends ChangeNotifier {
 
   @override
   void dispose() {
+    _disposed = true;
+    _sessionGeneration++;
     stopPolling();
     super.dispose();
   }
