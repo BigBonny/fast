@@ -69,7 +69,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
-                children: [ TextButton(
+                children: [
+                  TextButton(
                     onPressed: _finishOnboarding,
                     child: Text(
                       tr(context, 'skip_tuto'),
@@ -109,7 +110,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     children: List.generate(_slides.length, (i) {
                       final isActive = i == _currentPage;
                       return AnimatedContainer(
-                        duration:       Duration(milliseconds: 300),
+                        duration: Duration(milliseconds: 300),
                         margin: EdgeInsets.symmetric(horizontal: 4),
                         width: isActive ? 24 : 8,
                         height: 8,
@@ -122,7 +123,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       );
                     }),
                   ),
-                        SizedBox(height: 24),
+                  SizedBox(height: 24),
 
                   // Next / Get Started button
                   SizedBox(
@@ -140,7 +141,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _slides[_currentPage].gradientColors.first,
+                        backgroundColor:
+                            _slides[_currentPage].gradientColors.first,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
@@ -192,13 +194,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ),
               ],
             ),
-            child: Icon(
-              slide.icon,
-              size: 56,
-              color: Colors.white,
-            ),
+            child: Icon(slide.icon, size: 56, color: Colors.white),
           ),
-                SizedBox(height: 48),
+          SizedBox(height: 48),
 
           // Title
           Text(
@@ -211,17 +209,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               height: 1.2,
             ),
           ),
-                SizedBox(height: 20),
+          SizedBox(height: 20),
 
           // Description
           Text(
             slide.description,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 14,
-              color: context.fast.t2,
-              height: 1.6,
-            ),
+            style: TextStyle(fontSize: 14, color: context.fast.t2, height: 1.6),
           ),
         ],
       ),

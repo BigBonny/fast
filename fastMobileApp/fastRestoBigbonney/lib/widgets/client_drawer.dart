@@ -130,7 +130,9 @@ class ClientDrawer extends StatelessWidget {
                   const SizedBox(height: 14),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 8),
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF59E0B),
                       borderRadius: BorderRadius.circular(10),
@@ -138,8 +140,11 @@ class ClientDrawer extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.star_rounded,
-                            color: Colors.white, size: 16),
+                        const Icon(
+                          Icons.star_rounded,
+                          color: Colors.white,
+                          size: 16,
+                        ),
                         const SizedBox(width: 6),
                         Text(
                           '${provider.userPoints} Points',
@@ -173,8 +178,11 @@ class ClientDrawer extends StatelessWidget {
                     label: provider.tr('my_account'),
                     onTap: () {
                       Navigator.of(context).pop();
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (_) => const AccountScreen()));
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const AccountScreen(),
+                        ),
+                      );
                     },
                   ),
                   _item(
@@ -205,8 +213,11 @@ class ClientDrawer extends StatelessWidget {
                     label: provider.tr('addresses'),
                     onTap: () {
                       Navigator.of(context).pop();
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (_) => const AccountScreen()));
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const AccountScreen(),
+                        ),
+                      );
                     },
                   ),
                   // Owners who switched to client mode get a way back
@@ -241,11 +252,13 @@ class ClientDrawer extends StatelessWidget {
                     final auth = context.read<AuthProvider>();
                     await auth.logout();
                     if (!context.mounted) return;
-                    Navigator.of(context)
-                        .popUntil((route) => route.isFirst);
+                    Navigator.of(context).popUntil((route) => route.isFirst);
                   },
-                  icon: const Icon(Icons.logout,
-                      color: Color(0xFFEF4444), size: 18),
+                  icon: const Icon(
+                    Icons.logout,
+                    color: Color(0xFFEF4444),
+                    size: 18,
+                  ),
                   label: Text(
                     provider.tr('logout'),
                     style: const TextStyle(
@@ -312,8 +325,11 @@ class ClientDrawer extends StatelessWidget {
             color: const Color(0xFF94A3B8).withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: const Icon(Icons.settings_outlined,
-              color: Color(0xFF94A3B8), size: 18),
+          child: const Icon(
+            Icons.settings_outlined,
+            color: Color(0xFF94A3B8),
+            size: 18,
+          ),
         ),
         title: Text(
           provider.tr('settings'),
@@ -329,14 +345,29 @@ class ClientDrawer extends StatelessWidget {
         children: [
           Row(
             children: [
-              _themeOpt(context, provider, ThemeMode.system,
-                  Icons.phone_android, provider.tr('theme_auto')),
+              _themeOpt(
+                context,
+                provider,
+                ThemeMode.system,
+                Icons.phone_android,
+                provider.tr('theme_auto'),
+              ),
               const SizedBox(width: 8),
-              _themeOpt(context, provider, ThemeMode.light,
-                  Icons.wb_sunny_outlined, provider.tr('theme_light')),
+              _themeOpt(
+                context,
+                provider,
+                ThemeMode.light,
+                Icons.wb_sunny_outlined,
+                provider.tr('theme_light'),
+              ),
               const SizedBox(width: 8),
-              _themeOpt(context, provider, ThemeMode.dark,
-                  Icons.nightlight_outlined, provider.tr('theme_dark')),
+              _themeOpt(
+                context,
+                provider,
+                ThemeMode.dark,
+                Icons.nightlight_outlined,
+                provider.tr('theme_dark'),
+              ),
             ],
           ),
           const SizedBox(height: 8),
@@ -353,8 +384,7 @@ class ClientDrawer extends StatelessWidget {
       isExpanded: true,
       icon: Icon(Icons.expand_more, color: _subtext(context), size: 18),
       decoration: InputDecoration(
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(color: _chipBorder(context)),
@@ -369,8 +399,12 @@ class ClientDrawer extends StatelessWidget {
       style: TextStyle(color: _text(context), fontSize: 12),
       dropdownColor: _bg(context),
       items: AppStrings.languages
-          .map((l) =>
-              DropdownMenuItem(value: l.$1, child: Text(l.$2, style: const TextStyle(fontSize: 12))))
+          .map(
+            (l) => DropdownMenuItem(
+              value: l.$1,
+              child: Text(l.$2, style: const TextStyle(fontSize: 12)),
+            ),
+          )
           .toList(),
       onChanged: (v) {
         if (v != null) provider.setAppLanguage(v);
@@ -409,8 +443,11 @@ class ClientDrawer extends StatelessWidget {
                     color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.storefront,
-                      color: Colors.white, size: 20),
+                  child: const Icon(
+                    Icons.storefront,
+                    color: Colors.white,
+                    size: 20,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -436,8 +473,7 @@ class ClientDrawer extends StatelessWidget {
                     ],
                   ),
                 ),
-                const Icon(Icons.arrow_forward,
-                    color: Colors.white, size: 18),
+                const Icon(Icons.arrow_forward, color: Colors.white, size: 18),
               ],
             ),
           ),
@@ -446,8 +482,13 @@ class ClientDrawer extends StatelessWidget {
     );
   }
 
-  Widget _themeOpt(BuildContext context, FASTProvider provider,
-      ThemeMode mode, IconData icon, String label) {
+  Widget _themeOpt(
+    BuildContext context,
+    FASTProvider provider,
+    ThemeMode mode,
+    IconData icon,
+    String label,
+  ) {
     final sel = provider.themeMode == mode;
     return Expanded(
       child: GestureDetector(
@@ -465,9 +506,11 @@ class ClientDrawer extends StatelessWidget {
           ),
           child: Column(
             children: [
-              Icon(icon,
-                  size: 16,
-                  color: sel ? FASTBrand.amber : _subtext(context)),
+              Icon(
+                icon,
+                size: 16,
+                color: sel ? FASTBrand.amber : _subtext(context),
+              ),
               const SizedBox(height: 2),
               Text(
                 label,
@@ -487,11 +530,11 @@ class ClientDrawer extends StatelessWidget {
   void _showLegal(BuildContext context, String type) {
     final content = type == 'CGU'
         ? tr(context, 'terms_intro') +
-            tr(context, 'fast_service_desc') +
-            tr(context, 'legal_orders')
+              tr(context, 'fast_service_desc') +
+              tr(context, 'legal_orders')
         : tr(context, 'privacy_collect') +
-            tr(context, 'privacy_data') +
-            tr(context, 'data_rights');
+              tr(context, 'privacy_data') +
+              tr(context, 'data_rights');
 
     Navigator.of(context).pop();
     showDialog(
@@ -525,8 +568,10 @@ class ClientDrawer extends StatelessWidget {
               ),
               elevation: 0,
             ),
-            child: Text(tr(context, 'close'),
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            child: Text(
+              tr(context, 'close'),
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),

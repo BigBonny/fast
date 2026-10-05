@@ -11,10 +11,10 @@ class AuthService {
   }
 
   Future<AuthResponse> loginWithGoogle(String idToken, String role) async {
-    final data = await _api.post(ApiConfig.googleAuth, body: {
-      'idToken': idToken,
-      'role': role,
-    });
+    final data = await _api.post(
+      ApiConfig.googleAuth,
+      body: {'idToken': idToken, 'role': role},
+    );
     return AuthResponse.fromJson(data as Map<String, dynamic>);
   }
 
@@ -53,9 +53,9 @@ class AuthService {
     required String currentPassword,
     required String newPassword,
   }) async {
-    await _api.post(ApiConfig.changePassword, body: {
-      'currentPassword': currentPassword,
-      'newPassword': newPassword,
-    });
+    await _api.post(
+      ApiConfig.changePassword,
+      body: {'currentPassword': currentPassword, 'newPassword': newPassword},
+    );
   }
 }

@@ -58,25 +58,37 @@ class _CartScreenState extends State<CartScreen> {
           padding: EdgeInsets.all(32),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [ Text('🛒', style: TextStyle(fontSize: 48)),
-                    SizedBox(height: 12), Text(
+            children: [
+              Text('🛒', style: TextStyle(fontSize: 48)),
+              SizedBox(height: 12),
+              Text(
                 provider.tr('cart_empty'),
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: context.fast.t1),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: context.fast.t1,
+                ),
               ),
-                    SizedBox(height: 6), Text(
+              SizedBox(height: 6),
+              Text(
                 tr(context, 'cart_empty_hint'),
                 style: TextStyle(fontSize: 11, color: context.fast.t2),
                 textAlign: TextAlign.center,
               ),
-                    SizedBox(height: 16),
+              SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => provider.navigateToScreen('home'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFFF59E0B),
                   foregroundColor: FASTBrand.onAmber,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-                child: Text(provider.tr('browse'), style: const TextStyle(fontWeight: FontWeight.bold)),
+                child: Text(
+                  provider.tr('browse'),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
             ],
           ),
@@ -105,15 +117,25 @@ class _CartScreenState extends State<CartScreen> {
               decoration: BoxDecoration(
                 color: const Color(0xFFF59E0B).withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.45)),
+                border: Border.all(
+                  color: const Color(0xFFF59E0B).withValues(alpha: 0.45),
+                ),
               ),
               child: Row(
-                children: [ Icon(Icons.groups_outlined, color: Color(0xFFF59E0B)),
-                        SizedBox(width: 12),
+                children: [
+                  Icon(Icons.groups_outlined, color: Color(0xFFF59E0B)),
+                  SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      tr(context, 'group_share').replaceAll('{n}', provider.activeGroupCode ?? ''),
-                      style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold, height: 1.4),
+                      tr(
+                        context,
+                        'group_share',
+                      ).replaceAll('{n}', provider.activeGroupCode ?? ''),
+                      style: TextStyle(
+                        color: context.fast.t1,
+                        fontWeight: FontWeight.bold,
+                        height: 1.4,
+                      ),
                     ),
                   ),
                 ],
@@ -122,7 +144,7 @@ class _CartScreenState extends State<CartScreen> {
             const SizedBox(height: 20),
           ],
           // Order list Card
- Text(
+          Text(
             'PANIER DE ${rest.name.toUpperCase()}',
             style: TextStyle(
               fontSize: 10,
@@ -131,10 +153,10 @@ class _CartScreenState extends State<CartScreen> {
               color: context.fast.t3,
             ),
           ),
-                SizedBox(height: 12),
+          SizedBox(height: 12),
           _buildCartItemsCard(context, provider, cart),
-          
-                SizedBox(height: 20),
+
+          SizedBox(height: 20),
 
           if (provider.activeGroupId == null && rest.deliveryEnabled)
             _buildFulfillmentSelector(provider),
@@ -143,7 +165,8 @@ class _CartScreenState extends State<CartScreen> {
             const SizedBox(height: 16),
             _buildDeliveryAddressSection(provider),
           ] else ...[
-                  SizedBox(height: 20), Text(
+            SizedBox(height: 20),
+            Text(
               tr(context, 'walk_time_title'),
               style: TextStyle(
                 fontSize: 10,
@@ -162,14 +185,18 @@ class _CartScreenState extends State<CartScreen> {
           _isProcessing
               ? _buildProcessingCard()
               : _buildCheckoutFormCard(context, provider),
-          
+
           const SizedBox(height: 80),
         ],
       ),
     );
   }
 
-  Widget _buildCartItemsCard(BuildContext context, FASTProvider provider, List<CartItem> cart) {
+  Widget _buildCartItemsCard(
+    BuildContext context,
+    FASTProvider provider,
+    List<CartItem> cart,
+  ) {
     return Container(
       decoration: BoxDecoration(
         color: context.fast.card,
@@ -178,9 +205,10 @@ class _CartScreenState extends State<CartScreen> {
       ),
       child: ListView.separated(
         shrinkWrap: true,
-        physics:       NeverScrollableScrollPhysics(),
+        physics: NeverScrollableScrollPhysics(),
         itemCount: cart.length,
-        separatorBuilder: (context, index) =>       Divider(color: context.fast.line, height: 1),
+        separatorBuilder: (context, index) =>
+            Divider(color: context.fast.line, height: 1),
         itemBuilder: (context, index) {
           final item = cart[index];
           return Padding(
@@ -191,34 +219,60 @@ class _CartScreenState extends State<CartScreen> {
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [ Text(
+                    children: [
+                      Text(
                         item.menuItem.name,
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: context.fast.t1),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                          color: context.fast.t1,
+                        ),
                       ),
                       if (item.selectedOptions.isNotEmpty) ...[
                         const SizedBox(height: 4),
                         Wrap(
                           spacing: 4,
                           runSpacing: 4,
-                          children: item.selectedOptions.map((opt) => Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF59E0B).withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(4),
-                              border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.3)),
-                            ),
-                            child: Text(opt, style: const TextStyle(fontSize: 9, color: Color(0xFFF59E0B))),
-                          )).toList(),
+                          children: item.selectedOptions
+                              .map(
+                                (opt) => Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(
+                                      0xFFF59E0B,
+                                    ).withValues(alpha: 0.12),
+                                    borderRadius: BorderRadius.circular(4),
+                                    border: Border.all(
+                                      color: const Color(
+                                        0xFFF59E0B,
+                                      ).withValues(alpha: 0.3),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    opt,
+                                    style: const TextStyle(
+                                      fontSize: 9,
+                                      color: Color(0xFFF59E0B),
+                                    ),
+                                  ),
+                                ),
+                              )
+                              .toList(),
                         ),
                       ],
                       if (item.allergyNotes.isNotEmpty) ...[
-                              SizedBox(height: 4),
+                        SizedBox(height: 4),
                         Container(
                           padding: EdgeInsets.all(8),
                           decoration: BoxDecoration(
                             color: context.fast.amberSoftBg,
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: context.fast.amberSoftBorder),
+                            border: Border.all(
+                              color: context.fast.amberSoftBorder,
+                            ),
                           ),
                           child: Text(
                             '« ${item.allergyNotes} »',
@@ -230,14 +284,15 @@ class _CartScreenState extends State<CartScreen> {
                           ),
                         ),
                       ],
-                            SizedBox(height: 6), Text(
+                      SizedBox(height: 6),
+                      Text(
                         '${item.menuItem.price.toStringAsFixed(2)} € chacun',
                         style: TextStyle(fontSize: 11, color: context.fast.t2),
                       ),
                     ],
                   ),
                 ),
-                      SizedBox(width: 12),
+                SizedBox(width: 12),
                 Row(
                   children: [
                     // quantity adjustments
@@ -249,28 +304,57 @@ class _CartScreenState extends State<CartScreen> {
                       child: Row(
                         children: [
                           GestureDetector(
-                            onTap: () => provider.updateCartQuantity(item.menuItem.id, item.quantity - 1),
-                            child: const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                              child: Text('-', style: TextStyle(fontWeight: FontWeight.bold)),
+                            onTap: () => provider.updateCartQuantity(
+                              item.menuItem.id,
+                              item.quantity - 1,
                             ),
-                          ), Text(
+                            child: const Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
+                              child: Text(
+                                '-',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                          Text(
                             '${item.quantity}',
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, fontFamily: 'monospace'),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              fontFamily: 'monospace',
+                            ),
                           ),
                           GestureDetector(
-                            onTap: () => provider.updateCartQuantity(item.menuItem.id, item.quantity + 1),
+                            onTap: () => provider.updateCartQuantity(
+                              item.menuItem.id,
+                              item.quantity + 1,
+                            ),
                             child: const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                              child: Text('+', style: TextStyle(fontWeight: FontWeight.bold)),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
+                              child: Text(
+                                '+',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(width: 8), IconButton(
-                      onPressed: () => provider.removeFromCart(item.menuItem.id),
-                      icon: const Icon(Icons.delete_outline, color: Color(0xFFEF4444), size: 18),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      onPressed: () =>
+                          provider.removeFromCart(item.menuItem.id),
+                      icon: const Icon(
+                        Icons.delete_outline,
+                        color: Color(0xFFEF4444),
+                        size: 18,
+                      ),
                     ),
                   ],
                 ),
@@ -299,20 +383,32 @@ class _CartScreenState extends State<CartScreen> {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [ Text(
+                  children: [
+                    Text(
                       context.read<FASTProvider>().tr('walk_time'),
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: context.fast.t1),
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: context.fast.t1,
+                      ),
                     ),
-                    const SizedBox(height: 2), Text(
+                    const SizedBox(height: 2),
+                    Text(
                       context.read<FASTProvider>().tr('walk_sub'),
-                      style: TextStyle(fontSize: 10, color: const Color(0xFFF59E0B).withValues(alpha: 0.8)),
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: const Color(0xFFF59E0B).withValues(alpha: 0.8),
+                      ),
                     ),
                   ],
                 ),
               ),
               const SizedBox(width: 12),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
@@ -335,7 +431,10 @@ class _CartScreenState extends State<CartScreen> {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                _buildWalkChip(tr(context, 'asap').replaceAll('{n}', '$minPrepTime'), minPrepTime),
+                _buildWalkChip(
+                  tr(context, 'asap').replaceAll('{n}', '$minPrepTime'),
+                  minPrepTime,
+                ),
                 const SizedBox(width: 8),
                 _buildWalkChip('+10 min', minPrepTime + 10),
                 const SizedBox(width: 8),
@@ -353,36 +452,60 @@ class _CartScreenState extends State<CartScreen> {
   Widget _buildFulfillmentSelector(FASTProvider provider) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [ Text(
+      children: [
+        Text(
           tr(context, 'pickup_mode_title'),
-          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.0, color: context.fast.t3),
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.0,
+            color: context.fast.t3,
+          ),
         ),
-              SizedBox(height: 10),
+        SizedBox(height: 10),
         Row(
           children: [
             Expanded(
               child: ChoiceChip(
-                label: Text(provider.tr('click_collect'), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                label: Text(
+                  provider.tr('click_collect'),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 selected: provider.fulfillmentType == FulfillmentType.pickup,
                 selectedColor: Color(0xFFF59E0B),
                 backgroundColor: context.fast.card,
                 labelStyle: TextStyle(
-                  color: provider.fulfillmentType == FulfillmentType.pickup ? FASTBrand.onAmber : context.fast.t1,
+                  color: provider.fulfillmentType == FulfillmentType.pickup
+                      ? FASTBrand.onAmber
+                      : context.fast.t1,
                 ),
-                onSelected: (_) => provider.setFulfillmentType(FulfillmentType.pickup),
+                onSelected: (_) =>
+                    provider.setFulfillmentType(FulfillmentType.pickup),
               ),
             ),
-                  SizedBox(width: 8),
+            SizedBox(width: 8),
             Expanded(
               child: ChoiceChip(
-                label: Text(provider.tr('delivery'), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                label: Text(
+                  provider.tr('delivery'),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 selected: provider.fulfillmentType == FulfillmentType.delivery,
                 selectedColor: Color(0xFF10B981),
                 backgroundColor: context.fast.card,
                 labelStyle: TextStyle(
-                  color: provider.fulfillmentType == FulfillmentType.delivery ? Colors.white : context.fast.t1,
+                  color: provider.fulfillmentType == FulfillmentType.delivery
+                      ? Colors.white
+                      : context.fast.t1,
                 ),
-                onSelected: (_) => provider.setFulfillmentType(FulfillmentType.delivery),
+                onSelected: (_) =>
+                    provider.setFulfillmentType(FulfillmentType.delivery),
               ),
             ),
           ],
@@ -394,11 +517,18 @@ class _CartScreenState extends State<CartScreen> {
   Widget _buildDeliveryAddressSection(FASTProvider provider) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [ Text(
+      children: [
+        Text(
           tr(context, 'delivery_addr_title'),
-          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.0, color: context.fast.t3),
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.0,
+            color: context.fast.t3,
+          ),
         ),
-              SizedBox(height: 10), TextField(
+        SizedBox(height: 10),
+        TextField(
           controller: _deliveryAddressCtrl,
           style: TextStyle(color: context.fast.t1, fontSize: 13),
           maxLines: 2,
@@ -407,23 +537,44 @@ class _CartScreenState extends State<CartScreen> {
             hintStyle: TextStyle(color: context.fast.t3),
             filled: true,
             fillColor: context.fast.card,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: context.fast.line)),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: context.fast.line)),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: context.fast.line),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: context.fast.line),
+            ),
           ),
           onChanged: (v) => provider.setDeliveryAddress(v),
         ),
-              SizedBox(height: 8),
+        SizedBox(height: 8),
         Row(
-          children: [ TextButton.icon(
-              onPressed: _geocodingAddress ? null : () => _useCurrentLocation(provider),
-              icon: const Icon(Icons.my_location, size: 16, color: Color(0xFF10B981)),
+          children: [
+            TextButton.icon(
+              onPressed: _geocodingAddress
+                  ? null
+                  : () => _useCurrentLocation(provider),
+              icon: const Icon(
+                Icons.my_location,
+                size: 16,
+                color: Color(0xFF10B981),
+              ),
               label: Text(
                 provider.tr(_geocodingAddress ? 'locating' : 'my_position'),
                 style: const TextStyle(color: Color(0xFF10B981), fontSize: 11),
               ),
             ),
-                  Spacer(), Text(
-              provider.tr('delivery_zone').replaceAll('{n}', provider.selectedRestaurant?.deliveryRadiusKm.toStringAsFixed(0) ?? '5'),
+            Spacer(),
+            Text(
+              provider
+                  .tr('delivery_zone')
+                  .replaceAll(
+                    '{n}',
+                    provider.selectedRestaurant?.deliveryRadiusKm
+                            .toStringAsFixed(0) ??
+                        '5',
+                  ),
               style: TextStyle(fontSize: 10, color: context.fast.t3),
             ),
           ],
@@ -436,17 +587,29 @@ class _CartScreenState extends State<CartScreen> {
     setState(() => _geocodingAddress = true);
     try {
       await provider.fetchUserLocation();
+      if (!mounted) return;
       final loc = provider.userLocation;
       if (loc == null) {
         provider.showToast('GPS', tr(context, 'no_position'));
         return;
       }
-      final places = await placemarkFromCoordinates(loc.latitude, loc.longitude);
-      if (places.isEmpty) return;
+      final places = await placemarkFromCoordinates(
+        loc.latitude,
+        loc.longitude,
+      );
+      if (!mounted || places.isEmpty) return;
       final p = places.first;
-      final addr = [p.street, p.postalCode, p.locality].where((e) => e != null && e.isNotEmpty).join(', ');
+      final addr = [
+        p.street,
+        p.postalCode,
+        p.locality,
+      ].where((e) => e != null && e.isNotEmpty).join(', ');
       _deliveryAddressCtrl.text = addr;
-      provider.setDeliveryAddress(addr, latitude: loc.latitude, longitude: loc.longitude);
+      provider.setDeliveryAddress(
+        addr,
+        latitude: loc.latitude,
+        longitude: loc.longitude,
+      );
     } catch (e) {
       provider.showToast(tr(context, 'address_lbl'), tr(context, 'geo_error'));
     } finally {
@@ -457,13 +620,20 @@ class _CartScreenState extends State<CartScreen> {
   Widget _buildWalkChip(String label, int minutes) {
     final isSelected = _selectedWalkTime == minutes;
     return ChoiceChip(
-      label: Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+      label: Text(
+        label,
+        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+      ),
       selected: isSelected,
       backgroundColor: context.fast.card,
       selectedColor: Color(0xFFF59E0B),
       checkmarkColor: FASTBrand.onAmber,
-      labelStyle: TextStyle(color: isSelected ? FASTBrand.onAmber : context.fast.t1),
-      side: BorderSide(color: isSelected ?       Color(0xFFF59E0B) : context.fast.line),
+      labelStyle: TextStyle(
+        color: isSelected ? FASTBrand.onAmber : context.fast.t1,
+      ),
+      side: BorderSide(
+        color: isSelected ? Color(0xFFF59E0B) : context.fast.line,
+      ),
       onSelected: (selected) {
         if (selected) {
           setState(() {
@@ -484,138 +654,218 @@ class _CartScreenState extends State<CartScreen> {
         border: Border.all(color: context.fast.line),
       ),
       child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [ Text(
-              tr(context, 'payment_details'),
-              style: TextStyle(
-                fontSize: 9,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.0,
-                color: context.fast.t3,
-              ),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            tr(context, 'payment_details'),
+            style: TextStyle(
+              fontSize: 9,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.0,
+              color: context.fast.t3,
             ),
-                  SizedBox(height: 12),
-            
-            // Receipt breakdown
-            Container(
-              padding: EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: context.fast.cardHigh,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [ Text(provider.tr('subtotal'), style: TextStyle(fontSize: 12, color: context.fast.t2)), Text('${provider.cartSubtotal.toStringAsFixed(2)} €', style: TextStyle(fontSize: 12, color: context.fast.t1, fontFamily: 'monospace')),
-                    ],
-                  ),
-                        SizedBox(height: 6),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [ Text(
-                        provider.fulfillmentType == FulfillmentType.delivery
-                            ? provider.tr('fee_delivery')
-                            : provider.tr('fee_pickup'),
-                        style: TextStyle(fontSize: 12, color: context.fast.t2),
-                      ),
-                      if (provider.fulfillmentType == FulfillmentType.delivery)
- Text(
-                          '${provider.cartDeliveryFee.toStringAsFixed(2)} €',
-                          style: TextStyle(fontSize: 12, color: context.fast.t1, fontFamily: 'monospace'),
-                        )
-                      else
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(tr(context, 'free_upper'), style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF10B981))),
-                        ),
-                    ],
-                  ),
-                        SizedBox(height: 6),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [ Text(provider.tr('service_fee'), style: TextStyle(fontSize: 12, color: context.fast.t2)), Text('${provider.flatServiceFee.toStringAsFixed(2)} €', style: TextStyle(fontSize: 12, color: context.fast.t1, fontFamily: 'monospace')),
-                    ],
-                  ),
-                        Divider(color: context.fast.line, height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [ Text(provider.tr('total'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: context.fast.t1)), Text('${provider.cartTotal.toStringAsFixed(2)} €', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: Color(0xFFF59E0B), fontFamily: 'monospace')),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-                  SizedBox(height: 16),
-            
-            // Stripe Checkout
- Text(
-              tr(context, 'stripe_secure_title'),
-              style: TextStyle(
-                fontSize: 9,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.0,
-                color: context.fast.t3,
-              ),
-            ),
-                  SizedBox(height: 12), Text(
-              tr(context, 'bank_info'),
-              style: TextStyle(fontSize: 11, color: context.fast.t2, height: 1.35),
-            ),
-                  SizedBox(height: 20),
+          ),
+          SizedBox(height: 12),
 
-            // Place Order Button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => _startStripeCheckout(provider),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFFF59E0B),
-                  foregroundColor: FASTBrand.onAmber,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 0,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+          // Receipt breakdown
+          Container(
+            padding: EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: context.fast.cardHigh,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Icon(Icons.shield, size: 16),
-                    const SizedBox(width: 8), Text(
-                      provider.tr('pay_stripe').replaceAll('{n}', provider.cartTotal.toStringAsFixed(2)),
-                      style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13),
+                    Text(
+                      provider.tr('subtotal'),
+                      style: TextStyle(fontSize: 12, color: context.fast.t2),
+                    ),
+                    Text(
+                      '${provider.cartSubtotal.toStringAsFixed(2)} €',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: context.fast.t1,
+                        fontFamily: 'monospace',
+                      ),
                     ),
                   ],
                 ),
-              ),
-            ),
-            if (_pendingStripeSessionId != null) ...[
-                    SizedBox(height: 8), TextButton(
-                onPressed: () => _confirmStripeCheckout(provider),
-                child: Text(
-                  provider.tr('confirm_payment'),
-                  style: TextStyle(color: context.fast.t3, fontSize: 11),
+                SizedBox(height: 6),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      provider.fulfillmentType == FulfillmentType.delivery
+                          ? provider.tr('fee_delivery')
+                          : provider.tr('fee_pickup'),
+                      style: TextStyle(fontSize: 12, color: context.fast.t2),
+                    ),
+                    if (provider.fulfillmentType == FulfillmentType.delivery)
+                      Text(
+                        '${provider.cartDeliveryFee.toStringAsFixed(2)} €',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: context.fast.t1,
+                          fontFamily: 'monospace',
+                        ),
+                      )
+                    else
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(
+                            0xFF10B981,
+                          ).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          tr(context, 'free_upper'),
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF10B981),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
+                SizedBox(height: 6),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      provider.tr('service_fee'),
+                      style: TextStyle(fontSize: 12, color: context.fast.t2),
+                    ),
+                    Text(
+                      '${provider.flatServiceFee.toStringAsFixed(2)} €',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: context.fast.t1,
+                        fontFamily: 'monospace',
+                      ),
+                    ),
+                  ],
+                ),
+                Divider(color: context.fast.line, height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      provider.tr('total'),
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: context.fast.t1,
+                      ),
+                    ),
+                    Text(
+                      '${provider.cartTotal.toStringAsFixed(2)} €',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFFF59E0B),
+                        fontFamily: 'monospace',
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 16),
+
+          // Stripe Checkout
+          Text(
+            tr(context, 'stripe_secure_title'),
+            style: TextStyle(
+              fontSize: 9,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.0,
+              color: context.fast.t3,
+            ),
+          ),
+          SizedBox(height: 12),
+          Text(
+            tr(context, 'bank_info'),
+            style: TextStyle(
+              fontSize: 11,
+              color: context.fast.t2,
+              height: 1.35,
+            ),
+          ),
+          SizedBox(height: 20),
+
+          // Place Order Button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => _startStripeCheckout(provider),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xFFF59E0B),
+                foregroundColor: FASTBrand.onAmber,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 0,
               ),
-            ],
-                  SizedBox(height: 10),
-                  Center(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: [ Icon(Icons.lock_outline, size: 12, color: context.fast.t3),
-                  SizedBox(width: 4), Text(
-                    provider.tr('pci'),
-                    style: TextStyle(fontSize: 9, color: context.fast.t3, fontWeight: FontWeight.bold),
+                children: [
+                  const Icon(Icons.shield, size: 16),
+                  const SizedBox(width: 8),
+                  Text(
+                    provider
+                        .tr('pay_stripe')
+                        .replaceAll(
+                          '{n}',
+                          provider.cartTotal.toStringAsFixed(2),
+                        ),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 13,
+                    ),
                   ),
                 ],
               ),
             ),
+          ),
+          if (_pendingStripeSessionId != null) ...[
+            SizedBox(height: 8),
+            TextButton(
+              onPressed: () => _confirmStripeCheckout(provider),
+              child: Text(
+                provider.tr('confirm_payment'),
+                style: TextStyle(color: context.fast.t3, fontSize: 11),
+              ),
+            ),
           ],
+          SizedBox(height: 10),
+          Center(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.lock_outline, size: 12, color: context.fast.t3),
+                SizedBox(width: 4),
+                Text(
+                  provider.tr('pci'),
+                  style: TextStyle(
+                    fontSize: 9,
+                    color: context.fast.t3,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -632,7 +882,7 @@ class _CartScreenState extends State<CartScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-                SizedBox(
+          SizedBox(
             width: 48,
             height: 48,
             child: CircularProgressIndicator(
@@ -640,12 +890,19 @@ class _CartScreenState extends State<CartScreen> {
               valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFF59E0B)),
             ),
           ),
-                SizedBox(height: 20), Text(
+          SizedBox(height: 20),
+          Text(
             _processStep,
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: context.fast.t1, fontFamily: 'monospace'),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+              color: context.fast.t1,
+              fontFamily: 'monospace',
+            ),
             textAlign: TextAlign.center,
           ),
-                SizedBox(height: 6), Text(
+          SizedBox(height: 6),
+          Text(
             tr(context, 'securing_tokens'),
             style: TextStyle(fontSize: 10, color: context.fast.t3),
             textAlign: TextAlign.center,
@@ -659,20 +916,35 @@ class _CartScreenState extends State<CartScreen> {
     if (provider.fulfillmentType == FulfillmentType.delivery) {
       final addr = provider.deliveryAddress.trim();
       if (addr.isEmpty) {
-        provider.showToast(tr(context, 'addr_required'), tr(context, 'addr_enter'));
+        provider.showToast(
+          tr(context, 'addr_required'),
+          tr(context, 'addr_enter'),
+        );
         return;
       }
-      if (provider.deliveryLatitude == null || provider.deliveryLongitude == null) {
+      if (provider.deliveryLatitude == null ||
+          provider.deliveryLongitude == null) {
         setState(() => _geocodingAddress = true);
         try {
           final locations = await locationFromAddress(addr);
+          if (!mounted) return;
           if (locations.isEmpty) {
-            provider.showToast(tr(context, 'address_lbl'), tr(context, 'addr_notfound'));
+            provider.showToast(
+              tr(context, 'address_lbl'),
+              tr(context, 'addr_notfound'),
+            );
             return;
           }
-          provider.setDeliveryAddress(addr, latitude: locations.first.latitude, longitude: locations.first.longitude);
+          provider.setDeliveryAddress(
+            addr,
+            latitude: locations.first.latitude,
+            longitude: locations.first.longitude,
+          );
         } catch (_) {
-          provider.showToast(tr(context, 'address_lbl'), tr(context, 'addr_nolocate'));
+          provider.showToast(
+            tr(context, 'address_lbl'),
+            tr(context, 'addr_nolocate'),
+          );
           return;
         } finally {
           if (mounted) setState(() => _geocodingAddress = false);
@@ -688,12 +960,14 @@ class _CartScreenState extends State<CartScreen> {
     try {
       final rest = provider.selectedRestaurant!;
       final items = provider.cart
-          .map((c) => {
-                'menuItemId': c.menuItem.id,
-                'quantity': c.quantity,
-                'selectedOptions': c.selectedOptions,
-                'allergyNotes': c.allergyNotes,
-              })
+          .map(
+            (c) => {
+              'menuItemId': c.menuItem.id,
+              'quantity': c.quantity,
+              'selectedOptions': c.selectedOptions,
+              'allergyNotes': c.allergyNotes,
+            },
+          )
           .toList();
       if (provider.activeGroupId != null) {
         await provider.syncGroupCartToServer();
@@ -725,7 +999,9 @@ class _CartScreenState extends State<CartScreen> {
         provider.showToast('Stripe', tr(context, 'stripe_open_fail'));
       }
     } catch (e) {
-      if (mounted) provider.showToast(tr(context, 'payment_fail'), e.toString());
+      if (mounted) {
+        provider.showToast(tr(context, 'payment_fail'), e.toString());
+      }
     } finally {
       if (mounted) {
         setState(() {
@@ -752,7 +1028,12 @@ class _CartScreenState extends State<CartScreen> {
         });
       }
     } catch (e) {
-      if (mounted) provider.showToast(tr(context, 'payment_unconfirmed'), tr(context, 'finish_stripe'));
+      if (mounted) {
+        provider.showToast(
+          tr(context, 'payment_unconfirmed'),
+          tr(context, 'finish_stripe'),
+        );
+      }
     } finally {
       if (mounted) {
         setState(() {

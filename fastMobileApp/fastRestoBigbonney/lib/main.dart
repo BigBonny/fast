@@ -30,12 +30,14 @@ import 'widgets/client_drawer.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    statusBarColor: Colors.transparent,
-    statusBarIconBrightness: Brightness.dark,
-    systemNavigationBarColor: Colors.transparent,
-    systemNavigationBarIconBrightness: Brightness.dark,
-  ));
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarIconBrightness: Brightness.dark,
+    ),
+  );
 
   // Set up 401 auto-logout handler
   ApiClient.onUnauthorized = () {
@@ -101,8 +103,8 @@ class _FASTAppState extends State<FASTApp> with WidgetsBindingObserver {
 
   void _processStripeUri(Uri uri) {
     if (uri.scheme != 'fast' || uri.host != 'checkout') return;
-    final sessionId = uri.queryParameters['session_id'] ??
-        uri.queryParameters['sessionId'];
+    final sessionId =
+        uri.queryParameters['session_id'] ?? uri.queryParameters['sessionId'];
     if (sessionId != null && sessionId.isNotEmpty) {
       _confirmStripeSession(sessionId);
     }
@@ -182,10 +184,20 @@ class _FASTAppState extends State<FASTApp> with WidgetsBindingObserver {
       darkTheme: FASTTheme.dark(),
       locale: Locale(fast.appLanguage),
       supportedLocales: const [
-        Locale('fr'), Locale('en'), Locale('tr'), Locale('ar'),
-        Locale('hi'), Locale('bn'), Locale('ur'), Locale('bm'),
-        Locale('wo'), Locale('ln'), Locale('es'), Locale('pt'),
-        Locale('it'), Locale('zh'),
+        Locale('fr'),
+        Locale('en'),
+        Locale('tr'),
+        Locale('ar'),
+        Locale('hi'),
+        Locale('bn'),
+        Locale('ur'),
+        Locale('bm'),
+        Locale('wo'),
+        Locale('ln'),
+        Locale('es'),
+        Locale('pt'),
+        Locale('it'),
+        Locale('zh'),
       ],
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
@@ -242,11 +254,9 @@ class _SplashScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return       Scaffold(
+    return Scaffold(
       backgroundColor: context.fast.bg,
-      body: Center(
-        child: CircularProgressIndicator(color: Color(0xFFF59E0B)),
-      ),
+      body: Center(child: CircularProgressIndicator(color: Color(0xFFF59E0B))),
     );
   }
 }
@@ -258,7 +268,8 @@ class MainShell extends StatefulWidget {
   State<MainShell> createState() => _MainShellState();
 }
 
-class _MainShellState extends State<MainShell> with SingleTickerProviderStateMixin {
+class _MainShellState extends State<MainShell>
+    with SingleTickerProviderStateMixin {
   late AnimationController _toastController;
   late Animation<Offset> _toastSlide;
   String _toastTitle = '';
@@ -272,14 +283,14 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
       vsync: this,
       duration: const Duration(milliseconds: 320),
     );
-    _toastSlide = Tween<Offset>(
-      begin: const Offset(0, -1),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _toastController,
-      curve: Curves.easeOut,
-      reverseCurve: Curves.easeIn,
-    ));
+    _toastSlide = Tween<Offset>(begin: const Offset(0, -1), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _toastController,
+            curve: Curves.easeOut,
+            reverseCurve: Curves.easeIn,
+          ),
+        );
   }
 
   @override
@@ -424,9 +435,7 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
       body: Stack(
         children: [
           // Screen content
-          Positioned.fill(
-            child: activeBody,
-          ),
+          Positioned.fill(child: activeBody),
 
           // Top iOS-style toast overlay
           if (_toastVisible)
@@ -446,7 +455,10 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
                         });
                       },
                       child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
                         decoration: BoxDecoration(
                           color: context.fast.card,
                           borderRadius: BorderRadius.circular(12),
@@ -461,16 +473,19 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: [ Icon( Icons.notifications_active,
+                          children: [
+                            Icon(
+                              Icons.notifications_active,
                               color: Color(0xFFF59E0B),
                               size: 16,
                             ),
-                                  SizedBox(width: 8),
+                            SizedBox(width: 8),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisSize: MainAxisSize.min,
-                                children: [ Text(
+                                children: [
+                                  Text(
                                     _toastTitle,
                                     style: TextStyle(
                                       color: context.fast.t1,
@@ -481,7 +496,8 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
                                     maxLines: 1,
                                   ),
                                   if (_toastBody.isNotEmpty) ...[
-                                          SizedBox(height: 2), Text(
+                                    SizedBox(height: 2),
+                                    Text(
                                       _toastBody,
                                       style: TextStyle(
                                         color: context.fast.t3,
@@ -502,9 +518,11 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
                 ),
               ),
             ),
-          
+
           // Persistent Floating Basket summary (when on home screen and cart count > 0)
-          if (provider.currentScreen == 'home' && provider.cartCount > 0 && provider.selectedRestaurant != null)
+          if (provider.currentScreen == 'home' &&
+              provider.cartCount > 0 &&
+              provider.selectedRestaurant != null)
             Positioned(
               left: 16,
               right: 16,
@@ -521,7 +539,7 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
                         color: Colors.black.withValues(alpha: 0.3),
                         blurRadius: 16,
                         offset: const Offset(0, 6),
-                      )
+                      ),
                     ],
                   ),
                   child: Row(
@@ -530,7 +548,10 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
                       Row(
                         children: [
                           Container(
-                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.black.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(8),
@@ -544,21 +565,25 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
                               ),
                             ),
                           ),
-                                SizedBox(width: 12),
+                          SizedBox(width: 12),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
-                            children: [ Text(
+                            children: [
+                              Text(
                                 provider.tr('view_cart'),
                                 style: TextStyle(
                                   color: FASTBrand.onAmber,
                                   fontWeight: FontWeight.w900,
                                   fontSize: 13,
                                 ),
-                              ), Text(
+                              ),
+                              Text(
                                 '${provider.tr('at_restaurant')} ${provider.selectedRestaurant!.name}',
                                 style: TextStyle(
-                                  color: FASTBrand.onAmber.withValues(alpha: 0.7),
+                                  color: FASTBrand.onAmber.withValues(
+                                    alpha: 0.7,
+                                  ),
                                   fontWeight: FontWeight.bold,
                                   fontSize: 10,
                                 ),
@@ -568,7 +593,8 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
                         ],
                       ),
                       Row(
-                        children: [ Text(
+                        children: [
+                          Text(
                             '€${provider.cartTotal.toStringAsFixed(2)}',
                             style: TextStyle(
                               color: FASTBrand.onAmber,
@@ -576,7 +602,9 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
                               fontSize: 15,
                             ),
                           ),
-                                SizedBox(width: 4), Icon( Icons.chevron_right,
+                          SizedBox(width: 4),
+                          Icon(
+                            Icons.chevron_right,
                             color: FASTBrand.onAmber,
                             size: 20,
                           ),
@@ -592,9 +620,7 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: context.fast.card,
-          border:       Border(
-            top: BorderSide(color: context.fast.line, width: 1),
-          ),
+          border: Border(top: BorderSide(color: context.fast.line, width: 1)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.05),
@@ -613,10 +639,16 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
           selectedItemColor: Color(0xFFF59E0B),
           unselectedItemColor: context.fast.t3,
           type: BottomNavigationBarType.fixed,
-          selectedLabelStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 10),
-          unselectedLabelStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 10),
+          selectedLabelStyle: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 10,
+          ),
+          unselectedLabelStyle: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 10,
+          ),
           items: [
-                  BottomNavigationBarItem(
+            BottomNavigationBarItem(
               icon: Padding(
                 padding: EdgeInsets.only(bottom: 4),
                 child: Icon(Icons.restaurant),
@@ -627,7 +659,8 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
               icon: Padding(
                 padding: EdgeInsets.only(bottom: 4),
                 child: Stack(
-                  children: [ Icon(Icons.shopping_bag_outlined),
+                  children: [
+                    Icon(Icons.shopping_bag_outlined),
                     if (provider.cartCount > 0)
                       Positioned(
                         right: 0,
@@ -638,7 +671,7 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
                             color: Color(0xFFEF4444),
                             shape: BoxShape.circle,
                           ),
-                          constraints:       BoxConstraints(
+                          constraints: BoxConstraints(
                             minWidth: 14,
                             minHeight: 14,
                           ),
@@ -664,7 +697,11 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
                 child: Stack(
                   children: [
                     const Icon(Icons.assignment_outlined),
-                    if (provider.orders.any((o) => o.status != OrderStatus.completed && o.status != OrderStatus.cancelled))
+                    if (provider.orders.any(
+                      (o) =>
+                          o.status != OrderStatus.completed &&
+                          o.status != OrderStatus.cancelled,
+                    ))
                       Positioned(
                         right: 0,
                         top: 0,
@@ -725,7 +762,6 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
         return 'home';
     }
   }
-
 }
 
 class DriverShell extends StatefulWidget {
@@ -744,10 +780,7 @@ class _DriverShellState extends State<DriverShell> {
     return Scaffold(
       body: IndexedStack(
         index: _index,
-        children: const [
-          LivreurScreen(),
-          DriverAccountScreen(),
-        ],
+        children: const [LivreurScreen(), DriverAccountScreen()],
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _index,
@@ -757,11 +790,16 @@ class _DriverShellState extends State<DriverShell> {
         unselectedItemColor: context.fast.t3,
         type: BottomNavigationBarType.fixed,
         items: [
-          BottomNavigationBarItem(icon: Icon(Icons.delivery_dining), label: fast.tr('nav_deliver')),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: fast.tr('my_account')),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.delivery_dining),
+            label: fast.tr('nav_deliver'),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            label: fast.tr('my_account'),
+          ),
         ],
       ),
     );
   }
 }
-

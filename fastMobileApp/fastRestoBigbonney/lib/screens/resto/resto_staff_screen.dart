@@ -39,7 +39,9 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
       final data = await _api.get(ApiConfig.staff);
       _staff = data as List<dynamic>;
     } catch (e) {
-      _error = e is ApiException ? e.message : tr(context, 'load_err');
+      if (mounted) {
+        _error = e is ApiException ? e.message : tr(context, 'load_err');
+      }
     }
     if (mounted) setState(() => _loading = false);
   }
@@ -49,16 +51,19 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(tr(context, 'del_account_q')),
-        content: Text(
-            tr(context, 'staff_lose_access').replaceAll('{n}', name)),
+        content: Text(tr(context, 'staff_lose_access').replaceAll('{n}', name)),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: Text(tr(context, 'cancel'))),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(tr(context, 'cancel')),
+          ),
           TextButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: Text(tr(context, 'del'),
-                  style: TextStyle(color: Color(0xFFEF4444)))),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              tr(context, 'del'),
+              style: TextStyle(color: Color(0xFFEF4444)),
+            ),
+          ),
         ],
       ),
     );
@@ -67,7 +72,9 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
       await _api.delete(ApiConfig.staffMember(staffId));
       _load();
     } catch (e) {
-      _toast(e is ApiException ? e.message : tr(context, 'delete_err'));
+      if (mounted) {
+        _toast(e is ApiException ? e.message : tr(context, 'delete_err'));
+      }
     }
   }
 
@@ -87,20 +94,28 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
       isScrollControlled: true,
       backgroundColor: context.fast.card,
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setSheet) => Padding(
           padding: EdgeInsets.fromLTRB(
-              20, 20, 20, MediaQuery.of(ctx).viewInsets.bottom + 20),
+            20,
+            20,
+            20,
+            MediaQuery.of(ctx).viewInsets.bottom + 20,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(tr(context, 'new_cook'),
-                  style: TextStyle(
-                      color: context.fast.t1,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 16)),
+              Text(
+                tr(context, 'new_cook'),
+                style: TextStyle(
+                  color: context.fast.t1,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 16,
+                ),
+              ),
               const SizedBox(height: 4),
               Text(
                 tr(context, 'staff_access'),
@@ -109,20 +124,42 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
               const SizedBox(height: 16),
               _field(nameC, tr(context, 'name_example'), Icons.person_outline),
               const SizedBox(height: 10),
-              _field(emailC, tr(context, 'email'), Icons.mail_outline,
-                  type: TextInputType.emailAddress),
+              _field(
+                emailC,
+                tr(context, 'email'),
+                Icons.mail_outline,
+                type: TextInputType.emailAddress,
+              ),
               const SizedBox(height: 10),
-              _field(passC, tr(context, 'password'), Icons.lock_outline,
-                  obscure: true),
+              _field(
+                passC,
+                tr(context, 'password'),
+                Icons.lock_outline,
+                obscure: true,
+              ),
               const SizedBox(height: 14),
               // Role picker
               Row(
                 children: [
-                  _roleChip(ctx, setSheet, 'GUEST', tr(context, 'guest_lbl'),
-                      tr(context, 'menu_soldout_sub'), role, (r) => role = r),
+                  _roleChip(
+                    ctx,
+                    setSheet,
+                    'GUEST',
+                    tr(context, 'guest_lbl'),
+                    tr(context, 'menu_soldout_sub'),
+                    role,
+                    (r) => role = r,
+                  ),
                   const SizedBox(width: 8),
-                  _roleChip(ctx, setSheet, 'STAFF', tr(context, 'manager'),
-                      tr(context, 'orders_menu'), role, (r) => role = r),
+                  _roleChip(
+                    ctx,
+                    setSheet,
+                    'STAFF',
+                    tr(context, 'manager'),
+                    tr(context, 'orders_menu'),
+                    role,
+                    (r) => role = r,
+                  ),
                 ],
               ),
               const SizedBox(height: 18),
@@ -138,19 +175,25 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
                         }
                         setSheet(() => saving = true);
                         try {
-                          await _api.post(ApiConfig.staff, body: {
-                            'name': nameC.text.trim(),
-                            'email': emailC.text.trim(),
-                            'password': passC.text,
-                            'staffRole': role,
-                          });
+                          await _api.post(
+                            ApiConfig.staff,
+                            body: {
+                              'name': nameC.text.trim(),
+                              'email': emailC.text.trim(),
+                              'password': passC.text,
+                              'staffRole': role,
+                            },
+                          );
                           if (ctx.mounted) Navigator.pop(ctx);
                           _load();
                         } catch (e) {
+                          if (!mounted) return;
                           setSheet(() => saving = false);
-                          _toast(e is ApiException
-                              ? e.message
-                              : tr(context, 'create_err'));
+                          _toast(
+                            e is ApiException
+                                ? e.message
+                                : tr(context, 'create_err'),
+                          );
                         }
                       },
                 style: ElevatedButton.styleFrom(
@@ -158,10 +201,15 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
-                child: Text(saving ? tr(context, 'creating') : tr(context, 'create_account'),
-                    style: const TextStyle(fontWeight: FontWeight.w900)),
+                child: Text(
+                  saving
+                      ? tr(context, 'creating')
+                      : tr(context, 'create_account'),
+                  style: const TextStyle(fontWeight: FontWeight.w900),
+                ),
               ),
             ],
           ),
@@ -170,8 +218,15 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
     );
   }
 
-  Widget _roleChip(BuildContext ctx, StateSetter setSheet, String value,
-      String label, String sub, String current, void Function(String) onSel) {
+  Widget _roleChip(
+    BuildContext ctx,
+    StateSetter setSheet,
+    String value,
+    String label,
+    String sub,
+    String current,
+    void Function(String) onSel,
+  ) {
     final sel = current == value;
     return Expanded(
       child: GestureDetector(
@@ -184,18 +239,21 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
                 : context.fast.cardHigh,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-                color: sel ? FASTPro.teal : context.fast.line,
-                width: sel ? 1.6 : 1),
+              color: sel ? FASTPro.teal : context.fast.line,
+              width: sel ? 1.6 : 1,
+            ),
           ),
           child: Column(
             children: [
-              Text(label,
-                  style: TextStyle(
-                      color: sel ? FASTPro.teal : context.fast.t1,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 13)),
-              Text(sub,
-                  style: TextStyle(color: context.fast.t3, fontSize: 9)),
+              Text(
+                label,
+                style: TextStyle(
+                  color: sel ? FASTPro.teal : context.fast.t1,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 13,
+                ),
+              ),
+              Text(sub, style: TextStyle(color: context.fast.t3, fontSize: 9)),
             ],
           ),
         ),
@@ -203,8 +261,13 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
     );
   }
 
-  Widget _field(TextEditingController c, String hint, IconData icon,
-      {TextInputType? type, bool obscure = false}) {
+  Widget _field(
+    TextEditingController c,
+    String hint,
+    IconData icon, {
+    TextInputType? type,
+    bool obscure = false,
+  }) {
     return TextField(
       controller: c,
       keyboardType: type,
@@ -236,150 +299,158 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
       appBar: AppBar(
         backgroundColor: context.fast.bg,
         elevation: 0,
-        title: Text(tr(context, 'team_guests'),
-            style: TextStyle(
-                color: context.fast.t1,
-                fontWeight: FontWeight.w900,
-                fontSize: 16)),
+        title: Text(
+          tr(context, 'team_guests'),
+          style: TextStyle(
+            color: context.fast.t1,
+            fontWeight: FontWeight.w900,
+            fontSize: 16,
+          ),
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _showCreateSheet,
         backgroundColor: FASTPro.teal,
         icon: const Icon(Icons.person_add, color: Colors.white),
-        label: Text(tr(context, 'add_cook'),
-            style:
-                TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+        label: Text(
+          tr(context, 'add_cook'),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+        ),
       ),
       body: _loading
-          ? const Center(
-              child: CircularProgressIndicator(color: FASTPro.teal))
+          ? const Center(child: CircularProgressIndicator(color: FASTPro.teal))
           : _error != null
-              ? Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(_error!,
-                          style: TextStyle(color: context.fast.t2)),
-                      const SizedBox(height: 8),
-                      TextButton(
-                          onPressed: _load,
-                          child: Text(tr(context, 'retry'))),
-                    ],
+          ? Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(_error!, style: TextStyle(color: context.fast.t2)),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: _load,
+                    child: Text(tr(context, 'retry')),
                   ),
-                )
-              : _staff.isEmpty
-                  ? Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(32),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text('🧑‍🍳',
-                                style: TextStyle(fontSize: 44)),
-                            const SizedBox(height: 10),
-                            Text(tr(context, 'no_cooks'),
-                                style: TextStyle(
-                                    color: context.fast.t1,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 15)),
-                            const SizedBox(height: 6),
-                            Text(
-                              tr(context, 'staff_intro'),
-                              style: TextStyle(
-                                  color: context.fast.t3, fontSize: 11),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  : RefreshIndicator(
-                      onRefresh: _load,
-                      color: FASTPro.teal,
-                      child: ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: _staff.length,
-                        itemBuilder: (_, i) {
-                          final s = _staff[i] as Map<String, dynamic>;
-                          final user = s['user'] as Map<String, dynamic>;
-                          final isGuest = s['staffRole'] == 'GUEST';
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 10),
-                            padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              color: context.fast.card,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: context.fast.line),
-                            ),
-                            child: Row(
-                              children: [
-                                CircleAvatar(
-                                  radius: 20,
-                                  backgroundColor:
-                                      FASTPro.teal.withValues(alpha: 0.15),
-                                  child: Text(
-                                    (user['name'] as String? ?? '?')
-                                        .characters
-                                        .first
-                                        .toUpperCase(),
-                                    style: const TextStyle(
-                                        color: FASTPro.teal,
-                                        fontWeight: FontWeight.w900),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(user['name'] as String? ?? '',
-                                          style: TextStyle(
-                                              color: context.fast.t1,
-                                              fontWeight: FontWeight.w800,
-                                              fontSize: 14)),
-                                      Text(user['email'] as String? ?? '',
-                                          style: TextStyle(
-                                              color: context.fast.t3,
-                                              fontSize: 11)),
-                                    ],
-                                  ),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 3),
-                                  decoration: BoxDecoration(
-                                    color: (isGuest
-                                            ? FASTPro.magenta
-                                            : FASTPro.teal)
-                                        .withValues(alpha: 0.12),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Text(
-                                    isGuest
-                                        ? tr(context, 'guest_badge')
-                                        : 'MANAGER',
-                                    style: TextStyle(
-                                        color: isGuest
-                                            ? FASTPro.magenta
-                                            : FASTPro.teal,
-                                        fontSize: 9,
-                                        fontWeight: FontWeight.w900),
-                                  ),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete_outline,
-                                      color: Color(0xFFEF4444), size: 20),
-                                  onPressed: () => _delete(
-                                      s['id'] as String,
-                                      user['name'] as String? ?? ''),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
+                ],
+              ),
+            )
+          : _staff.isEmpty
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('🧑‍🍳', style: TextStyle(fontSize: 44)),
+                    const SizedBox(height: 10),
+                    Text(
+                      tr(context, 'no_cooks'),
+                      style: TextStyle(
+                        color: context.fast.t1,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 15,
                       ),
                     ),
+                    const SizedBox(height: 6),
+                    Text(
+                      tr(context, 'staff_intro'),
+                      style: TextStyle(color: context.fast.t3, fontSize: 11),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : RefreshIndicator(
+              onRefresh: _load,
+              color: FASTPro.teal,
+              child: ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: _staff.length,
+                itemBuilder: (_, i) {
+                  final s = _staff[i] as Map<String, dynamic>;
+                  final user = s['user'] as Map<String, dynamic>;
+                  final isGuest = s['staffRole'] == 'GUEST';
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 10),
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: context.fast.card,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: context.fast.line),
+                    ),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 20,
+                          backgroundColor: FASTPro.teal.withValues(alpha: 0.15),
+                          child: Text(
+                            (user['name'] as String? ?? '?').characters.first
+                                .toUpperCase(),
+                            style: const TextStyle(
+                              color: FASTPro.teal,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                user['name'] as String? ?? '',
+                                style: TextStyle(
+                                  color: context.fast.t1,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              Text(
+                                user['email'] as String? ?? '',
+                                style: TextStyle(
+                                  color: context.fast.t3,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: (isGuest ? FASTPro.magenta : FASTPro.teal)
+                                .withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            isGuest ? tr(context, 'guest_badge') : 'MANAGER',
+                            style: TextStyle(
+                              color: isGuest ? FASTPro.magenta : FASTPro.teal,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(
+                            Icons.delete_outline,
+                            color: Color(0xFFEF4444),
+                            size: 20,
+                          ),
+                          onPressed: () => _delete(
+                            s['id'] as String,
+                            user['name'] as String? ?? '',
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
     );
   }
 }

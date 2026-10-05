@@ -250,8 +250,7 @@ class AppStrings {
     'opt_well': 'Bien cuit',
     'opt_rare': 'Peu cuit',
     'choose_resto': 'Choisir le restaurant',
-    'group_sub':
-        'Tous les membres commanderont dans ce même restaurant.',
+    'group_sub': 'Tous les membres commanderont dans ce même restaurant.',
     'restaurant_lbl': 'Restaurant',
     'create_group': 'Créer le groupe',
     'group_order': 'Commande en groupe',
@@ -267,8 +266,7 @@ class AppStrings {
     'no_resto_avail': 'Aucun restaurant disponible.',
     'share_msg':
         'Rejoins ma commande FAST Click & Collect avec le code {n} sur l\'app FAST !',
-    'walk_sub':
-        'Préparation synchronisée basée sur votre rythme de marche.',
+    'walk_sub': 'Préparation synchronisée basée sur votre rythme de marche.',
     'delivery_zone': 'Zone {n} km',
     'confirm': 'Confirmer',
     'del': 'Supprimer',
@@ -279,9 +277,11 @@ class AppStrings {
     'itinerary': 'ITINÉRAIRE À PIED · GOOGLE MAPS',
     'reset_filters': 'Réinitialiser les filtres',
     'pwd_updated': 'Mot de passe mis à jour',
-    'group_unpaid_warn': 'Les membres non payés ne seront pas envoyés au restaurant.',
+    'group_unpaid_warn':
+        'Les membres non payés ne seront pas envoyés au restaurant.',
     'group_sent_title': 'Commande envoyée ensemble',
-    'group_sent_sub': 'Le restaurant prépare toutes les parts payées pour un retrait commun.',
+    'group_sent_sub':
+        'Le restaurant prépare toutes les parts payées pour un retrait commun.',
     'close_invites': 'Fermer les invitations',
     'promo_velvet': 'Code : VELVET5',
     'confirm_cancel': 'Confirmer l\'annulation',
@@ -322,7 +322,8 @@ class AppStrings {
     'qty_sold_sub': 'Quantités vendues sur la période',
     'loading_stats': 'Chargement des statistiques',
     'sched_perm': 'Créneaux permanents',
-    'sched_sub': 'Sélectionnez vos jours habituels. Vous pourrez mettre le service en pause à tout moment.',
+    'sched_sub':
+        'Sélectionnez vos jours habituels. Vous pourrez mettre le service en pause à tout moment.',
     'slot_start': 'Début',
     'save_slots': 'Enregistrer les créneaux',
     'slots_count': '{n} créneau(x)',
@@ -394,20 +395,29 @@ class AppStrings {
     'no_data': 'Pas encore de données',
     'skip_tuto': 'Passer',
     'tuto1_t': 'Pilotez vos commandes',
-    'tuto1_d': 'Les nouvelles commandes payées arrivent ici. Faites-les passer de reçue à en préparation, puis prête et récupérée.',
+    'tuto1_d':
+        'Les nouvelles commandes payées arrivent ici. Faites-les passer de reçue à en préparation, puis prête et récupérée.',
     'tuto2_t': 'Ouvrez le mode Cuisine',
-    'tuto2_d': 'Affichez une vue opérationnelle pensée pour la préparation et gardez les commandes prioritaires sous les yeux.',
+    'tuto2_d':
+        'Affichez une vue opérationnelle pensée pour la préparation et gardez les commandes prioritaires sous les yeux.',
     'tuto3_t': 'Construisez votre menu',
-    'tuto3_d': 'Ajoutez vos plats, prix et photos, puis rendez un article indisponible en un geste lorsqu’il est en rupture.',
+    'tuto3_d':
+        'Ajoutez vos plats, prix et photos, puis rendez un article indisponible en un geste lorsqu’il est en rupture.',
     'tuto4_t': 'Rush en un tap',
-    'tuto4_d': 'Le bouton rouge active le Mode Rush instantanément. Vos statistiques se trouvent dans le menu latéral.',
+    'tuto4_d':
+        'Le bouton rouge active le Mode Rush instantanément. Vos statistiques se trouvent dans le menu latéral.',
     'tuto5_t': 'Configurez votre restaurant',
-    'tuto5_d': 'Complétez votre identité, vos horaires de préparation, vos coordonnées et vos options alimentaires.',
+    'tuto5_d':
+        'Complétez votre identité, vos horaires de préparation, vos coordonnées et vos options alimentaires.',
     'tuto6_t': 'Vérifiez votre vitrine',
-    'tuto6_d': 'Prévisualisez exactement ce que les clients voient. Vous êtes prêt à recevoir vos premières commandes.',
-    'ob1_d': '1. Commandez depuis votre restaurant préféré\n2. Marchez jusqu\'au restaurant\n3. Récupérez votre commande sans faire la queue',
-    'ob2_d': 'Suivez votre commande à la trace grâce au GPS.\nSachez exactement quand partir pour que tout\nsoit prêt à votre arrivée.',
-    'ob3_d': 'Cumulez des points à chaque commande.\nDébloquez le statut FAST Gold et\nbénéficiez d\'avantages exclusifs !',
+    'tuto6_d':
+        'Prévisualisez exactement ce que les clients voient. Vous êtes prêt à recevoir vos premières commandes.',
+    'ob1_d':
+        '1. Commandez depuis votre restaurant préféré\n2. Marchez jusqu\'au restaurant\n3. Récupérez votre commande sans faire la queue',
+    'ob2_d':
+        'Suivez votre commande à la trace grâce au GPS.\nSachez exactement quand partir pour que tout\nsoit prêt à votre arrivée.',
+    'ob3_d':
+        'Cumulez des points à chaque commande.\nDébloquez le statut FAST Gold et\nbénéficiez d\'avantages exclusifs !',
     'next': 'Suivant',
     'get_started': 'Commencer !',
     'view_cart': 'Voir le panier',
@@ -484,51 +494,70 @@ class AppStrings {
     'validation_err': 'Erreur de validation',
     'del_my_account': 'Supprimer mon compte',
     'edit_field': 'Modifier {n}',
-    'del_account_warn': 'Votre accès, votre profil et vos données personnelles seront supprimés. Les données de transaction légalement requises seront anonymisées. Cette action est irréversible.',
+    'del_account_warn':
+        'Votre accès, votre profil et vos données personnelles seront supprimés. Les données de transaction légalement requises seront anonymisées. Cette action est irréversible.',
     'del_fail': 'Suppression impossible. Réessayez.',
-    'no_points': 'Aucun point encore.\nComplétez votre première commande pour gagner des points !',
+    'no_points':
+        'Aucun point encore.\nComplétez votre première commande pour gagner des points !',
     'order_done_id': 'Commande récupérée · {n}',
     'max_level': 'Niveau maximum atteint — FAST Gold !',
     'to_next_level': 'Vers {n}',
     'no_addresses': 'Aucune adresse enregistrée',
-    'addresses_hint': 'Vos adresses de livraison favorites seront enregistrées ici.',
-    'stripe_secure': 'Vos paiements sont sécurisés par Stripe. Aucune carte bancaire n\'est stockée sur l\'app.',
-    'stripe_info': 'Vos informations de paiement sont saisies directement sur la page sécurisée Stripe lors de chaque commande.',
+    'addresses_hint':
+        'Vos adresses de livraison favorites seront enregistrées ici.',
+    'stripe_secure':
+        'Vos paiements sont sécurisés par Stripe. Aucune carte bancaire n\'est stockée sur l\'app.',
+    'stripe_info':
+        'Vos informations de paiement sont saisies directement sur la page sécurisée Stripe lors de chaque commande.',
     'pwd_current': 'Mot de passe actuel',
     'pwd_new': 'Nouveau mot de passe',
     'pwd_confirm': 'Confirmer le nouveau',
     'pwd_rules': 'Minimum 8 caractères, 1 majuscule, 1 chiffre.',
     'pwd_mismatch': 'Les mots de passe ne correspondent pas.',
     'email_assoc': 'Adresse e-mail associée :',
-    'email_change_hint': 'Pour modifier votre e-mail, rendez-vous dans l\'onglet Profil ci-dessus.',
-    'email_used_for': 'Votre e-mail est utilisé pour la connexion et les notifications de commande.',
-    'terms_intro': 'En utilisant FAST, vous acceptez nos conditions générales d\'utilisation.',
-    'legal_orders': 'Les commandes sont préparées par les restaurants partenaires. Les paiements sont sécurisés par Stripe. Vous pouvez demander la suppression de votre compte à tout moment.',
-    'privacy_data': 'permettre la commande et la livraison. Vos données ne sont jamais vendues.',
-    'data_rights': 'Vous pouvez les modifier ou supprimer votre compte à tout moment depuis cette page.',
-    'privacy_collect': 'FAST collecte votre nom, e-mail, téléphone et position (avec votre accord) pour',
-    'fast_service_desc': 'FAST est un service de commande Click & Collect et de livraison pour restaurants.',
+    'email_change_hint':
+        'Pour modifier votre e-mail, rendez-vous dans l\'onglet Profil ci-dessus.',
+    'email_used_for':
+        'Votre e-mail est utilisé pour la connexion et les notifications de commande.',
+    'terms_intro':
+        'En utilisant FAST, vous acceptez nos conditions générales d\'utilisation.',
+    'legal_orders':
+        'Les commandes sont préparées par les restaurants partenaires. Les paiements sont sécurisés par Stripe. Vous pouvez demander la suppression de votre compte à tout moment.',
+    'privacy_data':
+        'permettre la commande et la livraison. Vos données ne sont jamais vendues.',
+    'data_rights':
+        'Vous pouvez les modifier ou supprimer votre compte à tout moment depuis cette page.',
+    'privacy_collect':
+        'FAST collecte votre nom, e-mail, téléphone et position (avec votre accord) pour',
+    'fast_service_desc':
+        'FAST est un service de commande Click & Collect et de livraison pour restaurants.',
     'review_prompt': 'Comment s\'est passée votre expérience ?',
     'no_history': 'Aucun historique de commande',
-    'history_hint': 'Une fois que vous aurez récupéré des commandes Click & Collect, l\'historique apparaîtra ici.',
+    'history_hint':
+        'Une fois que vous aurez récupéré des commandes Click & Collect, l\'historique apparaîtra ici.',
     'ordered_on': 'Commandé le : {n}',
     'total_paid': 'Total payé',
     'review_sent_ok': 'Avis envoyé avec succès !',
     'submit_review': 'Soumettre mon avis',
-    'cancel_policy_intro': 'Chez FAST, notre politique d\'annulation est transparente et simple. Pas de petits caractères :',
+    'cancel_policy_intro':
+        'Chez FAST, notre politique d\'annulation est transparente et simple. Pas de petits caractères :',
     'cancel_case1': 'Cas 1 : Annulation avant préparation',
-    'cancel_case1_desc': 'Remboursement intégral (hors frais de service 1,50 € utilisés pour le traitement).',
+    'cancel_case1_desc':
+        'Remboursement intégral (hors frais de service 1,50 € utilisés pour le traitement).',
     'cancel_case2': 'Cas 2 : Annulation après préparation',
-    'cancel_case2_desc': 'Débit total appliqué. La cuisine a déjà utilisé les ingrédients frais pour votre repas.',
+    'cancel_case2_desc':
+        'Débit total appliqué. La cuisine a déjà utilisé les ingrédients frais pour votre repas.',
     'cancel_policy': 'Politique d\'annulation',
     'picked_up_excl': 'Récupéré !',
-    'group_share': 'Part individuelle du groupe {n}\nVous paierez uniquement vos articles.',
+    'group_share':
+        'Part individuelle du groupe {n}\nVous paierez uniquement vos articles.',
     'asap': 'DÈS QUE POSS. ({n}m)',
     'no_position': 'Impossible d\'obtenir votre position.',
     'geo_error': 'Erreur de géolocalisation.',
     'address_lbl': 'Adresse',
     'payment_details': 'DÉTAILS DU PAIEMENT',
-    'bank_info': 'Les informations bancaires sont saisies directement chez Stripe. FAST ne stocke jamais les numéros de carte.',
+    'bank_info':
+        'Les informations bancaires sont saisies directement chez Stripe. FAST ne stocke jamais les numéros de carte.',
     'securing_tokens': 'Sécurisation des jetons d\'autorisation...',
     'addr_required': 'Adresse requise',
     'addr_enter': 'Saisissez une adresse de livraison.',
@@ -538,7 +567,8 @@ class AppStrings {
     'payment_fail': 'Paiement impossible',
     'payment_unconfirmed': 'Paiement non confirmé',
     'finish_stripe': 'Terminez le paiement Stripe puis réessayez.',
-    'cart_empty_hint': 'Ajoutez de bons plats d\'un restaurant local pour passer commande !',
+    'cart_empty_hint':
+        'Ajoutez de bons plats d\'un restaurant local pour passer commande !',
     'addr_example': '12 rue Example, 75001 Paris',
     'group_invite': 'Invitation groupe FAST',
     'copy_invite': 'Copier l\'invitation',
@@ -554,7 +584,8 @@ class AppStrings {
     'paying': 'Paiement en cours',
     'compose_part': 'Compose sa part',
     'no_cuisine': 'Aucune cuisine trouvée',
-    'widen_radius': 'Essayez d\'élargir le rayon de recherche ou de modifier les filtres.',
+    'widen_radius':
+        'Essayez d\'élargir le rayon de recherche ou de modifier les filtres.',
     'slot_launch': 'Lancement de la machine à sous...',
     'search_suggest': 'Essayez de rechercher burger, pizza, wrap, salade, etc.',
     'from_resto': 'De : {n}',
@@ -573,7 +604,8 @@ class AppStrings {
     'dest_line': 'Dest : {d} ({dist})',
     'updating_route': 'Mise à jour du trajet en cours...',
     'unknown_dest': 'Destination inconnue',
-    'earnings_credited': 'Revenus crédités : +{n} €.\nMerci pour cette livraison de proximité !',
+    'earnings_credited':
+        'Revenus crédités : +{n} €.\nMerci pour cette livraison de proximité !',
     'driver_perm': 'Livreur permanent FAST',
     'driver_occ': 'Livreur occasionnel FAST',
     'slogan1': 'Pas d\'engagement, pas de patron',
@@ -588,7 +620,8 @@ class AppStrings {
     'earnings_preview': 'Gains (aperçu)',
     'no_slots': 'Aucun créneau configuré',
     'staff_check': 'Vérification du staff',
-    'qr_present': 'Présentez ce QR code au membre du staff au comptoir Click & Collect.',
+    'qr_present':
+        'Présentez ce QR code au membre du staff au comptoir Click & Collect.',
     'valid_at': 'Valable chez : {n}',
     'articles': 'Articles',
     'articles_count': '{n} article(s)',
@@ -596,9 +629,12 @@ class AppStrings {
     'qs_preparing': 'En préparation — Venez !',
     'qs_ready': 'Prêt — Récupérez maintenant !',
     'qs_done': 'Récupéré — Bon appétit !',
-    'route_fail': 'Impossible de calculer l\'itinéraire : les coordonnées et l\'adresse du restaurant sont indisponibles.',
-    'gmaps_fail': 'Impossible d\'ouvrir Google Maps. Réessayez dans quelques instants.',
-    'gmaps_unavailable': 'Impossible d\'ouvrir Google Maps. Vérifiez qu\'une application de navigation est disponible.',
+    'route_fail':
+        'Impossible de calculer l\'itinéraire : les coordonnées et l\'adresse du restaurant sont indisponibles.',
+    'gmaps_fail':
+        'Impossible d\'ouvrir Google Maps. Réessayez dans quelques instants.',
+    'gmaps_unavailable':
+        'Impossible d\'ouvrir Google Maps. Vérifiez qu\'une application de navigation est disponible.',
     'allergy_hint': 'ex. Allergie aux noix, sans lactose...',
     'add_cart_price': 'Ajouter au panier • {n} €',
     'video_err': 'Erreur vidéo: {n}',
@@ -623,11 +659,14 @@ class AppStrings {
     'category_lbl': 'Catégorie',
     'prep_normal_min': 'Prép. normal (min)',
     'prep_rush_min': 'Prép. rush (min)',
-    'prep_example': 'Ex. Kebab 8 min, Agneau 15 min normal / 25 min en rush. Vide = délai par défaut du restaurant.',
+    'prep_example':
+        'Ex. Kebab 8 min, Agneau 15 min normal / 25 min en rush. Vide = délai par défaut du restaurant.',
     'create_dish': 'Créer le plat',
     'create_resto_err': 'Erreur lors de la création du restaurant',
-    'accept_terms': 'En continuant, vous acceptez nos conditions générales d\'utilisation et notre politique de confidentialité (RGPD).',
-    'manage_intro': 'Gérez vos commandes en temps réel, activez le Mode Rush, et suivez vos statistiques via votre espace dédié.',
+    'accept_terms':
+        'En continuant, vous acceptez nos conditions générales d\'utilisation et notre politique de confidentialité (RGPD).',
+    'manage_intro':
+        'Gérez vos commandes en temps réel, activez le Mode Rush, et suivez vos statistiques via votre espace dédié.',
     'grow_title': 'Faites grandir votre\nrestaurant avec FAST',
     'manager_name': 'Prénom du gérant',
     'city': 'Ville',
@@ -636,7 +675,8 @@ class AppStrings {
     'cuisine_type': 'Type de cuisine',
     'cuisine_example': 'ex: Française, Japonaise, Italienne',
     'stripe_err': 'Stripe Connect: {n}',
-    'load_fallback': 'Impossible de charger depuis le serveur. Données locales affichées.',
+    'load_fallback':
+        'Impossible de charger depuis le serveur. Données locales affichées.',
     'no_resto_found': 'Aucun restaurant trouvé.',
     'error_colon': 'Erreur: {n}',
     'customization': 'Personnalisation',
@@ -652,9 +692,12 @@ class AppStrings {
     'normal_time': 'Temps Normal',
     'rush_time': 'Temps Mode Rush',
     'stripe_active': 'Stripe Connect actif — paiements activés',
-    'stripe_connected': 'Compte connecté — finalisez l\'activation des paiements',
-    'stripe_required': 'Stripe Connect non configuré — requis pour recevoir les paiements',
-    'preview_notice': 'Ceci est un aperçu de la vitrine que vos clients voient sur l\'application FAST. Modifiez ces informations depuis l\'onglet Paramètres.',
+    'stripe_connected':
+        'Compte connecté — finalisez l\'activation des paiements',
+    'stripe_required':
+        'Stripe Connect non configuré — requis pour recevoir les paiements',
+    'preview_notice':
+        'Ceci est un aperçu de la vitrine que vos clients voient sur l\'application FAST. Modifiez ces informations depuis l\'onglet Paramètres.',
     'my_restaurant': 'Mon Restaurant',
     'preview_of': 'Aperçu — {n}',
     'all_lbl': 'Tout',
@@ -670,7 +713,8 @@ class AppStrings {
     'create_err': 'Erreur de création',
     'creating': 'Création…',
     'create_account': 'Créer le compte',
-    'staff_intro': 'Créez des comptes pour votre équipe : les invités gèrent les ruptures de stock du menu, le personnel accède aussi au tableau des commandes — sans statistiques ni paiements.',
+    'staff_intro':
+        'Créez des comptes pour votre équipe : les invités gèrent les ruptures de stock du menu, le personnel accède aussi au tableau des commandes — sans statistiques ni paiements.',
     'load_err': 'Erreur de chargement',
     'delete_err': 'Erreur de suppression',
     'exporting': 'Export...',
@@ -687,21 +731,27 @@ class AppStrings {
     'stats_range': 'Statistiques restaurant — {n} jours',
     'export_fail': 'Export impossible: {n}',
     'no_ref': 'pas de référence',
-    'no_activity': 'Aucune activité n\'a été enregistrée pour cette période. Essayez une période plus longue.',
+    'no_activity':
+        'Aucune activité n\'a été enregistrée pour cette période. Essayez une période plus longue.',
     'refresh': 'Actualiser',
     'analytics': 'Analytics restaurant',
-    'revenue_note': 'Chiffre d\'affaires basé sur les commandes payées et terminées.',
+    'revenue_note':
+        'Chiffre d\'affaires basé sur les commandes payées et terminées.',
     'dashboard': 'Dashboard Restaurant',
     'wip_title': 'Espace Restaurant en construction',
-    'wip_desc': 'Les fonctionnalités définies dans votre cahier des charges\n(Commandes, Menu, Stats...) arriveront bientôt.',
+    'wip_desc':
+        'Les fonctionnalités définies dans votre cahier des charges\n(Commandes, Menu, Stats...) arriveront bientôt.',
     'err_retry': 'Erreur — réessayez',
     'no_notifs': 'Vous êtes à jour !',
-    'notifs_hint': 'Les notifications sur le statut de vos commandes apparaîtront ici.',
+    'notifs_hint':
+        'Les notifications sur le statut de vos commandes apparaîtront ici.',
     'clear_all': 'Tout effacer',
     'tutor_step': 'Tutoriel étape {a} sur {b}.',
-    'accept_terms_short': 'En continuant, vous acceptez nos conditions générales d\'utilisation.',
+    'accept_terms_short':
+        'En continuant, vous acceptez nos conditions générales d\'utilisation.',
     'soldout': 'Épuiser',
-    'staff_lose_access': '{n} perdra immédiatement l\'accès à l\'espace restaurant.',
+    'staff_lose_access':
+        '{n} perdra immédiatement l\'accès à l\'espace restaurant.',
     'hero_now': ' Maintenant.',
     'theme_interface': 'Thème de l\'interface',
     'active_debit': '👉 ACTIF. Débit : {n} €',
@@ -717,7 +767,8 @@ class AppStrings {
     'payment_confirmed': 'Paiement confirmé !',
     'part_paid_waiting': 'Votre part est payée et attend l\'envoi du groupe.',
     'order_placed_notif': 'Commande passée ! ⚡',
-    'order_registered_at': 'Votre commande Click & Collect chez {n} a été enregistrée.',
+    'order_registered_at':
+        'Votre commande Click & Collect chez {n} a été enregistrée.',
     'review_submitted': 'Avis soumis ! ⭐',
     'send_error': 'Erreur d\'envoi',
     'not_found': 'Ressource non trouvée',
@@ -825,8 +876,7 @@ class AppStrings {
     'occasional': 'Occasional',
     'permanent': 'Regular',
     'occasional_desc': 'Log in freely whenever you want to deliver.',
-    'permanent_desc':
-        'Set regular time slots and pause them when needed.',
+    'permanent_desc': 'Set regular time slots and pause them when needed.',
     'err_email_required': 'Email required',
     'err_email_invalid': 'Invalid email',
     'err_pwd_required': 'Password required',
@@ -896,8 +946,7 @@ class AppStrings {
     'picked_desc':
         'You picked up your order via FAST Click & Collect. Fresh, hot meal in your hands. Enjoy!',
     'ordered_title': 'Order received!',
-    'ordered_desc':
-        'The kitchen is syncing terminals. Start walking now!',
+    'ordered_desc': 'The kitchen is syncing terminals. Start walking now!',
     'cooking_title': 'Our artisans are cooking 🍳',
     'cooking_desc':
         'The kitchen started preparing. They adjust cooking dynamically based on your walking time.',
@@ -973,7 +1022,8 @@ class AppStrings {
     'pwd_updated': 'Password updated',
     'group_unpaid_warn': 'Unpaid members will not be sent to the restaurant.',
     'group_sent_title': 'Order sent together',
-    'group_sent_sub': 'The restaurant prepares all paid shares for a shared pickup.',
+    'group_sent_sub':
+        'The restaurant prepares all paid shares for a shared pickup.',
     'close_invites': 'Close invitations',
     'promo_velvet': 'Code: VELVET5',
     'confirm_cancel': 'Confirm cancellation',
@@ -1086,20 +1136,29 @@ class AppStrings {
     'no_data': 'No data yet',
     'skip_tuto': 'Skip',
     'tuto1_t': 'Manage your orders',
-    'tuto1_d': 'New paid orders land here. Move them from received to preparing, then ready and picked up.',
+    'tuto1_d':
+        'New paid orders land here. Move them from received to preparing, then ready and picked up.',
     'tuto2_t': 'Open Kitchen mode',
-    'tuto2_d': 'Show an operational view designed for prep and keep priority orders in sight.',
+    'tuto2_d':
+        'Show an operational view designed for prep and keep priority orders in sight.',
     'tuto3_t': 'Build your menu',
-    'tuto3_d': 'Add your dishes, prices and photos, then mark an item sold out in one tap when it runs out.',
+    'tuto3_d':
+        'Add your dishes, prices and photos, then mark an item sold out in one tap when it runs out.',
     'tuto4_t': 'One-tap Rush',
-    'tuto4_d': 'The red button activates Rush Mode instantly. Your stats live in the side menu.',
+    'tuto4_d':
+        'The red button activates Rush Mode instantly. Your stats live in the side menu.',
     'tuto5_t': 'Set up your restaurant',
-    'tuto5_d': 'Complete your identity, prep times, contact details and food options.',
+    'tuto5_d':
+        'Complete your identity, prep times, contact details and food options.',
     'tuto6_t': 'Check your storefront',
-    'tuto6_d': 'Preview exactly what customers see. You are ready for your first orders.',
-    'ob1_d': '1. Order from your favourite restaurant\n2. Walk to the restaurant\n3. Pick up your order without queuing',
-    'ob2_d': 'Track your order with GPS.\nKnow exactly when to leave so everything\nis ready when you arrive.',
-    'ob3_d': 'Earn points on every order.\nUnlock FAST Gold status and\nenjoy exclusive benefits!',
+    'tuto6_d':
+        'Preview exactly what customers see. You are ready for your first orders.',
+    'ob1_d':
+        '1. Order from your favourite restaurant\n2. Walk to the restaurant\n3. Pick up your order without queuing',
+    'ob2_d':
+        'Track your order with GPS.\nKnow exactly when to leave so everything\nis ready when you arrive.',
+    'ob3_d':
+        'Earn points on every order.\nUnlock FAST Gold status and\nenjoy exclusive benefits!',
     'next': 'Next',
     'get_started': 'Get started!',
     'view_cart': 'View cart',
@@ -1176,7 +1235,8 @@ class AppStrings {
     'validation_err': 'Validation error',
     'del_my_account': 'Delete my account',
     'edit_field': 'Edit {n}',
-    'del_account_warn': 'Your access, profile and personal data will be deleted. Legally required transaction data will be anonymized. This action is irreversible.',
+    'del_account_warn':
+        'Your access, profile and personal data will be deleted. Legally required transaction data will be anonymized. This action is irreversible.',
     'del_fail': 'Deletion failed. Please retry.',
     'no_points': 'No points yet.\nComplete your first order to earn points!',
     'order_done_id': 'Order picked up · {n}',
@@ -1184,8 +1244,10 @@ class AppStrings {
     'to_next_level': 'Towards {n}',
     'no_addresses': 'No saved addresses',
     'addresses_hint': 'Your favourite delivery addresses will be saved here.',
-    'stripe_secure': 'Your payments are secured by Stripe. No bank card is stored on the app.',
-    'stripe_info': 'Your payment details are entered directly on Stripe\'s secure page at each order.',
+    'stripe_secure':
+        'Your payments are secured by Stripe. No bank card is stored on the app.',
+    'stripe_info':
+        'Your payment details are entered directly on Stripe\'s secure page at each order.',
     'pwd_current': 'Current password',
     'pwd_new': 'New password',
     'pwd_confirm': 'Confirm new one',
@@ -1195,32 +1257,42 @@ class AppStrings {
     'email_change_hint': 'To change your email, go to the Profile tab above.',
     'email_used_for': 'Your email is used for login and order notifications.',
     'terms_intro': 'By using FAST, you accept our terms of service.',
-    'legal_orders': 'Orders are prepared by partner restaurants. Payments are secured by Stripe. You can request account deletion at any time.',
+    'legal_orders':
+        'Orders are prepared by partner restaurants. Payments are secured by Stripe. You can request account deletion at any time.',
     'privacy_data': 'enable ordering and delivery. Your data is never sold.',
-    'data_rights': 'You can modify them or delete your account at any time from this page.',
-    'privacy_collect': 'FAST collects your name, email, phone and location (with your consent) to',
-    'fast_service_desc': 'FAST is a Click & Collect ordering and delivery service for restaurants.',
+    'data_rights':
+        'You can modify them or delete your account at any time from this page.',
+    'privacy_collect':
+        'FAST collects your name, email, phone and location (with your consent) to',
+    'fast_service_desc':
+        'FAST is a Click & Collect ordering and delivery service for restaurants.',
     'review_prompt': 'How was your experience?',
     'no_history': 'No order history',
-    'history_hint': 'Once you pick up Click & Collect orders, the history will appear here.',
+    'history_hint':
+        'Once you pick up Click & Collect orders, the history will appear here.',
     'ordered_on': 'Ordered on: {n}',
     'total_paid': 'Total paid',
     'review_sent_ok': 'Review sent successfully!',
     'submit_review': 'Submit my review',
-    'cancel_policy_intro': 'At FAST, our cancellation policy is transparent and simple. No fine print:',
+    'cancel_policy_intro':
+        'At FAST, our cancellation policy is transparent and simple. No fine print:',
     'cancel_case1': 'Case 1: Cancellation before preparation',
-    'cancel_case1_desc': 'Full refund (minus the €1.50 service fee used for processing).',
+    'cancel_case1_desc':
+        'Full refund (minus the €1.50 service fee used for processing).',
     'cancel_case2': 'Case 2: Cancellation after preparation',
-    'cancel_case2_desc': 'Full charge applied. The kitchen already used the fresh ingredients for your meal.',
+    'cancel_case2_desc':
+        'Full charge applied. The kitchen already used the fresh ingredients for your meal.',
     'cancel_policy': 'Cancellation policy',
     'picked_up_excl': 'Picked up!',
-    'group_share': 'Individual share of group {n}\nYou only pay for your items.',
+    'group_share':
+        'Individual share of group {n}\nYou only pay for your items.',
     'asap': 'ASAP ({n}m)',
     'no_position': 'Unable to get your position.',
     'geo_error': 'Geolocation error.',
     'address_lbl': 'Address',
     'payment_details': 'PAYMENT DETAILS',
-    'bank_info': 'Card details are entered directly with Stripe. FAST never stores card numbers.',
+    'bank_info':
+        'Card details are entered directly with Stripe. FAST never stores card numbers.',
     'securing_tokens': 'Securing authorization tokens...',
     'addr_required': 'Address required',
     'addr_enter': 'Enter a delivery address.',
@@ -1230,7 +1302,8 @@ class AppStrings {
     'payment_fail': 'Payment failed',
     'payment_unconfirmed': 'Payment not confirmed',
     'finish_stripe': 'Finish the Stripe payment then retry.',
-    'cart_empty_hint': 'Add some tasty dishes from a local restaurant to order!',
+    'cart_empty_hint':
+        'Add some tasty dishes from a local restaurant to order!',
     'addr_example': '12 Example St, 75001 Paris',
     'group_invite': 'FAST group invitation',
     'copy_invite': 'Copy invitation',
@@ -1265,7 +1338,8 @@ class AppStrings {
     'dest_line': 'Dest: {d} ({dist})',
     'updating_route': 'Updating route...',
     'unknown_dest': 'Unknown destination',
-    'earnings_credited': 'Earnings credited: +{n} €.\nThanks for this local delivery!',
+    'earnings_credited':
+        'Earnings credited: +{n} €.\nThanks for this local delivery!',
     'driver_perm': 'FAST permanent driver',
     'driver_occ': 'FAST casual driver',
     'slogan1': 'No commitment, no boss',
@@ -1280,7 +1354,8 @@ class AppStrings {
     'earnings_preview': 'Earnings (preview)',
     'no_slots': 'No time slot configured',
     'staff_check': 'Staff verification',
-    'qr_present': 'Show this QR code to a staff member at the Click & Collect counter.',
+    'qr_present':
+        'Show this QR code to a staff member at the Click & Collect counter.',
     'valid_at': 'Valid at: {n}',
     'articles': 'Items',
     'articles_count': '{n} item(s)',
@@ -1288,9 +1363,11 @@ class AppStrings {
     'qs_preparing': 'Preparing — Come over!',
     'qs_ready': 'Ready — Pick it up now!',
     'qs_done': 'Picked up — Enjoy!',
-    'route_fail': 'Unable to compute the route: restaurant coordinates and address are unavailable.',
+    'route_fail':
+        'Unable to compute the route: restaurant coordinates and address are unavailable.',
     'gmaps_fail': 'Unable to open Google Maps. Try again in a few moments.',
-    'gmaps_unavailable': 'Unable to open Google Maps. Check that a navigation app is available.',
+    'gmaps_unavailable':
+        'Unable to open Google Maps. Check that a navigation app is available.',
     'allergy_hint': 'e.g. Nut allergy, no lactose...',
     'add_cart_price': 'Add to cart • {n} €',
     'video_err': 'Video error: {n}',
@@ -1315,11 +1392,14 @@ class AppStrings {
     'category_lbl': 'Category',
     'prep_normal_min': 'Normal prep (min)',
     'prep_rush_min': 'Rush prep (min)',
-    'prep_example': 'E.g. Kebab 8 min, Lamb 15 min normal / 25 min in rush. Empty = restaurant default time.',
+    'prep_example':
+        'E.g. Kebab 8 min, Lamb 15 min normal / 25 min in rush. Empty = restaurant default time.',
     'create_dish': 'Create the dish',
     'create_resto_err': 'Error creating the restaurant',
-    'accept_terms': 'By continuing, you accept our terms of service and privacy policy (GDPR).',
-    'manage_intro': 'Manage your orders in real time, activate Rush Mode, and track your stats in your dedicated space.',
+    'accept_terms':
+        'By continuing, you accept our terms of service and privacy policy (GDPR).',
+    'manage_intro':
+        'Manage your orders in real time, activate Rush Mode, and track your stats in your dedicated space.',
     'grow_title': 'Grow your\nrestaurant with FAST',
     'manager_name': 'Manager first name',
     'city': 'City',
@@ -1345,14 +1425,17 @@ class AppStrings {
     'rush_time': 'Rush Mode Time',
     'stripe_active': 'Stripe Connect active — payments enabled',
     'stripe_connected': 'Account connected — finish enabling payments',
-    'stripe_required': 'Stripe Connect not configured — required to receive payments',
-    'preview_notice': 'This is a preview of the storefront your customers see on the FAST app. Edit this info in the Settings tab.',
+    'stripe_required':
+        'Stripe Connect not configured — required to receive payments',
+    'preview_notice':
+        'This is a preview of the storefront your customers see on the FAST app. Edit this info in the Settings tab.',
     'my_restaurant': 'My Restaurant',
     'preview_of': 'Preview — {n}',
     'all_lbl': 'All',
     'dispo': 'Available',
     'client_near': 'Customer ~{n} min away',
-    'staff_access': 'This account gives limited access to the restaurant space.',
+    'staff_access':
+        'This account gives limited access to the restaurant space.',
     'name_example': 'Name (e.g. Karim)',
     'cook': 'Cook',
     'board_only': 'Board only',
@@ -1362,7 +1445,8 @@ class AppStrings {
     'create_err': 'Creation error',
     'creating': 'Creating…',
     'create_account': 'Create the account',
-    'staff_intro': 'Create accounts for your team: guests manage menu sold-outs, staff also get the orders board — no stats, no payments.',
+    'staff_intro':
+        'Create accounts for your team: guests manage menu sold-outs, staff also get the orders board — no stats, no payments.',
     'load_err': 'Loading error',
     'delete_err': 'Deletion error',
     'exporting': 'Exporting...',
@@ -1385,7 +1469,8 @@ class AppStrings {
     'revenue_note': 'Revenue based on paid and completed orders.',
     'dashboard': 'Restaurant Dashboard',
     'wip_title': 'Restaurant space under construction',
-    'wip_desc': 'The features defined in your spec\n(Orders, Menu, Stats...) are coming soon.',
+    'wip_desc':
+        'The features defined in your spec\n(Orders, Menu, Stats...) are coming soon.',
     'err_retry': 'Error — please retry',
     'no_notifs': 'You\'re all caught up!',
     'notifs_hint': 'Notifications about your order status will appear here.',
@@ -1393,7 +1478,8 @@ class AppStrings {
     'tutor_step': 'Tutorial step {a} of {b}.',
     'accept_terms_short': 'By continuing, you accept our terms of service.',
     'soldout': 'Sold out',
-    'staff_lose_access': '{n} will immediately lose access to the restaurant space.',
+    'staff_lose_access':
+        '{n} will immediately lose access to the restaurant space.',
     'hero_now': ' Now.',
     'theme_interface': 'Interface theme',
     'active_debit': '👉 ACTIVE. Debit: €{n}',
@@ -1407,9 +1493,11 @@ class AppStrings {
     'surprise_msg': 'We picked {n} for you!',
     'added_cart_msg': '{n}x {item} added.',
     'payment_confirmed': 'Payment confirmed!',
-    'part_paid_waiting': 'Your share is paid and waiting for the group to send.',
+    'part_paid_waiting':
+        'Your share is paid and waiting for the group to send.',
     'order_placed_notif': 'Order placed! ⚡',
-    'order_registered_at': 'Your Click & Collect order at {n} has been registered.',
+    'order_registered_at':
+        'Your Click & Collect order at {n} has been registered.',
     'review_submitted': 'Review submitted! ⭐',
     'send_error': 'Send error',
     'not_found': 'Resource not found',
@@ -1517,8 +1605,7 @@ class AppStrings {
     'occasional': 'Dönemsel',
     'permanent': 'Sürekli',
     'occasional_desc': 'İstediğiniz zaman giriş yapıp teslimat yapın.',
-    'permanent_desc':
-        'Düzenli saatler belirleyin, gerektiğinde duraklatın.',
+    'permanent_desc': 'Düzenli saatler belirleyin, gerektiğinde duraklatın.',
     'err_email_required': 'E-posta gerekli',
     'err_email_invalid': 'Geçersiz e-posta',
     'err_pwd_required': 'Şifre gerekli',
@@ -1557,8 +1644,7 @@ class AppStrings {
     'tracking_tab': 'Canlı takip',
     'history_tab': 'Geçmiş',
     'no_tracking': 'Aktif takip yok',
-    'no_tracking_sub':
-        'Yürüme takibini başlatmak için sepetten sipariş verin!',
+    'no_tracking_sub': 'Yürüme takibini başlatmak için sepetten sipariş verin!',
     'discover': 'Restoranları keşfet',
     'tracking_delivery': 'TESLİMAT TAKİBİ',
     'tracking_walk': 'GPS TAKİBİ — RESTORANA YÜRÜYÜŞ',
@@ -1649,8 +1735,7 @@ class AppStrings {
     'copied': 'Davet panoya kopyalandı.',
     'generic_error': 'Bir hata oluştu. Tekrar deneyin.',
     'no_resto_avail': 'Müsait restoran yok.',
-    'share_msg':
-        'FAST uygulamasında {n} koduyla FAST Gel Al siparişime katıl!',
+    'share_msg': 'FAST uygulamasında {n} koduyla FAST Gel Al siparişime katıl!',
     'walk_sub': 'Hazırlık yürüme temponuza göre senkronize.',
     'delivery_zone': '{n} km bölgesi',
     'confirm': 'Onayla',
@@ -1664,7 +1749,8 @@ class AppStrings {
     'pwd_updated': 'Şifre güncellendi',
     'group_unpaid_warn': 'Ödeme yapmayan üyeler restorana gönderilmez.',
     'group_sent_title': 'Sipariş birlikte gönderildi',
-    'group_sent_sub': 'Restoran, ortak teslim alım için ödenen tüm payları hazırlar.',
+    'group_sent_sub':
+        'Restoran, ortak teslim alım için ödenen tüm payları hazırlar.',
     'close_invites': 'Davetleri kapat',
     'promo_velvet': 'Kod: VELVET5',
     'confirm_cancel': 'İptali onayla',
@@ -1675,7 +1761,8 @@ class AppStrings {
     'nav_stats': 'İstat.',
     'nav_profile': 'Profil',
     'kitchen_btn': 'Mutfak',
-    'rush_banner': '🔥 YOĞUN MOD AKTİF — Müşteriler uzun bekleme konusunda bilgilendirildi',
+    'rush_banner':
+        '🔥 YOĞUN MOD AKTİF — Müşteriler uzun bekleme konusunda bilgilendirildi',
     'team_guests': 'Ekip ve misafir hesapları',
     'add_cook': 'Aşçı ekle',
     'no_cooks': 'Aşçı hesabı yok',
@@ -1705,7 +1792,8 @@ class AppStrings {
     'qty_sold_sub': 'Dönem içinde satılan miktarlar',
     'loading_stats': 'İstatistikler yükleniyor',
     'sched_perm': 'Kalıcı zaman dilimleri',
-    'sched_sub': 'Her zamanki günlerinizi seçin. Hizmeti istediğiniz zaman duraklatabilirsiniz.',
+    'sched_sub':
+        'Her zamanki günlerinizi seçin. Hizmeti istediğiniz zaman duraklatabilirsiniz.',
     'slot_start': 'Başlangıç',
     'save_slots': 'Zaman dilimlerini kaydet',
     'slots_count': '{n} zaman dilimi',
@@ -1777,20 +1865,29 @@ class AppStrings {
     'no_data': 'Henüz veri yok',
     'skip_tuto': 'Atla',
     'tuto1_t': 'Siparişlerinizi yönetin',
-    'tuto1_d': 'Yeni ödenen siparişler buraya gelir. Alındı → hazırlanıyor → hazır → teslim edildi olarak ilerletin.',
+    'tuto1_d':
+        'Yeni ödenen siparişler buraya gelir. Alındı → hazırlanıyor → hazır → teslim edildi olarak ilerletin.',
     'tuto2_t': 'Mutfak modunu açın',
-    'tuto2_d': 'Hazırlık için tasarlanmış operasyonel görünümü açın ve öncelikli siparişleri göz önünde tutun.',
+    'tuto2_d':
+        'Hazırlık için tasarlanmış operasyonel görünümü açın ve öncelikli siparişleri göz önünde tutun.',
     'tuto3_t': 'Menünüzü oluşturun',
-    'tuto3_d': 'Yemeklerinizi, fiyatlarınızı ve fotoğraflarınızı ekleyin; bir ürün bittiğinde tek dokunuşla tükendi işaretleyin.',
+    'tuto3_d':
+        'Yemeklerinizi, fiyatlarınızı ve fotoğraflarınızı ekleyin; bir ürün bittiğinde tek dokunuşla tükendi işaretleyin.',
     'tuto4_t': 'Tek dokunuşla Rush',
-    'tuto4_d': 'Kırmızı buton Rush Modu\'nu anında açar. İstatistikleriniz yan menüde.',
+    'tuto4_d':
+        'Kırmızı buton Rush Modu\'nu anında açar. İstatistikleriniz yan menüde.',
     'tuto5_t': 'Restoranınızı kurun',
-    'tuto5_d': 'Kimliğinizi, hazırlık sürelerinizi, iletişim bilgilerinizi ve gıda seçeneklerinizi tamamlayın.',
+    'tuto5_d':
+        'Kimliğinizi, hazırlık sürelerinizi, iletişim bilgilerinizi ve gıda seçeneklerinizi tamamlayın.',
     'tuto6_t': 'Vitrininizi kontrol edin',
-    'tuto6_d': 'Müşterilerin gördüğünü birebir önizleyin. İlk siparişlerinizi almaya hazırsınız.',
-    'ob1_d': '1. Favori restoranınızdan sipariş verin\n2. Restorana yürüyün\n3. Sıra beklemeden siparişinizi alın',
-    'ob2_d': 'Siparişinizi GPS ile takip edin.\nHer şeyin siz varınca hazır olması için\nne zaman çıkacağınızı tam olarak bilin.',
-    'ob3_d': 'Her siparişte puan toplayın.\nFAST Gold statüsünü açın ve\nözel avantajlardan yararlanın!',
+    'tuto6_d':
+        'Müşterilerin gördüğünü birebir önizleyin. İlk siparişlerinizi almaya hazırsınız.',
+    'ob1_d':
+        '1. Favori restoranınızdan sipariş verin\n2. Restorana yürüyün\n3. Sıra beklemeden siparişinizi alın',
+    'ob2_d':
+        'Siparişinizi GPS ile takip edin.\nHer şeyin siz varınca hazır olması için\nne zaman çıkacağınızı tam olarak bilin.',
+    'ob3_d':
+        'Her siparişte puan toplayın.\nFAST Gold statüsünü açın ve\nözel avantajlardan yararlanın!',
     'next': 'İleri',
     'get_started': 'Başla!',
     'view_cart': 'Sepeti görüntüle',
@@ -1867,7 +1964,8 @@ class AppStrings {
     'validation_err': 'Doğrulama hatası',
     'del_my_account': 'Hesabımı sil',
     'edit_field': '{n} düzenle',
-    'del_account_warn': 'Erişiminiz, profiliniz ve kişisel verileriniz silinecek. Yasal olarak gerekli işlem verileri anonimleştirilecek. Bu işlem geri alınamaz.',
+    'del_account_warn':
+        'Erişiminiz, profiliniz ve kişisel verileriniz silinecek. Yasal olarak gerekli işlem verileri anonimleştirilecek. Bu işlem geri alınamaz.',
     'del_fail': 'Silme başarısız. Tekrar deneyin.',
     'no_points': 'Henüz puan yok.\nİlk siparişinizi tamamlayarak puan kazanın!',
     'order_done_id': 'Sipariş teslim alındı · {n}',
@@ -1875,43 +1973,59 @@ class AppStrings {
     'to_next_level': '{n} seviyesine',
     'no_addresses': 'Kayıtlı adres yok',
     'addresses_hint': 'Favori teslimat adresleriniz buraya kaydedilecek.',
-    'stripe_secure': 'Ödemeleriniz Stripe ile güvence altındadır. Uygulamada banka kartı saklanmaz.',
-    'stripe_info': 'Ödeme bilgileriniz her siparişte doğrudan Stripe\'ın güvenli sayfasına girilir.',
+    'stripe_secure':
+        'Ödemeleriniz Stripe ile güvence altındadır. Uygulamada banka kartı saklanmaz.',
+    'stripe_info':
+        'Ödeme bilgileriniz her siparişte doğrudan Stripe\'ın güvenli sayfasına girilir.',
     'pwd_current': 'Mevcut şifre',
     'pwd_new': 'Yeni şifre',
     'pwd_confirm': 'Yenisini onayla',
     'pwd_rules': 'En az 8 karakter, 1 büyük harf, 1 rakam.',
     'pwd_mismatch': 'Şifreler eşleşmiyor.',
     'email_assoc': 'İlişkili e-posta adresi:',
-    'email_change_hint': 'E-postanızı değiştirmek için yukarıdaki Profil sekmesine gidin.',
-    'email_used_for': 'E-postanız giriş ve sipariş bildirimleri için kullanılır.',
-    'terms_intro': 'FAST\'i kullanarak kullanım koşullarımızı kabul etmiş olursunuz.',
-    'legal_orders': 'Siparişler partner restoranlar tarafından hazırlanır. Ödemeler Stripe ile güvence altındadır. Hesabınızın silinmesini istediğiniz zaman talep edebilirsiniz.',
-    'privacy_data': 'sipariş ve teslimatı sağlamak için. Verileriniz asla satılmaz.',
-    'data_rights': 'Bunları değiştirebilir veya hesabınızı bu sayfadan istediğiniz zaman silebilirsiniz.',
-    'privacy_collect': 'FAST, adınızı, e-postanızı, telefonunuzu ve konumunuzu (izninizle) toplar —',
-    'fast_service_desc': 'FAST, restoranlar için bir Click & Collect sipariş ve teslimat hizmetidir.',
+    'email_change_hint':
+        'E-postanızı değiştirmek için yukarıdaki Profil sekmesine gidin.',
+    'email_used_for':
+        'E-postanız giriş ve sipariş bildirimleri için kullanılır.',
+    'terms_intro':
+        'FAST\'i kullanarak kullanım koşullarımızı kabul etmiş olursunuz.',
+    'legal_orders':
+        'Siparişler partner restoranlar tarafından hazırlanır. Ödemeler Stripe ile güvence altındadır. Hesabınızın silinmesini istediğiniz zaman talep edebilirsiniz.',
+    'privacy_data':
+        'sipariş ve teslimatı sağlamak için. Verileriniz asla satılmaz.',
+    'data_rights':
+        'Bunları değiştirebilir veya hesabınızı bu sayfadan istediğiniz zaman silebilirsiniz.',
+    'privacy_collect':
+        'FAST, adınızı, e-postanızı, telefonunuzu ve konumunuzu (izninizle) toplar —',
+    'fast_service_desc':
+        'FAST, restoranlar için bir Click & Collect sipariş ve teslimat hizmetidir.',
     'review_prompt': 'Deneyiminiz nasıldı?',
     'no_history': 'Sipariş geçmişi yok',
-    'history_hint': 'Click & Collect siparişlerinizi teslim aldığınızda geçmiş burada görünecek.',
+    'history_hint':
+        'Click & Collect siparişlerinizi teslim aldığınızda geçmiş burada görünecek.',
     'ordered_on': 'Sipariş tarihi: {n}',
     'total_paid': 'Ödenen toplam',
     'review_sent_ok': 'Yorum başarıyla gönderildi!',
     'submit_review': 'Yorumumu gönder',
-    'cancel_policy_intro': 'FAST\'te iptal politikamız şeffaf ve basittir. Küçük yazı yok:',
+    'cancel_policy_intro':
+        'FAST\'te iptal politikamız şeffaf ve basittir. Küçük yazı yok:',
     'cancel_case1': 'Durum 1: Hazırlık öncesi iptal',
-    'cancel_case1_desc': 'Tam iade (işlem için kullanılan 1,50 € hizmet bedeli hariç).',
+    'cancel_case1_desc':
+        'Tam iade (işlem için kullanılan 1,50 € hizmet bedeli hariç).',
     'cancel_case2': 'Durum 2: Hazırlık sonrası iptal',
-    'cancel_case2_desc': 'Tam ücret uygulanır. Mutfak yemeğiniz için taze malzemeleri zaten kullandı.',
+    'cancel_case2_desc':
+        'Tam ücret uygulanır. Mutfak yemeğiniz için taze malzemeleri zaten kullandı.',
     'cancel_policy': 'İptal politikası',
     'picked_up_excl': 'Teslim alındı!',
-    'group_share': '{n} grubu bireysel payı\nYalnızca kendi ürünlerinizi ödersiniz.',
+    'group_share':
+        '{n} grubu bireysel payı\nYalnızca kendi ürünlerinizi ödersiniz.',
     'asap': 'EN KISA SÜREDE ({n}d)',
     'no_position': 'Konumunuz alınamadı.',
     'geo_error': 'Konum hatası.',
     'address_lbl': 'Adres',
     'payment_details': 'ÖDEME DETAYLARI',
-    'bank_info': 'Banka bilgileri doğrudan Stripe\'da girilir. FAST kart numaralarını asla saklamaz.',
+    'bank_info':
+        'Banka bilgileri doğrudan Stripe\'da girilir. FAST kart numaralarını asla saklamaz.',
     'securing_tokens': 'Yetkilendirme belirteçleri güvenceye alınıyor...',
     'addr_required': 'Adres gerekli',
     'addr_enter': 'Bir teslimat adresi girin.',
@@ -1921,7 +2035,8 @@ class AppStrings {
     'payment_fail': 'Ödeme yapılamadı',
     'payment_unconfirmed': 'Ödeme onaylanmadı',
     'finish_stripe': 'Stripe ödemesini tamamlayıp tekrar deneyin.',
-    'cart_empty_hint': 'Sipariş vermek için yerel bir restorandan lezzetli yemekler ekleyin!',
+    'cart_empty_hint':
+        'Sipariş vermek için yerel bir restorandan lezzetli yemekler ekleyin!',
     'addr_example': '12 Örnek Cadde, 75001 Paris',
     'group_invite': 'FAST grup daveti',
     'copy_invite': 'Daveti kopyala',
@@ -1937,7 +2052,8 @@ class AppStrings {
     'paying': 'Ödeme sürüyor',
     'compose_part': 'Payını oluşturuyor',
     'no_cuisine': 'Mutfak bulunamadı',
-    'widen_radius': 'Arama yarıçapını genişletmeyi veya filtreleri değiştirmeyi deneyin.',
+    'widen_radius':
+        'Arama yarıçapını genişletmeyi veya filtreleri değiştirmeyi deneyin.',
     'slot_launch': 'Slot makinesi başlatılıyor...',
     'search_suggest': 'Burger, pizza, wrap, salata vb. aramayı deneyin.',
     'from_resto': 'Gönderen: {n}',
@@ -1956,7 +2072,8 @@ class AppStrings {
     'dest_line': 'Hedef: {d} ({dist})',
     'updating_route': 'Rota güncelleniyor...',
     'unknown_dest': 'Bilinmeyen hedef',
-    'earnings_credited': 'Kazanç aktarıldı: +{n} €.\nBu yakın teslimat için teşekkürler!',
+    'earnings_credited':
+        'Kazanç aktarıldı: +{n} €.\nBu yakın teslimat için teşekkürler!',
     'driver_perm': 'FAST kadrolu kurye',
     'driver_occ': 'FAST serbest kurye',
     'slogan1': 'Bağlantı yok, patron yok',
@@ -1979,9 +2096,11 @@ class AppStrings {
     'qs_preparing': 'Hazırlanıyor — Gelin!',
     'qs_ready': 'Hazır — Şimdi teslim alın!',
     'qs_done': 'Teslim alındı — Afiyet olsun!',
-    'route_fail': 'Rota hesaplanamadı: restoran koordinatları ve adresi mevcut değil.',
+    'route_fail':
+        'Rota hesaplanamadı: restoran koordinatları ve adresi mevcut değil.',
     'gmaps_fail': 'Google Maps açılamadı. Birazdan tekrar deneyin.',
-    'gmaps_unavailable': 'Google Maps açılamadı. Bir navigasyon uygulamasının yüklü olduğundan emin olun.',
+    'gmaps_unavailable':
+        'Google Maps açılamadı. Bir navigasyon uygulamasının yüklü olduğundan emin olun.',
     'allergy_hint': 'örn. Fındık alerjisi, laktozsuz...',
     'add_cart_price': 'Sepete ekle • {n} €',
     'video_err': 'Video hatası: {n}',
@@ -2006,11 +2125,14 @@ class AppStrings {
     'category_lbl': 'Kategori',
     'prep_normal_min': 'Normal hazırlık (dk)',
     'prep_rush_min': 'Yoğun hazırlık (dk)',
-    'prep_example': 'Örn. Kebap 8 dk, Kuzu 15 dk normal / 25 dk yoğunlukta. Boş = restoran varsayılan süresi.',
+    'prep_example':
+        'Örn. Kebap 8 dk, Kuzu 15 dk normal / 25 dk yoğunlukta. Boş = restoran varsayılan süresi.',
     'create_dish': 'Yemeği oluştur',
     'create_resto_err': 'Restoran oluşturulurken hata',
-    'accept_terms': 'Devam ederek kullanım koşullarımızı ve gizlilik politikamızı (GDPR) kabul etmiş olursunuz.',
-    'manage_intro': 'Siparişlerinizi gerçek zamanlı yönetin, Rush Modu\'nu etkinleştirin ve istatistiklerinizi özel alanınızdan takip edin.',
+    'accept_terms':
+        'Devam ederek kullanım koşullarımızı ve gizlilik politikamızı (GDPR) kabul etmiş olursunuz.',
+    'manage_intro':
+        'Siparişlerinizi gerçek zamanlı yönetin, Rush Modu\'nu etkinleştirin ve istatistiklerinizi özel alanınızdan takip edin.',
     'grow_title': 'FAST ile restoranınızı\nbüyütün',
     'manager_name': 'Yönetici adı',
     'city': 'Şehir',
@@ -2037,7 +2159,8 @@ class AppStrings {
     'stripe_active': 'Stripe Connect aktif — ödemeler açık',
     'stripe_connected': 'Hesap bağlandı — ödeme aktivasyonunu tamamlayın',
     'stripe_required': 'Stripe Connect ayarlanmadı — ödeme almak için gerekli',
-    'preview_notice': 'Bu, müşterilerinizin FAST uygulamasında gördüğü vitrinin önizlemesidir. Bu bilgileri Ayarlar sekmesinden düzenleyin.',
+    'preview_notice':
+        'Bu, müşterilerinizin FAST uygulamasında gördüğü vitrinin önizlemesidir. Bu bilgileri Ayarlar sekmesinden düzenleyin.',
     'my_restaurant': 'Restoranım',
     'preview_of': 'Önizleme — {n}',
     'all_lbl': 'Tümü',
@@ -2053,7 +2176,8 @@ class AppStrings {
     'create_err': 'Oluşturma hatası',
     'creating': 'Oluşturuluyor…',
     'create_account': 'Hesabı oluştur',
-    'staff_intro': 'Ekibiniz için hesaplar oluşturun: misafirler menüdeki tükenen ürünleri yönetir, personel ayrıca sipariş paneline erişir — istatistik veya ödeme yok.',
+    'staff_intro':
+        'Ekibiniz için hesaplar oluşturun: misafirler menüdeki tükenen ürünleri yönetir, personel ayrıca sipariş paneline erişir — istatistik veya ödeme yok.',
     'load_err': 'Yükleme hatası',
     'delete_err': 'Silme hatası',
     'exporting': 'Dışa aktarılıyor...',
@@ -2070,19 +2194,22 @@ class AppStrings {
     'stats_range': 'Restoran istatistikleri — {n} gün',
     'export_fail': 'Dışa aktarma başarısız: {n}',
     'no_ref': 'referans yok',
-    'no_activity': 'Bu dönem için aktivite kaydedilmedi. Daha uzun bir dönem deneyin.',
+    'no_activity':
+        'Bu dönem için aktivite kaydedilmedi. Daha uzun bir dönem deneyin.',
     'refresh': 'Yenile',
     'analytics': 'Restoran analitiği',
     'revenue_note': 'Ödenen ve tamamlanan siparişlere dayalı ciro.',
     'dashboard': 'Restoran Paneli',
     'wip_title': 'Restoran alanı yapım aşamasında',
-    'wip_desc': 'Tanımlanan özellikler\n(Siparişler, Menü, İstatistikler...) yakında geliyor.',
+    'wip_desc':
+        'Tanımlanan özellikler\n(Siparişler, Menü, İstatistikler...) yakında geliyor.',
     'err_retry': 'Hata — tekrar deneyin',
     'no_notifs': 'Her şey güncel!',
     'notifs_hint': 'Sipariş durumunuzla ilgili bildirimler burada görünecek.',
     'clear_all': 'Tümünü temizle',
     'tutor_step': 'Eğitim adımı {a}/{b}.',
-    'accept_terms_short': 'Devam ederek kullanım koşullarımızı kabul edersiniz.',
+    'accept_terms_short':
+        'Devam ederek kullanım koşullarımızı kabul edersiniz.',
     'soldout': 'Tükendi',
     'staff_lose_access': '{n} restoran alanı erişimini hemen kaybedecek.',
     'hero_now': ' Şimdi.',
@@ -2100,7 +2227,8 @@ class AppStrings {
     'payment_confirmed': 'Ödeme onaylandı!',
     'part_paid_waiting': 'Payınız ödendi ve grubun göndermesi bekleniyor.',
     'order_placed_notif': 'Sipariş verildi! ⚡',
-    'order_registered_at': '{n} üzerinden Click & Collect siparişiniz kaydedildi.',
+    'order_registered_at':
+        '{n} üzerinden Click & Collect siparişiniz kaydedildi.',
     'review_submitted': 'Değerlendirme gönderildi! ⭐',
     'send_error': 'Gönderme hatası',
     'not_found': 'Kaynak bulunamadı',
@@ -2278,8 +2406,7 @@ class AppStrings {
     'ordered_title': 'تم تسجيل الطلب!',
     'ordered_desc': 'المطبخ يزامن الأجهزة. ابدأ المشي الآن!',
     'cooking_title': 'طهاتنا يطبخون 🍳',
-    'cooking_desc':
-        'بدأ المطبخ التحضير. يعدّلون الطهي حسب مدة مشيك.',
+    'cooking_desc': 'بدأ المطبخ التحضير. يعدّلون الطهي حسب مدة مشيك.',
     'ready_title': 'وجبتك الساخنة جاهزة! 🔥',
     'ready_desc':
         'وضع المطبخ وجبتك على كاونتر الاستلام. أظهر QR للموظفين لتأكيد الاستلام.',
@@ -2464,20 +2591,27 @@ class AppStrings {
     'no_data': 'لا توجد بيانات بعد',
     'skip_tuto': 'تخطي',
     'tuto1_t': 'أدر طلباتك',
-    'tuto1_d': 'الطلبات الجديدة المدفوعة تصل هنا. انقلها من مستلمة إلى قيد التحضير ثم جاهزة ومستلمة.',
+    'tuto1_d':
+        'الطلبات الجديدة المدفوعة تصل هنا. انقلها من مستلمة إلى قيد التحضير ثم جاهزة ومستلمة.',
     'tuto2_t': 'افتح وضع المطبخ',
-    'tuto2_d': 'اعرض واجهة تشغيلية مصممة للتحضير وأبقِ الطلبات ذات الأولوية أمامك.',
+    'tuto2_d':
+        'اعرض واجهة تشغيلية مصممة للتحضير وأبقِ الطلبات ذات الأولوية أمامك.',
     'tuto3_t': 'أنشئ قائمتك',
-    'tuto3_d': 'أضف أطباقك وأسعارك وصورك، ثم اجعل صنفًا غير متاح بلمسة واحدة عند نفاده.',
+    'tuto3_d':
+        'أضف أطباقك وأسعارك وصورك، ثم اجعل صنفًا غير متاح بلمسة واحدة عند نفاده.',
     'tuto4_t': 'وضع الذروة بلمسة',
-    'tuto4_d': 'الزر الأحمر يفعّل وضع الذروة فورًا. إحصائياتك في القائمة الجانبية.',
+    'tuto4_d':
+        'الزر الأحمر يفعّل وضع الذروة فورًا. إحصائياتك في القائمة الجانبية.',
     'tuto5_t': 'أعدّ مطعمك',
     'tuto5_d': 'أكمل هويتك وأوقات التحضير وبيانات الاتصال وخيارات الطعام.',
     'tuto6_t': 'تحقق من واجهتك',
     'tuto6_d': 'عاين تمامًا ما يراه العملاء. أنت جاهز لاستقبال أولى الطلبات.',
-    'ob1_d': '1. اطلب من مطعمك المفضل\n2. امشِ إلى المطعم\n3. استلم طلبك دون انتظار',
-    'ob2_d': 'تتبع طلبك عبر GPS.\nاعرف بالضبط متى تنطلق ليكون كل شيء\nجاهزًا عند وصولك.',
-    'ob3_d': 'اكسب نقاطًا مع كل طلب.\nافتح حالة FAST Gold واستمتع\nبمزايا حصرية!',
+    'ob1_d':
+        '1. اطلب من مطعمك المفضل\n2. امشِ إلى المطعم\n3. استلم طلبك دون انتظار',
+    'ob2_d':
+        'تتبع طلبك عبر GPS.\nاعرف بالضبط متى تنطلق ليكون كل شيء\nجاهزًا عند وصولك.',
+    'ob3_d':
+        'اكسب نقاطًا مع كل طلب.\nافتح حالة FAST Gold واستمتع\nبمزايا حصرية!',
     'next': 'التالي',
     'get_started': 'ابدأ!',
     'view_cart': 'عرض السلة',
@@ -2528,7 +2662,8 @@ class AppStrings {
     'diet_keto': 'كيتو',
     'diet_dairyfree': 'بدون لاكتوز',
     'days_csv': 'إثنين|ثلاثاء|أربعاء|خميس|جمعة|سبت|أحد',
-    'months_csv': 'يناير|فبراير|مارس|أبريل|مايو|يونيو|يوليو|أغسطس|سبتمبر|أكتوبر|نوفمبر|ديسمبر',
+    'months_csv':
+        'يناير|فبراير|مارس|أبريل|مايو|يونيو|يوليو|أغسطس|سبتمبر|أكتوبر|نوفمبر|ديسمبر',
     'ost_placed': 'تم الطلب',
     'ost_preparing': 'قيد التحضير',
     'ost_ready': 'جاهز للاستلام',
@@ -2554,7 +2689,8 @@ class AppStrings {
     'validation_err': 'خطأ في التحقق',
     'del_my_account': 'حذف حسابي',
     'edit_field': 'تعديل {n}',
-    'del_account_warn': 'سيتم حذف وصولك وملفك الشخصي وبياناتك الشخصية. سيتم إخفاء هوية بيانات المعاملات المطلوبة قانونًا. هذا الإجراء لا رجعة فيه.',
+    'del_account_warn':
+        'سيتم حذف وصولك وملفك الشخصي وبياناتك الشخصية. سيتم إخفاء هوية بيانات المعاملات المطلوبة قانونًا. هذا الإجراء لا رجعة فيه.',
     'del_fail': 'فشل الحذف. حاول مجددًا.',
     'no_points': 'لا نقاط بعد.\nأكمل طلبك الأول لكسب النقاط!',
     'order_done_id': 'تم استلام الطلب · {n}',
@@ -2562,18 +2698,23 @@ class AppStrings {
     'to_next_level': 'نحو {n}',
     'no_addresses': 'لا عناوين محفوظة',
     'addresses_hint': 'سيتم حفظ عناوين التوصيل المفضلة هنا.',
-    'stripe_secure': 'مدفوعاتك مؤمّنة عبر Stripe. لا يتم تخزين أي بطاقة مصرفية على التطبيق.',
-    'stripe_info': 'يتم إدخال بيانات الدفع مباشرة على صفحة Stripe الآمنة عند كل طلب.',
+    'stripe_secure':
+        'مدفوعاتك مؤمّنة عبر Stripe. لا يتم تخزين أي بطاقة مصرفية على التطبيق.',
+    'stripe_info':
+        'يتم إدخال بيانات الدفع مباشرة على صفحة Stripe الآمنة عند كل طلب.',
     'pwd_current': 'كلمة المرور الحالية',
     'pwd_new': 'كلمة مرور جديدة',
     'pwd_confirm': 'تأكيد الجديدة',
     'pwd_rules': '8 أحرف على الأقل، حرف كبير ورقم واحد.',
     'pwd_mismatch': 'كلمتا المرور غير متطابقتين.',
     'email_assoc': 'البريد الإلكتروني المرتبط:',
-    'email_change_hint': 'لتعديل بريدك الإلكتروني، انتقل إلى علامة الملف أعلاه.',
-    'email_used_for': 'يُستخدم بريدك الإلكتروني لتسجيل الدخول وإشعارات الطلبات.',
+    'email_change_hint':
+        'لتعديل بريدك الإلكتروني، انتقل إلى علامة الملف أعلاه.',
+    'email_used_for':
+        'يُستخدم بريدك الإلكتروني لتسجيل الدخول وإشعارات الطلبات.',
     'terms_intro': 'باستخدام FAST، فأنت توافق على شروط الاستخدام.',
-    'legal_orders': 'يتم تحضير الطلبات من قبل المطاعم الشريكة. المدفوعات مؤمّنة عبر Stripe. يمكنك طلب حذف حسابك في أي وقت.',
+    'legal_orders':
+        'يتم تحضير الطلبات من قبل المطاعم الشريكة. المدفوعات مؤمّنة عبر Stripe. يمكنك طلب حذف حسابك في أي وقت.',
     'privacy_data': 'لتفعيل الطلب والتوصيل. بياناتك لا تُباع أبدًا.',
     'data_rights': 'يمكنك تعديلها أو حذف حسابك في أي وقت من هذه الصفحة.',
     'privacy_collect': 'تجمع FAST اسمك وبريدك وهاتفك وموقعك (بموافقتك) من أجل',
@@ -2585,11 +2726,14 @@ class AppStrings {
     'total_paid': 'الإجمالي المدفوع',
     'review_sent_ok': 'تم إرسال التقييم بنجاح!',
     'submit_review': 'إرسال تقييمي',
-    'cancel_policy_intro': 'في FAST، سياسة الإلغاء لدينا واضحة وبسيطة. لا شروط خفية:',
+    'cancel_policy_intro':
+        'في FAST، سياسة الإلغاء لدينا واضحة وبسيطة. لا شروط خفية:',
     'cancel_case1': 'الحالة 1: إلغاء قبل التحضير',
-    'cancel_case1_desc': 'استرداد كامل (باستثناء رسوم الخدمة 1.50 € المستخدمة للمعالجة).',
+    'cancel_case1_desc':
+        'استرداد كامل (باستثناء رسوم الخدمة 1.50 € المستخدمة للمعالجة).',
     'cancel_case2': 'الحالة 2: إلغاء بعد التحضير',
-    'cancel_case2_desc': 'يتم خصم المبلغ كاملاً. المطبخ استخدم المكونات الطازجة لوجبتك بالفعل.',
+    'cancel_case2_desc':
+        'يتم خصم المبلغ كاملاً. المطبخ استخدم المكونات الطازجة لوجبتك بالفعل.',
     'cancel_policy': 'سياسة الإلغاء',
     'picked_up_excl': 'تم الاستلام!',
     'group_share': 'الحصة الفردية للمجموعة {n}\nستدفع فقط مقابل طلباتك.',
@@ -2598,7 +2742,8 @@ class AppStrings {
     'geo_error': 'خطأ في تحديد الموقع.',
     'address_lbl': 'العنوان',
     'payment_details': 'تفاصيل الدفع',
-    'bank_info': 'يتم إدخال البيانات البنكية مباشرة في Stripe. لا تخزن FAST أرقام البطاقات أبدًا.',
+    'bank_info':
+        'يتم إدخال البيانات البنكية مباشرة في Stripe. لا تخزن FAST أرقام البطاقات أبدًا.',
     'securing_tokens': 'جارٍ تأمين رموز التفويض...',
     'addr_required': 'العنوان مطلوب',
     'addr_enter': 'أدخل عنوان التوصيل.',
@@ -2693,11 +2838,14 @@ class AppStrings {
     'category_lbl': 'الفئة',
     'prep_normal_min': 'تحضير عادي (د)',
     'prep_rush_min': 'تحضير الذروة (د)',
-    'prep_example': 'مثال: كباب 8 د، لحم ضأن 15 د عادي / 25 د في الذروة. فارغ = وقت المطعم الافتراضي.',
+    'prep_example':
+        'مثال: كباب 8 د، لحم ضأن 15 د عادي / 25 د في الذروة. فارغ = وقت المطعم الافتراضي.',
     'create_dish': 'إنشاء الطبق',
     'create_resto_err': 'خطأ أثناء إنشاء المطعم',
-    'accept_terms': 'بالمتابعة، فأنت توافق على شروط الاستخدام وسياسة الخصوصية (GDPR).',
-    'manage_intro': 'أدر طلباتك في الوقت الفعلي، وفعّل وضع الذروة، وتابع إحصائياتك عبر مساحتك المخصصة.',
+    'accept_terms':
+        'بالمتابعة، فأنت توافق على شروط الاستخدام وسياسة الخصوصية (GDPR).',
+    'manage_intro':
+        'أدر طلباتك في الوقت الفعلي، وفعّل وضع الذروة، وتابع إحصائياتك عبر مساحتك المخصصة.',
     'grow_title': 'نمِّ مطعمك\nمع FAST',
     'manager_name': 'اسم المدير',
     'city': 'المدينة',
@@ -2724,7 +2872,8 @@ class AppStrings {
     'stripe_active': 'Stripe Connect مفعّل — المدفوعات مفعلة',
     'stripe_connected': 'الحساب متصل — أكمل تفعيل المدفوعات',
     'stripe_required': 'Stripe Connect غير مُعد — مطلوب لاستلام المدفوعات',
-    'preview_notice': 'هذه معاينة للواجهة التي يراها عملاؤك على تطبيق FAST. عدّل هذه المعلومات من علامة الإعدادات.',
+    'preview_notice':
+        'هذه معاينة للواجهة التي يراها عملاؤك على تطبيق FAST. عدّل هذه المعلومات من علامة الإعدادات.',
     'my_restaurant': 'مطعمي',
     'preview_of': 'معاينة — {n}',
     'all_lbl': 'الكل',
@@ -2740,7 +2889,8 @@ class AppStrings {
     'create_err': 'خطأ في الإنشاء',
     'creating': 'جارٍ الإنشاء…',
     'create_account': 'إنشاء الحساب',
-    'staff_intro': 'أنشئ حسابات لفريقك: الضيوف يديرون نفاد الأصناف في القائمة، والموظفون يصلون أيضًا إلى لوحة الطلبات — دون إحصائيات أو مدفوعات.',
+    'staff_intro':
+        'أنشئ حسابات لفريقك: الضيوف يديرون نفاد الأصناف في القائمة، والموظفون يصلون أيضًا إلى لوحة الطلبات — دون إحصائيات أو مدفوعات.',
     'load_err': 'خطأ في التحميل',
     'delete_err': 'خطأ في الحذف',
     'exporting': 'جارٍ التصدير…',
@@ -2763,7 +2913,8 @@ class AppStrings {
     'revenue_note': 'الإيرادات مبنية على الطلبات المدفوعة والمكتملة.',
     'dashboard': 'لوحة المطعم',
     'wip_title': 'مساحة المطعم قيد الإنشاء',
-    'wip_desc': 'الميزات المحددة في المواصفات\n(الطلبات، القائمة، الإحصائيات...) قادمة قريبًا.',
+    'wip_desc':
+        'الميزات المحددة في المواصفات\n(الطلبات، القائمة، الإحصائيات...) قادمة قريبًا.',
     'err_retry': 'خطأ — أعد المحاولة',
     'no_notifs': 'لا جديد لديك!',
     'notifs_hint': 'ستظهر إشعارات حالة طلباتك هنا.',
@@ -3038,9 +3189,11 @@ class AppStrings {
     'itinerary': 'RUTA A PIE · GOOGLE MAPS',
     'reset_filters': 'Restablecer filtros',
     'pwd_updated': 'Contraseña actualizada',
-    'group_unpaid_warn': 'Los miembros que no paguen no se enviarán al restaurante.',
+    'group_unpaid_warn':
+        'Los miembros que no paguen no se enviarán al restaurante.',
     'group_sent_title': 'Pedido enviado en conjunto',
-    'group_sent_sub': 'El restaurante prepara todas las partes pagadas para una recogida conjunta.',
+    'group_sent_sub':
+        'El restaurante prepara todas las partes pagadas para una recogida conjunta.',
     'close_invites': 'Cerrar invitaciones',
     'promo_velvet': 'Código: VELVET5',
     'confirm_cancel': 'Confirmar cancelación',
@@ -3051,7 +3204,8 @@ class AppStrings {
     'nav_stats': 'Estad.',
     'nav_profile': 'Perfil',
     'kitchen_btn': 'Cocina',
-    'rush_banner': '🔥 MODO RUSH ACTIVO — Clientes avisados de esperas más largas',
+    'rush_banner':
+        '🔥 MODO RUSH ACTIVO — Clientes avisados de esperas más largas',
     'team_guests': 'Equipo y cuentas de invitados',
     'add_cook': 'Añadir cocinero',
     'no_cooks': 'Sin cuentas de cocinero',
@@ -3081,7 +3235,8 @@ class AppStrings {
     'qty_sold_sub': 'Cantidades vendidas en el período',
     'loading_stats': 'Cargando estadísticas',
     'sched_perm': 'Franjas permanentes',
-    'sched_sub': 'Selecciona tus días habituales. Puedes pausar el servicio en cualquier momento.',
+    'sched_sub':
+        'Selecciona tus días habituales. Puedes pausar el servicio en cualquier momento.',
     'slot_start': 'Inicio',
     'save_slots': 'Guardar franjas',
     'slots_count': '{n} franja(s)',
@@ -3153,20 +3308,29 @@ class AppStrings {
     'no_data': 'Aún no hay datos',
     'skip_tuto': 'Saltar',
     'tuto1_t': 'Gestiona tus pedidos',
-    'tuto1_d': 'Los nuevos pedidos pagados llegan aquí. Pásalos de recibido a en preparación, listo y recogido.',
+    'tuto1_d':
+        'Los nuevos pedidos pagados llegan aquí. Pásalos de recibido a en preparación, listo y recogido.',
     'tuto2_t': 'Abre el modo Cocina',
-    'tuto2_d': 'Muestra una vista operativa pensada para cocinar y mantén los pedidos prioritarios a la vista.',
+    'tuto2_d':
+        'Muestra una vista operativa pensada para cocinar y mantén los pedidos prioritarios a la vista.',
     'tuto3_t': 'Crea tu menú',
-    'tuto3_d': 'Añade tus platos, precios y fotos, y marca un artículo como agotado con un gesto.',
+    'tuto3_d':
+        'Añade tus platos, precios y fotos, y marca un artículo como agotado con un gesto.',
     'tuto4_t': 'Rush en un toque',
-    'tuto4_d': 'El botón rojo activa el Modo Rush al instante. Tus estadísticas están en el menú lateral.',
+    'tuto4_d':
+        'El botón rojo activa el Modo Rush al instante. Tus estadísticas están en el menú lateral.',
     'tuto5_t': 'Configura tu restaurante',
-    'tuto5_d': 'Completa tu identidad, tiempos de preparación, datos de contacto y opciones alimentarias.',
+    'tuto5_d':
+        'Completa tu identidad, tiempos de preparación, datos de contacto y opciones alimentarias.',
     'tuto6_t': 'Revisa tu escaparate',
-    'tuto6_d': 'Previsualiza exactamente lo que ven los clientes. Estás listo para tus primeros pedidos.',
-    'ob1_d': '1. Pide desde tu restaurante favorito\n2. Camina hasta el restaurante\n3. Recoge tu pedido sin hacer cola',
-    'ob2_d': 'Sigue tu pedido con GPS.\nSabrás exactamente cuándo salir para que todo\nesté listo a tu llegada.',
-    'ob3_d': 'Acumula puntos en cada pedido.\nDesbloquea el estatus FAST Gold y\ndisfruta de ventajas exclusivas.',
+    'tuto6_d':
+        'Previsualiza exactamente lo que ven los clientes. Estás listo para tus primeros pedidos.',
+    'ob1_d':
+        '1. Pide desde tu restaurante favorito\n2. Camina hasta el restaurante\n3. Recoge tu pedido sin hacer cola',
+    'ob2_d':
+        'Sigue tu pedido con GPS.\nSabrás exactamente cuándo salir para que todo\nesté listo a tu llegada.',
+    'ob3_d':
+        'Acumula puntos en cada pedido.\nDesbloquea el estatus FAST Gold y\ndisfruta de ventajas exclusivas.',
     'next': 'Siguiente',
     'get_started': '¡Empezar!',
     'view_cart': 'Ver el carrito',
@@ -3243,42 +3407,57 @@ class AppStrings {
     'validation_err': 'Error de validación',
     'del_my_account': 'Eliminar mi cuenta',
     'edit_field': 'Editar {n}',
-    'del_account_warn': 'Tu acceso, perfil y datos personales se eliminarán. Los datos de transacción legalmente requeridos se anonimizarán. Esta acción es irreversible.',
+    'del_account_warn':
+        'Tu acceso, perfil y datos personales se eliminarán. Los datos de transacción legalmente requeridos se anonimizarán. Esta acción es irreversible.',
     'del_fail': 'No se pudo eliminar. Inténtalo de nuevo.',
-    'no_points': 'Sin puntos aún.\n¡Completa tu primer pedido para ganar puntos!',
+    'no_points':
+        'Sin puntos aún.\n¡Completa tu primer pedido para ganar puntos!',
     'order_done_id': 'Pedido recogido · {n}',
     'max_level': '¡Nivel máximo alcanzado — FAST Gold!',
     'to_next_level': 'Hacia {n}',
     'no_addresses': 'Sin direcciones guardadas',
     'addresses_hint': 'Tus direcciones de entrega favoritas se guardarán aquí.',
-    'stripe_secure': 'Tus pagos están protegidos por Stripe. Ninguna tarjeta bancaria se guarda en la app.',
-    'stripe_info': 'Tus datos de pago se introducen directamente en la página segura de Stripe en cada pedido.',
+    'stripe_secure':
+        'Tus pagos están protegidos por Stripe. Ninguna tarjeta bancaria se guarda en la app.',
+    'stripe_info':
+        'Tus datos de pago se introducen directamente en la página segura de Stripe en cada pedido.',
     'pwd_current': 'Contraseña actual',
     'pwd_new': 'Nueva contraseña',
     'pwd_confirm': 'Confirmar la nueva',
     'pwd_rules': 'Mínimo 8 caracteres, 1 mayúscula, 1 número.',
     'pwd_mismatch': 'Las contraseñas no coinciden.',
     'email_assoc': 'Dirección de e-mail asociada:',
-    'email_change_hint': 'Para cambiar tu e-mail, ve a la pestaña Perfil de arriba.',
-    'email_used_for': 'Tu e-mail se usa para iniciar sesión y para notificaciones de pedidos.',
+    'email_change_hint':
+        'Para cambiar tu e-mail, ve a la pestaña Perfil de arriba.',
+    'email_used_for':
+        'Tu e-mail se usa para iniciar sesión y para notificaciones de pedidos.',
     'terms_intro': 'Al usar FAST, aceptas nuestros términos de servicio.',
-    'legal_orders': 'Los pedidos los preparan restaurantes asociados. Los pagos están protegidos por Stripe. Puedes solicitar la eliminación de tu cuenta en cualquier momento.',
-    'privacy_data': 'permitir el pedido y la entrega. Tus datos nunca se venden.',
-    'data_rights': 'Puedes modificarlos o eliminar tu cuenta en cualquier momento desde esta página.',
-    'privacy_collect': 'FAST recopila tu nombre, e-mail, teléfono y ubicación (con tu permiso) para',
-    'fast_service_desc': 'FAST es un servicio de pedidos Click & Collect y entrega para restaurantes.',
+    'legal_orders':
+        'Los pedidos los preparan restaurantes asociados. Los pagos están protegidos por Stripe. Puedes solicitar la eliminación de tu cuenta en cualquier momento.',
+    'privacy_data':
+        'permitir el pedido y la entrega. Tus datos nunca se venden.',
+    'data_rights':
+        'Puedes modificarlos o eliminar tu cuenta en cualquier momento desde esta página.',
+    'privacy_collect':
+        'FAST recopila tu nombre, e-mail, teléfono y ubicación (con tu permiso) para',
+    'fast_service_desc':
+        'FAST es un servicio de pedidos Click & Collect y entrega para restaurantes.',
     'review_prompt': '¿Cómo fue tu experiencia?',
     'no_history': 'Sin historial de pedidos',
-    'history_hint': 'Cuando recojas pedidos Click & Collect, el historial aparecerá aquí.',
+    'history_hint':
+        'Cuando recojas pedidos Click & Collect, el historial aparecerá aquí.',
     'ordered_on': 'Pedido el: {n}',
     'total_paid': 'Total pagado',
     'review_sent_ok': '¡Reseña enviada con éxito!',
     'submit_review': 'Enviar mi reseña',
-    'cancel_policy_intro': 'En FAST, nuestra política de cancelación es transparente y sencilla. Sin letra pequeña:',
+    'cancel_policy_intro':
+        'En FAST, nuestra política de cancelación es transparente y sencilla. Sin letra pequeña:',
     'cancel_case1': 'Caso 1: Cancelación antes de la preparación',
-    'cancel_case1_desc': 'Reembolso íntegro (menos la tarifa de servicio de 1,50 € por gestión).',
+    'cancel_case1_desc':
+        'Reembolso íntegro (menos la tarifa de servicio de 1,50 € por gestión).',
     'cancel_case2': 'Caso 2: Cancelación tras la preparación',
-    'cancel_case2_desc': 'Cargo total aplicado. La cocina ya usó los ingredientes frescos para tu comida.',
+    'cancel_case2_desc':
+        'Cargo total aplicado. La cocina ya usó los ingredientes frescos para tu comida.',
     'cancel_policy': 'Política de cancelación',
     'picked_up_excl': '¡Recogido!',
     'group_share': 'Parte individual del grupo {n}\nSolo pagas tus artículos.',
@@ -3287,7 +3466,8 @@ class AppStrings {
     'geo_error': 'Error de geolocalización.',
     'address_lbl': 'Dirección',
     'payment_details': 'DETALLES DEL PAGO',
-    'bank_info': 'Los datos bancarios se introducen directamente en Stripe. FAST nunca guarda números de tarjeta.',
+    'bank_info':
+        'Los datos bancarios se introducen directamente en Stripe. FAST nunca guarda números de tarjeta.',
     'securing_tokens': 'Protegiendo los tokens de autorización...',
     'addr_required': 'Dirección requerida',
     'addr_enter': 'Introduce una dirección de entrega.',
@@ -3297,7 +3477,8 @@ class AppStrings {
     'payment_fail': 'Pago imposible',
     'payment_unconfirmed': 'Pago no confirmado',
     'finish_stripe': 'Completa el pago en Stripe y vuelve a intentarlo.',
-    'cart_empty_hint': '¡Añade platos ricos de un restaurante local para pedir!',
+    'cart_empty_hint':
+        '¡Añade platos ricos de un restaurante local para pedir!',
     'addr_example': '12 calle Ejemplo, 75001 París',
     'group_invite': 'Invitación de grupo FAST',
     'copy_invite': 'Copiar invitación',
@@ -3313,7 +3494,8 @@ class AppStrings {
     'paying': 'Pago en curso',
     'compose_part': 'Compone su parte',
     'no_cuisine': 'No se encontró cocina',
-    'widen_radius': 'Prueba a ampliar el radio de búsqueda o cambiar los filtros.',
+    'widen_radius':
+        'Prueba a ampliar el radio de búsqueda o cambiar los filtros.',
     'slot_launch': 'Iniciando la máquina tragaperras...',
     'search_suggest': 'Prueba a buscar burger, pizza, wrap, ensalada, etc.',
     'from_resto': 'De: {n}',
@@ -3332,7 +3514,8 @@ class AppStrings {
     'dest_line': 'Destino: {d} ({dist})',
     'updating_route': 'Actualizando la ruta...',
     'unknown_dest': 'Destino desconocido',
-    'earnings_credited': 'Ingresos acreditados: +{n} €.\n¡Gracias por esta entrega cercana!',
+    'earnings_credited':
+        'Ingresos acreditados: +{n} €.\n¡Gracias por esta entrega cercana!',
     'driver_perm': 'Repartidor FAST permanente',
     'driver_occ': 'Repartidor FAST ocasional',
     'slogan1': 'Sin compromiso, sin jefe',
@@ -3347,7 +3530,8 @@ class AppStrings {
     'earnings_preview': 'Ganancias (vista previa)',
     'no_slots': 'Sin horarios configurados',
     'staff_check': 'Verificación del staff',
-    'qr_present': 'Muestra este código QR al personal en el mostrador Click & Collect.',
+    'qr_present':
+        'Muestra este código QR al personal en el mostrador Click & Collect.',
     'valid_at': 'Válido en: {n}',
     'articles': 'Artículos',
     'articles_count': '{n} artículo(s)',
@@ -3355,9 +3539,12 @@ class AppStrings {
     'qs_preparing': 'En preparación — ¡Ven!',
     'qs_ready': '¡Listo — Recógelo ahora!',
     'qs_done': '¡Recogido — Buen provecho!',
-    'route_fail': 'No se pudo calcular la ruta: las coordenadas y la dirección del restaurante no están disponibles.',
-    'gmaps_fail': 'No se pudo abrir Google Maps. Inténtalo de nuevo en unos instantes.',
-    'gmaps_unavailable': 'No se pudo abrir Google Maps. Comprueba que haya una app de navegación disponible.',
+    'route_fail':
+        'No se pudo calcular la ruta: las coordenadas y la dirección del restaurante no están disponibles.',
+    'gmaps_fail':
+        'No se pudo abrir Google Maps. Inténtalo de nuevo en unos instantes.',
+    'gmaps_unavailable':
+        'No se pudo abrir Google Maps. Comprueba que haya una app de navegación disponible.',
     'allergy_hint': 'ej. Alergia a frutos secos, sin lactosa...',
     'add_cart_price': 'Añadir al carrito • {n} €',
     'video_err': 'Error de vídeo: {n}',
@@ -3382,11 +3569,14 @@ class AppStrings {
     'category_lbl': 'Categoría',
     'prep_normal_min': 'Prep. normal (min)',
     'prep_rush_min': 'Prep. rush (min)',
-    'prep_example': 'Ej. Kebab 8 min, Cordero 15 min normal / 25 min en hora punta. Vacío = tiempo por defecto.',
+    'prep_example':
+        'Ej. Kebab 8 min, Cordero 15 min normal / 25 min en hora punta. Vacío = tiempo por defecto.',
     'create_dish': 'Crear el plato',
     'create_resto_err': 'Error al crear el restaurante',
-    'accept_terms': 'Al continuar, aceptas nuestros términos de servicio y política de privacidad (RGPD).',
-    'manage_intro': 'Gestiona tus pedidos en tiempo real, activa el Modo Rush y sigue tus estadísticas en tu espacio dedicado.',
+    'accept_terms':
+        'Al continuar, aceptas nuestros términos de servicio y política de privacidad (RGPD).',
+    'manage_intro':
+        'Gestiona tus pedidos en tiempo real, activa el Modo Rush y sigue tus estadísticas en tu espacio dedicado.',
     'grow_title': 'Haz crecer tu\nrestaurante con FAST',
     'manager_name': 'Nombre del gerente',
     'city': 'Ciudad',
@@ -3395,7 +3585,8 @@ class AppStrings {
     'cuisine_type': 'Tipo de cocina',
     'cuisine_example': 'ej: Francesa, Japonesa, Italiana',
     'stripe_err': 'Stripe Connect: {n}',
-    'load_fallback': 'No se pudo cargar desde el servidor. Se muestran datos locales.',
+    'load_fallback':
+        'No se pudo cargar desde el servidor. Se muestran datos locales.',
     'no_resto_found': 'No se encontró ningún restaurante.',
     'error_colon': 'Error: {n}',
     'customization': 'Personalización',
@@ -3412,8 +3603,10 @@ class AppStrings {
     'rush_time': 'Tiempo Modo Rush',
     'stripe_active': 'Stripe Connect activo — pagos habilitados',
     'stripe_connected': 'Cuenta conectada — termina de activar los pagos',
-    'stripe_required': 'Stripe Connect no configurado — necesario para recibir pagos',
-    'preview_notice': 'Esta es una vista previa del escaparate que ven tus clientes en la app FAST. Edita esta información en la pestaña Ajustes.',
+    'stripe_required':
+        'Stripe Connect no configurado — necesario para recibir pagos',
+    'preview_notice':
+        'Esta es una vista previa del escaparate que ven tus clientes en la app FAST. Edita esta información en la pestaña Ajustes.',
     'my_restaurant': 'Mi restaurante',
     'preview_of': 'Vista previa — {n}',
     'all_lbl': 'Todo',
@@ -3429,7 +3622,8 @@ class AppStrings {
     'create_err': 'Error de creación',
     'creating': 'Creando…',
     'create_account': 'Crear la cuenta',
-    'staff_intro': 'Crea cuentas para tu equipo: los invitados gestionan los agotados del menú, el personal también accede al panel de pedidos — sin estadísticas ni pagos.',
+    'staff_intro':
+        'Crea cuentas para tu equipo: los invitados gestionan los agotados del menú, el personal también accede al panel de pedidos — sin estadísticas ni pagos.',
     'load_err': 'Error de carga',
     'delete_err': 'Error de eliminación',
     'exporting': 'Exportando...',
@@ -3446,21 +3640,26 @@ class AppStrings {
     'stats_range': 'Estadísticas del restaurante — {n} días',
     'export_fail': 'Exportación fallida: {n}',
     'no_ref': 'sin referencia',
-    'no_activity': 'No se registró actividad en este período. Prueba con un período más largo.',
+    'no_activity':
+        'No se registró actividad en este período. Prueba con un período más largo.',
     'refresh': 'Actualizar',
     'analytics': 'Analíticas del restaurante',
     'revenue_note': 'Ingresos basados en pedidos pagados y completados.',
     'dashboard': 'Panel del restaurante',
     'wip_title': 'Espacio de restaurante en construcción',
-    'wip_desc': 'Las funciones definidas en tu pliego\n(Pedidos, Menú, Estadísticas...) llegarán pronto.',
+    'wip_desc':
+        'Las funciones definidas en tu pliego\n(Pedidos, Menú, Estadísticas...) llegarán pronto.',
     'err_retry': 'Error — inténtalo de nuevo',
     'no_notifs': '¡Estás al día!',
-    'notifs_hint': 'Las notificaciones sobre el estado de tus pedidos aparecerán aquí.',
+    'notifs_hint':
+        'Las notificaciones sobre el estado de tus pedidos aparecerán aquí.',
     'clear_all': 'Borrar todo',
     'tutor_step': 'Paso {a} de {b} del tutorial.',
-    'accept_terms_short': 'Al continuar, aceptas nuestros términos de servicio.',
+    'accept_terms_short':
+        'Al continuar, aceptas nuestros términos de servicio.',
     'soldout': 'Agotar',
-    'staff_lose_access': '{n} perderá inmediatamente el acceso al espacio del restaurante.',
+    'staff_lose_access':
+        '{n} perderá inmediatamente el acceso al espacio del restaurante.',
     'hero_now': ' Ahora.',
     'theme_interface': 'Tema de la interfaz',
     'active_debit': '👉 ACTIVO. Cargo: {n} €',
@@ -3476,7 +3675,8 @@ class AppStrings {
     'payment_confirmed': '¡Pago confirmado!',
     'part_paid_waiting': 'Tu parte está pagada y espera el envío del grupo.',
     'order_placed_notif': '¡Pedido realizado! ⚡',
-    'order_registered_at': 'Tu pedido Click & Collect en {n} ha sido registrado.',
+    'order_registered_at':
+        'Tu pedido Click & Collect en {n} ha sido registrado.',
     'review_submitted': '¡Reseña enviada! ⭐',
     'send_error': 'Error de envío',
     'not_found': 'Recurso no encontrado',
@@ -3622,8 +3822,7 @@ class AppStrings {
     'tracking_tab': 'Acompanhamento',
     'history_tab': 'Histórico',
     'no_tracking': 'Sem acompanhamento ativo',
-    'no_tracking_sub':
-        'Faça um pedido para ativar o acompanhamento a pé!',
+    'no_tracking_sub': 'Faça um pedido para ativar o acompanhamento a pé!',
     'discover': 'Descobrir restaurantes',
     'tracking_delivery': 'ACOMPANHAMENTO DE ENTREGA',
     'tracking_walk': 'GPS — CAMINHO ATÉ AO RESTAURANTE',
@@ -3727,9 +3926,11 @@ class AppStrings {
     'itinerary': 'ROTA A PÉ · GOOGLE MAPS',
     'reset_filters': 'Repor filtros',
     'pwd_updated': 'Palavra-passe atualizada',
-    'group_unpaid_warn': 'Os membros que não pagarem não serão enviados ao restaurante.',
+    'group_unpaid_warn':
+        'Os membros que não pagarem não serão enviados ao restaurante.',
     'group_sent_title': 'Pedido enviado em conjunto',
-    'group_sent_sub': 'O restaurante prepara todas as partes pagas para uma retirada conjunta.',
+    'group_sent_sub':
+        'O restaurante prepara todas as partes pagas para uma retirada conjunta.',
     'close_invites': 'Fechar convites',
     'promo_velvet': 'Código: VELVET5',
     'confirm_cancel': 'Confirmar cancelamento',
@@ -3770,7 +3971,8 @@ class AppStrings {
     'qty_sold_sub': 'Quantidades vendidas no período',
     'loading_stats': 'Carregando estatísticas',
     'sched_perm': 'Horários permanentes',
-    'sched_sub': 'Selecione os seus dias habituais. Pode pausar o serviço a qualquer momento.',
+    'sched_sub':
+        'Selecione os seus dias habituais. Pode pausar o serviço a qualquer momento.',
     'slot_start': 'Início',
     'save_slots': 'Guardar horários',
     'slots_count': '{n} horário(s)',
@@ -3842,20 +4044,29 @@ class AppStrings {
     'no_data': 'Ainda sem dados',
     'skip_tuto': 'Saltar',
     'tuto1_t': 'Gira os teus pedidos',
-    'tuto1_d': 'Os novos pedidos pagos chegam aqui. Passa-os de recebido a em preparação, pronto e levantado.',
+    'tuto1_d':
+        'Os novos pedidos pagos chegam aqui. Passa-os de recebido a em preparação, pronto e levantado.',
     'tuto2_t': 'Abre o modo Cozinha',
-    'tuto2_d': 'Mostra uma vista operacional pensada para a preparação e mantém os pedidos prioritários à vista.',
+    'tuto2_d':
+        'Mostra uma vista operacional pensada para a preparação e mantém os pedidos prioritários à vista.',
     'tuto3_t': 'Cria o teu menu',
-    'tuto3_d': 'Adiciona os teus pratos, preços e fotos, e marca um artigo como esgotado num gesto.',
+    'tuto3_d':
+        'Adiciona os teus pratos, preços e fotos, e marca um artigo como esgotado num gesto.',
     'tuto4_t': 'Rush num toque',
-    'tuto4_d': 'O botão vermelho ativa o Modo Rush instantaneamente. As tuas estatísticas estão no menu lateral.',
+    'tuto4_d':
+        'O botão vermelho ativa o Modo Rush instantaneamente. As tuas estatísticas estão no menu lateral.',
     'tuto5_t': 'Configura o teu restaurante',
-    'tuto5_d': 'Completa a tua identidade, tempos de preparação, contactos e opções alimentares.',
+    'tuto5_d':
+        'Completa a tua identidade, tempos de preparação, contactos e opções alimentares.',
     'tuto6_t': 'Verifica a tua montra',
-    'tuto6_d': 'Vê exatamente o que os clientes veem. Estás pronto para os primeiros pedidos.',
-    'ob1_d': '1. Pede do teu restaurante favorito\n2. Anda até ao restaurante\n3. Levanta o teu pedido sem fila',
-    'ob2_d': 'Acompanha o teu pedido por GPS.\nSabe exatamente quando sair para que tudo\nesteja pronto à tua chegada.',
-    'ob3_d': 'Acumula pontos em cada pedido.\nDesbloqueia o estatuto FAST Gold e\nusufrui de vantagens exclusivas!',
+    'tuto6_d':
+        'Vê exatamente o que os clientes veem. Estás pronto para os primeiros pedidos.',
+    'ob1_d':
+        '1. Pede do teu restaurante favorito\n2. Anda até ao restaurante\n3. Levanta o teu pedido sem fila',
+    'ob2_d':
+        'Acompanha o teu pedido por GPS.\nSabe exatamente quando sair para que tudo\nesteja pronto à tua chegada.',
+    'ob3_d':
+        'Acumula pontos em cada pedido.\nDesbloqueia o estatuto FAST Gold e\nusufrui de vantagens exclusivas!',
     'next': 'Seguinte',
     'get_started': 'Começar!',
     'view_cart': 'Ver o carrinho',
@@ -3932,51 +4143,69 @@ class AppStrings {
     'validation_err': 'Erro de validação',
     'del_my_account': 'Eliminar a minha conta',
     'edit_field': 'Editar {n}',
-    'del_account_warn': 'O teu acesso, perfil e dados pessoais serão eliminados. Os dados de transação legalmente exigidos serão anonimizados. Esta ação é irreversível.',
+    'del_account_warn':
+        'O teu acesso, perfil e dados pessoais serão eliminados. Os dados de transação legalmente exigidos serão anonimizados. Esta ação é irreversível.',
     'del_fail': 'Eliminação falhou. Tenta novamente.',
-    'no_points': 'Ainda sem pontos.\nCompleta o teu primeiro pedido para ganhar pontos!',
+    'no_points':
+        'Ainda sem pontos.\nCompleta o teu primeiro pedido para ganhar pontos!',
     'order_done_id': 'Pedido levantado · {n}',
     'max_level': 'Nível máximo atingido — FAST Gold!',
     'to_next_level': 'Para {n}',
     'no_addresses': 'Sem moradas guardadas',
-    'addresses_hint': 'As tuas moradas de entrega favoritas serão guardadas aqui.',
-    'stripe_secure': 'Os teus pagamentos são protegidos pela Stripe. Nenhum cartão bancário fica guardado na app.',
-    'stripe_info': 'Os teus dados de pagamento são introduzidos diretamente na página segura da Stripe em cada pedido.',
+    'addresses_hint':
+        'As tuas moradas de entrega favoritas serão guardadas aqui.',
+    'stripe_secure':
+        'Os teus pagamentos são protegidos pela Stripe. Nenhum cartão bancário fica guardado na app.',
+    'stripe_info':
+        'Os teus dados de pagamento são introduzidos diretamente na página segura da Stripe em cada pedido.',
     'pwd_current': 'Palavra-passe atual',
     'pwd_new': 'Nova palavra-passe',
     'pwd_confirm': 'Confirmar a nova',
     'pwd_rules': 'Mínimo 8 caracteres, 1 maiúscula, 1 dígito.',
     'pwd_mismatch': 'As palavras-passe não coincidem.',
     'email_assoc': 'E-mail associado:',
-    'email_change_hint': 'Para alterares o teu e-mail, vai ao separador Perfil acima.',
-    'email_used_for': 'O teu e-mail é usado para login e notificações de pedidos.',
+    'email_change_hint':
+        'Para alterares o teu e-mail, vai ao separador Perfil acima.',
+    'email_used_for':
+        'O teu e-mail é usado para login e notificações de pedidos.',
     'terms_intro': 'Ao usares o FAST, aceitas os nossos termos de utilização.',
-    'legal_orders': 'Os pedidos são preparados por restaurantes parceiros. Os pagamentos são protegidos pela Stripe. Podes pedir a eliminação da tua conta a qualquer momento.',
-    'privacy_data': 'permitir a encomenda e a entrega. Os teus dados nunca são vendidos.',
-    'data_rights': 'Podes alterá-los ou eliminar a tua conta a qualquer momento nesta página.',
-    'privacy_collect': 'O FAST recolhe o teu nome, e-mail, telefone e localização (com o teu consentimento) para',
-    'fast_service_desc': 'O FAST é um serviço de encomendas Click & Collect e entrega para restaurantes.',
+    'legal_orders':
+        'Os pedidos são preparados por restaurantes parceiros. Os pagamentos são protegidos pela Stripe. Podes pedir a eliminação da tua conta a qualquer momento.',
+    'privacy_data':
+        'permitir a encomenda e a entrega. Os teus dados nunca são vendidos.',
+    'data_rights':
+        'Podes alterá-los ou eliminar a tua conta a qualquer momento nesta página.',
+    'privacy_collect':
+        'O FAST recolhe o teu nome, e-mail, telefone e localização (com o teu consentimento) para',
+    'fast_service_desc':
+        'O FAST é um serviço de encomendas Click & Collect e entrega para restaurantes.',
     'review_prompt': 'Como foi a tua experiência?',
     'no_history': 'Sem histórico de pedidos',
-    'history_hint': 'Quando levantares pedidos Click & Collect, o histórico aparecerá aqui.',
+    'history_hint':
+        'Quando levantares pedidos Click & Collect, o histórico aparecerá aqui.',
     'ordered_on': 'Pedido em: {n}',
     'total_paid': 'Total pago',
     'review_sent_ok': 'Avaliação enviada com sucesso!',
     'submit_review': 'Enviar a minha avaliação',
-    'cancel_policy_intro': 'No FAST, a nossa política de cancelamento é transparente e simples. Sem letras pequenas:',
+    'cancel_policy_intro':
+        'No FAST, a nossa política de cancelamento é transparente e simples. Sem letras pequenas:',
     'cancel_case1': 'Caso 1: Cancelamento antes da preparação',
-    'cancel_case1_desc': 'Reembolso total (exceto a taxa de serviço de 1,50 € usada no processamento).',
+    'cancel_case1_desc':
+        'Reembolso total (exceto a taxa de serviço de 1,50 € usada no processamento).',
     'cancel_case2': 'Caso 2: Cancelamento após a preparação',
-    'cancel_case2_desc': 'Débito total aplicado. A cozinha já usou os ingredientes frescos para a tua refeição.',
+    'cancel_case2_desc':
+        'Débito total aplicado. A cozinha já usou os ingredientes frescos para a tua refeição.',
     'cancel_policy': 'Política de cancelamento',
     'picked_up_excl': 'Levantado!',
-    'group_share': 'Parte individual do grupo {n}\nPagas apenas os teus artigos.',
+    'group_share':
+        'Parte individual do grupo {n}\nPagas apenas os teus artigos.',
     'asap': 'O QUANTO ANTES ({n}m)',
     'no_position': 'Não foi possível obter a tua posição.',
     'geo_error': 'Erro de geolocalização.',
     'address_lbl': 'Morada',
     'payment_details': 'DETALHES DO PAGAMENTO',
-    'bank_info': 'Os dados bancários são introduzidos diretamente na Stripe. O FAST nunca guarda números de cartão.',
+    'bank_info':
+        'Os dados bancários são introduzidos diretamente na Stripe. O FAST nunca guarda números de cartão.',
     'securing_tokens': 'A proteger os tokens de autorização...',
     'addr_required': 'Morada obrigatória',
     'addr_enter': 'Introduz uma morada de entrega.',
@@ -3986,7 +4215,8 @@ class AppStrings {
     'payment_fail': 'Pagamento falhou',
     'payment_unconfirmed': 'Pagamento não confirmado',
     'finish_stripe': 'Conclui o pagamento Stripe e tenta novamente.',
-    'cart_empty_hint': 'Adiciona bons pratos de um restaurante local para encomendar!',
+    'cart_empty_hint':
+        'Adiciona bons pratos de um restaurante local para encomendar!',
     'addr_example': '12 Rua Exemplo, 75001 Paris',
     'group_invite': 'Convite de grupo FAST',
     'copy_invite': 'Copiar convite',
@@ -4021,7 +4251,8 @@ class AppStrings {
     'dest_line': 'Destino: {d} ({dist})',
     'updating_route': 'A atualizar o trajeto...',
     'unknown_dest': 'Destino desconhecido',
-    'earnings_credited': 'Ganhos creditados: +{n} €.\nObrigado por esta entrega!',
+    'earnings_credited':
+        'Ganhos creditados: +{n} €.\nObrigado por esta entrega!',
     'driver_perm': 'Estafeta FAST permanente',
     'driver_occ': 'Estafeta FAST ocasional',
     'slogan1': 'Sem compromisso, sem chefe',
@@ -4036,7 +4267,8 @@ class AppStrings {
     'earnings_preview': 'Ganhos (pré-visualização)',
     'no_slots': 'Sem horários configurados',
     'staff_check': 'Verificação do staff',
-    'qr_present': 'Apresenta este código QR a um membro do staff no balcão Click & Collect.',
+    'qr_present':
+        'Apresenta este código QR a um membro do staff no balcão Click & Collect.',
     'valid_at': 'Válido em: {n}',
     'articles': 'Artigos',
     'articles_count': '{n} artigo(s)',
@@ -4044,9 +4276,12 @@ class AppStrings {
     'qs_preparing': 'Em preparação — Vem!',
     'qs_ready': 'Pronto — Levanta agora!',
     'qs_done': 'Levantado — Bom apetite!',
-    'route_fail': 'Não foi possível calcular a rota: as coordenadas e a morada do restaurante não estão disponíveis.',
-    'gmaps_fail': 'Não foi possível abrir o Google Maps. Tenta novamente dentro de instantes.',
-    'gmaps_unavailable': 'Não foi possível abrir o Google Maps. Verifica se há uma app de navegação disponível.',
+    'route_fail':
+        'Não foi possível calcular a rota: as coordenadas e a morada do restaurante não estão disponíveis.',
+    'gmaps_fail':
+        'Não foi possível abrir o Google Maps. Tenta novamente dentro de instantes.',
+    'gmaps_unavailable':
+        'Não foi possível abrir o Google Maps. Verifica se há uma app de navegação disponível.',
     'allergy_hint': 'ex. Alergia a frutos secos, sem lactose...',
     'add_cart_price': 'Adicionar ao carrinho • {n} €',
     'video_err': 'Erro de vídeo: {n}',
@@ -4071,11 +4306,14 @@ class AppStrings {
     'category_lbl': 'Categoria',
     'prep_normal_min': 'Prep. normal (min)',
     'prep_rush_min': 'Prep. rush (min)',
-    'prep_example': 'Ex. Kebab 8 min, Borrego 15 min normal / 25 min em hora de ponta. Vazio = tempo padrão do restaurante.',
+    'prep_example':
+        'Ex. Kebab 8 min, Borrego 15 min normal / 25 min em hora de ponta. Vazio = tempo padrão do restaurante.',
     'create_dish': 'Criar o prato',
     'create_resto_err': 'Erro ao criar o restaurante',
-    'accept_terms': 'Ao continuar, aceitas os nossos termos de utilização e política de privacidade (RGPD).',
-    'manage_intro': 'Gere os teus pedidos em tempo real, ativa o Modo Rush e acompanha as tuas estatísticas no teu espaço dedicado.',
+    'accept_terms':
+        'Ao continuar, aceitas os nossos termos de utilização e política de privacidade (RGPD).',
+    'manage_intro':
+        'Gere os teus pedidos em tempo real, ativa o Modo Rush e acompanha as tuas estatísticas no teu espaço dedicado.',
     'grow_title': 'Faz o teu restaurante\ncrescer com o FAST',
     'manager_name': 'Nome do gerente',
     'city': 'Cidade',
@@ -4084,7 +4322,8 @@ class AppStrings {
     'cuisine_type': 'Tipo de cozinha',
     'cuisine_example': 'ex: Francesa, Japonesa, Italiana',
     'stripe_err': 'Stripe Connect: {n}',
-    'load_fallback': 'Não foi possível carregar do servidor. Dados locais apresentados.',
+    'load_fallback':
+        'Não foi possível carregar do servidor. Dados locais apresentados.',
     'no_resto_found': 'Nenhum restaurante encontrado.',
     'error_colon': 'Erro: {n}',
     'customization': 'Personalização',
@@ -4101,8 +4340,10 @@ class AppStrings {
     'rush_time': 'Tempo Modo Rush',
     'stripe_active': 'Stripe Connect ativo — pagamentos ativados',
     'stripe_connected': 'Conta ligada — conclui a ativação dos pagamentos',
-    'stripe_required': 'Stripe Connect não configurado — necessário para receber pagamentos',
-    'preview_notice': 'Esta é uma pré-visualização da montra que os teus clientes veem na app FAST. Edita estas informações no separador Definições.',
+    'stripe_required':
+        'Stripe Connect não configurado — necessário para receber pagamentos',
+    'preview_notice':
+        'Esta é uma pré-visualização da montra que os teus clientes veem na app FAST. Edita estas informações no separador Definições.',
     'my_restaurant': 'O meu restaurante',
     'preview_of': 'Pré-visualização — {n}',
     'all_lbl': 'Tudo',
@@ -4118,7 +4359,8 @@ class AppStrings {
     'create_err': 'Erro de criação',
     'creating': 'A criar…',
     'create_account': 'Criar a conta',
-    'staff_intro': 'Cria contas para a tua equipa: os convidados gerem os esgotados do menu, o pessoal também acede ao quadro de pedidos — sem estatísticas nem pagamentos.',
+    'staff_intro':
+        'Cria contas para a tua equipa: os convidados gerem os esgotados do menu, o pessoal também acede ao quadro de pedidos — sem estatísticas nem pagamentos.',
     'load_err': 'Erro de carregamento',
     'delete_err': 'Erro de eliminação',
     'exporting': 'A exportar...',
@@ -4135,21 +4377,26 @@ class AppStrings {
     'stats_range': 'Estatísticas do restaurante — {n} dias',
     'export_fail': 'Falha na exportação: {n}',
     'no_ref': 'sem referência',
-    'no_activity': 'Nenhuma atividade registada neste período. Tenta um período mais longo.',
+    'no_activity':
+        'Nenhuma atividade registada neste período. Tenta um período mais longo.',
     'refresh': 'Atualizar',
     'analytics': 'Analíticas do restaurante',
     'revenue_note': 'Receita baseada em pedidos pagos e concluídos.',
     'dashboard': 'Painel do restaurante',
     'wip_title': 'Espaço do restaurante em construção',
-    'wip_desc': 'As funcionalidades definidas no teu caderno\n(Pedidos, Menu, Estatísticas...) chegam em breve.',
+    'wip_desc':
+        'As funcionalidades definidas no teu caderno\n(Pedidos, Menu, Estatísticas...) chegam em breve.',
     'err_retry': 'Erro — tenta novamente',
     'no_notifs': 'Estás em dia!',
-    'notifs_hint': 'As notificações sobre o estado dos teus pedidos aparecerão aqui.',
+    'notifs_hint':
+        'As notificações sobre o estado dos teus pedidos aparecerão aqui.',
     'clear_all': 'Limpar tudo',
     'tutor_step': 'Passo {a} de {b} do tutorial.',
-    'accept_terms_short': 'Ao continuar, aceitas os nossos termos de utilização.',
+    'accept_terms_short':
+        'Ao continuar, aceitas os nossos termos de utilização.',
     'soldout': 'Esgotar',
-    'staff_lose_access': '{n} perderá imediatamente o acesso ao espaço do restaurante.',
+    'staff_lose_access':
+        '{n} perderá imediatamente o acesso ao espaço do restaurante.',
     'hero_now': ' Agora.',
     'theme_interface': 'Tema da interface',
     'active_debit': '👉 ATIVO. Débito: {n} €',
@@ -4416,9 +4663,11 @@ class AppStrings {
     'itinerary': 'PERCORSO A PIEDI · GOOGLE MAPS',
     'reset_filters': 'Reimposta filtri',
     'pwd_updated': 'Password aggiornata',
-    'group_unpaid_warn': 'I membri che non pagano non saranno inviati al ristorante.',
+    'group_unpaid_warn':
+        'I membri che non pagano non saranno inviati al ristorante.',
     'group_sent_title': 'Ordine inviato insieme',
-    'group_sent_sub': 'Il ristorante prepara tutte le quote pagate per un ritiro comune.',
+    'group_sent_sub':
+        'Il ristorante prepara tutte le quote pagate per un ritiro comune.',
     'close_invites': 'Chiudi inviti',
     'promo_velvet': 'Codice: VELVET5',
     'confirm_cancel': 'Conferma annullamento',
@@ -4429,7 +4678,8 @@ class AppStrings {
     'nav_stats': 'Stat.',
     'nav_profile': 'Profilo',
     'kitchen_btn': 'Cucina',
-    'rush_banner': '🔥 MODALITÀ RUSH ATTIVA — Clienti avvisati di attese più lunghe',
+    'rush_banner':
+        '🔥 MODALITÀ RUSH ATTIVA — Clienti avvisati di attese più lunghe',
     'team_guests': 'Team e account ospiti',
     'add_cook': 'Aggiungi cuoco',
     'no_cooks': 'Nessun account cuoco',
@@ -4459,7 +4709,8 @@ class AppStrings {
     'qty_sold_sub': 'Quantità vendute nel periodo',
     'loading_stats': 'Caricamento statistiche',
     'sched_perm': 'Fasce permanenti',
-    'sched_sub': 'Seleziona i tuoi giorni abituali. Puoi mettere in pausa il servizio in qualsiasi momento.',
+    'sched_sub':
+        'Seleziona i tuoi giorni abituali. Puoi mettere in pausa il servizio in qualsiasi momento.',
     'slot_start': 'Inizio',
     'save_slots': 'Salva fasce',
     'slots_count': '{n} fascia/e',
@@ -4531,20 +4782,29 @@ class AppStrings {
     'no_data': 'Ancora nessun dato',
     'skip_tuto': 'Salta',
     'tuto1_t': 'Gestisci i tuoi ordini',
-    'tuto1_d': 'I nuovi ordini pagati arrivano qui. Falli passare da ricevuto a in preparazione, pronto e ritirato.',
+    'tuto1_d':
+        'I nuovi ordini pagati arrivano qui. Falli passare da ricevuto a in preparazione, pronto e ritirato.',
     'tuto2_t': 'Apri la modalità Cucina',
-    'tuto2_d': 'Mostra una vista operativa pensata per la preparazione e tieni d\'occhio gli ordini prioritari.',
+    'tuto2_d':
+        'Mostra una vista operativa pensata per la preparazione e tieni d\'occhio gli ordini prioritari.',
     'tuto3_t': 'Crea il tuo menu',
-    'tuto3_d': 'Aggiungi piatti, prezzi e foto, poi segna un articolo come esaurito con un gesto.',
+    'tuto3_d':
+        'Aggiungi piatti, prezzi e foto, poi segna un articolo come esaurito con un gesto.',
     'tuto4_t': 'Rush in un tocco',
-    'tuto4_d': 'Il pulsante rosso attiva la Modalità Rush all\'istante. Le statistiche sono nel menu laterale.',
+    'tuto4_d':
+        'Il pulsante rosso attiva la Modalità Rush all\'istante. Le statistiche sono nel menu laterale.',
     'tuto5_t': 'Configura il tuo ristorante',
-    'tuto5_d': 'Completa identità, tempi di preparazione, contatti e opzioni alimentari.',
+    'tuto5_d':
+        'Completa identità, tempi di preparazione, contatti e opzioni alimentari.',
     'tuto6_t': 'Controlla la tua vetrina',
-    'tuto6_d': 'Anteprima esatta di ciò che vedono i clienti. Sei pronto per i primi ordini.',
-    'ob1_d': '1. Ordina dal tuo ristorante preferito\n2. Cammina fino al ristorante\n3. Ritira il tuo ordine senza fare la fila',
-    'ob2_d': 'Traccia il tuo ordine con il GPS.\nSai esattamente quando partire perché tutto\nsia pronto al tuo arrivo.',
-    'ob3_d': 'Accumula punti a ogni ordine.\nSblocca lo stato FAST Gold e\ngoditi vantaggi esclusivi!',
+    'tuto6_d':
+        'Anteprima esatta di ciò che vedono i clienti. Sei pronto per i primi ordini.',
+    'ob1_d':
+        '1. Ordina dal tuo ristorante preferito\n2. Cammina fino al ristorante\n3. Ritira il tuo ordine senza fare la fila',
+    'ob2_d':
+        'Traccia il tuo ordine con il GPS.\nSai esattamente quando partire perché tutto\nsia pronto al tuo arrivo.',
+    'ob3_d':
+        'Accumula punti a ogni ordine.\nSblocca lo stato FAST Gold e\ngoditi vantaggi esclusivi!',
     'next': 'Avanti',
     'get_started': 'Inizia!',
     'view_cart': 'Vedi il carrello',
@@ -4621,51 +4881,69 @@ class AppStrings {
     'validation_err': 'Errore di validazione',
     'del_my_account': 'Elimina il mio account',
     'edit_field': 'Modifica {n}',
-    'del_account_warn': 'Il tuo accesso, profilo e dati personali saranno eliminati. I dati di transazione legalmente richiesti saranno anonimizzati. Azione irreversibile.',
+    'del_account_warn':
+        'Il tuo accesso, profilo e dati personali saranno eliminati. I dati di transazione legalmente richiesti saranno anonimizzati. Azione irreversibile.',
     'del_fail': 'Eliminazione impossibile. Riprova.',
-    'no_points': 'Ancora nessun punto.\nCompleta il primo ordine per guadagnare punti!',
+    'no_points':
+        'Ancora nessun punto.\nCompleta il primo ordine per guadagnare punti!',
     'order_done_id': 'Ordine ritirato · {n}',
     'max_level': 'Livello massimo raggiunto — FAST Gold!',
     'to_next_level': 'Verso {n}',
     'no_addresses': 'Nessun indirizzo salvato',
-    'addresses_hint': 'I tuoi indirizzi di consegna preferiti saranno salvati qui.',
-    'stripe_secure': 'I tuoi pagamenti sono protetti da Stripe. Nessuna carta viene salvata nell\'app.',
-    'stripe_info': 'I tuoi dati di pagamento vengono inseriti direttamente sulla pagina sicura di Stripe a ogni ordine.',
+    'addresses_hint':
+        'I tuoi indirizzi di consegna preferiti saranno salvati qui.',
+    'stripe_secure':
+        'I tuoi pagamenti sono protetti da Stripe. Nessuna carta viene salvata nell\'app.',
+    'stripe_info':
+        'I tuoi dati di pagamento vengono inseriti direttamente sulla pagina sicura di Stripe a ogni ordine.',
     'pwd_current': 'Password attuale',
     'pwd_new': 'Nuova password',
     'pwd_confirm': 'Conferma la nuova',
     'pwd_rules': 'Minimo 8 caratteri, 1 maiuscola, 1 cifra.',
     'pwd_mismatch': 'Le password non corrispondono.',
     'email_assoc': 'Indirizzo e-mail associato:',
-    'email_change_hint': 'Per modificare la tua e-mail, vai alla scheda Profilo qui sopra.',
-    'email_used_for': 'La tua e-mail è usata per l\'accesso e le notifiche degli ordini.',
+    'email_change_hint':
+        'Per modificare la tua e-mail, vai alla scheda Profilo qui sopra.',
+    'email_used_for':
+        'La tua e-mail è usata per l\'accesso e le notifiche degli ordini.',
     'terms_intro': 'Usando FAST accetti i nostri termini di servizio.',
-    'legal_orders': 'Gli ordini sono preparati dai ristoranti partner. I pagamenti sono protetti da Stripe. Puoi richiedere la cancellazione dell\'account in qualsiasi momento.',
-    'privacy_data': 'per consentire ordini e consegne. I tuoi dati non vengono mai venduti.',
-    'data_rights': 'Puoi modificarli o eliminare il tuo account in qualsiasi momento da questa pagina.',
-    'privacy_collect': 'FAST raccoglie nome, e-mail, telefono e posizione (col tuo consenso) per',
-    'fast_service_desc': 'FAST è un servizio di ordinazione Click & Collect e consegna per ristoranti.',
+    'legal_orders':
+        'Gli ordini sono preparati dai ristoranti partner. I pagamenti sono protetti da Stripe. Puoi richiedere la cancellazione dell\'account in qualsiasi momento.',
+    'privacy_data':
+        'per consentire ordini e consegne. I tuoi dati non vengono mai venduti.',
+    'data_rights':
+        'Puoi modificarli o eliminare il tuo account in qualsiasi momento da questa pagina.',
+    'privacy_collect':
+        'FAST raccoglie nome, e-mail, telefono e posizione (col tuo consenso) per',
+    'fast_service_desc':
+        'FAST è un servizio di ordinazione Click & Collect e consegna per ristoranti.',
     'review_prompt': 'Com\'è stata la tua esperienza?',
     'no_history': 'Nessuno storico ordini',
-    'history_hint': 'Quando ritirerai ordini Click & Collect, lo storico apparirà qui.',
+    'history_hint':
+        'Quando ritirerai ordini Click & Collect, lo storico apparirà qui.',
     'ordered_on': 'Ordinato il: {n}',
     'total_paid': 'Totale pagato',
     'review_sent_ok': 'Recensione inviata con successo!',
     'submit_review': 'Invia la mia recensione',
-    'cancel_policy_intro': 'In FAST la nostra politica di cancellazione è trasparente e semplice. Nessuna clausola nascosta:',
+    'cancel_policy_intro':
+        'In FAST la nostra politica di cancellazione è trasparente e semplice. Nessuna clausola nascosta:',
     'cancel_case1': 'Caso 1: Cancellazione prima della preparazione',
-    'cancel_case1_desc': 'Rimborso totale (esclusa la commissione di servizio di 1,50 € per la gestione).',
+    'cancel_case1_desc':
+        'Rimborso totale (esclusa la commissione di servizio di 1,50 € per la gestione).',
     'cancel_case2': 'Caso 2: Cancellazione dopo la preparazione',
-    'cancel_case2_desc': 'Addebito totale applicato. La cucina ha già utilizzato gli ingredienti freschi per il tuo pasto.',
+    'cancel_case2_desc':
+        'Addebito totale applicato. La cucina ha già utilizzato gli ingredienti freschi per il tuo pasto.',
     'cancel_policy': 'Politica di cancellazione',
     'picked_up_excl': 'Ritirato!',
-    'group_share': 'Quota individuale del gruppo {n}\nPaghi solo i tuoi articoli.',
+    'group_share':
+        'Quota individuale del gruppo {n}\nPaghi solo i tuoi articoli.',
     'asap': 'PRIMA POSSIBILE ({n}m)',
     'no_position': 'Impossibile ottenere la tua posizione.',
     'geo_error': 'Errore di geolocalizzazione.',
     'address_lbl': 'Indirizzo',
     'payment_details': 'DETTAGLI PAGAMENTO',
-    'bank_info': 'I dati bancari vengono inseriti direttamente su Stripe. FAST non memorizza mai i numeri di carta.',
+    'bank_info':
+        'I dati bancari vengono inseriti direttamente su Stripe. FAST non memorizza mai i numeri di carta.',
     'securing_tokens': 'Protezione dei token di autorizzazione...',
     'addr_required': 'Indirizzo obbligatorio',
     'addr_enter': 'Inserisci un indirizzo di consegna.',
@@ -4675,7 +4953,8 @@ class AppStrings {
     'payment_fail': 'Pagamento non riuscito',
     'payment_unconfirmed': 'Pagamento non confermato',
     'finish_stripe': 'Completa il pagamento Stripe e riprova.',
-    'cart_empty_hint': 'Aggiungi buoni piatti da un ristorante locale per ordinare!',
+    'cart_empty_hint':
+        'Aggiungi buoni piatti da un ristorante locale per ordinare!',
     'addr_example': '12 via Esempio, 75001 Parigi',
     'group_invite': 'Invito di gruppo FAST',
     'copy_invite': 'Copia invito',
@@ -4691,7 +4970,8 @@ class AppStrings {
     'paying': 'Pagamento in corso',
     'compose_part': 'Compone la sua quota',
     'no_cuisine': 'Nessuna cucina trovata',
-    'widen_radius': 'Prova ad allargare il raggio di ricerca o a modificare i filtri.',
+    'widen_radius':
+        'Prova ad allargare il raggio di ricerca o a modificare i filtri.',
     'slot_launch': 'Avvio della slot machine...',
     'search_suggest': 'Prova a cercare burger, pizza, wrap, insalata, ecc.',
     'from_resto': 'Da: {n}',
@@ -4710,7 +4990,8 @@ class AppStrings {
     'dest_line': 'Dest: {d} ({dist})',
     'updating_route': 'Aggiornamento del percorso...',
     'unknown_dest': 'Destinazione sconosciuta',
-    'earnings_credited': 'Guadagni accreditati: +{n} €.\nGrazie per questa consegna!',
+    'earnings_credited':
+        'Guadagni accreditati: +{n} €.\nGrazie per questa consegna!',
     'driver_perm': 'Rider FAST permanente',
     'driver_occ': 'Rider FAST occasionale',
     'slogan1': 'Nessun impegno, nessun capo',
@@ -4733,9 +5014,12 @@ class AppStrings {
     'qs_preparing': 'In preparazione — Vieni!',
     'qs_ready': 'Pronto — Ritira ora!',
     'qs_done': 'Ritirato — Buon appetito!',
-    'route_fail': 'Impossibile calcolare il percorso: coordinate e indirizzo del ristorante non disponibili.',
-    'gmaps_fail': 'Impossibile aprire Google Maps. Riprova tra qualche istante.',
-    'gmaps_unavailable': 'Impossibile aprire Google Maps. Verifica che sia disponibile un\'app di navigazione.',
+    'route_fail':
+        'Impossibile calcolare il percorso: coordinate e indirizzo del ristorante non disponibili.',
+    'gmaps_fail':
+        'Impossibile aprire Google Maps. Riprova tra qualche istante.',
+    'gmaps_unavailable':
+        'Impossibile aprire Google Maps. Verifica che sia disponibile un\'app di navigazione.',
     'allergy_hint': 'es. Allergia alle noci, senza lattosio...',
     'add_cart_price': 'Aggiungi al carrello • {n} €',
     'video_err': 'Errore video: {n}',
@@ -4760,11 +5044,14 @@ class AppStrings {
     'category_lbl': 'Categoria',
     'prep_normal_min': 'Prep. normale (min)',
     'prep_rush_min': 'Prep. rush (min)',
-    'prep_example': 'Es. Kebab 8 min, Agnello 15 min normale / 25 min in rush. Vuoto = tempo predefinito del ristorante.',
+    'prep_example':
+        'Es. Kebab 8 min, Agnello 15 min normale / 25 min in rush. Vuoto = tempo predefinito del ristorante.',
     'create_dish': 'Crea il piatto',
     'create_resto_err': 'Errore nella creazione del ristorante',
-    'accept_terms': 'Continuando accetti i nostri termini di servizio e la privacy policy (GDPR).',
-    'manage_intro': 'Gestisci gli ordini in tempo reale, attiva la Modalità Rush e monitora le statistiche nel tuo spazio dedicato.',
+    'accept_terms':
+        'Continuando accetti i nostri termini di servizio e la privacy policy (GDPR).',
+    'manage_intro':
+        'Gestisci gli ordini in tempo reale, attiva la Modalità Rush e monitora le statistiche nel tuo spazio dedicato.',
     'grow_title': 'Fai crescere il tuo\nristorante con FAST',
     'manager_name': 'Nome del gestore',
     'city': 'Città',
@@ -4789,15 +5076,19 @@ class AppStrings {
     'normal_time': 'Tempo normale',
     'rush_time': 'Tempo modalità Rush',
     'stripe_active': 'Stripe Connect attivo — pagamenti abilitati',
-    'stripe_connected': 'Account collegato — completa l\'attivazione dei pagamenti',
-    'stripe_required': 'Stripe Connect non configurato — necessario per ricevere pagamenti',
-    'preview_notice': 'Questa è un\'anteprima della vetrina che i clienti vedono sull\'app FAST. Modifica queste info dalla scheda Impostazioni.',
+    'stripe_connected':
+        'Account collegato — completa l\'attivazione dei pagamenti',
+    'stripe_required':
+        'Stripe Connect non configurato — necessario per ricevere pagamenti',
+    'preview_notice':
+        'Questa è un\'anteprima della vetrina che i clienti vedono sull\'app FAST. Modifica queste info dalla scheda Impostazioni.',
     'my_restaurant': 'Il mio ristorante',
     'preview_of': 'Anteprima — {n}',
     'all_lbl': 'Tutto',
     'dispo': 'Disponibile',
     'client_near': 'Cliente a ~{n} min',
-    'staff_access': 'L\'account dà accesso limitato allo spazio del ristorante.',
+    'staff_access':
+        'L\'account dà accesso limitato allo spazio del ristorante.',
     'name_example': 'Nome (es. Karim)',
     'cook': 'Cuoco',
     'board_only': 'Solo bacheca',
@@ -4807,7 +5098,8 @@ class AppStrings {
     'create_err': 'Errore di creazione',
     'creating': 'Creazione…',
     'create_account': 'Crea l\'account',
-    'staff_intro': 'Crea account per il tuo team: gli ospiti gestiscono gli esauriti del menu, lo staff accede anche alla bacheca ordini — senza statistiche né pagamenti.',
+    'staff_intro':
+        'Crea account per il tuo team: gli ospiti gestiscono gli esauriti del menu, lo staff accede anche alla bacheca ordini — senza statistiche né pagamenti.',
     'load_err': 'Errore di caricamento',
     'delete_err': 'Errore di eliminazione',
     'exporting': 'Esportazione...',
@@ -4824,13 +5116,15 @@ class AppStrings {
     'stats_range': 'Statistiche ristorante — {n} giorni',
     'export_fail': 'Esportazione fallita: {n}',
     'no_ref': 'nessun riferimento',
-    'no_activity': 'Nessuna attività registrata in questo periodo. Prova un periodo più lungo.',
+    'no_activity':
+        'Nessuna attività registrata in questo periodo. Prova un periodo più lungo.',
     'refresh': 'Aggiorna',
     'analytics': 'Analitica ristorante',
     'revenue_note': 'Fatturato basato su ordini pagati e completati.',
     'dashboard': 'Dashboard ristorante',
     'wip_title': 'Spazio ristorante in costruzione',
-    'wip_desc': 'Le funzionalità definite nel capitolato\n(Ordini, Menu, Statistiche...) arriveranno presto.',
+    'wip_desc':
+        'Le funzionalità definite nel capitolato\n(Ordini, Menu, Statistiche...) arriveranno presto.',
     'err_retry': 'Errore — riprova',
     'no_notifs': 'Sei aggiornato!',
     'notifs_hint': 'Le notifiche sullo stato dei tuoi ordini appariranno qui.',
@@ -4838,7 +5132,8 @@ class AppStrings {
     'tutor_step': 'Passo {a} di {b} del tutorial.',
     'accept_terms_short': 'Continuando accetti i nostri termini di servizio.',
     'soldout': 'Esaurito',
-    'staff_lose_access': '{n} perderà immediatamente l\'accesso allo spazio del ristorante.',
+    'staff_lose_access':
+        '{n} perderà immediatamente l\'accesso allo spazio del ristorante.',
     'hero_now': ' Adesso.',
     'theme_interface': 'Tema dell\'interfaccia',
     'active_debit': '👉 ATTIVO. Addebito: {n} €',
@@ -4854,7 +5149,8 @@ class AppStrings {
     'payment_confirmed': 'Pagamento confermato!',
     'part_paid_waiting': 'La tua quota è pagata e attende l\'invio del gruppo.',
     'order_placed_notif': 'Ordine effettuato! ⚡',
-    'order_registered_at': 'Il tuo ordine Click & Collect da {n} è stato registrato.',
+    'order_registered_at':
+        'Il tuo ordine Click & Collect da {n} è stato registrato.',
     'review_submitted': 'Recensione inviata! ⭐',
     'send_error': 'Errore di invio',
     'not_found': 'Risorsa non trovata',
@@ -4970,8 +5266,7 @@ class AppStrings {
     'err_pwd_min': '至少8个字符',
     'err_pwd_upper': '需包含大写字母',
     'err_pwd_digit': '需包含数字',
-    'err_resto_account':
-        '此邮箱属于商家账户。如需作为顾客下单：☰ → 顾客模式。',
+    'err_resto_account': '此邮箱属于商家账户。如需作为顾客下单：☰ → 顾客模式。',
     'status_new': '新订单',
     'status_prep': '备餐中',
     'status_ready': '已就绪',

@@ -13,7 +13,7 @@ import '../widgets/fast_image.dart';
 import '../l10n/tr.dart';
 
 class RestaurantScreen extends StatelessWidget {
-        const RestaurantScreen({super.key});
+  const RestaurantScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +41,10 @@ class RestaurantScreen extends StatelessWidget {
               child: Container(
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [ Colors.black54, Colors.transparent, Colors.black87,
+                    colors: [
+                      Colors.black54,
+                      Colors.transparent,
+                      Colors.black87,
                     ],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
@@ -63,7 +66,8 @@ class RestaurantScreen extends StatelessWidget {
                     provider.selectRestaurant(null);
                     provider.navigateToScreen('home');
                   },
-                  icon: Icon( Icons.arrow_back,
+                  icon: Icon(
+                    Icons.arrow_back,
                     color: context.fast.t1,
                     size: 20,
                   ),
@@ -82,25 +86,37 @@ class RestaurantScreen extends StatelessWidget {
                 child: IconButton(
                   onPressed: () => provider.toggleFavorite(rest.id),
                   icon: Icon(
-                    provider.isFavorite(rest.id) ? Icons.favorite : Icons.favorite_border,
-                    color: provider.isFavorite(rest.id) ? const Color(0xFFEF4444) : context.fast.t1,
+                    provider.isFavorite(rest.id)
+                        ? Icons.favorite
+                        : Icons.favorite_border,
+                    color: provider.isFavorite(rest.id)
+                        ? const Color(0xFFEF4444)
+                        : context.fast.t1,
                     size: 20,
                   ),
                 ),
               ),
             ),
             // Stories entry — Snapchat-style menu viewer
-            if (rest.menu.any((m) => m.available && (m.image.isNotEmpty || m.videoUrl.isNotEmpty)))
+            if (rest.menu.any(
+              (m) =>
+                  m.available && (m.image.isNotEmpty || m.videoUrl.isNotEmpty),
+            ))
               Positioned(
                 top: 64,
                 right: 12,
                 child: GestureDetector(
                   onTap: () => Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => StoryViewerScreen(restaurant: rest)),
+                    MaterialPageRoute(
+                      builder: (_) => StoryViewerScreen(restaurant: rest),
+                    ),
                   ),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.55),
                       borderRadius: BorderRadius.circular(20),
@@ -109,9 +125,20 @@ class RestaurantScreen extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.play_circle_fill, color: Colors.white, size: 14),
+                        const Icon(
+                          Icons.play_circle_fill,
+                          color: Colors.white,
+                          size: 14,
+                        ),
                         const SizedBox(width: 5),
-                        Text(provider.tr('stories'), style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                        Text(
+                          provider.tr('stories'),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -126,10 +153,7 @@ class RestaurantScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
-                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF59E0B),
                       borderRadius: BorderRadius.circular(4),
@@ -143,7 +167,8 @@ class RestaurantScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                        SizedBox(height: 6), Text(
+                  SizedBox(height: 6),
+                  Text(
                     rest.name,
                     style: const TextStyle(
                       fontSize: 18,
@@ -165,8 +190,10 @@ class RestaurantScreen extends StatelessWidget {
             children: [
               // Meta chips
               Row(
-                children: [ Icon(Icons.star, color: Color(0xFFF59E0B), size: 16),
-                        SizedBox(width: 4), Text(
+                children: [
+                  Icon(Icons.star, color: Color(0xFFF59E0B), size: 16),
+                  SizedBox(width: 4),
+                  Text(
                     '${rest.rating} (${provider.tr('reviews').replaceAll('{n}', '${rest.reviewsCount}')})',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
@@ -174,23 +201,27 @@ class RestaurantScreen extends StatelessWidget {
                       color: context.fast.t1,
                     ),
                   ),
-                        SizedBox(width: 12), Icon( Icons.access_time_filled,
+                  SizedBox(width: 12),
+                  Icon(
+                    Icons.access_time_filled,
                     color: context.fast.t2,
                     size: 14,
                   ),
-                        SizedBox(width: 4), Text(
-                    provider.tr('prep_time').replaceAll('{n}', '${rest.pickupPrepTime}'),
+                  SizedBox(width: 4),
+                  Text(
+                    provider
+                        .tr('prep_time')
+                        .replaceAll('{n}', '${rest.pickupPrepTime}'),
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
                       color: context.fast.t2,
                     ),
                   ),
-                        SizedBox(width: 12), Icon( Icons.location_on,
-                    color: context.fast.t2,
-                    size: 14,
-                  ),
-                        SizedBox(width: 4), Text(
+                  SizedBox(width: 12),
+                  Icon(Icons.location_on, color: context.fast.t2, size: 14),
+                  SizedBox(width: 4),
+                  Text(
                     '${rest.distance} km',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
@@ -200,9 +231,9 @@ class RestaurantScreen extends StatelessWidget {
                   ),
                 ],
               ),
-                    SizedBox(height: 12),
+              SizedBox(height: 12),
               // Description
- Text(
+              Text(
                 rest.description,
                 style: TextStyle(
                   fontSize: 12,
@@ -210,12 +241,13 @@ class RestaurantScreen extends StatelessWidget {
                   height: 1.4,
                 ),
               ),
-                    SizedBox(height: 8),
+              SizedBox(height: 8),
               // Address
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [ Icon(Icons.map, color: context.fast.t3, size: 14),
-                        SizedBox(width: 6),
+                children: [
+                  Icon(Icons.map, color: context.fast.t3, size: 14),
+                  SizedBox(width: 6),
                   Expanded(
                     child: Text(
                       rest.address,
@@ -228,7 +260,7 @@ class RestaurantScreen extends StatelessWidget {
                   ),
                 ],
               ),
-                    SizedBox(height: 12),
+              SizedBox(height: 12),
 
               // Mini Map (MapLibre GL + OpenFreeMap)
               ClipRRect(
@@ -262,7 +294,7 @@ class RestaurantScreen extends StatelessWidget {
                   ),
                 ),
               ),
-                    SizedBox(height: 12),
+              SizedBox(height: 12),
               Semantics(
                 button: true,
                 label: provider.tr('gmaps'),
@@ -293,10 +325,10 @@ class RestaurantScreen extends StatelessWidget {
           ),
         ),
 
-              Divider(color: context.fast.line, height: 1),
+        Divider(color: context.fast.line, height: 1),
 
         // Menu title
-              Padding(
+        Padding(
           padding: EdgeInsets.fromLTRB(16, 20, 16, 8),
           child: Text(
             provider.tr('menu_items'),
@@ -311,7 +343,7 @@ class RestaurantScreen extends StatelessWidget {
 
         // Menu list items
         if (rest.menu.isEmpty)
-                Padding(
+          Padding(
             padding: EdgeInsets.all(32),
             child: Center(
               child: Text(
@@ -323,10 +355,10 @@ class RestaurantScreen extends StatelessWidget {
         else
           ListView.separated(
             shrinkWrap: true,
-            physics:       NeverScrollableScrollPhysics(),
+            physics: NeverScrollableScrollPhysics(),
             itemCount: rest.menu.length,
             separatorBuilder: (context, index) =>
-                      Divider(color: context.fast.line, height: 1),
+                Divider(color: context.fast.line, height: 1),
             itemBuilder: (context, index) {
               final item = rest.menu[index];
               return _buildMenuItemTile(context, provider, item);
@@ -353,10 +385,7 @@ class RestaurantScreen extends StatelessWidget {
     final address = restaurant.address.trim();
 
     if (!hasValidCoordinates && address.isEmpty) {
-      _showDirectionsError(
-        context,
-        tr(context, 'route_fail'),
-      );
+      _showDirectionsError(context, tr(context, 'route_fail'));
       return;
     }
 
@@ -373,17 +402,11 @@ class RestaurantScreen extends StatelessWidget {
         mode: LaunchMode.externalApplication,
       );
       if (!didLaunch && context.mounted) {
-        _showDirectionsError(
-          context,
-          tr(context, 'gmaps_unavailable'),
-        );
+        _showDirectionsError(context, tr(context, 'gmaps_unavailable'));
       }
     } catch (_) {
       if (context.mounted) {
-        _showDirectionsError(
-          context,
-          tr(context, 'gmaps_fail'),
-        );
+        _showDirectionsError(context, tr(context, 'gmaps_fail'));
       }
     }
   }
@@ -415,7 +438,8 @@ class RestaurantScreen extends StatelessWidget {
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [ Text(
+                children: [
+                  Text(
                     item.name,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
@@ -423,7 +447,8 @@ class RestaurantScreen extends StatelessWidget {
                       color: context.fast.t1,
                     ),
                   ),
-                        SizedBox(height: 4), Text(
+                  SizedBox(height: 4),
+                  Text(
                     item.description,
                     style: TextStyle(
                       fontSize: 11,
@@ -433,8 +458,10 @@ class RestaurantScreen extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 8), Row(
-                    children: [ Text(
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Text(
                         '€${item.price.toStringAsFixed(2)}',
                         style: const TextStyle(
                           fontWeight: FontWeight.w900,
@@ -445,7 +472,10 @@ class RestaurantScreen extends StatelessWidget {
                       if (item.prepTime > 0) ...[
                         const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: context.fast.cardHigh,
                             borderRadius: BorderRadius.circular(6),
@@ -453,10 +483,20 @@ class RestaurantScreen extends StatelessWidget {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.schedule, size: 10, color: context.fast.t3),
+                              Icon(
+                                Icons.schedule,
+                                size: 10,
+                                color: context.fast.t3,
+                              ),
                               const SizedBox(width: 3),
-                              Text('~${item.prepTime} min',
-                                  style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: context.fast.t3)),
+                              Text(
+                                '~${item.prepTime} min',
+                                style: TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.bold,
+                                  color: context.fast.t3,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -466,7 +506,7 @@ class RestaurantScreen extends StatelessWidget {
                 ],
               ),
             ),
-                  SizedBox(width: 16),
+            SizedBox(width: 16),
             Stack(
               clipBehavior: Clip.none,
               children: [
@@ -484,7 +524,7 @@ class RestaurantScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                      Positioned(
+                Positioned(
                   bottom: -6,
                   right: -6,
                   child: DecoratedBox(
@@ -556,29 +596,30 @@ class RestaurantScreen extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           // Item Name & Description
- Text(
+                          Text(
                             item.name,
-                            style:       TextStyle(
+                            style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: context.fast.t1,
                             ),
                           ),
                           if (item.description.isNotEmpty) ...[
-                            const SizedBox(height: 6), Text(
+                            const SizedBox(height: 6),
+                            Text(
                               item.description,
-                              style:       TextStyle(
+                              style: TextStyle(
                                 fontSize: 12,
                                 color: context.fast.t2,
                               ),
                             ),
                           ],
                           const SizedBox(height: 16),
-                                Divider(color: context.fast.line, height: 1),
+                          Divider(color: context.fast.line, height: 1),
                           const SizedBox(height: 16),
 
                           // Free options — no extra charge
-                                Text(
+                          Text(
                             provider.tr('options'),
                             style: TextStyle(
                               fontSize: 13,
@@ -595,7 +636,7 @@ class RestaurantScreen extends StatelessWidget {
                                   (option) => FilterChip(
                                     label: Text(
                                       option,
-                                      style:       TextStyle(
+                                      style: TextStyle(
                                         fontSize: 12,
                                         color: context.fast.t1,
                                       ),
@@ -627,7 +668,7 @@ class RestaurantScreen extends StatelessWidget {
 
                           // Paid supplements — from item.supplements
                           if (item.supplements.isNotEmpty) ...[
-                                  Text(
+                            Text(
                               provider.tr('extras'),
                               style: TextStyle(
                                 fontSize: 13,
@@ -644,7 +685,7 @@ class RestaurantScreen extends StatelessWidget {
                                     (s) => FilterChip(
                                       label: Text(
                                         '${s.name} (+${s.price.toStringAsFixed(2)}€)',
-                                        style:       TextStyle(
+                                        style: TextStyle(
                                           fontSize: 12,
                                           color: context.fast.t1,
                                         ),
@@ -676,7 +717,7 @@ class RestaurantScreen extends StatelessWidget {
                           ],
 
                           // Allergy notes multiline field
-                                Text(
+                          Text(
                             'ALLERGIES / NOTES',
                             style: TextStyle(
                               fontSize: 9,
@@ -685,17 +726,17 @@ class RestaurantScreen extends StatelessWidget {
                               color: context.fast.t3,
                             ),
                           ),
-                          const SizedBox(height: 8), TextField(
+                          const SizedBox(height: 8),
+                          TextField(
                             controller: textController,
                             maxLines: 3,
-                            style:       TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
                               color: context.fast.t1,
                             ),
                             decoration: InputDecoration(
-                              hintText:
-                                  tr(context, 'allergy_hint'),
-                              hintStyle:       TextStyle(
+                              hintText: tr(context, 'allergy_hint'),
+                              hintStyle: TextStyle(
                                 color: context.fast.t3,
                                 fontSize: 11,
                               ),
@@ -703,13 +744,13 @@ class RestaurantScreen extends StatelessWidget {
                               fillColor: context.fast.bg,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide:       BorderSide(
+                                borderSide: BorderSide(
                                   color: context.fast.line,
                                 ),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide:       BorderSide(
+                                borderSide: BorderSide(
                                   color: context.fast.line,
                                 ),
                               ),
@@ -743,7 +784,8 @@ class RestaurantScreen extends StatelessWidget {
                           border: Border.all(color: context.fast.line),
                         ),
                         child: Row(
-                          children: [ IconButton(
+                          children: [
+                            IconButton(
                               onPressed: () {
                                 if (qty > 1) {
                                   setModalState(() {
@@ -752,14 +794,16 @@ class RestaurantScreen extends StatelessWidget {
                                 }
                               },
                               icon: const Icon(Icons.remove, size: 16),
-                            ), Text(
+                            ),
+                            Text(
                               '$qty',
-                              style:       TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
                                 color: context.fast.t1,
                               ),
-                            ), IconButton(
+                            ),
+                            IconButton(
                               onPressed: () {
                                 setModalState(() {
                                   qty++;
@@ -817,7 +861,10 @@ class RestaurantScreen extends StatelessWidget {
                                   elevation: 0,
                                 ),
                                 child: Text(
-                                  tr(context, 'add_cart_price').replaceAll('{n}', total.toStringAsFixed(2)),
+                                  tr(
+                                    context,
+                                    'add_cart_price',
+                                  ).replaceAll('{n}', total.toStringAsFixed(2)),
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w900,
                                     fontSize: 13,

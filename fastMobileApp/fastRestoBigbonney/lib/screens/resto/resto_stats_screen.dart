@@ -42,21 +42,29 @@ class _RestoStatsScreenState extends State<RestoStatsScreen> {
 
   Future<void> _exportStats(int periodDays) async {
     setState(() => _exporting = true);
+    final exportEmpty = tr(context, 'export_empty');
+    final exportTitle = tr(context, 'export_title');
+    final exportText = tr(
+      context,
+      'stats_range',
+    ).replaceAll('{n}', '$periodDays');
     try {
       final csv = await _statsService.exportStats(periodDays: periodDays);
-      if (csv.isEmpty) throw Exception(tr(context, 'export_empty'));
+      if (csv.isEmpty) throw Exception(exportEmpty);
       final dir = await getTemporaryDirectory();
       final file = File('${dir.path}/fast-stats-$periodDays-j.csv');
       await file.writeAsString(csv);
       await Share.shareXFiles(
         [XFile(file.path)],
-        subject: tr(context, 'export_title'),
-        text: tr(context, 'stats_range').replaceAll('{n}', '$periodDays'),
+        subject: exportTitle,
+        text: exportText,
       );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(tr(context, 'export_fail').replaceAll('{n}', '$e'))),
+          SnackBar(
+            content: Text(tr(context, 'export_fail').replaceAll('{n}', '$e')),
+          ),
         );
       }
     } finally {
@@ -78,7 +86,7 @@ class _RestoStatsScreenState extends State<RestoStatsScreen> {
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
           children: [
-                  Text(
+            Text(
               tr(context, 'analytics'),
               style: TextStyle(
                 color: context.fast.t1,
@@ -87,7 +95,7 @@ class _RestoStatsScreenState extends State<RestoStatsScreen> {
               ),
             ),
             const SizedBox(height: 6),
-                  Text(
+            Text(
               tr(context, 'revenue_note'),
               style: TextStyle(color: context.fast.t2, fontSize: 14),
             ),
@@ -107,10 +115,17 @@ class _RestoStatsScreenState extends State<RestoStatsScreen> {
                     ? const SizedBox(
                         width: 16,
                         height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: _brand),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: _brand,
+                        ),
                       )
                     : const Icon(Icons.download_outlined, size: 18),
-                label: Text(_exporting ? tr(context, 'exporting') : tr(context, 'export_csv')),
+                label: Text(
+                  _exporting
+                      ? tr(context, 'exporting')
+                      : tr(context, 'export_csv'),
+                ),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: _brand,
                   side: const BorderSide(color: _brand),
@@ -119,7 +134,7 @@ class _RestoStatsScreenState extends State<RestoStatsScreen> {
             ),
             const SizedBox(height: 20),
             if (provider.statsLoading && stats != null)
-                    Padding(
+              Padding(
                 padding: EdgeInsets.only(bottom: 16),
                 child: LinearProgressIndicator(
                   color: _brand,
@@ -166,9 +181,18 @@ class _PeriodSelector extends StatelessWidget {
       label: tr(context, 'stats_period'),
       child: SegmentedButton<int>(
         segments: [
-          ButtonSegment(value: 7, label: Text(tr(context, 'days_n').replaceAll('{n}', '7'))),
-          ButtonSegment(value: 30, label: Text(tr(context, 'days_n').replaceAll('{n}', '30'))),
-          ButtonSegment(value: 90, label: Text(tr(context, 'days_n').replaceAll('{n}', '90'))),
+          ButtonSegment(
+            value: 7,
+            label: Text(tr(context, 'days_n').replaceAll('{n}', '7')),
+          ),
+          ButtonSegment(
+            value: 30,
+            label: Text(tr(context, 'days_n').replaceAll('{n}', '30')),
+          ),
+          ButtonSegment(
+            value: 90,
+            label: Text(tr(context, 'days_n').replaceAll('{n}', '90')),
+          ),
         ],
         selected: {selected},
         showSelectedIcon: false,
@@ -181,10 +205,11 @@ class _PeriodSelector extends StatelessWidget {
                 : context.fast.t1,
           ),
           backgroundColor: WidgetStateProperty.resolveWith(
-            (states) =>
-                states.contains(WidgetState.selected) ? _brand : context.fast.card,
+            (states) => states.contains(WidgetState.selected)
+                ? _brand
+                : context.fast.card,
           ),
-          side:       WidgetStatePropertyAll(BorderSide(color: context.fast.line)),
+          side: WidgetStatePropertyAll(BorderSide(color: context.fast.line)),
         ),
       ),
     );
@@ -278,8 +303,9 @@ class _RevenueChart extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Semantics(
-          label:
-              tr(context, 'revenue_curve').replaceAll('{n}', '${stats.periodDays}').replaceAll('{m}', _money(stats.kpis.revenue)),
+          label: tr(context, 'revenue_curve')
+              .replaceAll('{n}', '${stats.periodDays}')
+              .replaceAll('{m}', _money(stats.kpis.revenue)),
           image: true,
           child: _Panel(
             child: SizedBox(
@@ -297,7 +323,7 @@ class _RevenueChart extends StatelessWidget {
                           .map(
                             (spot) => LineTooltipItem(
                               _money(spot.y),
-                                    TextStyle(
+                              TextStyle(
                                 color: context.fast.t1,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -310,7 +336,7 @@ class _RevenueChart extends StatelessWidget {
                     drawVerticalLine: false,
                     horizontalInterval: maxY / 4,
                     getDrawingHorizontalLine: (_) =>
-                              FlLine(color: context.fast.line, strokeWidth: 1),
+                        FlLine(color: context.fast.line, strokeWidth: 1),
                   ),
                   borderData: FlBorderData(show: false),
                   titlesData: FlTitlesData(
@@ -329,7 +355,7 @@ class _RevenueChart extends StatelessWidget {
                           meta: meta,
                           child: Text(
                             _compactMoney(value),
-                            style:       TextStyle(
+                            style: TextStyle(
                               color: context.fast.t2,
                               fontSize: 11,
                             ),
@@ -352,7 +378,7 @@ class _RevenueChart extends StatelessWidget {
                             space: 8,
                             child: Text(
                               _shortDate(stats.daily[index].date),
-                              style:       TextStyle(
+                              style: TextStyle(
                                 color: context.fast.t2,
                                 fontSize: 11,
                               ),
@@ -406,7 +432,10 @@ class _LoyaltySection extends StatelessWidget {
             spacing: 24,
             runSpacing: 20,
             children: [
-              _Metric(label: tr(context, 'new_clients'), value: '${kpis.newCustomers}'),
+              _Metric(
+                label: tr(context, 'new_clients'),
+                value: '${kpis.newCustomers}',
+              ),
               _Metric(
                 label: tr(context, 'repeat_clients'),
                 value: '${kpis.recurringCustomers}',
@@ -455,7 +484,7 @@ class _OperationsSection extends StatelessWidget {
                   children: [
                     Text(
                       '${kpis.cancelledOrders} commande${kpis.cancelledOrders > 1 ? 's' : ''}',
-                      style:       TextStyle(
+                      style: TextStyle(
                         color: context.fast.t1,
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
@@ -464,7 +493,7 @@ class _OperationsSection extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       '${_percent(kpis.cancellationRate)} · ${_signedPoints(delta)} ${tr(context, 'vs_prev_period')}',
-                      style:       TextStyle(color: context.fast.t2),
+                      style: TextStyle(color: context.fast.t2),
                     ),
                   ],
                 ),
@@ -504,7 +533,7 @@ class _PopularProducts extends StatelessWidget {
                   maximum: maximum,
                 ),
                 if (index < items.length - 1)
-                        Divider(height: 24, color: context.fast.line),
+                  Divider(height: 24, color: context.fast.line),
               ],
             ],
           ),
@@ -547,7 +576,7 @@ class _ProductRow extends StatelessWidget {
               children: [
                 Text(
                   item.name,
-                  style:       TextStyle(
+                  style: TextStyle(
                     color: context.fast.t1,
                     fontWeight: FontWeight.w600,
                   ),
@@ -566,7 +595,7 @@ class _ProductRow extends StatelessWidget {
           const SizedBox(width: 16),
           Text(
             '${item.totalSold}',
-            style:       TextStyle(
+            style: TextStyle(
               color: context.fast.t1,
               fontWeight: FontWeight.w700,
             ),
@@ -602,7 +631,8 @@ class _KpiCard extends StatelessWidget {
         : '${isPositive ? '+' : ''}${_number(delta!)} %';
 
     return Semantics(
-      label: '$label, $value${hasDelta ? ', ${tr(context, 'evolution_lbl')} $deltaLabel' : ''}',
+      label:
+          '$label, $value${hasDelta ? ', ${tr(context, 'evolution_lbl')} $deltaLabel' : ''}',
       child: Container(
         width: width,
         constraints: const BoxConstraints(minHeight: 154),
@@ -622,7 +652,7 @@ class _KpiCard extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: Text(
                 value,
-                style:       TextStyle(
+                style: TextStyle(
                   color: context.fast.t1,
                   fontSize: 23,
                   fontWeight: FontWeight.w800,
@@ -633,7 +663,7 @@ class _KpiCard extends StatelessWidget {
             Text(
               label,
               maxLines: 2,
-              style:       TextStyle(color: context.fast.t2, fontSize: 13),
+              style: TextStyle(color: context.fast.t2, fontSize: 13),
             ),
             if (hasDelta) ...[
               const SizedBox(height: 8),
@@ -680,17 +710,14 @@ class _Metric extends StatelessWidget {
         children: [
           Text(
             value,
-            style:       TextStyle(
+            style: TextStyle(
               color: context.fast.t1,
               fontSize: 21,
               fontWeight: FontWeight.w800,
             ),
           ),
           const SizedBox(height: 5),
-          Text(
-            label,
-            style:       TextStyle(color: context.fast.t2, fontSize: 13),
-          ),
+          Text(label, style: TextStyle(color: context.fast.t2, fontSize: 13)),
         ],
       ),
     );
@@ -730,17 +757,14 @@ class _SectionTitle extends StatelessWidget {
       children: [
         Text(
           title,
-          style:       TextStyle(
+          style: TextStyle(
             color: context.fast.t1,
             fontSize: 18,
             fontWeight: FontWeight.w800,
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          subtitle,
-          style:       TextStyle(color: context.fast.t2, fontSize: 13),
-        ),
+        Text(subtitle, style: TextStyle(color: context.fast.t2, fontSize: 13)),
       ],
     );
   }
@@ -791,8 +815,7 @@ class _EmptyState extends StatelessWidget {
     return _StatePanel(
       icon: Icons.query_stats_outlined,
       title: tr(context, 'no_data'),
-      message:
-          tr(context, 'no_activity'),
+      message: tr(context, 'no_activity'),
       actionLabel: tr(context, 'refresh'),
       onPressed: onRetry,
     );
@@ -826,7 +849,7 @@ class _StatePanel extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style:       TextStyle(
+              style: TextStyle(
                 color: context.fast.t1,
                 fontSize: 19,
                 fontWeight: FontWeight.w800,
@@ -836,7 +859,7 @@ class _StatePanel extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style:       TextStyle(color: context.fast.t2, height: 1.5),
+              style: TextStyle(color: context.fast.t2, height: 1.5),
             ),
             const SizedBox(height: 20),
             FilledButton.icon(

@@ -3,7 +3,7 @@ import '../theme.dart';
 import '../l10n/tr.dart';
 
 class RestoDashboardScreen extends StatelessWidget {
-        RestoDashboardScreen({super.key});
+  const RestoDashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -21,12 +21,19 @@ class RestoDashboardScreen extends StatelessWidget {
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [ Icon(Icons.construction, size: 64, color: Color(0xFFF59E0B)),
-                  SizedBox(height: 16), Text(
+          children: [
+            Icon(Icons.construction, size: 64, color: Color(0xFFF59E0B)),
+            SizedBox(height: 16),
+            Text(
               tr(context, 'wip_title'),
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: context.fast.t1),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: context.fast.t1,
+              ),
             ),
-                  SizedBox(height: 8), Text(
+            SizedBox(height: 8),
+            Text(
               tr(context, 'wip_desc'),
               textAlign: TextAlign.center,
               style: TextStyle(color: context.fast.t2, height: 1.5),

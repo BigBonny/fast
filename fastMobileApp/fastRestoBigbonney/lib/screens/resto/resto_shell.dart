@@ -47,43 +47,37 @@ class _RestoMainShellState extends State<RestoMainShell> {
       key: _ordersKey,
       navigationIndex: 0,
       title: tr(context, 'tuto1_t'),
-      description:
-          tr(context, 'tuto1_d'),
+      description: tr(context, 'tuto1_d'),
     ),
     _TutorialStep(
       key: _kitchenKey,
       navigationIndex: 0,
       title: tr(context, 'tuto2_t'),
-      description:
-          tr(context, 'tuto2_d'),
+      description: tr(context, 'tuto2_d'),
     ),
     _TutorialStep(
       key: _menuKey,
       navigationIndex: 1,
       title: tr(context, 'tuto3_t'),
-      description:
-          tr(context, 'tuto3_d'),
+      description: tr(context, 'tuto3_d'),
     ),
     _TutorialStep(
       key: _statsKey,
       navigationIndex: 2,
       title: tr(context, 'tuto4_t'),
-      description:
-          tr(context, 'tuto4_d'),
+      description: tr(context, 'tuto4_d'),
     ),
     _TutorialStep(
       key: _settingsKey,
       navigationIndex: 3,
       title: tr(context, 'tuto5_t'),
-      description:
-          tr(context, 'tuto5_d'),
+      description: tr(context, 'tuto5_d'),
     ),
     _TutorialStep(
       key: _profileKey,
       navigationIndex: 4,
       title: tr(context, 'tuto6_t'),
-      description:
-          tr(context, 'tuto6_d'),
+      description: tr(context, 'tuto6_d'),
     ),
   ];
 
@@ -168,57 +162,63 @@ class _RestoMainShellState extends State<RestoMainShell> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-              children: [
-                ShaderMask(
-                  shaderCallback: (b) => FASTPro.logoGradient.createShader(b),
-                  child: const Text(
-                    '⚡ FAST',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w900,
-                      fontSize: 20,
-                      letterSpacing: 3,
-                      color: Colors.white,
+                  children: [
+                    ShaderMask(
+                      shaderCallback: (b) =>
+                          FASTPro.logoGradient.createShader(b),
+                      child: const Text(
+                        '⚡ FAST',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 20,
+                          letterSpacing: 3,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: FASTPro.teal.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(5),
-                    border: Border.all(color: FASTPro.teal.withValues(alpha: 0.4)),
-                  ),
-                  child: const Text(
-                    'PRO',
-                    style: TextStyle(
-                      color: FASTPro.teal,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 2,
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 7,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: FASTPro.teal.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(5),
+                        border: Border.all(
+                          color: FASTPro.teal.withValues(alpha: 0.4),
+                        ),
+                      ),
+                      child: const Text(
+                        'PRO',
+                        style: TextStyle(
+                          color: FASTPro.teal,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 2,
+                        ),
+                      ),
                     ),
+                    const SizedBox(width: 8),
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF10B981), // Green live dot
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ],
+                ),
+                const Text(
+                  'RESTAURATEUR PRO',
+                  style: TextStyle(
+                    color: Color(0xFF94A3B8),
+                    fontSize: 9,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 2,
                   ),
                 ),
-                const SizedBox(width: 8),
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF10B981), // Green live dot
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ],
-            ),
-            const Text(
-              'RESTAURATEUR PRO',
-              style: TextStyle(
-                color: Color(0xFF94A3B8),
-                fontSize: 9,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 2,
-              ),
-            ),
               ],
             ),
             actions: [
@@ -287,15 +287,31 @@ class _RestoMainShellState extends State<RestoMainShell> {
                 height: 64,
                 child: Row(
                   children: [
-                    _navItem(0, Icons.receipt_long, tr(context, 'nav_orders'),
-                        key: _ordersKey),
-                    _navItem(1, Icons.restaurant_menu, tr(context, 'menu'),
-                        key: _menuKey),
+                    _navItem(
+                      0,
+                      Icons.receipt_long,
+                      tr(context, 'nav_orders'),
+                      key: _ordersKey,
+                    ),
+                    _navItem(
+                      1,
+                      Icons.restaurant_menu,
+                      tr(context, 'menu'),
+                      key: _menuKey,
+                    ),
                     _rushItem(provider),
-                    _navItem(3, Icons.settings, tr(context, 'nav_settings'),
-                        key: _settingsKey),
-                    _navItem(4, Icons.storefront, tr(context, 'nav_profile'),
-                        key: _profileKey),
+                    _navItem(
+                      3,
+                      Icons.settings,
+                      tr(context, 'nav_settings'),
+                      key: _settingsKey,
+                    ),
+                    _navItem(
+                      4,
+                      Icons.storefront,
+                      tr(context, 'nav_profile'),
+                      key: _profileKey,
+                    ),
                   ],
                 ),
               ),
@@ -326,9 +342,11 @@ class _RestoMainShellState extends State<RestoMainShell> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon,
-                  size: 22,
-                  color: active ? FASTPro.teal : const Color(0xFF94A3B8)),
+              Icon(
+                icon,
+                size: 22,
+                color: active ? FASTPro.teal : const Color(0xFF94A3B8),
+              ),
               const SizedBox(height: 3),
               Text(
                 label,
@@ -368,7 +386,9 @@ class _RestoMainShellState extends State<RestoMainShell> {
                       : const Color(0xFFEF4444).withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                      color: const Color(0xFFEF4444), width: 1.5),
+                    color: const Color(0xFFEF4444),
+                    width: 1.5,
+                  ),
                 ),
                 child: Icon(
                   Icons.warning_amber_rounded,

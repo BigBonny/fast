@@ -104,7 +104,8 @@ class _GroupScreenState extends State<GroupScreen> {
       setState(() => _error = provider.tr('no_resto_avail'));
       return;
     }
-    String restaurantId = provider.selectedRestaurant?.id ?? provider.restaurants.first.id;
+    String restaurantId =
+        provider.selectedRestaurant?.id ?? provider.restaurants.first.id;
     final selected = await showModalBottomSheet<String>(
       context: context,
       backgroundColor: context.fast.card,
@@ -115,19 +116,40 @@ class _GroupScreenState extends State<GroupScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [ Text(provider.tr('choose_resto'), style: TextStyle(color: context.fast.t1, fontSize: 20, fontWeight: FontWeight.w900)),
-                      SizedBox(height: 8), Text(provider.tr('group_sub'), style: TextStyle(color: context.fast.t2)),
-                      SizedBox(height: 20),
+              children: [
+                Text(
+                  provider.tr('choose_resto'),
+                  style: TextStyle(
+                    color: context.fast.t1,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  provider.tr('group_sub'),
+                  style: TextStyle(color: context.fast.t2),
+                ),
+                SizedBox(height: 20),
                 DropdownButtonFormField<String>(
                   initialValue: restaurantId,
                   dropdownColor: context.fast.line,
-                  decoration: InputDecoration(labelText: provider.tr('restaurant_lbl'), border: const OutlineInputBorder()),
-                  items: provider.restaurants.map((restaurant) => DropdownMenuItem(
-                    value: restaurant.id,
-                    child: Text(restaurant.name),
-                  )).toList(),
+                  decoration: InputDecoration(
+                    labelText: provider.tr('restaurant_lbl'),
+                    border: const OutlineInputBorder(),
+                  ),
+                  items: provider.restaurants
+                      .map(
+                        (restaurant) => DropdownMenuItem(
+                          value: restaurant.id,
+                          child: Text(restaurant.name),
+                        ),
+                      )
+                      .toList(),
                   onChanged: (value) {
-                    if (value != null) setSheetState(() => restaurantId = value);
+                    if (value != null) {
+                      setSheetState(() => restaurantId = value);
+                    }
                   },
                 ),
                 const SizedBox(height: 20),
@@ -150,7 +172,12 @@ class _GroupScreenState extends State<GroupScreen> {
     try {
       await _setGroup(await _service.createGroup(restaurantId: selected));
     } catch (e) {
-      if (mounted) setState(() { _loading = false; _error = _message(e); });
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _error = _message(e);
+        });
+      }
     }
   }
 
@@ -158,18 +185,33 @@ class _GroupScreenState extends State<GroupScreen> {
     if (_codeController.text.trim().isEmpty) return;
     setState(() => _loading = true);
     try {
-      await _setGroup(await _service.joinGroup(_codeController.text.trim().toUpperCase()));
+      await _setGroup(
+        await _service.joinGroup(_codeController.text.trim().toUpperCase()),
+      );
     } catch (e) {
-      if (mounted) setState(() { _loading = false; _error = _message(e); });
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _error = _message(e);
+        });
+      }
     }
   }
 
   Future<void> _action(Future<Map<String, dynamic>> Function() callback) async {
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       await _setGroup(await callback());
     } catch (e) {
-      if (mounted) setState(() { _loading = false; _error = _message(e); });
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _error = _message(e);
+        });
+      }
     }
   }
 
@@ -181,7 +223,10 @@ class _GroupScreenState extends State<GroupScreen> {
       _refreshTimer?.cancel();
       if (!mounted) return;
       context.read<FASTProvider>().clearActiveGroup();
-      setState(() { _group = null; _error = null; });
+      setState(() {
+        _group = null;
+        _error = null;
+      });
     } catch (e) {
       if (mounted) setState(() => _error = _message(e));
     }
@@ -201,7 +246,10 @@ class _GroupScreenState extends State<GroupScreen> {
 
   Future<void> _copyInvite() async {
     final code = _group?['code'] as String? ?? '';
-    final message = context.read<FASTProvider>().tr('share_msg').replaceAll('{n}', code);
+    final message = context
+        .read<FASTProvider>()
+        .tr('share_msg')
+        .replaceAll('{n}', code);
     try {
       await Share.share(message, subject: tr(context, 'group_invite'));
     } catch (_) {
@@ -220,14 +268,19 @@ class _GroupScreenState extends State<GroupScreen> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Center(child: CircularProgressIndicator(color: Color(0xFFF59E0B)));
+      return const Center(
+        child: CircularProgressIndicator(color: Color(0xFFF59E0B)),
+      );
     }
     return Scaffold(
       backgroundColor: context.fast.bg,
       appBar: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: context.fast.bg,
-        title: Text(context.watch<FASTProvider>().tr('group_order'), style: const TextStyle(fontWeight: FontWeight.w900)),
+        title: Text(
+          context.watch<FASTProvider>().tr('group_order'),
+          style: const TextStyle(fontWeight: FontWeight.w900),
+        ),
       ),
       body: RefreshIndicator(
         onRefresh: () async {
@@ -253,11 +306,18 @@ class _GroupScreenState extends State<GroupScreen> {
       borderRadius: BorderRadius.circular(10),
       border: Border.all(color: const Color(0xFFEF4444)),
     ),
-    child: Row(children: [
-      const Icon(Icons.error_outline, color: Color(0xFFFCA5A5)),
-      const SizedBox(width: 10),
-      Expanded(child: Text(_error!, style: const TextStyle(color: Color(0xFFFCA5A5)))),
-    ]),
+    child: Row(
+      children: [
+        const Icon(Icons.error_outline, color: Color(0xFFFCA5A5)),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            _error!,
+            style: const TextStyle(color: Color(0xFFFCA5A5)),
+          ),
+        ),
+      ],
+    ),
   );
 
   Widget _welcome() => Column(
@@ -270,25 +330,51 @@ class _GroupScreenState extends State<GroupScreen> {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: context.fast.line),
         ),
-        child:       Column(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [ Icon(Icons.groups_2_outlined, color: Color(0xFFF59E0B), size: 36),
-            SizedBox(height: 16), Text(context.watch<FASTProvider>().tr('group_tagline'), style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.w900, fontSize: 20)),
-            SizedBox(height: 10), Text(context.watch<FASTProvider>().tr('group_steps'), style: TextStyle(color: context.fast.t2, height: 1.7)),
+          children: [
+            Icon(Icons.groups_2_outlined, color: Color(0xFFF59E0B), size: 36),
+            SizedBox(height: 16),
+            Text(
+              context.watch<FASTProvider>().tr('group_tagline'),
+              style: TextStyle(
+                color: context.fast.t1,
+                fontWeight: FontWeight.w900,
+                fontSize: 20,
+              ),
+            ),
+            SizedBox(height: 10),
+            Text(
+              context.watch<FASTProvider>().tr('group_steps'),
+              style: TextStyle(color: context.fast.t2, height: 1.7),
+            ),
           ],
         ),
       ),
-            SizedBox(height: 20),
+      SizedBox(height: 20),
       SizedBox(
         height: 50,
         child: ElevatedButton.icon(
           onPressed: _create,
           icon: const Icon(Icons.add_circle_outline),
-          label: Text(context.watch<FASTProvider>().tr('create_group'), style: const TextStyle(fontWeight: FontWeight.bold)),
+          label: Text(
+            context.watch<FASTProvider>().tr('create_group'),
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
         ),
       ),
-            SizedBox(height: 28), Text(context.watch<FASTProvider>().tr('join_code'), style: TextStyle(color: context.fast.t2, fontWeight: FontWeight.bold, fontSize: 11, letterSpacing: 0.8)),
-      const SizedBox(height: 8), TextField(
+      SizedBox(height: 28),
+      Text(
+        context.watch<FASTProvider>().tr('join_code'),
+        style: TextStyle(
+          color: context.fast.t2,
+          fontWeight: FontWeight.bold,
+          fontSize: 11,
+          letterSpacing: 0.8,
+        ),
+      ),
+      const SizedBox(height: 8),
+      TextField(
         controller: _codeController,
         textCapitalization: TextCapitalization.characters,
         decoration: InputDecoration(
@@ -312,11 +398,17 @@ class _GroupScreenState extends State<GroupScreen> {
         .whereType<Map<String, dynamic>>()
         .toList();
     final authUserId = context.read<AuthProvider>().user?.id;
-    final isHost = group['isHost'] as bool? ??
+    final isHost =
+        group['isHost'] as bool? ??
         ((group['hostUserId'] as String?) == authUserId);
     final status = group['status'] as String? ?? 'OPEN';
-    final paidCount = members.where((member) => member['paymentStatus'] == 'PAID').length;
-    final total = members.fold<double>(0, (sum, member) => sum + ((member['total'] as num?)?.toDouble() ?? 0));
+    final paidCount = members
+        .where((member) => member['paymentStatus'] == 'PAID')
+        .length;
+    final total = members.fold<double>(
+      0,
+      (sum, member) => sum + ((member['total'] as num?)?.toDouble() ?? 0),
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -326,36 +418,82 @@ class _GroupScreenState extends State<GroupScreen> {
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [ Text(context.watch<FASTProvider>().tr('group_code'), style: TextStyle(color: context.fast.t2, fontSize: 10, fontWeight: FontWeight.bold)), Text(group['code'] as String? ?? '', style: const TextStyle(color: Color(0xFFF59E0B), fontSize: 24, fontWeight: FontWeight.w900)),
+                children: [
+                  Text(
+                    context.watch<FASTProvider>().tr('group_code'),
+                    style: TextStyle(
+                      color: context.fast.t2,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    group['code'] as String? ?? '',
+                    style: const TextStyle(
+                      color: Color(0xFFF59E0B),
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
                 ],
               ),
-            ), IconButton.filledTonal(
+            ),
+            IconButton.filledTonal(
               tooltip: tr(context, 'copy_invite'),
               onPressed: _copyInvite,
               icon: const Icon(Icons.share_outlined),
             ),
-            const SizedBox(width: 8), TextButton(onPressed: _leave, child: Text(context.read<FASTProvider>().tr('quit'))),
+            const SizedBox(width: 8),
+            TextButton(
+              onPressed: _leave,
+              child: Text(context.read<FASTProvider>().tr('quit')),
+            ),
           ],
         ),
-              SizedBox(height: 16),
+        SizedBox(height: 16),
         _progress(status),
-              SizedBox(height: 20),
+        SizedBox(height: 20),
         Container(
           padding: EdgeInsets.all(16),
-          decoration: BoxDecoration(color: context.fast.card, borderRadius: BorderRadius.circular(14), border: Border.all(color: context.fast.line)),
+          decoration: BoxDecoration(
+            color: context.fast.card,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: context.fast.line),
+          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _summary(tr(context, 'members'), '${members.length}', Icons.people_outline),
-              _summary(tr(context, 'parts_paid'), '$paidCount/${members.length}', Icons.verified_outlined),
-              _summary(tr(context, 'total'), '${total.toStringAsFixed(2)} €', Icons.receipt_long_outlined),
+              _summary(
+                tr(context, 'members'),
+                '${members.length}',
+                Icons.people_outline,
+              ),
+              _summary(
+                tr(context, 'parts_paid'),
+                '$paidCount/${members.length}',
+                Icons.verified_outlined,
+              ),
+              _summary(
+                tr(context, 'total'),
+                '${total.toStringAsFixed(2)} €',
+                Icons.receipt_long_outlined,
+              ),
             ],
           ),
         ),
-              SizedBox(height: 20), Text(tr(context, 'participants'), style: TextStyle(color: context.fast.t2, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.8)),
-              SizedBox(height: 8),
+        SizedBox(height: 20),
+        Text(
+          tr(context, 'participants'),
+          style: TextStyle(
+            color: context.fast.t2,
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0.8,
+          ),
+        ),
+        SizedBox(height: 8),
         ...members.map(_memberCard),
-              SizedBox(height: 20),
+        SizedBox(height: 20),
         if (status == 'OPEN')
           SizedBox(
             height: 50,
@@ -368,7 +506,8 @@ class _GroupScreenState extends State<GroupScreen> {
         if (isHost && status == 'OPEN') ...[
           const SizedBox(height: 10),
           OutlinedButton.icon(
-            onPressed: () => _action(() => _service.lockGroup(group['id'] as String)),
+            onPressed: () =>
+                _action(() => _service.lockGroup(group['id'] as String)),
             icon: const Icon(Icons.lock_outline),
             label: Text(tr(context, 'close_invites')),
           ),
@@ -377,45 +516,84 @@ class _GroupScreenState extends State<GroupScreen> {
           SizedBox(
             height: 50,
             child: ElevatedButton.icon(
-              onPressed: paidCount == 0 ? null : () => _action(() => _service.submitGroup(group['id'] as String)),
+              onPressed: paidCount == 0
+                  ? null
+                  : () => _action(
+                      () => _service.submitGroup(group['id'] as String),
+                    ),
               icon: const Icon(Icons.send_outlined),
-              label: Text(paidCount == 0 ? tr(context, 'waiting_payment') : tr(context, 'send_parts').replaceAll('{n}', '$paidCount')),
+              label: Text(
+                paidCount == 0
+                    ? tr(context, 'waiting_payment')
+                    : tr(context, 'send_parts').replaceAll('{n}', '$paidCount'),
+              ),
             ),
           ),
-                SizedBox(height: 8), Text(tr(context, 'group_unpaid_warn'), textAlign: TextAlign.center, style: TextStyle(color: context.fast.t2, fontSize: 12)),
+          SizedBox(height: 8),
+          Text(
+            tr(context, 'group_unpaid_warn'),
+            textAlign: TextAlign.center,
+            style: TextStyle(color: context.fast.t2, fontSize: 12),
+          ),
         ],
-        if (status == 'SUBMITTED')
-          const _SubmittedCard(),
+        if (status == 'SUBMITTED') const _SubmittedCard(),
       ],
     );
   }
 
   Widget _progress(String status) {
-          final steps = ['OPEN', 'LOCKED', 'SUBMITTED'];
+    final steps = ['OPEN', 'LOCKED', 'SUBMITTED'];
     final current = steps.indexOf(status).clamp(0, 2);
-          final labels = [tr(context, 'invites_lbl'), tr(context, 'payments_lbl'), tr(context, 'sent_lbl')];
+    final labels = [
+      tr(context, 'invites_lbl'),
+      tr(context, 'payments_lbl'),
+      tr(context, 'sent_lbl'),
+    ];
     return Row(
-      children: List.generate(3, (index) => Expanded(
-        child: Column(
-          children: [
-            Container(
-              height: 4,
-              margin: EdgeInsets.symmetric(horizontal: 3),
-              decoration: BoxDecoration(
-                color: index <= current ?       Color(0xFFF59E0B) : context.fast.faint,
-                borderRadius: BorderRadius.circular(4),
+      children: List.generate(
+        3,
+        (index) => Expanded(
+          child: Column(
+            children: [
+              Container(
+                height: 4,
+                margin: EdgeInsets.symmetric(horizontal: 3),
+                decoration: BoxDecoration(
+                  color: index <= current
+                      ? Color(0xFFF59E0B)
+                      : context.fast.faint,
+                  borderRadius: BorderRadius.circular(4),
+                ),
               ),
-            ),
-                  SizedBox(height: 6), Text(labels[index], style: TextStyle(color: index <= current ? const Color(0xFFF59E0B) : context.fast.t3, fontSize: 10, fontWeight: FontWeight.bold)),
-          ],
+              SizedBox(height: 6),
+              Text(
+                labels[index],
+                style: TextStyle(
+                  color: index <= current
+                      ? const Color(0xFFF59E0B)
+                      : context.fast.t3,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
         ),
-      )),
+      ),
     );
   }
 
-  Widget _summary(String label, String value, IconData icon) => Column(children: [ Icon(icon, color: const Color(0xFFF59E0B), size: 20),
-          SizedBox(height: 6), Text(value, style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.w900)), Text(label, style: TextStyle(color: context.fast.t2, fontSize: 10)),
-  ]);
+  Widget _summary(String label, String value, IconData icon) => Column(
+    children: [
+      Icon(icon, color: const Color(0xFFF59E0B), size: 20),
+      SizedBox(height: 6),
+      Text(
+        value,
+        style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.w900),
+      ),
+      Text(label, style: TextStyle(color: context.fast.t2, fontSize: 10)),
+    ],
+  );
 
   Widget _memberCard(Map<String, dynamic> member) {
     final user = member['user'] as Map<String, dynamic>?;
@@ -425,22 +603,67 @@ class _GroupScreenState extends State<GroupScreen> {
     return Container(
       margin: EdgeInsets.only(bottom: 8),
       padding: EdgeInsets.all(14),
-      decoration: BoxDecoration(color: context.fast.card, borderRadius: BorderRadius.circular(12), border: Border.all(color: context.fast.line)),
+      decoration: BoxDecoration(
+        color: context.fast.card,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: context.fast.line),
+      ),
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: paid ?       Color(0xFF10B981).withValues(alpha: 0.18) : context.fast.faint,
-            child: Text(name.isEmpty ? '?' : name[0].toUpperCase(), style: TextStyle(color: paid ? const Color(0xFF10B981) : (Theme.of(context).brightness == Brightness.dark ? Colors.white : const Color(0xFF52525B)), fontWeight: FontWeight.bold)),
-          ),
-                SizedBox(width: 12),
-          Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [ Text(name, style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold)), Text(
-                paid ? tr(context, 'part_paid') : paymentStatus == 'READY' ? tr(context, 'paying') : tr(context, 'compose_part'),
-                style: TextStyle(color: paid ?       Color(0xFF10B981) : context.fast.t2, fontSize: 11),
+            backgroundColor: paid
+                ? Color(0xFF10B981).withValues(alpha: 0.18)
+                : context.fast.faint,
+            child: Text(
+              name.isEmpty ? '?' : name[0].toUpperCase(),
+              style: TextStyle(
+                color: paid
+                    ? const Color(0xFF10B981)
+                    : (Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : const Color(0xFF52525B)),
+                fontWeight: FontWeight.bold,
               ),
-            ]),
-          ), Text('${((member['total'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)} €', style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold)),
-          const SizedBox(width: 8), Icon(paid ? Icons.check_circle : Icons.hourglass_empty, color: paid ? const Color(0xFF10B981) : const Color(0xFFF59E0B)),
+            ),
+          ),
+          SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: TextStyle(
+                    color: context.fast.t1,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  paid
+                      ? tr(context, 'part_paid')
+                      : paymentStatus == 'READY'
+                      ? tr(context, 'paying')
+                      : tr(context, 'compose_part'),
+                  style: TextStyle(
+                    color: paid ? Color(0xFF10B981) : context.fast.t2,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            '${((member['total'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)} €',
+            style: TextStyle(
+              color: context.fast.t1,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Icon(
+            paid ? Icons.check_circle : Icons.hourglass_empty,
+            color: paid ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
+          ),
         ],
       ),
     );
@@ -448,7 +671,7 @@ class _GroupScreenState extends State<GroupScreen> {
 }
 
 class _SubmittedCard extends StatelessWidget {
-        const _SubmittedCard();
+  const _SubmittedCard();
 
   @override
   Widget build(BuildContext context) => Container(
@@ -458,9 +681,25 @@ class _SubmittedCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(14),
       border: Border.all(color: const Color(0xFF10B981)),
     ),
-    child:       Column(children: [ Icon(Icons.task_alt, color: Color(0xFF10B981), size: 36),
-      SizedBox(height: 10), Text(tr(context, 'group_sent_title'), style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.w900, fontSize: 17)),
-      SizedBox(height: 6), Text(tr(context, 'group_sent_sub'), textAlign: TextAlign.center, style: TextStyle(color: context.fast.t2, height: 1.4)),
-    ]),
+    child: Column(
+      children: [
+        Icon(Icons.task_alt, color: Color(0xFF10B981), size: 36),
+        SizedBox(height: 10),
+        Text(
+          tr(context, 'group_sent_title'),
+          style: TextStyle(
+            color: context.fast.t1,
+            fontWeight: FontWeight.w900,
+            fontSize: 17,
+          ),
+        ),
+        SizedBox(height: 6),
+        Text(
+          tr(context, 'group_sent_sub'),
+          textAlign: TextAlign.center,
+          style: TextStyle(color: context.fast.t2, height: 1.4),
+        ),
+      ],
+    ),
   );
 }

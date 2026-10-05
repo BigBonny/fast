@@ -46,20 +46,54 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
   bool _connectLoading = false;
 
   static const _dietaryAll = [
-    'VEGAN', 'VEGETARIAN', 'GLUTEN_FREE', 'HALAL', 'KETO', 'DAIRY_FREE',
+    'VEGAN',
+    'VEGETARIAN',
+    'GLUTEN_FREE',
+    'HALAL',
+    'KETO',
+    'DAIRY_FREE',
   ];
 
   // Same list as the client app's category strip — multi-select.
   static const _categories = [
-    'Burgers', 'Tacos', 'Kebab', 'Pizza', 'Poulet', 'Sandwichs',
-    'Fast-food', 'Hot-dogs', 'Sushi', 'Poke', 'Chinois', 'Vietnamien',
-    'Indien', 'Thaïlandais', 'Coréen', 'Mexicain', 'Italien', 'Grec',
-    'Cuisine du monde', 'Grillades & Viandes', 'Poisson & Fruits de mer',
-    'Vegan & Végétarien', 'Halal', 'Boulangerie', 'Sandwicherie',
-    'Crêpes & Gaufres', 'Desserts', 'Glaces', 'Bubble Tea', 'Café',
-    'Brasserie', 'Restaurant traditionnel', 'Restaurant gastronomique',
-    'Buffet', 'Cuisine méditerranéenne', 'Cuisine africaine',
-    'Cuisine antillaise & créole', 'Autres',
+    'Burgers',
+    'Tacos',
+    'Kebab',
+    'Pizza',
+    'Poulet',
+    'Sandwichs',
+    'Fast-food',
+    'Hot-dogs',
+    'Sushi',
+    'Poke',
+    'Chinois',
+    'Vietnamien',
+    'Indien',
+    'Thaïlandais',
+    'Coréen',
+    'Mexicain',
+    'Italien',
+    'Grec',
+    'Cuisine du monde',
+    'Grillades & Viandes',
+    'Poisson & Fruits de mer',
+    'Vegan & Végétarien',
+    'Halal',
+    'Boulangerie',
+    'Sandwicherie',
+    'Crêpes & Gaufres',
+    'Desserts',
+    'Glaces',
+    'Bubble Tea',
+    'Café',
+    'Brasserie',
+    'Restaurant traditionnel',
+    'Restaurant gastronomique',
+    'Buffet',
+    'Cuisine méditerranéenne',
+    'Cuisine africaine',
+    'Cuisine antillaise & créole',
+    'Autres',
   ];
   Set<String> _selectedCategories = {};
 
@@ -93,7 +127,9 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(tr(context, 'stripe_err').replaceAll('{n}', '$e'))),
+          SnackBar(
+            content: Text(tr(context, 'stripe_err').replaceAll('{n}', '$e')),
+          ),
         );
       }
     } finally {
@@ -124,17 +160,25 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
         _normalPrepTime = ((data['normalPrepTime'] as num?)?.toDouble()) ?? 15;
         _rushPrepTime = ((data['rushPrepTime'] as num?)?.toDouble()) ?? 25;
         final opts = data['dietaryOptions'] as List<dynamic>? ?? [];
-        _selectedDietary = opts.map((e) {
-          if (e is String) return e;
-          if (e is Map<String, dynamic>) return e['option'] as String? ?? '';
-          return '';
-        }).where((s) => s.isNotEmpty).toList();
+        _selectedDietary = opts
+            .map((e) {
+              if (e is String) return e;
+              if (e is Map<String, dynamic>) {
+                return e['option'] as String? ?? '';
+              }
+              return '';
+            })
+            .where((s) => s.isNotEmpty)
+            .toList();
         _loading = false;
       });
     } catch (e) {
       // Fall back to locally cached settings
       if (!mounted) return;
-      final cached = Provider.of<RestoProvider>(context, listen: false).settings;
+      final cached = Provider.of<RestoProvider>(
+        context,
+        listen: false,
+      ).settings;
       setState(() {
         _restaurantId = cached?.id;
         _nameCtrl.text = cached?.name ?? '';
@@ -164,7 +208,10 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
       setState(() => _error = tr(context, 'no_resto_found'));
       return;
     }
-    setState(() { _saving = true; _error = null; });
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
 
     final body = <String, dynamic>{
       'name': _nameCtrl.text.trim(),
@@ -187,33 +234,45 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
       // Update local cache
       if (!mounted) return;
       final provider = Provider.of<RestoProvider>(context, listen: false);
-      await provider.updateSettings(RestaurantSettings(
-        id: _restaurantId,
-        managerFirstName: provider.settings?.managerFirstName ?? '',
-        managerPhone: provider.settings?.managerPhone ?? '',
-        name: _nameCtrl.text.trim(),
-        description: _descCtrl.text.trim(),
-        cuisineType: _cuisineCtrl.text.trim(),
-        category: _selectedCategories.join(', '),
-        city: _cityCtrl.text.trim(),
-        address: _addressCtrl.text.trim(),
-        managerIban: _ibanCtrl.text.trim(),
-        image: _imageBase64,
-        normalPrepTime: _normalPrepTime.round(),
-        rushPrepTime: _rushPrepTime.round(),
-        dietaryOptions: _selectedDietary,
-      ));
+      await provider.updateSettings(
+        RestaurantSettings(
+          id: _restaurantId,
+          managerFirstName: provider.settings?.managerFirstName ?? '',
+          managerPhone: provider.settings?.managerPhone ?? '',
+          name: _nameCtrl.text.trim(),
+          description: _descCtrl.text.trim(),
+          cuisineType: _cuisineCtrl.text.trim(),
+          category: _selectedCategories.join(', '),
+          city: _cityCtrl.text.trim(),
+          address: _addressCtrl.text.trim(),
+          managerIban: _ibanCtrl.text.trim(),
+          image: _imageBase64,
+          normalPrepTime: _normalPrepTime.round(),
+          rushPrepTime: _rushPrepTime.round(),
+          dietaryOptions: _selectedDietary,
+        ),
+      );
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        backgroundColor: Color(0xFF10B981),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        content: Text(tr(context, 'profile_updated'),
-            style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold)),
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Color(0xFF10B981),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          content: Text(
+            tr(context, 'profile_updated'),
+            style: TextStyle(
+              color: context.fast.t1,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      );
     } catch (e) {
-      setState(() => _error = tr(context, 'error_colon').replaceAll('{n}', e.toString()));
+      setState(
+        () =>
+            _error = tr(context, 'error_colon').replaceAll('{n}', e.toString()),
+      );
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -234,15 +293,27 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Center(child: CircularProgressIndicator(color: Color(0xFF00C8B3)));
+      return const Center(
+        child: CircularProgressIndicator(color: Color(0xFF00C8B3)),
+      );
     }
 
     return ListView(
       padding: EdgeInsets.fromLTRB(16, 16, 16, 48),
-      children: [ Text(tr(context, 'profil_resto'),
-            style: TextStyle(color: context.fast.t1, fontSize: 24, fontWeight: FontWeight.bold)),
-              SizedBox(height: 4), Text(tr(context, 'visible_clients'),
-            style: TextStyle(color: context.fast.t2, fontSize: 13)),
+      children: [
+        Text(
+          tr(context, 'profil_resto'),
+          style: TextStyle(
+            color: context.fast.t1,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: 4),
+        Text(
+          tr(context, 'visible_clients'),
+          style: TextStyle(color: context.fast.t2, fontSize: 13),
+        ),
 
         if (_error != null) ...[
           const SizedBox(height: 12),
@@ -251,20 +322,25 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
             decoration: BoxDecoration(
               color: const Color(0xFFEF4444).withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.4)),
+              border: Border.all(
+                color: const Color(0xFFEF4444).withValues(alpha: 0.4),
+              ),
             ),
-            child: Text(_error!, style: const TextStyle(color: Color(0xFFEF4444), fontSize: 13)),
+            child: Text(
+              _error!,
+              style: const TextStyle(color: Color(0xFFEF4444), fontSize: 13),
+            ),
           ),
         ],
 
-              SizedBox(height: 24),
+        SizedBox(height: 24),
         _section(tr(context, 'customization')),
         _buildThemePicker(),
 
-              SizedBox(height: 24),
+        SizedBox(height: 24),
         _section(tr(context, 'stripe_payments')),
         _buildStripeConnectBanner(),
-              SizedBox(height: 12),
+        SizedBox(height: 12),
         OutlinedButton.icon(
           onPressed: _connectLoading ? null : _configureStripeConnect,
           icon: const Icon(Icons.account_balance),
@@ -276,31 +352,46 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
           ),
         ),
 
-              SizedBox(height: 24),
+        SizedBox(height: 24),
         _section(tr(context, 'cover_image')),
         _buildImagePicker(),
 
-              SizedBox(height: 24),
+        SizedBox(height: 24),
         _section(tr(context, 'identity')),
         _field(tr(context, 'resto_name_lbl'), _nameCtrl),
-        _field(tr(context, 'description'), _descCtrl, maxLines: 3,
-            hint: tr(context, 'desc_hint')),
+        _field(
+          tr(context, 'description'),
+          _descCtrl,
+          maxLines: 3,
+          hint: tr(context, 'desc_hint'),
+        ),
 
-              SizedBox(height: 24),
+        SizedBox(height: 24),
         _section(tr(context, 'contact_bank')),
         _field(tr(context, 'city'), _cityCtrl),
-        _field(tr(context, 'full_address'), _addressCtrl, hint: tr(context, 'addr_example')),
+        _field(
+          tr(context, 'full_address'),
+          _addressCtrl,
+          hint: tr(context, 'addr_example'),
+        ),
         _field('IBAN', _ibanCtrl, hint: 'FR76 **** **** **** **** 1234'),
 
-              SizedBox(height: 24),
+        SizedBox(height: 24),
         _section(tr(context, 'cuisine_category')),
-        _field(tr(context, 'cuisine_type'), _cuisineCtrl, hint: tr(context, 'cuisine_example')),
-              SizedBox(height: 12),
-        Text(tr(context, 'categories_multi'),
-            style: TextStyle(
-                color: context.fast.t2,
-                fontSize: 12,
-                fontWeight: FontWeight.w600)),
+        _field(
+          tr(context, 'cuisine_type'),
+          _cuisineCtrl,
+          hint: tr(context, 'cuisine_example'),
+        ),
+        SizedBox(height: 12),
+        Text(
+          tr(context, 'categories_multi'),
+          style: TextStyle(
+            color: context.fast.t2,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
@@ -331,33 +422,38 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
                 color: sel ? const Color(0xFF00C8B3) : context.fast.faint,
               ),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
+                borderRadius: BorderRadius.circular(8),
+              ),
             );
           }).toList(),
         ),
 
-              SizedBox(height: 24),
+        SizedBox(height: 24),
         _section(tr(context, 'dietary_options')),
-              SizedBox(height: 8),
+        SizedBox(height: 8),
         Wrap(
           spacing: 8,
           runSpacing: 8,
           children: _dietaryAll.map((key) {
             final selected = _selectedDietary.contains(key);
             return FilterChip(
-              label: Text(tr(context, 'diet_' + key.toLowerCase().replaceAll('_', '')),
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: selected ? context.fast.bg : context.fast.t2,
-                    fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
-                  )),
+              label: Text(
+                tr(context, 'diet_${key.toLowerCase().replaceAll('_', '')}'),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: selected ? context.fast.bg : context.fast.t2,
+                  fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                ),
+              ),
               selected: selected,
               onSelected: (val) {
                 setState(() {
                   if (val) {
                     _selectedDietary = [..._selectedDietary, key];
                   } else {
-                    _selectedDietary = _selectedDietary.where((k) => k != key).toList();
+                    _selectedDietary = _selectedDietary
+                        .where((k) => k != key)
+                        .toList();
                   }
                 });
               },
@@ -365,63 +461,102 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
               backgroundColor: context.fast.card,
               checkmarkColor: FASTBrand.onAmber,
               side: BorderSide(
-                color: selected ?       Color(0xFF00C8B3) : context.fast.faint,
+                color: selected ? Color(0xFF00C8B3) : context.fast.faint,
               ),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6),
+              ),
             );
           }).toList(),
         ),
 
-              SizedBox(height: 24),
+        SizedBox(height: 24),
         _section(tr(context, 'prep_time_title')),
-        _timeSlider(tr(context, 'normal_time'), _normalPrepTime, 5, 60,
-            const Color(0xFF00C8B3), (v) => setState(() => _normalPrepTime = v)),
-              SizedBox(height: 20),
-        _timeSlider(tr(context, 'rush_time'), _rushPrepTime, 10, 90,
-            const Color(0xFFEF4444), (v) => setState(() => _rushPrepTime = v)),
+        _timeSlider(
+          tr(context, 'normal_time'),
+          _normalPrepTime,
+          5,
+          60,
+          const Color(0xFF00C8B3),
+          (v) => setState(() => _normalPrepTime = v),
+        ),
+        SizedBox(height: 20),
+        _timeSlider(
+          tr(context, 'rush_time'),
+          _rushPrepTime,
+          10,
+          90,
+          const Color(0xFFEF4444),
+          (v) => setState(() => _rushPrepTime = v),
+        ),
 
-              SizedBox(height: 32),
+        SizedBox(height: 32),
         ElevatedButton(
           onPressed: _saving ? null : _save,
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF00C8B3),
             foregroundColor: Colors.black,
-            disabledBackgroundColor: const Color(0xFF00C8B3).withValues(alpha: 0.5),
+            disabledBackgroundColor: const Color(
+              0xFF00C8B3,
+            ).withValues(alpha: 0.5),
             padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
           ),
           child: _saving
               ? const SizedBox(
-                  height: 20, width: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.black,
+                  ),
                 )
-              : Text(tr(context, 'save'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+              : Text(
+                  tr(context, 'save'),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                ),
         ),
 
-              SizedBox(height: 32),
-              Divider(color: context.fast.line),
+        SizedBox(height: 32),
+        Divider(color: context.fast.line),
         const SizedBox(height: 16),
         // Proper logout button — only signs out, does not reset data
         Consumer<AuthProvider>(
           builder: (context, auth, _) {
             return OutlinedButton(
-              onPressed: auth.isLoggingOut ? null : () async {
-                await auth.logout();
-                if (!context.mounted) return;
-                Navigator.of(context).popUntil((route) => route.isFirst);
-              },
+              onPressed: auth.isLoggingOut
+                  ? null
+                  : () async {
+                      await auth.logout();
+                      if (!context.mounted) return;
+                      Navigator.of(context).popUntil((route) => route.isFirst);
+                    },
               style: OutlinedButton.styleFrom(
                 foregroundColor: const Color(0xFFEF4444),
                 side: const BorderSide(color: Color(0xFFEF4444)),
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
               child: auth.isLoggingOut
                   ? const SizedBox(
-                      height: 20, width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFEF4444)),
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Color(0xFFEF4444),
+                      ),
                     )
-                  : Text(tr(context, 'logout'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                  : Text(
+                      tr(context, 'logout'),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
             );
           },
         ),
@@ -449,7 +584,8 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
         ),
       ),
       child: Row(
-        children: [ Icon(
+        children: [
+          Icon(
             ok ? Icons.check_circle : Icons.info_outline,
             color: ok ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
           ),
@@ -459,8 +595,8 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
               ok
                   ? tr(context, 'stripe_active')
                   : connected
-                      ? tr(context, 'stripe_connected')
-                      : tr(context, 'stripe_required'),
+                  ? tr(context, 'stripe_connected')
+                  : tr(context, 'stripe_required'),
               style: TextStyle(
                 color: ok ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
                 fontWeight: FontWeight.bold,
@@ -474,13 +610,16 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
   }
 
   Widget _section(String title) => Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: Text(title,
-            style: const TextStyle(
-                color: Color(0xFF00C8B3),
-                fontSize: 13,
-                fontWeight: FontWeight.bold)),
-      );
+    padding: const EdgeInsets.only(bottom: 12),
+    child: Text(
+      title,
+      style: const TextStyle(
+        color: Color(0xFF00C8B3),
+        fontSize: 13,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+  );
 
   Widget _buildThemePicker() {
     final fast = context.watch<FASTProvider>();
@@ -495,31 +634,52 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
             decoration: BoxDecoration(
               color: selected ? const Color(0xFF00C8B3) : context.fast.card,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: selected ? const Color(0xFF00C8B3) : context.fast.line),
+              border: Border.all(
+                color: selected ? const Color(0xFF00C8B3) : context.fast.line,
+              ),
             ),
             child: Column(
               children: [
-                Icon(icon, color: selected ? FASTBrand.onAmber : context.fast.t2, size: 18),
+                Icon(
+                  icon,
+                  color: selected ? FASTBrand.onAmber : context.fast.t2,
+                  size: 18,
+                ),
                 const SizedBox(height: 4),
-                Text(label,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      color: selected ? FASTBrand.onAmber : context.fast.t2,
-                    )),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: selected ? FASTBrand.onAmber : context.fast.t2,
+                  ),
+                ),
               ],
             ),
           ),
         ),
       );
     }
+
     return Row(
       children: [
-        option(ThemeMode.system, Icons.phone_android, tr(context, 'theme_auto')),
+        option(
+          ThemeMode.system,
+          Icons.phone_android,
+          tr(context, 'theme_auto'),
+        ),
         const SizedBox(width: 8),
-        option(ThemeMode.light, Icons.wb_sunny_outlined, tr(context, 'theme_light')),
+        option(
+          ThemeMode.light,
+          Icons.wb_sunny_outlined,
+          tr(context, 'theme_light'),
+        ),
         const SizedBox(width: 8),
-        option(ThemeMode.dark, Icons.nightlight_outlined, tr(context, 'theme_dark')),
+        option(
+          ThemeMode.dark,
+          Icons.nightlight_outlined,
+          tr(context, 'theme_dark'),
+        ),
       ],
     );
   }
@@ -551,16 +711,22 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
               ? DecorationImage(
                   image: _imageBase64.startsWith('http')
                       ? NetworkImage(_imageBase64)
-                      : MemoryImage(base64Decode(_imageBase64.split(',').last)) as ImageProvider,
+                      : MemoryImage(base64Decode(_imageBase64.split(',').last))
+                            as ImageProvider,
                   fit: BoxFit.cover,
                 )
               : null,
         ),
         child: _imageBase64.isEmpty
-            ?       Column(
+            ? Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: [ Icon(Icons.add_a_photo, color: context.fast.t2, size: 40),
-                  SizedBox(height: 12), Text(tr(context, 'add_photo'), style: TextStyle(color: context.fast.t2)),
+                children: [
+                  Icon(Icons.add_a_photo, color: context.fast.t2, size: 40),
+                  SizedBox(height: 12),
+                  Text(
+                    tr(context, 'add_photo'),
+                    style: TextStyle(color: context.fast.t2),
+                  ),
                 ],
               )
             : Container(
@@ -576,8 +742,12 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
     );
   }
 
-  Widget _field(String label, TextEditingController ctrl,
-      {int maxLines = 1, String? hint}) {
+  Widget _field(
+    String label,
+    TextEditingController ctrl, {
+    int maxLines = 1,
+    String? hint,
+  }) {
     return Padding(
       padding: EdgeInsets.only(bottom: 12),
       child: TextField(
@@ -603,37 +773,60 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
             borderRadius: BorderRadius.circular(8),
             borderSide: const BorderSide(color: Color(0xFF00C8B3)),
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 12,
+          ),
         ),
       ),
     );
   }
 
-  Widget _timeSlider(String title, double value, double min, double max, Color color, ValueChanged<double> onChanged) {
+  Widget _timeSlider(
+    String title,
+    double value,
+    double min,
+    double max,
+    Color color,
+    ValueChanged<double> onChanged,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [ Text(title,
-                style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.w600, fontSize: 14)),
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                color: context.fast.t1,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+            ),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: Text('${value.round()} min',
-                  style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 14)),
+              child: Text(
+                '${value.round()} min',
+                style: TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
             ),
           ],
         ),
-              SizedBox(height: 8),
+        SizedBox(height: 8),
         SliderTheme(
           data: SliderTheme.of(context).copyWith(
             trackHeight: 5,
-            thumbShape:       RoundSliderThumbShape(enabledThumbRadius: 12),
-            overlayShape:       RoundSliderOverlayShape(overlayRadius: 22),
+            thumbShape: RoundSliderThumbShape(enabledThumbRadius: 12),
+            overlayShape: RoundSliderOverlayShape(overlayRadius: 22),
             activeTrackColor: color,
             inactiveTrackColor: context.fast.line,
             thumbColor: color,

@@ -67,11 +67,15 @@ class _KitchenScreenState extends State<KitchenScreen> {
 
   Future<void> _accept(Order o, RestoProvider prov, {int? prepMinutes}) async {
     try {
-      await _orderService.updateOrderStatus(o.id, 'PREPARING',
-          prepTimeMinutes: prepMinutes);
+      await _orderService.updateOrderStatus(
+        o.id,
+        'PREPARING',
+        prepTimeMinutes: prepMinutes,
+      );
       o.status = OrderStatus.preparing;
       o.prepStartedAt = DateTime.now().toIso8601String();
-      final min = prepMinutes ??
+      final min =
+          prepMinutes ??
           (prov.isRushMode
               ? (prov.settings?.rushPrepTime ?? 25)
               : (prov.settings?.normalPrepTime ?? 15));
@@ -86,9 +90,9 @@ class _KitchenScreenState extends State<KitchenScreen> {
     try {
       await _orderService.updateOrderStatus(o.id, 'READY_FOR_PICKUP');
       o.status = OrderStatus.readyForPickup;
-      setState(() {});
+      if (mounted) setState(() {});
     } catch (_) {
-      _toast(tr(context, 'err_retry'));
+      if (mounted) _toast(tr(context, 'err_retry'));
     }
   }
 
@@ -96,24 +100,24 @@ class _KitchenScreenState extends State<KitchenScreen> {
     try {
       await _orderService.updateOrderStatus(o.id, 'CANCELLED');
       o.status = OrderStatus.cancelled;
-      setState(() {});
+      if (mounted) setState(() {});
     } catch (_) {
-      _toast(tr(context, 'err_retry'));
+      if (mounted) _toast(tr(context, 'err_retry'));
     }
   }
 
   void _toast(String msg) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(msg)));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   String _timerText(Order o) {
     if (o.status != OrderStatus.preparing || o.prepStartedAt == null) {
       return '--:--';
     }
-    final elapsed =
-        DateTime.now().difference(DateTime.parse(o.prepStartedAt!)).inSeconds;
+    final elapsed = DateTime.now()
+        .difference(DateTime.parse(o.prepStartedAt!))
+        .inSeconds;
     final remaining = o.prepTimerSeconds - elapsed;
     if (remaining <= 0) return context.read<FASTProvider>().tr('late');
     final m = (remaining ~/ 60).toString().padLeft(2, '0');
@@ -127,13 +131,16 @@ class _KitchenScreenState extends State<KitchenScreen> {
     final auth = context.watch<AuthProvider>();
     final fast = context.watch<FASTProvider>();
 
-    final active = prov.restoOrders
-        .where((o) =>
-            o.status == OrderStatus.placed ||
-            o.status == OrderStatus.preparing ||
-            o.status == OrderStatus.readyForPickup)
-        .toList()
-      ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    final active =
+        prov.restoOrders
+            .where(
+              (o) =>
+                  o.status == OrderStatus.placed ||
+                  o.status == OrderStatus.preparing ||
+                  o.status == OrderStatus.readyForPickup,
+            )
+            .toList()
+          ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
     return Scaffold(
       backgroundColor: _bg,
@@ -166,11 +173,14 @@ class _KitchenScreenState extends State<KitchenScreen> {
               children: [
                 const Icon(Icons.circle, size: 8, color: Color(0xFF10B981)),
                 const SizedBox(width: 5),
-                Text(fast.tr('live'),
-                    style: TextStyle(
-                        color: Color(0xFF10B981),
-                        fontSize: 10,
-                        fontWeight: FontWeight.w900)),
+                Text(
+                  fast.tr('live'),
+                  style: TextStyle(
+                    color: Color(0xFF10B981),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
               ],
             ),
           ),
@@ -179,7 +189,10 @@ class _KitchenScreenState extends State<KitchenScreen> {
             child: Text(
               auth.user?.name ?? '',
               style: const TextStyle(
-                  color: _t3, fontSize: 12, fontWeight: FontWeight.w600),
+                color: _t3,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           IconButton(
@@ -194,48 +207,52 @@ class _KitchenScreenState extends State<KitchenScreen> {
         ],
       ),
       body: !_loaded
-          ? const Center(
-              child: CircularProgressIndicator(color: FASTPro.teal))
+          ? const Center(child: CircularProgressIndicator(color: FASTPro.teal))
           : active.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text('🧑‍🍳', style: TextStyle(fontSize: 48)),
-                      const SizedBox(height: 12),
-                      Text(fast.tr('no_orders'),
-                          style: const TextStyle(
-                              color: _t2,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 4),
-                      Text(fast.tr('no_orders_sub'),
-                          style: const TextStyle(color: _t3, fontSize: 12)),
-                    ],
+          ? Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('🧑‍🍳', style: TextStyle(fontSize: 48)),
+                  const SizedBox(height: 12),
+                  Text(
+                    fast.tr('no_orders'),
+                    style: const TextStyle(
+                      color: _t2,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                )
-              : LayoutBuilder(
-                  builder: (ctx, constraints) {
-                    // Kitchen tablets get a 2-column grid, phones a list.
-                    final cols = constraints.maxWidth > 720 ? 2 : 1;
-                    return RefreshIndicator(
-                      color: FASTPro.teal,
-                      backgroundColor: _card,
-                      onRefresh: () => prov.refreshOrders(),
-                      child: GridView.builder(
-                        padding: const EdgeInsets.all(14),
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: cols,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                          childAspectRatio: cols == 2 ? 1.05 : 1.35,
-                        ),
-                        itemCount: active.length,
-                        itemBuilder: (_, i) => _orderCard(active[i], prov),
-                      ),
-                    );
-                  },
-                ),
+                  const SizedBox(height: 4),
+                  Text(
+                    fast.tr('no_orders_sub'),
+                    style: const TextStyle(color: _t3, fontSize: 12),
+                  ),
+                ],
+              ),
+            )
+          : LayoutBuilder(
+              builder: (ctx, constraints) {
+                // Kitchen tablets get a 2-column grid, phones a list.
+                final cols = constraints.maxWidth > 720 ? 2 : 1;
+                return RefreshIndicator(
+                  color: FASTPro.teal,
+                  backgroundColor: _card,
+                  onRefresh: () => prov.refreshOrders(),
+                  child: GridView.builder(
+                    padding: const EdgeInsets.all(14),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: cols,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                      childAspectRatio: cols == 2 ? 1.05 : 1.35,
+                    ),
+                    itemCount: active.length,
+                    itemBuilder: (_, i) => _orderCard(active[i], prov),
+                  ),
+                );
+              },
+            ),
     );
   }
 
@@ -289,48 +306,64 @@ class _KitchenScreenState extends State<KitchenScreen> {
             color: accent.withValues(alpha: 0.12),
             child: Row(
               children: [
-                Text('#${o.id.split('-').last}',
-                    style: const TextStyle(
-                        color: _t1,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 18)),
+                Text(
+                  '#${o.id.split('-').last}',
+                  style: const TextStyle(
+                    color: _t1,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 18,
+                  ),
+                ),
                 if (o.groupCode != null) ...[
                   const SizedBox(width: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 3),
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
                       color: FASTPro.teal.withValues(alpha: 0.18),
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: Text('👥 ${o.groupCode!}',
-                        style: const TextStyle(
-                            color: FASTPro.teal,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w900)),
+                    child: Text(
+                      '👥 ${o.groupCode!}',
+                      style: const TextStyle(
+                        color: FASTPro.teal,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
                   ),
                 ],
                 const Spacer(),
                 if (proxLabel != null)
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 4),
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: proxColor,
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: Text(proxLabel,
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w900,
-                            fontSize: 10)),
+                    child: Text(
+                      proxLabel,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 10,
+                      ),
+                    ),
                   ),
                 const SizedBox(width: 8),
-                Text(statusLabel,
-                    style: TextStyle(
-                        color: statusColor,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 12)),
+                Text(
+                  statusLabel,
+                  style: TextStyle(
+                    color: statusColor,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 12,
+                  ),
+                ),
               ],
             ),
           ),
@@ -340,42 +373,57 @@ class _KitchenScreenState extends State<KitchenScreen> {
             child: ListView(
               padding: const EdgeInsets.all(12),
               children: [
-                ...o.items.map((item) => Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('${item.quantity}×',
-                              style: const TextStyle(
-                                  color: FASTPro.teal,
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 15)),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(item.menuItem.name,
-                                    style: const TextStyle(
-                                        color: _t1,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w700)),
-                                if (item.selectedOptions.isNotEmpty)
-                                  Text(item.selectedOptions.join(', '),
-                                      style: const TextStyle(
-                                          color: _t3, fontSize: 11)),
-                                if (item.allergyNotes.isNotEmpty)
-                                  Text('⚠️ ${item.allergyNotes}',
-                                      style: const TextStyle(
-                                          color: Color(0xFFEF4444),
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w700)),
-                              ],
-                            ),
+                ...o.items.map(
+                  (item) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${item.quantity}×',
+                          style: const TextStyle(
+                            color: FASTPro.teal,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 15,
                           ),
-                        ],
-                      ),
-                    )),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item.menuItem.name,
+                                style: const TextStyle(
+                                  color: _t1,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              if (item.selectedOptions.isNotEmpty)
+                                Text(
+                                  item.selectedOptions.join(', '),
+                                  style: const TextStyle(
+                                    color: _t3,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              if (item.allergyNotes.isNotEmpty)
+                                Text(
+                                  '⚠️ ${item.allergyNotes}',
+                                  style: const TextStyle(
+                                    color: Color(0xFFEF4444),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -393,17 +441,22 @@ class _KitchenScreenState extends State<KitchenScreen> {
                   Center(
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 4),
+                        horizontal: 14,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: _bg,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Text(_timerText(o),
-                          style: const TextStyle(
-                              color: Color(0xFFF59E0B),
-                              fontFamily: 'monospace',
-                              fontWeight: FontWeight.w900,
-                              fontSize: 20)),
+                      child: Text(
+                        _timerText(o),
+                        style: const TextStyle(
+                          color: Color(0xFFF59E0B),
+                          fontFamily: 'monospace',
+                          fontWeight: FontWeight.w900,
+                          fontSize: 20,
+                        ),
+                      ),
                     ),
                   ),
                 const SizedBox(height: 8),
@@ -419,20 +472,28 @@ class _KitchenScreenState extends State<KitchenScreen> {
                           borderRadius: BorderRadius.circular(6),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 7),
+                              horizontal: 12,
+                              vertical: 7,
+                            ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF10B981)
-                                  .withValues(alpha: 0.12),
+                              color: const Color(
+                                0xFF10B981,
+                              ).withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
-                                  color: const Color(0xFF10B981)
-                                      .withValues(alpha: 0.5)),
+                                color: const Color(
+                                  0xFF10B981,
+                                ).withValues(alpha: 0.5),
+                              ),
                             ),
-                            child: Text("$t ${fast.tr('min_abbr')}",
-                                style: const TextStyle(
-                                    color: Color(0xFF10B981),
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w900)),
+                            child: Text(
+                              "$t ${fast.tr('min_abbr')}",
+                              style: const TextStyle(
+                                color: Color(0xFF10B981),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
                           ),
                         ),
                     ],
@@ -446,13 +507,15 @@ class _KitchenScreenState extends State<KitchenScreen> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF10B981),
                             foregroundColor: Colors.white,
-                            padding:
-                                const EdgeInsets.symmetric(vertical: 12),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
                           ),
-                          child: Text(fast.tr('accept'),
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 14)),
+                          child: Text(
+                            fast.tr('accept'),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 14,
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -460,10 +523,8 @@ class _KitchenScreenState extends State<KitchenScreen> {
                         onPressed: () => _refuse(o),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: const Color(0xFFEF4444),
-                          side:
-                              const BorderSide(color: Color(0xFFEF4444)),
-                          padding:
-                              const EdgeInsets.symmetric(vertical: 12),
+                          side: const BorderSide(color: Color(0xFFEF4444)),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
                         child: Text(fast.tr('refuse')),
                       ),
@@ -474,9 +535,13 @@ class _KitchenScreenState extends State<KitchenScreen> {
                   ElevatedButton.icon(
                     onPressed: () => _ready(o),
                     icon: const Icon(Icons.check_circle, size: 20),
-                    label: Text(fast.tr('ready_serve'),
-                        style: const TextStyle(
-                            fontWeight: FontWeight.w900, fontSize: 15)),
+                    label: Text(
+                      fast.tr('ready_serve'),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 15,
+                      ),
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF3B82F6),
                       foregroundColor: Colors.white,
@@ -491,11 +556,14 @@ class _KitchenScreenState extends State<KitchenScreen> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Center(
-                      child: Text(fast.tr('waiting_client'),
-                          style: const TextStyle(
-                              color: Color(0xFF3B82F6),
-                              fontWeight: FontWeight.w900,
-                              fontSize: 13)),
+                      child: Text(
+                        fast.tr('waiting_client'),
+                        style: const TextStyle(
+                          color: Color(0xFF3B82F6),
+                          fontWeight: FontWeight.w900,
+                          fontSize: 13,
+                        ),
+                      ),
                     ),
                   ),
               ],

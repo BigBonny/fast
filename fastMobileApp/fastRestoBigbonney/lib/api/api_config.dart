@@ -1,7 +1,6 @@
 class ApiConfig {
   // Production backend (Vercel)
-  static const String baseUrl =
-      'https://backend-six-iota-69.vercel.app/api';
+  static const String baseUrl = 'https://backend-six-iota-69.vercel.app/api';
   static Duration timeout = const Duration(seconds: 30);
 
   // Auth

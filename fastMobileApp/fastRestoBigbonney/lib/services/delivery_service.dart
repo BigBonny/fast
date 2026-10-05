@@ -24,8 +24,14 @@ class DeliveryService {
   }
 
   /// Update delivery status (AT_RESTAURANT, PICKED_UP, DELIVERED, CANCELLED)
-  Future<Map<String, dynamic>> updateDeliveryStatus(String id, String status) async {
-    final response = await _client.patch(ApiConfig.updateDeliveryStatus(id), body: {'status': status});
+  Future<Map<String, dynamic>> updateDeliveryStatus(
+    String id,
+    String status,
+  ) async {
+    final response = await _client.patch(
+      ApiConfig.updateDeliveryStatus(id),
+      body: {'status': status},
+    );
     return response as Map<String, dynamic>;
   }
 
@@ -63,5 +69,4 @@ class DeliveryService {
     final response = await _client.get(ApiConfig.orderDelivery(orderId));
     return response as Map<String, dynamic>;
   }
-
 }

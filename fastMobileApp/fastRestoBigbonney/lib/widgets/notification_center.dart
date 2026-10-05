@@ -7,7 +7,7 @@ import '../theme.dart';
 import '../l10n/tr.dart';
 
 class NotificationCenter extends StatelessWidget {
-        NotificationCenter({super.key});
+  const NotificationCenter({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -32,10 +32,13 @@ class NotificationCenter extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
-                  children: [ Icon( Icons.notifications_active_outlined,
+                  children: [
+                    Icon(
+                      Icons.notifications_active_outlined,
                       color: Color(0xFFF59E0B),
                     ),
-                          SizedBox(width: 8), Text(
+                    SizedBox(width: 8),
+                    Text(
                       'Notifications',
                       style: TextStyle(
                         fontWeight: FontWeight.w900,
@@ -54,18 +57,17 @@ class NotificationCenter extends StatelessWidget {
                         ),
                       ),
                   ],
-                ), IconButton(
+                ),
+                IconButton(
                   onPressed: () => Navigator.of(context).pop(),
                   icon: Icon(Icons.close, color: context.fast.t2),
                 ),
               ],
             ),
-                  Divider(color: context.fast.line, height: 24),
-            
+            Divider(color: context.fast.line, height: 24),
+
             // Notifications List
-            Expanded(
-              child: NotificationCenterList(provider: provider),
-            ),
+            Expanded(child: NotificationCenterList(provider: provider)),
           ],
         ),
       ),
@@ -75,7 +77,7 @@ class NotificationCenter extends StatelessWidget {
 
 class NotificationCenterList extends StatelessWidget {
   final FASTProvider? provider;
-        NotificationCenterList({super.key, this.provider});
+  const NotificationCenterList({super.key, this.provider});
 
   @override
   Widget build(BuildContext context) {
@@ -88,11 +90,14 @@ class NotificationCenterList extends StatelessWidget {
           padding: EdgeInsets.all(24.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [ Icon( Icons.notifications_off_outlined,
+            children: [
+              Icon(
+                Icons.notifications_off_outlined,
                 size: 48,
                 color: context.fast.line,
               ),
-                    SizedBox(height: 12), Text(
+              SizedBox(height: 12),
+              Text(
                 tr(context, 'no_notifs'),
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
@@ -100,12 +105,10 @@ class NotificationCenterList extends StatelessWidget {
                   color: context.fast.t2,
                 ),
               ),
-                    SizedBox(height: 4), Text(
+              SizedBox(height: 4),
+              Text(
                 tr(context, 'notifs_hint'),
-                style: TextStyle(
-                  fontSize: 11,
-                  color: context.fast.t3,
-                ),
+                style: TextStyle(fontSize: 11, color: context.fast.t3),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -127,9 +130,7 @@ class NotificationCenterList extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: context.fast.card,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: context.fast.line,
-                  ),
+                  border: Border.all(color: context.fast.line),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -137,7 +138,10 @@ class NotificationCenterList extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: _getIconColor(context, notif.type).withValues(alpha: 0.1),
+                        color: _getIconColor(
+                          context,
+                          notif.type,
+                        ).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Icon(
@@ -146,7 +150,7 @@ class NotificationCenterList extends StatelessWidget {
                         size: 16,
                       ),
                     ),
-                          SizedBox(width: 12),
+                    SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -163,7 +167,8 @@ class NotificationCenterList extends StatelessWidget {
                                     color: context.fast.t1,
                                   ),
                                 ),
-                              ), Text(
+                              ),
+                              Text(
                                 notif.timestamp,
                                 style: TextStyle(
                                   fontSize: 9,
@@ -173,7 +178,8 @@ class NotificationCenterList extends StatelessWidget {
                               ),
                             ],
                           ),
-                                SizedBox(height: 4), Text(
+                          SizedBox(height: 4),
+                          Text(
                             notif.body,
                             style: TextStyle(
                               fontSize: 11,
@@ -190,14 +196,18 @@ class NotificationCenterList extends StatelessWidget {
             },
           ),
         ),
-              Divider(color: context.fast.line, height: 24),
+        Divider(color: context.fast.line, height: 24),
         SizedBox(
           width: double.infinity,
           child: TextButton.icon(
             onPressed: () {
               activeProvider.clearNotifications();
             },
-            icon: const Icon(Icons.delete_outline, size: 16, color: Color(0xFFEF4444)),
+            icon: const Icon(
+              Icons.delete_outline,
+              size: 16,
+              color: Color(0xFFEF4444),
+            ),
             label: Text(
               tr(context, 'clear_all'),
               style: TextStyle(
@@ -211,7 +221,8 @@ class NotificationCenterList extends StatelessWidget {
       ],
     );
   }
- IconData _getIcon(String type) {
+
+  IconData _getIcon(String type) {
     switch (type) {
       case 'success':
         return Icons.check_circle_outline;
@@ -224,14 +235,15 @@ class NotificationCenterList extends StatelessWidget {
         return Icons.info_outline;
     }
   }
- Color _getIconColor(BuildContext context, String type) {
+
+  Color _getIconColor(BuildContext context, String type) {
     switch (type) {
       case 'success':
-        return       Color(0xFF10B981); // Emerald 500
+        return Color(0xFF10B981); // Emerald 500
       case 'status':
-        return       Color(0xFFF59E0B); // Amber 500
+        return Color(0xFFF59E0B); // Amber 500
       case 'rating':
-        return       Color(0xFF3B82F6); // Blue 500
+        return Color(0xFF3B82F6); // Blue 500
       case 'info':
       default:
         return context.fast.t2; // Muted grey

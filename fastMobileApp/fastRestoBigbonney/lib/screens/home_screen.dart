@@ -27,9 +27,10 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<FASTProvider>(context);
-    
+
     // Sync text controller with search state
-    if (provider.searchKeyword != _searchController.text && !_isFocusingSearch) {
+    if (provider.searchKeyword != _searchController.text &&
+        !_isFocusingSearch) {
       _searchController.text = provider.searchKeyword;
     }
 
@@ -60,18 +61,29 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: TextField(
                             controller: _searchController,
                             onChanged: (val) => provider.setKeyword(val),
-                            style: TextStyle(fontSize: 13, color: context.fast.t1),
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: context.fast.t1,
+                            ),
                             decoration: InputDecoration(
                               hintText: provider.tr('search_hint'),
                               hintStyle: TextStyle(color: context.fast.t3),
-                              prefixIcon: Icon(Icons.search, color: context.fast.t3, size: 18),
+                              prefixIcon: Icon(
+                                Icons.search,
+                                color: context.fast.t3,
+                                size: 18,
+                              ),
                               suffixIcon: provider.searchKeyword.isNotEmpty
                                   ? IconButton(
                                       onPressed: () {
                                         provider.setKeyword('');
                                         _searchController.clear();
                                       },
-                                      icon: Icon(Icons.close, color: context.fast.t3, size: 16),
+                                      icon: Icon(
+                                        Icons.close,
+                                        color: context.fast.t3,
+                                        size: 16,
+                                      ),
                                     )
                                   : null,
                               contentPadding: EdgeInsets.symmetric(vertical: 0),
@@ -79,15 +91,21 @@ class _HomeScreenState extends State<HomeScreen> {
                               fillColor: context.fast.cardHigh,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: context.fast.line),
+                                borderSide: BorderSide(
+                                  color: context.fast.line,
+                                ),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: context.fast.line),
+                                borderSide: BorderSide(
+                                  color: context.fast.line,
+                                ),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: Color(0xFFF59E0B)),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFF59E0B),
+                                ),
                               ),
                             ),
                           ),
@@ -117,8 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
 
         // Slot Machine Selection Overlay
-        if (provider.isSurpriseMeRolling)
-          _buildSlotsOverlay(context, provider),
+        if (provider.isSurpriseMeRolling) _buildSlotsOverlay(context, provider),
       ],
     );
   }
@@ -127,20 +144,26 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Split suggestion layout
   Widget _buildSuggestionsPanel(
-      BuildContext context, FASTProvider provider, List<CategoryItem> suggCategories) {
+    BuildContext context,
+    FASTProvider provider,
+    List<CategoryItem> suggCategories,
+  ) {
     final kw = provider.searchKeyword.toLowerCase();
-    
+
     // Find matching dishes
     final List<Map<String, dynamic>> matchingDishes = [];
     final List<Restaurant> matchingRestaurants = [];
 
     for (var r in provider.restaurants) {
-      bool matchedRest = r.name.toLowerCase().contains(kw) || r.description.toLowerCase().contains(kw);
+      bool matchedRest =
+          r.name.toLowerCase().contains(kw) ||
+          r.description.toLowerCase().contains(kw);
       if (matchedRest) {
         matchingRestaurants.add(r);
       }
       for (var d in r.menu) {
-        if (d.name.toLowerCase().contains(kw) || d.description.toLowerCase().contains(kw)) {
+        if (d.name.toLowerCase().contains(kw) ||
+            d.description.toLowerCase().contains(kw)) {
           matchingDishes.add({'restaurant': r, 'item': d});
         }
       }
@@ -153,7 +176,8 @@ class _HomeScreenState extends State<HomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Section 1: Categories Autocomplete Suggestions
-          if (suggCategories.isNotEmpty) ...[ Text(
+          if (suggCategories.isNotEmpty) ...[
+            Text(
               tr(context, 'matching_cats'),
               style: TextStyle(
                 fontSize: 10,
@@ -162,7 +186,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: context.fast.t3,
               ),
             ),
-                  SizedBox(height: 8),
+            SizedBox(height: 8),
             SizedBox(
               height: 40,
               child: ListView.builder(
@@ -186,7 +210,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       onPressed: () {
                         provider.setCategory(cat.id);
-                        provider.setKeyword(''); // Clear search to reveal category list
+                        provider.setKeyword(
+                          '',
+                        ); // Clear search to reveal category list
                         _searchController.clear();
                       },
                     ),
@@ -198,7 +224,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
 
           // Section 2: Matching Kitchens & Dishes List
- Text(
+          Text(
             provider.tr('matching'),
             style: TextStyle(
               fontSize: 10,
@@ -207,17 +233,16 @@ class _HomeScreenState extends State<HomeScreen> {
               color: context.fast.t3,
             ),
           ),
-                SizedBox(height: 8),
+          SizedBox(height: 8),
           Expanded(
             child: (matchingRestaurants.isEmpty && matchingDishes.isEmpty)
                 ? Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: [ Text(
-                          '🥙',
-                          style: TextStyle(fontSize: 32),
-                        ),
-                              SizedBox(height: 12), Text(
+                      children: [
+                        Text('🥙', style: TextStyle(fontSize: 32)),
+                        SizedBox(height: 12),
+                        Text(
                           tr(context, 'no_items'),
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
@@ -225,7 +250,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             color: context.fast.t3,
                           ),
                         ),
-                              SizedBox(height: 4), Text(
+                        SizedBox(height: 4),
+                        Text(
                           tr(context, 'search_suggest'),
                           style: TextStyle(
                             fontSize: 10,
@@ -239,30 +265,47 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       // Restaurants results
                       if (matchingRestaurants.isNotEmpty) ...[
-                        ...matchingRestaurants.map((r) => ListTile(
-                              leading: ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: FastImage(
-                                  r.image,
+                        ...matchingRestaurants.map(
+                          (r) => ListTile(
+                            leading: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: FastImage(
+                                r.image,
+                                width: 40,
+                                height: 40,
+                                placeholder: Container(
+                                  color: context.fast.faint,
                                   width: 40,
                                   height: 40,
-                                  placeholder: Container(color: context.fast.faint, width: 40, height: 40),
                                 ),
                               ),
-                              title: Text(
-                                r.name,
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: context.fast.t1),
+                            ),
+                            title: Text(
+                              r.name,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                color: context.fast.t1,
                               ),
-                              subtitle: Text(
-                                '${r.pickupPrepTime} ${tr(context, 'min_prep')} • ${provider.getRealDistance(r).toStringAsFixed(1)} km',
-                                style: TextStyle(fontSize: 11, color: context.fast.t3),
+                            ),
+                            subtitle: Text(
+                              '${r.pickupPrepTime} ${tr(context, 'min_prep')} • ${provider.getRealDistance(r).toStringAsFixed(1)} km',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: context.fast.t3,
                               ),
-                              trailing: Icon(Icons.chevron_right, size: 16, color: context.fast.t3),
-                              onTap: () {
-                                provider.selectRestaurant(r.id);
-                                provider.navigateToScreen('restaurant');
-                              },
-                            )),
+                            ),
+                            trailing: Icon(
+                              Icons.chevron_right,
+                              size: 16,
+                              color: context.fast.t3,
+                            ),
+                            onTap: () {
+                              provider.selectRestaurant(r.id);
+                              provider.navigateToScreen('restaurant');
+                            },
+                          ),
+                        ),
                       ],
                       // Dishes results
                       if (matchingDishes.isNotEmpty) ...[
@@ -276,42 +319,58 @@ class _HomeScreenState extends State<HomeScreen> {
                                 item.image,
                                 width: 40,
                                 height: 40,
-                                placeholder: Container(color: context.fast.faint, width: 40, height: 40),
-                              ),
-                              ),
-                              title: Text(
-                                item.name,
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: context.fast.t1),
-                              ),
-                              subtitle: Text(
-                                '${tr(context, 'from_resto').replaceAll('{n}', r.name)} • ${item.price.toStringAsFixed(2)} €',
-                                style: TextStyle(fontSize: 11, color: context.fast.t3),
-                              ),
-                              trailing: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  tr(context, 'order_btn'),
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFFF59E0B),
-                                  ),
+                                placeholder: Container(
+                                  color: context.fast.faint,
+                                  width: 40,
+                                  height: 40,
                                 ),
                               ),
-                              onTap: () {
-                                provider.selectRestaurant(r.id);
-                                provider.navigateToScreen('restaurant');
-                              },
-                            );
-                          }),
-                        ],
+                            ),
+                            title: Text(
+                              item.name,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                color: context.fast.t1,
+                              ),
+                            ),
+                            subtitle: Text(
+                              '${tr(context, 'from_resto').replaceAll('{n}', r.name)} • ${item.price.toStringAsFixed(2)} €',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: context.fast.t3,
+                              ),
+                            ),
+                            trailing: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(
+                                  0xFFF59E0B,
+                                ).withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                tr(context, 'order_btn'),
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFFF59E0B),
+                                ),
+                              ),
+                            ),
+                            onTap: () {
+                              provider.selectRestaurant(r.id);
+                              provider.navigateToScreen('restaurant');
+                            },
+                          );
+                        }),
                       ],
-                    ),
-            ),
+                    ],
+                  ),
+          ),
         ],
       ),
     );
@@ -319,7 +378,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Normal landing page contents
   Widget _buildMainContent(
-      BuildContext context, FASTProvider provider, List<Restaurant> filteredRest) {
+    BuildContext context,
+    FASTProvider provider,
+    List<Restaurant> filteredRest,
+  ) {
     return ListView(
       padding: EdgeInsets.symmetric(vertical: 8),
       children: [
@@ -368,15 +430,16 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         // Bento/Actionable Carousel Banners
         _buildActionableBanners(context, provider),
-        
-              SizedBox(height: 16),
-        
+
+        SizedBox(height: 16),
+
         // Category Browsing Section
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [ Text(
+            children: [
+              Text(
                 tr(context, 'browse_by_cat'),
                 style: TextStyle(
                   fontSize: 10,
@@ -400,10 +463,10 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
-              SizedBox(height: 12),
+        SizedBox(height: 12),
         _buildCategoryStrip(context, provider),
 
-              SizedBox(height: 20),
+        SizedBox(height: 20),
 
         // Favorites — synced with website "Mes favoris"
         if (provider.favorites.isNotEmpty) ...[
@@ -458,7 +521,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           placeholder: Container(
                             height: 84,
                             color: context.fast.cardHigh,
-                            child: Icon(Icons.restaurant, color: context.fast.faint, size: 28),
+                            child: Icon(
+                              Icons.restaurant,
+                              color: context.fast.faint,
+                              size: 28,
+                            ),
                           ),
                         ),
                         Padding(
@@ -468,17 +535,30 @@ class _HomeScreenState extends State<HomeScreen> {
                             children: [
                               Text(
                                 rest.name,
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: context.fast.t1),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                  color: context.fast.t1,
+                                ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 4),
                               Row(
                                 children: [
-                                  const Icon(Icons.star, color: Color(0xFFF59E0B), size: 12),
+                                  const Icon(
+                                    Icons.star,
+                                    color: Color(0xFFF59E0B),
+                                    size: 12,
+                                  ),
                                   const SizedBox(width: 3),
-                                  Text('${rest.rating} • ${rest.pickupPrepTime} min',
-                                      style: TextStyle(fontSize: 10, color: context.fast.t3)),
+                                  Text(
+                                    '${rest.rating} • ${rest.pickupPrepTime} min',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: context.fast.t3,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ],
@@ -499,7 +579,8 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [ Text(
+            children: [
+              Text(
                 provider.tr('cuisines_near'),
                 style: TextStyle(
                   fontSize: 10,
@@ -507,8 +588,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   letterSpacing: 1.0,
                   color: context.fast.t3,
                 ),
-              ), Text(
-                provider.tr('restaurants_available').replaceAll('{n}', '${filteredRest.length}'),
+              ),
+              Text(
+                provider
+                    .tr('restaurants_available')
+                    .replaceAll('{n}', '${filteredRest.length}'),
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
@@ -537,7 +621,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                 ),
               ),
-        
+
         const SizedBox(height: 80), // bottom offset for basket
       ],
     );
@@ -630,17 +714,16 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         child: Stack(
           children: [
-            Positioned(
-              right: -10,
-              bottom: -10,
-              child: _PulsingEmoji(emoji),
-            ),
+            Positioned(right: -10, bottom: -10, child: _PulsingEmoji(emoji)),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: FASTBrand.onAmber.withValues(alpha: 0.85),
                     borderRadius: BorderRadius.circular(4),
@@ -681,7 +764,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(8),
@@ -697,7 +783,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                           const SizedBox(width: 2),
-                          Icon(ctaIcon, size: 12, color: const Color(0xFF17171B)),
+                          Icon(
+                            ctaIcon,
+                            size: 12,
+                            color: const Color(0xFF17171B),
+                          ),
                         ],
                       ),
                     ),
@@ -725,25 +815,21 @@ class _HomeScreenState extends State<HomeScreen> {
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.symmetric(horizontal: 16),
         itemCount: provider.categories.length,
-        separatorBuilder: (context, index) =>       SizedBox(width: 10),
+        separatorBuilder: (context, index) => SizedBox(width: 10),
         itemBuilder: (context, index) {
           final cat = provider.categories[index];
           final isActive = provider.selectedCategory == cat.id;
           return GestureDetector(
             onTap: () => provider.setCategory(cat.id),
             child: AnimatedContainer(
-              duration:       Duration(milliseconds: 200),
+              duration: Duration(milliseconds: 200),
               curve: Curves.easeOutCubic,
               padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: isActive
-                    ? const Color(0xFFF59E0B)
-                    : context.fast.card,
+                color: isActive ? const Color(0xFFF59E0B) : context.fast.card,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: isActive
-                      ? const Color(0xFFF59E0B)
-                      : context.fast.line,
+                  color: isActive ? const Color(0xFFF59E0B) : context.fast.line,
                   width: isActive ? 1.8 : 1,
                 ),
                 boxShadow: isActive
@@ -765,18 +851,15 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: [ Text(
-                    cat.icon,
-                    style: const TextStyle(fontSize: 22),
-                  ),
-                        SizedBox(height: 4), Text(
+                children: [
+                  Text(cat.icon, style: const TextStyle(fontSize: 22)),
+                  SizedBox(height: 4),
+                  Text(
                     catLabel(context, cat.id),
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
-                      color: isActive
-                          ? FASTBrand.onAmber
-                          : context.fast.t2,
+                      color: isActive ? FASTBrand.onAmber : context.fast.t2,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -791,7 +874,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Restaurant card widget
-  Widget _buildRestaurantCard(BuildContext context, FASTProvider provider, Restaurant rest) {
+  Widget _buildRestaurantCard(
+    BuildContext context,
+    FASTProvider provider,
+    Restaurant rest,
+  ) {
     return GestureDetector(
       onTap: () {
         provider.selectRestaurant(rest.id);
@@ -826,7 +913,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   placeholder: Container(
                     height: 140,
                     color: context.fast.cardHigh,
-                    child: Icon(Icons.restaurant, color: context.fast.faint, size: 40),
+                    child: Icon(
+                      Icons.restaurant,
+                      color: context.fast.faint,
+                      size: 40,
+                    ),
                   ),
                 ),
                 // Top gradient overlay
@@ -834,7 +925,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Colors.black.withValues(alpha: 0.5), Colors.transparent],
+                        colors: [
+                          Colors.black.withValues(alpha: 0.5),
+                          Colors.transparent,
+                        ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                       ),
@@ -852,11 +946,17 @@ class _HomeScreenState extends State<HomeScreen> {
                       decoration: BoxDecoration(
                         color: context.fast.bg.withValues(alpha: 0.85),
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.1),
+                        ),
                       ),
                       child: Icon(
-                        provider.isFavorite(rest.id) ? Icons.favorite : Icons.favorite_border,
-                        color: provider.isFavorite(rest.id) ? const Color(0xFFEF4444) : context.fast.t2,
+                        provider.isFavorite(rest.id)
+                            ? Icons.favorite
+                            : Icons.favorite_border,
+                        color: provider.isFavorite(rest.id)
+                            ? const Color(0xFFEF4444)
+                            : context.fast.t2,
                         size: 16,
                       ),
                     ),
@@ -871,11 +971,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     decoration: BoxDecoration(
                       color: context.fast.bg.withValues(alpha: 0.85),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.1),
+                      ),
                     ),
                     child: Row(
-                      children: [ Icon(Icons.star, color: Color(0xFFF59E0B), size: 14),
-                              SizedBox(width: 4), Text(
+                      children: [
+                        Icon(Icons.star, color: Color(0xFFF59E0B), size: 14),
+                        SizedBox(width: 4),
+                        Text(
                           '${rest.rating}',
                           style: TextStyle(
                             fontSize: 11,
@@ -914,7 +1018,8 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [ Text(
+                children: [
+                  Text(
                     rest.name,
                     style: TextStyle(
                       fontWeight: FontWeight.w800,
@@ -922,7 +1027,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: context.fast.t1,
                     ),
                   ),
-                        SizedBox(height: 4), Text(
+                  SizedBox(height: 4),
+                  Text(
                     rest.description,
                     style: TextStyle(
                       fontSize: 11,
@@ -932,14 +1038,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                        SizedBox(height: 10),
+                  SizedBox(height: 10),
                   // Dietary preference tags
                   Wrap(
                     spacing: 6,
                     runSpacing: 6,
                     children: rest.dietaryOptions.map((tag) {
                       return Container(
-                        padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: context.fast.cardHigh,
                           borderRadius: BorderRadius.circular(6),
@@ -1062,25 +1171,37 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: EdgeInsets.all(32),
       child: Center(
         child: Column(
-          children: [ Text('🥙', style: TextStyle(fontSize: 48)),
-                  SizedBox(height: 12), Text(
+          children: [
+            Text('🥙', style: TextStyle(fontSize: 48)),
+            SizedBox(height: 12),
+            Text(
               tr(context, 'no_cuisine'),
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: context.fast.t1),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: context.fast.t1,
+              ),
             ),
-                  SizedBox(height: 6), Text(
+            SizedBox(height: 6),
+            Text(
               tr(context, 'widen_radius'),
               style: TextStyle(fontSize: 11, color: context.fast.t3),
               textAlign: TextAlign.center,
             ),
-                  SizedBox(height: 16),
+            SizedBox(height: 16),
             ElevatedButton(
               onPressed: () => provider.resetFilters(),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color(0xFFF59E0B),
                 foregroundColor: FASTBrand.onAmber,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
-              child: Text(tr(context, 'reset_filters'), style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(
+                tr(context, 'reset_filters'),
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
@@ -1107,16 +1228,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: const Color(0xFFF59E0B).withValues(alpha: 0.25),
                 blurRadius: 24,
                 spreadRadius: 2,
-              )
+              ),
             ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            children: [ Text(
-                '🎯',
-                style: TextStyle(fontSize: 40),
-              ),
-                    SizedBox(height: 12), Text(
+            children: [
+              Text('🎯', style: TextStyle(fontSize: 40)),
+              SizedBox(height: 12),
+              Text(
                 'CHOIX DE VOTRE REPAS',
                 style: TextStyle(
                   color: Color(0xFFF59E0B),
@@ -1125,11 +1245,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   letterSpacing: 1.5,
                 ),
               ),
-                    SizedBox(height: 6), Text(
+              SizedBox(height: 6),
+              Text(
                 tr(context, 'slot_launch'),
                 style: TextStyle(color: context.fast.t2, fontSize: 11),
               ),
-                    SizedBox(height: 24),
+              SizedBox(height: 24),
               // Surprise-me revolving screen card
               Container(
                 height: 160,
@@ -1140,7 +1261,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   border: Border.all(color: context.fast.line),
                 ),
                 child: randRest == null
-                    ?       Center(child: CircularProgressIndicator(color: Color(0xFFF59E0B)))
+                    ? Center(
+                        child: CircularProgressIndicator(
+                          color: Color(0xFFF59E0B),
+                        ),
+                      )
                     : Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -1150,10 +1275,15 @@ class _HomeScreenState extends State<HomeScreen> {
                               randRest.image,
                               width: 80,
                               height: 80,
-                              placeholder: Container(color: context.fast.cardHigh, width: 80, height: 80),
+                              placeholder: Container(
+                                color: context.fast.cardHigh,
+                                width: 80,
+                                height: 80,
+                              ),
                             ),
                           ),
-                                SizedBox(height: 12), Text(
+                          SizedBox(height: 12),
+                          Text(
                             randRest.name,
                             style: TextStyle(
                               color: context.fast.t1,

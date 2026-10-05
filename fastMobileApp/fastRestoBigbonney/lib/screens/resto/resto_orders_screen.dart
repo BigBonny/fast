@@ -27,7 +27,8 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
       if (!mounted) return;
       final provider = context.read<RestoProvider>();
       final hasActive = provider.restoOrders.any(
-        (o) => o.status == OrderStatus.placed || o.status == OrderStatus.preparing,
+        (o) =>
+            o.status == OrderStatus.placed || o.status == OrderStatus.preparing,
       );
       if (hasActive) setState(() {});
     });
@@ -39,15 +40,22 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
     super.dispose();
   }
 
-  Future<void> _acceptOrder(Order order, RestoProvider rProv,
-      {int? prepMinutes}) async {
+  Future<void> _acceptOrder(
+    Order order,
+    RestoProvider rProv, {
+    int? prepMinutes,
+  }) async {
     try {
-      await _orderService.updateOrderStatus(order.id, 'PREPARING',
-          prepTimeMinutes: prepMinutes);
+      await _orderService.updateOrderStatus(
+        order.id,
+        'PREPARING',
+        prepTimeMinutes: prepMinutes,
+      );
       if (!mounted) return;
       order.status = OrderStatus.preparing;
       order.prepStartedAt = DateTime.now().toIso8601String();
-      final prepTimeMin = prepMinutes ??
+      final prepTimeMin =
+          prepMinutes ??
           (rProv.isRushMode
               ? (rProv.settings?.rushPrepTime ?? 25)
               : (rProv.settings?.normalPrepTime ?? 15));
@@ -55,9 +63,9 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
       setState(() {});
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(tr(context, 'accept_err'))),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(tr(context, 'accept_err'))));
       }
     }
   }
@@ -98,7 +106,10 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: context.fast.card,
-        title: Text(tr(context, 'scan_qr_title'), style: TextStyle(color: context.fast.t1)),
+        title: Text(
+          tr(context, 'scan_qr_title'),
+          style: TextStyle(color: context.fast.t1),
+        ),
         content: SizedBox(
           height: 280,
           width: 280,
@@ -117,12 +128,16 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
             ),
           ),
         ),
-        actions: [ TextButton(
+        actions: [
+          TextButton(
             onPressed: () {
               controller.dispose();
               Navigator.pop(dialogContext);
             },
-            child: Text(tr(context, 'cancel'), style: TextStyle(color: context.fast.t2)),
+            child: Text(
+              tr(context, 'cancel'),
+              style: TextStyle(color: context.fast.t2),
+            ),
           ),
         ],
       ),
@@ -138,15 +153,15 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
       order.status = updated.status;
       if (mounted) {
         setState(() {});
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(tr(context, 'handover_ok'))),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(tr(context, 'handover_ok'))));
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(tr(context, 'qr_invalid'))),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(tr(context, 'qr_invalid'))));
       }
     }
   }
@@ -155,8 +170,17 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
   Widget build(BuildContext context) {
     final rProv = Provider.of<RestoProvider>(context);
 
-    final activeOrders = rProv.restoOrders.where((o) => o.status == OrderStatus.placed || o.status == OrderStatus.preparing || o.status == OrderStatus.readyForPickup).toList();
-    final billedCancelledOrders = rProv.restoOrders.where((o) => o.status == OrderStatus.cancelled && o.isBilledAnyway).toList();
+    final activeOrders = rProv.restoOrders
+        .where(
+          (o) =>
+              o.status == OrderStatus.placed ||
+              o.status == OrderStatus.preparing ||
+              o.status == OrderStatus.readyForPickup,
+        )
+        .toList();
+    final billedCancelledOrders = rProv.restoOrders
+        .where((o) => o.status == OrderStatus.cancelled && o.isBilledAnyway)
+        .toList();
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -165,35 +189,73 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [ Text(tr(context, 'orders_active'), style: TextStyle(color: context.fast.t1, fontSize: 20, fontWeight: FontWeight.bold)),
+            children: [
+              Text(
+                tr(context, 'orders_active'),
+                style: TextStyle(
+                  color: context.fast.t1,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(color: const Color(0xFF10B981).withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6)),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(6),
+                ),
                 child: Row(
                   children: [
-                    Container(width: 6, height: 6, decoration: const BoxDecoration(color: Color(0xFF10B981), shape: BoxShape.circle)),
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF10B981),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
                     const SizedBox(width: 6),
-                    Text(tr(context, 'live_lbl'), style: TextStyle(color: Color(0xFF10B981), fontSize: 12, fontWeight: FontWeight.bold)),
+                    Text(
+                      tr(context, 'live_lbl'),
+                      style: TextStyle(
+                        color: Color(0xFF10B981),
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
                 ),
               ),
             ],
           ),
-                SizedBox(height: 16),
+          SizedBox(height: 16),
           if (activeOrders.isEmpty)
-                  Center(child: Padding(
-              padding: EdgeInsets.all(32.0),
-              child: Text(tr(context, 'no_active_orders'), style: TextStyle(color: context.fast.t2)),
-            )),
+            Center(
+              child: Padding(
+                padding: EdgeInsets.all(32.0),
+                child: Text(
+                  tr(context, 'no_active_orders'),
+                  style: TextStyle(color: context.fast.t2),
+                ),
+              ),
+            ),
           ...activeOrders.map((o) => _buildOrderCard(o, rProv)),
 
           if (billedCancelledOrders.isNotEmpty) ...[
-                  SizedBox(height: 32),
-                  Divider(color: context.fast.line),
-                  SizedBox(height: 16), Text(tr(context, 'cancelled_billed'), style: TextStyle(color: context.fast.t1, fontSize: 16, fontWeight: FontWeight.bold)),
+            SizedBox(height: 32),
+            Divider(color: context.fast.line),
+            SizedBox(height: 16),
+            Text(
+              tr(context, 'cancelled_billed'),
+              style: TextStyle(
+                color: context.fast.t1,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(height: 8),
             ...billedCancelledOrders.map((o) => _buildCancelledCard(o)),
-          ]
+          ],
         ],
       ),
     );
@@ -213,10 +275,12 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
         timerText = 'EN RETARD';
       }
     }
- Color statusColor = context.fast.faint;
-    if (order.status == OrderStatus.placed) statusColor =       Color(0xFF10B981);
-    if (order.status == OrderStatus.preparing) statusColor =       Color(0xFFF59E0B);
-    if (order.status == OrderStatus.readyForPickup) statusColor =       Color(0xFF3B82F6);
+    Color statusColor = context.fast.faint;
+    if (order.status == OrderStatus.placed) statusColor = Color(0xFF10B981);
+    if (order.status == OrderStatus.preparing) statusColor = Color(0xFFF59E0B);
+    if (order.status == OrderStatus.readyForPickup) {
+      statusColor = Color(0xFF3B82F6);
+    }
 
     // Client proximity — live gpsProgress pushed by the client app
     Color? proxColor;
@@ -240,7 +304,10 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
       decoration: BoxDecoration(
         color: context.fast.card,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: accentColor.withValues(alpha: proxColor != null ? 0.9 : 0.5), width: 2),
+        border: Border.all(
+          color: accentColor.withValues(alpha: proxColor != null ? 0.9 : 0.5),
+          width: 2,
+        ),
       ),
       child: Column(
         children: [
@@ -248,25 +315,44 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: accentColor.withValues(alpha: 0.1),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(10),
+              ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
                   child: Row(
-                    children: [ Text('#${order.id.split('-').last}', style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold, fontSize: 16)),
+                    children: [
+                      Text(
+                        '#${order.id.split('-').last}',
+                        style: TextStyle(
+                          color: context.fast.t1,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
                       if (order.groupCode != null) ...[
                         const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF00C8B3).withValues(alpha: 0.18),
+                            color: const Color(
+                              0xFF00C8B3,
+                            ).withValues(alpha: 0.18),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
                             order.groupCode!,
-                            style: const TextStyle(color: Color(0xFF00C8B3), fontSize: 10, fontWeight: FontWeight.w900),
+                            style: const TextStyle(
+                              color: Color(0xFF00C8B3),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
+                            ),
                           ),
                         ),
                       ],
@@ -275,7 +361,10 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                 ),
                 if (proxLabel != null) ...[
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: proxColor,
                       borderRadius: BorderRadius.circular(6),
@@ -283,15 +372,33 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.directions_walk, color: Colors.white, size: 12),
+                        const Icon(
+                          Icons.directions_walk,
+                          color: Colors.white,
+                          size: 12,
+                        ),
                         const SizedBox(width: 4),
-                        Text(proxLabel, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10)),
+                        Text(
+                          proxLabel,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 10,
+                          ),
+                        ),
                       ],
                     ),
                   ),
                   const SizedBox(width: 8),
                 ],
-                Text(order.status.name.toUpperCase(), style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 12)),
+                Text(
+                  order.status.name.toUpperCase(),
+                  style: TextStyle(
+                    color: statusColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
               ],
             ),
           ),
@@ -300,50 +407,82 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ...order.items.map((item) => Padding(
-                  padding: EdgeInsets.only(bottom: 8.0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [ Text('${item.quantity}x', style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold)),
-                            SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [ Text(item.menuItem.name, style: TextStyle(color: context.fast.t1)),
-                            if (item.selectedOptions.isNotEmpty)
- Text(item.selectedOptions.join(', '), style: TextStyle(color: context.fast.t2, fontSize: 12)),
-                            if (item.allergyNotes.isNotEmpty)
- Text('${tr(context, 'note_lbl')}: ${item.allergyNotes}', style: const TextStyle(color: Color(0xFFEF4444), fontSize: 12)),
-                          ],
+                ...order.items.map(
+                  (item) => Padding(
+                    padding: EdgeInsets.only(bottom: 8.0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${item.quantity}x',
+                          style: TextStyle(
+                            color: context.fast.t1,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                    ],
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item.menuItem.name,
+                                style: TextStyle(color: context.fast.t1),
+                              ),
+                              if (item.selectedOptions.isNotEmpty)
+                                Text(
+                                  item.selectedOptions.join(', '),
+                                  style: TextStyle(
+                                    color: context.fast.t2,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              if (item.allergyNotes.isNotEmpty)
+                                Text(
+                                  '${tr(context, 'note_lbl')}: ${item.allergyNotes}',
+                                  style: const TextStyle(
+                                    color: Color(0xFFEF4444),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                )),
+                ),
                 if (order.fulfillmentType == FulfillmentType.pickup) ...[
                   const SizedBox(height: 4),
                   // Base44-style approach bar: teal → magenta gradient fill
                   // showing how far along their walk the client is.
                   Row(
                     children: [
-                      Icon(Icons.location_on,
-                          size: 13,
-                          color: proxColor ?? context.fast.t3),
+                      Icon(
+                        Icons.location_on,
+                        size: 13,
+                        color: proxColor ?? context.fast.t3,
+                      ),
                       const SizedBox(width: 4),
                       Text(
-                        tr(context, 'client_near').replaceAll('{n}', '${(order.userWalkTimeMinutes * (1 - order.gpsProgress / 100)).ceil().clamp(0, 999)}'),
+                        tr(context, 'client_near').replaceAll(
+                          '{n}',
+                          '${(order.userWalkTimeMinutes * (1 - order.gpsProgress / 100)).ceil().clamp(0, 999)}',
+                        ),
                         style: TextStyle(
-                            color: context.fast.t2,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600),
+                          color: context.fast.t2,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                       const Spacer(),
                       Text(
                         '${order.gpsProgress.clamp(0, 100).round()}% du trajet',
                         style: TextStyle(
-                            color: proxColor ?? context.fast.t3,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700),
+                          color: proxColor ?? context.fast.t3,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ],
                   ),
@@ -355,11 +494,13 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                       child: Stack(
                         children: [
                           Container(
-                              color:
-                                  context.fast.faint.withValues(alpha: 0.3)),
+                            color: context.fast.faint.withValues(alpha: 0.3),
+                          ),
                           FractionallySizedBox(
-                            widthFactor:
-                                (order.gpsProgress / 100).clamp(0.0, 1.0),
+                            widthFactor: (order.gpsProgress / 100).clamp(
+                              0.0,
+                              1.0,
+                            ),
                             child: Container(
                               decoration: const BoxDecoration(
                                 gradient: LinearGradient(
@@ -376,20 +517,40 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                     ),
                   ),
                 ],
-                      Divider(color: context.fast.line, height: 32),
+                Divider(color: context.fast.line, height: 32),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [ Text('${tr(context, 'total_lbl')}: €${order.total.toStringAsFixed(2)}', style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold)),
+                  children: [
+                    Text(
+                      '${tr(context, 'total_lbl')}: €${order.total.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        color: context.fast.t1,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     if (order.status == OrderStatus.preparing)
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(color: FASTBrand.onAmber, borderRadius: BorderRadius.circular(8)),
-                        child: Text(timerText, style: const TextStyle(color: Color(0xFFF59E0B), fontFamily: 'monospace', fontWeight: FontWeight.bold)),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: FASTBrand.onAmber,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          timerText,
+                          style: const TextStyle(
+                            color: Color(0xFFF59E0B),
+                            fontFamily: 'monospace',
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                   ],
                 ),
                 const SizedBox(height: 16),
-                
+
                 if (order.status == OrderStatus.placed) ...[
                   Text(
                     'ACCEPTER EN :',
@@ -406,18 +567,24 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                     children: [
                       for (final t in [5, 8, 10, 15, 20, 25])
                         InkWell(
-                          onTap: () => _acceptOrder(order, rProv, prepMinutes: t),
+                          onTap: () =>
+                              _acceptOrder(order, rProv, prepMinutes: t),
                           borderRadius: BorderRadius.circular(6),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 6),
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF10B981)
-                                  .withValues(alpha: 0.12),
+                              color: const Color(
+                                0xFF10B981,
+                              ).withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
-                                  color: const Color(0xFF10B981)
-                                      .withValues(alpha: 0.4)),
+                                color: const Color(
+                                  0xFF10B981,
+                                ).withValues(alpha: 0.4),
+                              ),
                             ),
                             child: Text(
                               '$t min',
@@ -437,14 +604,20 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                       Expanded(
                         child: ElevatedButton(
                           onPressed: () => _acceptOrder(order, rProv),
-                          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF10B981), foregroundColor: Colors.white),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF10B981),
+                            foregroundColor: Colors.white,
+                          ),
                           child: Text(tr(context, 'accept_auto')),
                         ),
                       ),
                       const SizedBox(width: 12),
                       OutlinedButton(
                         onPressed: () => _refuseOrder(order),
-                        style: OutlinedButton.styleFrom(foregroundColor: const Color(0xFFEF4444), side: const BorderSide(color: Color(0xFFEF4444))),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFFEF4444),
+                          side: const BorderSide(color: Color(0xFFEF4444)),
+                        ),
                         child: Text(tr(context, 'decline')),
                       ),
                     ],
@@ -457,14 +630,20 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                       Expanded(
                         child: ElevatedButton(
                           onPressed: () => _markReady(order),
-                          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF3B82F6), foregroundColor: Colors.white),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF3B82F6),
+                            foregroundColor: Colors.white,
+                          ),
                           child: Text(tr(context, 'ready_serve')),
                         ),
                       ),
                       const SizedBox(width: 12),
                       OutlinedButton(
                         onPressed: () => _cancelOrder(order, true),
-                        style: OutlinedButton.styleFrom(foregroundColor: const Color(0xFFEF4444), side: const BorderSide(color: Color(0xFFEF4444))),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFFEF4444),
+                          side: const BorderSide(color: Color(0xFFEF4444)),
+                        ),
                         child: Text(tr(context, 'cancel_billed')),
                       ),
                     ],
@@ -475,15 +654,31 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                     children: [
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: [ Icon(Icons.directions_walk, color: Color(0xFF3B82F6), size: 16),
-                            SizedBox(width: 6), Text(tr(context, 'client_enroute'), style: TextStyle(color: Color(0xFF3B82F6), fontWeight: FontWeight.w600, fontSize: 13)),
+                          children: [
+                            Icon(
+                              Icons.directions_walk,
+                              color: Color(0xFF3B82F6),
+                              size: 16,
+                            ),
+                            SizedBox(width: 6),
+                            Text(
+                              tr(context, 'client_enroute'),
+                              style: TextStyle(
+                                color: Color(0xFF3B82F6),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -493,12 +688,17 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                         child: ElevatedButton.icon(
                           onPressed: () => _showQrScanDialog(order),
                           icon: const Icon(Icons.qr_code_scanner, size: 20),
-                          label: Text(tr(context, 'scan_qr_btn'), style: TextStyle(fontWeight: FontWeight.bold)),
+                          label: Text(
+                            tr(context, 'scan_qr_btn'),
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF10B981),
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
                         ),
                       ),
@@ -516,10 +716,25 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
     return Container(
       margin: EdgeInsets.only(bottom: 8),
       padding: EdgeInsets.all(12),
-      decoration: BoxDecoration(color: context.fast.card, borderRadius: BorderRadius.circular(8), border: Border.all(color: context.fast.line)),
+      decoration: BoxDecoration(
+        color: context.fast.card,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: context.fast.line),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [ Text('#${order.id.split('-').last}', style: TextStyle(color: context.fast.t2)), Text('€${order.total.toStringAsFixed(2)}', style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold)),
+        children: [
+          Text(
+            '#${order.id.split('-').last}',
+            style: TextStyle(color: context.fast.t2),
+          ),
+          Text(
+            '€${order.total.toStringAsFixed(2)}',
+            style: TextStyle(
+              color: context.fast.t1,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );

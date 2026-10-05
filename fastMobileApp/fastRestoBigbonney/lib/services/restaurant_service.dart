@@ -15,7 +15,10 @@ class RestaurantService {
     if (search != null && search.isNotEmpty) params['search'] = search;
     if (dietary != null) params['dietary'] = dietary;
 
-    final data = await _api.get(ApiConfig.restaurants, queryParams: params.isNotEmpty ? params : null);
+    final data = await _api.get(
+      ApiConfig.restaurants,
+      queryParams: params.isNotEmpty ? params : null,
+    );
     final list = (data as List<dynamic>)
         .map((e) => Restaurant.fromApiJson(e as Map<String, dynamic>))
         .toList();
@@ -35,12 +38,21 @@ class RestaurantService {
     return list;
   }
 
-  Future<MenuItem> createMenuItem(String restaurantId, Map<String, dynamic> itemData) async {
-    final data = await _api.post(ApiConfig.menuByRestaurant(restaurantId), body: itemData);
+  Future<MenuItem> createMenuItem(
+    String restaurantId,
+    Map<String, dynamic> itemData,
+  ) async {
+    final data = await _api.post(
+      ApiConfig.menuByRestaurant(restaurantId),
+      body: itemData,
+    );
     return MenuItem.fromApiJson(data as Map<String, dynamic>);
   }
 
-  Future<List<MenuItem>> scanMenu(String restaurantId, String imageBase64) async {
+  Future<List<MenuItem>> scanMenu(
+    String restaurantId,
+    String imageBase64,
+  ) async {
     final data = await _api.post(
       ApiConfig.scanMenu(restaurantId),
       body: {'imageBase64': imageBase64},
@@ -54,7 +66,9 @@ class RestaurantService {
   /// Video menu import — send several frames at once; the backend scans
   /// them all and merges/dedupes the dishes before writing to the DB.
   Future<List<MenuItem>> scanMenuFrames(
-      String restaurantId, List<String> framesBase64) async {
+    String restaurantId,
+    List<String> framesBase64,
+  ) async {
     final data = await _api.post(
       ApiConfig.scanMenu(restaurantId),
       body: {'imagesBase64': framesBase64},
@@ -70,7 +84,10 @@ class RestaurantService {
     return data as Map<String, dynamic>;
   }
 
-  Future<Map<String, dynamic>> updateRestaurant(String id, Map<String, dynamic> body) async {
+  Future<Map<String, dynamic>> updateRestaurant(
+    String id,
+    Map<String, dynamic> body,
+  ) async {
     final data = await _api.patch(ApiConfig.updateRestaurant(id), body: body);
     return data as Map<String, dynamic>;
   }

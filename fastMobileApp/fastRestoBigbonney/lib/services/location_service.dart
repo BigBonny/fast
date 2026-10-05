@@ -31,7 +31,9 @@ class LocationService {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) return _lastKnownLocation;
       }
-      if (permission == LocationPermission.deniedForever) return _lastKnownLocation;
+      if (permission == LocationPermission.deniedForever) {
+        return _lastKnownLocation;
+      }
 
       final pos = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
@@ -56,7 +58,8 @@ class LocationService {
     final dLon = _toRadians(b.longitude - a.longitude);
     final lat1 = _toRadians(a.latitude);
     final lat2 = _toRadians(b.latitude);
-    final val = sin(dLat / 2) * sin(dLat / 2) +
+    final val =
+        sin(dLat / 2) * sin(dLat / 2) +
         sin(dLon / 2) * sin(dLon / 2) * cos(lat1) * cos(lat2);
     return 2 * earthRadius * atan2(sqrt(val), sqrt(1 - val));
   }
@@ -70,9 +73,9 @@ class LocationService {
         '?overview=full&geometries=geojson&steps=false';
 
     try {
-      final response = await http.get(Uri.parse(url)).timeout(
-        const Duration(seconds: 10),
-      );
+      final response = await http
+          .get(Uri.parse(url))
+          .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;
@@ -137,7 +140,8 @@ class LocationService {
     final dx = b.longitude - a.longitude;
     final dy = b.latitude - a.latitude;
     if (dx == 0 && dy == 0) return 0;
-    final t = ((p.longitude - a.longitude) * dx + (p.latitude - a.latitude) * dy) /
+    final t =
+        ((p.longitude - a.longitude) * dx + (p.latitude - a.latitude) * dy) /
         (dx * dx + dy * dy);
     return t.clamp(0.0, 1.0);
   }

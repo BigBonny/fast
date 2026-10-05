@@ -18,7 +18,8 @@ class MenuAiScannerScreen extends StatefulWidget {
 }
 
 class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
-  int _state = 0; // 0: Idle/Frame, 1: Scanning, 2: Success, -1: Error, 3: Recording
+  int _state =
+      0; // 0: Idle/Frame, 1: Scanning, 2: Success, -1: Error, 3: Recording
   String _errorMessage = '';
   final ImagePicker _picker = ImagePicker();
 
@@ -159,6 +160,7 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
         }
       }
       if (frames.isEmpty) {
+        if (!mounted) return;
         throw Exception(tr(context, 'extract_fail'));
       }
       debugPrint('[Scanner] extracted ${frames.length} frames');
@@ -268,7 +270,10 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
       if (mounted) {
         setState(() {
           _state = -1;
-          _errorMessage = tr(context, 'analysis_err').replaceAll('{n}', e.toString());
+          _errorMessage = tr(
+            context,
+            'analysis_err',
+          ).replaceAll('{n}', e.toString());
         });
       }
     }
@@ -355,13 +360,15 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                       ],
                     ),
                   ),
-                        SizedBox(height: 40), Text(
+                  SizedBox(height: 40),
+                  Text(
                     tr(context, 'scan_hint'),
                     style: TextStyle(
                       color: context.fast.t1,
                       fontWeight: FontWeight.w600,
                       fontSize: 13,
-                      shadows: [ Shadow(
+                      shadows: [
+                        Shadow(
                           offset: Offset(0, 1),
                           blurRadius: 4,
                           color: Color(0x80000000),
@@ -384,9 +391,10 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   // Gallery picker button
- IconButton(
+                  IconButton(
                     onPressed: () => _captureAndScan(ImageSource.gallery),
-                    icon: Icon( Icons.photo_library_outlined,
+                    icon: Icon(
+                      Icons.photo_library_outlined,
                       color: context.fast.t1,
                       size: 28,
                     ),
@@ -432,9 +440,7 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                           fontSize: 8,
                           fontWeight: FontWeight.w900,
                           letterSpacing: 0.5,
-                          shadows: [
-                            Shadow(blurRadius: 4, color: Colors.black),
-                          ],
+                          shadows: [Shadow(blurRadius: 4, color: Colors.black)],
                         ),
                       ),
                     ],
@@ -454,7 +460,9 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
               child: Center(
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 6),
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.6),
                     borderRadius: BorderRadius.circular(20),
@@ -532,12 +540,13 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
           ],
 
           if (_state == 1)
-                  Center(
+            Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   CircularProgressIndicator(color: Color(0xFF8B5CF6)),
-                  SizedBox(height: 24), Text(
+                  SizedBox(height: 24),
+                  Text(
                     tr(context, 'ai_analyzing'),
                     style: TextStyle(
                       color: Color(0xFF8B5CF6),
@@ -545,7 +554,8 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: 8), Text(
+                  SizedBox(height: 8),
+                  Text(
                     tr(context, 'extracting'),
                     style: TextStyle(color: context.fast.t2),
                   ),
@@ -554,11 +564,13 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
             ),
 
           if (_state == 2)
-                  Center(
+            Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: [ Icon(Icons.check_circle, color: Color(0xFF10B981), size: 80),
-                  SizedBox(height: 24), Text(
+                children: [
+                  Icon(Icons.check_circle, color: Color(0xFF10B981), size: 80),
+                  SizedBox(height: 24),
+                  Text(
                     tr(context, 'menu_imported'),
                     style: TextStyle(
                       color: Color(0xFF10B981),
@@ -574,11 +586,10 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
             Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: [ Icon( Icons.error_outline,
-                    color: Color(0xFFEF4444),
-                    size: 80,
-                  ),
-                        SizedBox(height: 24), Text(
+                children: [
+                  Icon(Icons.error_outline, color: Color(0xFFEF4444), size: 80),
+                  SizedBox(height: 24),
+                  Text(
                     'Erreur d\'import',
                     style: TextStyle(
                       color: Color(0xFFEF4444),
@@ -586,19 +597,16 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                        SizedBox(height: 8),
+                  SizedBox(height: 8),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 32),
                     child: Text(
                       _errorMessage,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: context.fast.t2,
-                        fontSize: 14,
-                      ),
+                      style: TextStyle(color: context.fast.t2, fontSize: 14),
                     ),
                   ),
-                        SizedBox(height: 24),
+                  SizedBox(height: 24),
                   ElevatedButton(
                     onPressed: () {
                       setState(() => _state = 0);

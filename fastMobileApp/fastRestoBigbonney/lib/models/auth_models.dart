@@ -25,13 +25,13 @@ class RegisterRequest {
   });
 
   Map<String, dynamic> toJson() => {
-        'email': email,
-        'password': password,
-        'name': name,
-        'role': role,
-        'phone': phone,
-        if (driverType != null) 'driverType': driverType,
-      };
+    'email': email,
+    'password': password,
+    'name': name,
+    'role': role,
+    'phone': phone,
+    if (driverType != null) 'driverType': driverType,
+  };
 }
 
 class AuthResponse {
@@ -41,9 +41,9 @@ class AuthResponse {
   AuthResponse({required this.token, required this.user});
 
   factory AuthResponse.fromJson(Map<String, dynamic> json) => AuthResponse(
-        token: json['token'] as String,
-        user: UserData.fromJson(json['user'] as Map<String, dynamic>),
-      );
+    token: json['token'] as String,
+    user: UserData.fromJson(json['user'] as Map<String, dynamic>),
+  );
 }
 
 class UserData {
@@ -73,19 +73,21 @@ class UserData {
   });
 
   factory UserData.fromJson(Map<String, dynamic> json) => UserData(
-        id: json['id'] as String,
-        email: json['email'] as String,
-        name: json['name'] as String? ?? '',
-        phone: json['phone'] as String? ?? '',
-        role: json['role'] as String,
-        points: json['points'] as int? ?? 0,
-        restaurant: json['restaurant'] as Map<String, dynamic>?,
-        driverProfile: json['driverProfile'] is Map<String, dynamic>
-            ? DriverProfileData.fromJson(json['driverProfile'] as Map<String, dynamic>)
-            : null,
-        restaurantId: json['restaurantId'] as String?,
-        staffRole: json['staffRole'] as String?,
-      );
+    id: json['id'] as String,
+    email: json['email'] as String,
+    name: json['name'] as String? ?? '',
+    phone: json['phone'] as String? ?? '',
+    role: json['role'] as String,
+    points: json['points'] as int? ?? 0,
+    restaurant: json['restaurant'] as Map<String, dynamic>?,
+    driverProfile: json['driverProfile'] is Map<String, dynamic>
+        ? DriverProfileData.fromJson(
+            json['driverProfile'] as Map<String, dynamic>,
+          )
+        : null,
+    restaurantId: json['restaurantId'] as String?,
+    staffRole: json['staffRole'] as String?,
+  );
 
   bool get isRestaurant => role == 'RESTAURANT';
   bool get isClient => role == 'CLIENT';
@@ -111,7 +113,8 @@ class DriverProfileData {
     this.schedules = const [],
   });
 
-  factory DriverProfileData.fromJson(Map<String, dynamic> json) => DriverProfileData(
+  factory DriverProfileData.fromJson(Map<String, dynamic> json) =>
+      DriverProfileData(
         id: json['id'] as String? ?? '',
         type: json['type'] as String? ?? 'OCCASIONAL',
         isOnline: json['isOnline'] as bool? ?? false,
