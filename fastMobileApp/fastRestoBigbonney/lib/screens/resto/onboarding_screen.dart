@@ -37,15 +37,44 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   // Same list as the client app's category strip — a restaurant can
   // pick several (e.g. "Burgers, Tacos").
   final List<String> _cuisines = [
-    'Burgers', 'Tacos', 'Kebab', 'Pizza', 'Poulet', 'Sandwichs',
-    'Fast-food', 'Hot-dogs', 'Sushi', 'Poke', 'Chinois', 'Vietnamien',
-    'Indien', 'Thaïlandais', 'Coréen', 'Mexicain', 'Italien', 'Grec',
-    'Cuisine du monde', 'Grillades & Viandes', 'Poisson & Fruits de mer',
-    'Vegan & Végétarien', 'Halal', 'Boulangerie', 'Sandwicherie',
-    'Crêpes & Gaufres', 'Desserts', 'Glaces', 'Bubble Tea', 'Café',
-    'Brasserie', 'Restaurant traditionnel', 'Restaurant gastronomique',
-    'Buffet', 'Cuisine méditerranéenne', 'Cuisine africaine',
-    'Cuisine antillaise & créole', 'Autres',
+    'Burgers',
+    'Tacos',
+    'Kebab',
+    'Pizza',
+    'Poulet',
+    'Sandwichs',
+    'Fast-food',
+    'Hot-dogs',
+    'Sushi',
+    'Poke',
+    'Chinois',
+    'Vietnamien',
+    'Indien',
+    'Thaïlandais',
+    'Coréen',
+    'Mexicain',
+    'Italien',
+    'Grec',
+    'Cuisine du monde',
+    'Grillades & Viandes',
+    'Poisson & Fruits de mer',
+    'Vegan & Végétarien',
+    'Halal',
+    'Boulangerie',
+    'Sandwicherie',
+    'Crêpes & Gaufres',
+    'Desserts',
+    'Glaces',
+    'Bubble Tea',
+    'Café',
+    'Brasserie',
+    'Restaurant traditionnel',
+    'Restaurant gastronomique',
+    'Buffet',
+    'Cuisine méditerranéenne',
+    'Cuisine africaine',
+    'Cuisine antillaise & créole',
+    'Autres',
   ];
 
   @override
@@ -85,7 +114,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   /// Returns true if a restaurant already exists for this user on the backend.
   Future<bool> _checkBackendRestaurant(
-      AuthProvider auth, RestoProvider prov) async {
+    AuthProvider auth,
+    RestoProvider prov,
+  ) async {
     // 1. Fast path: auth user object already has restaurant data
     if (auth.user?.restaurant != null) {
       final restoId = auth.user!.restaurant!['id'] as String?;
@@ -135,17 +166,23 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
     _formKey.currentState!.save();
-    setState(() { _formLoading = true; _formError = null; });
+    setState(() {
+      _formLoading = true;
+      _formError = null;
+    });
 
     try {
-      final data = await ApiClient().post(ApiConfig.restaurants, body: {
-        'name': _restoName,
-        'description': '',
-        'category': _cuisineTypes.join(', '),
-        'address': _city,
-        'normalPrepTime': _normalPrepTime.toInt(),
-        'rushPrepTime': _rushPrepTime.toInt(),
-      });
+      final data = await ApiClient().post(
+        ApiConfig.restaurants,
+        body: {
+          'name': _restoName,
+          'description': '',
+          'category': _cuisineTypes.join(', '),
+          'address': _city,
+          'normalPrepTime': _normalPrepTime.toInt(),
+          'rushPrepTime': _rushPrepTime.toInt(),
+        },
+      );
 
       final restoId = (data as Map<String, dynamic>)['id'] as String?;
 
@@ -166,10 +203,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         _finishOnboarding();
       }
     } catch (e) {
+      if (!mounted) return;
       String msg = tr(context, 'create_resto_err');
       if (e is ApiException) msg = e.message;
       if (e is ValidationException) msg = e.message;
-      if (mounted) setState(() { _formError = msg; _formLoading = false; });
+      if (mounted) {
+        setState(() {
+          _formError = msg;
+          _formLoading = false;
+        });
+      }
     }
   }
 
@@ -184,7 +227,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     if (_checkingBackend) {
-      return       Scaffold(
+      return Scaffold(
         backgroundColor: context.fast.bg,
         body: Center(
           child: CircularProgressIndicator(color: Color(0xFF00C8B3)),
@@ -222,11 +265,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       children: [
         const Icon(Icons.privacy_tip, size: 64, color: Color(0xFF00C8B3)),
         const SizedBox(height: 24),
-              Text(tr(context, 'privacy_cgu'),
-            style: TextStyle(
-                fontSize: 24, fontWeight: FontWeight.bold, color: context.fast.t1)),
+        Text(
+          tr(context, 'privacy_cgu'),
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: context.fast.t1,
+          ),
+        ),
         const SizedBox(height: 16),
-              Padding(
+        Padding(
           padding: EdgeInsets.symmetric(horizontal: 32.0),
           child: Text(
             tr(context, 'accept_terms'),
@@ -238,8 +286,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         ElevatedButton(
           onPressed: _nextStep,
           style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF00C8B3),
-              foregroundColor: Colors.black),
+            backgroundColor: const Color(0xFF00C8B3),
+            foregroundColor: Colors.black,
+          ),
           child: Text(tr(context, 'accept_continue')),
         ),
       ],
@@ -249,12 +298,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget _buildTutorial() {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: [ Icon(Icons.swipe, size: 64, color: Color(0xFF10B981)),
-              SizedBox(height: 24), Text(tr(context, 'tutorial_fast'),
-            style: TextStyle(
-                fontSize: 24, fontWeight: FontWeight.bold, color: context.fast.t1)),
-              SizedBox(height: 16),
-              Padding(
+      children: [
+        Icon(Icons.swipe, size: 64, color: Color(0xFF10B981)),
+        SizedBox(height: 24),
+        Text(
+          tr(context, 'tutorial_fast'),
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: context.fast.t1,
+          ),
+        ),
+        SizedBox(height: 16),
+        Padding(
           padding: EdgeInsets.symmetric(horizontal: 32.0),
           child: Text(
             tr(context, 'manage_intro'),
@@ -266,8 +322,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         ElevatedButton(
           onPressed: _nextStep,
           style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF00C8B3),
-              foregroundColor: Colors.black),
+            backgroundColor: const Color(0xFF00C8B3),
+            foregroundColor: Colors.black,
+          ),
           child: Text(tr(context, 'understood')),
         ),
       ],
@@ -284,14 +341,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
           clipBehavior: Clip.antiAlias,
           child: Transform.scale(
-              scale: 1.35,
-              child: Image.asset('assets/images/logo.png', fit: BoxFit.cover)),
+            scale: 1.35,
+            child: Image.asset('assets/images/logo.png', fit: BoxFit.cover),
+          ),
         ),
-              SizedBox(height: 32), Text(
+        SizedBox(height: 32),
+        Text(
           tr(context, 'grow_title'),
           textAlign: TextAlign.center,
           style: TextStyle(
-              fontSize: 28, fontWeight: FontWeight.w900, color: context.fast.t1),
+            fontSize: 28,
+            fontWeight: FontWeight.w900,
+            color: context.fast.t1,
+          ),
         ),
         const SizedBox(height: 48),
         ElevatedButton(
@@ -301,8 +363,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             foregroundColor: Colors.black,
             padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
           ),
-          child: Text(tr(context, 'create_space'),
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          child: Text(
+            tr(context, 'create_space'),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
         ),
       ],
     );
@@ -313,40 +377,53 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       key: _formKey,
       child: ListView(
         padding: EdgeInsets.all(24.0),
-        children: [ Text(tr(context, 'configuration'),
-              style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w900,
-                  color: context.fast.t1)),
-                SizedBox(height: 24), TextFormField(
+        children: [
+          Text(
+            tr(context, 'configuration'),
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w900,
+              color: context.fast.t1,
+            ),
+          ),
+          SizedBox(height: 24),
+          TextFormField(
             style: TextStyle(color: context.fast.t1),
-            decoration:       InputDecoration(
-                labelText: tr(context, 'manager_name'),
-                labelStyle: TextStyle(color: context.fast.t2)),
+            decoration: InputDecoration(
+              labelText: tr(context, 'manager_name'),
+              labelStyle: TextStyle(color: context.fast.t2),
+            ),
             onSaved: (val) => _managerFirstName = val ?? '',
           ),
-                SizedBox(height: 16), TextFormField(
+          SizedBox(height: 16),
+          TextFormField(
             style: TextStyle(color: context.fast.t1),
-            decoration:       InputDecoration(
-                labelText: tr(context, 'resto_name_lbl'),
-                labelStyle: TextStyle(color: context.fast.t2)),
+            decoration: InputDecoration(
+              labelText: tr(context, 'resto_name_lbl'),
+              labelStyle: TextStyle(color: context.fast.t2),
+            ),
             validator: (val) =>
                 val == null || val.isEmpty ? tr(context, 'required_f') : null,
             onSaved: (val) => _restoName = val ?? '',
           ),
-                SizedBox(height: 16), TextFormField(
+          SizedBox(height: 16),
+          TextFormField(
             style: TextStyle(color: context.fast.t1),
-            decoration:       InputDecoration(
-                labelText: tr(context, 'city'),
-                labelStyle: TextStyle(color: context.fast.t2)),
+            decoration: InputDecoration(
+              labelText: tr(context, 'city'),
+              labelStyle: TextStyle(color: context.fast.t2),
+            ),
             onSaved: (val) => _city = val ?? '',
           ),
-                SizedBox(height: 16),
-          Text(tr(context, 'cuisine_types_lbl'),
-              style: TextStyle(
-                  color: context.fast.t2,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600)),
+          SizedBox(height: 16),
+          Text(
+            tr(context, 'cuisine_types_lbl'),
+            style: TextStyle(
+              color: context.fast.t2,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
@@ -377,7 +454,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   color: sel ? const Color(0xFF00C8B3) : context.fast.faint,
                 ),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
+                  borderRadius: BorderRadius.circular(8),
+                ),
               );
             }).toList(),
           ),
@@ -385,7 +463,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           _buildTimeSlider(
             tr(context, 'normal_prep'),
             _normalPrepTime,
-            5, 60,
+            5,
+            60,
             const Color(0xFF00C8B3),
             (val) => setState(() => _normalPrepTime = val),
           ),
@@ -393,7 +472,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           _buildTimeSlider(
             tr(context, 'rush_prep'),
             _rushPrepTime,
-            10, 90,
+            10,
+            90,
             const Color(0xFFEF4444),
             (val) => setState(() => _rushPrepTime = val),
           ),
@@ -401,10 +481,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           if (_formError != null)
             Padding(
               padding: const EdgeInsets.only(bottom: 16),
-              child: Text(_formError!,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                      color: Color(0xFFEF4444), fontSize: 13)),
+              child: Text(
+                _formError!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Color(0xFFEF4444), fontSize: 13),
+              ),
             ),
           const SizedBox(height: 8),
           ElevatedButton(
@@ -416,52 +497,74 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
             child: _formLoading
                 ? const SizedBox(
-                    width: 20, height: 20,
+                    width: 20,
+                    height: 20,
                     child: CircularProgressIndicator(
-                        strokeWidth: 2, color: Colors.black))
-                : Text(tr(context, 'save_dashboard'),
-                    style: TextStyle(fontWeight: FontWeight.bold)),
+                      strokeWidth: 2,
+                      color: Colors.black,
+                    ),
+                  )
+                : Text(
+                    tr(context, 'save_dashboard'),
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTimeSlider(String title, double value, double min, double max, Color color, ValueChanged<double> onChanged) {
+  Widget _buildTimeSlider(
+    String title,
+    double value,
+    double min,
+    double max,
+    Color color,
+    ValueChanged<double> onChanged,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [ Text(title,
-                style: TextStyle(
-                    color: context.fast.t1,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15)), Text('${value.round()} min',
-                style: TextStyle(
-                    color: color,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16)),
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                color: context.fast.t1,
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+              ),
+            ),
+            Text(
+              '${value.round()} min',
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
           ],
         ),
-              SizedBox(height: 8),
+        SizedBox(height: 8),
         Row(
           children: [
             Padding(
               padding: const EdgeInsets.only(right: 8.0),
-              child: Text('${min.round()}',
-                  style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.38),
-                      fontSize: 11)),
+              child: Text(
+                '${min.round()}',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.38),
+                  fontSize: 11,
+                ),
+              ),
             ),
             Expanded(
               child: SliderTheme(
                 data: SliderTheme.of(context).copyWith(
                   trackHeight: 6.0,
-                  thumbShape:
-                            RoundSliderThumbShape(enabledThumbRadius: 14.0),
-                  overlayShape:
-                            RoundSliderOverlayShape(overlayRadius: 28.0),
+                  thumbShape: RoundSliderThumbShape(enabledThumbRadius: 14.0),
+                  overlayShape: RoundSliderOverlayShape(overlayRadius: 28.0),
                   activeTrackColor: color,
                   inactiveTrackColor: context.fast.line,
                   thumbColor: color,
@@ -479,10 +582,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
             Padding(
               padding: const EdgeInsets.only(left: 8.0),
-              child: Text('${max.round()}',
-                  style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.38),
-                      fontSize: 11)),
+              child: Text(
+                '${max.round()}',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.38),
+                  fontSize: 11,
+                ),
+              ),
             ),
           ],
         ),

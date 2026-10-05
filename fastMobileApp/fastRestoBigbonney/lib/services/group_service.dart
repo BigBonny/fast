@@ -14,7 +14,10 @@ class GroupService {
 
   /// Join an existing group by code
   Future<Map<String, dynamic>> joinGroup(String code) async {
-    final response = await _client.post(ApiConfig.joinGroup, body: {'code': code});
+    final response = await _client.post(
+      ApiConfig.joinGroup,
+      body: {'code': code},
+    );
     return response as Map<String, dynamic>;
   }
 

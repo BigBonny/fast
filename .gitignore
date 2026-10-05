@@ -36,3 +36,5 @@ backend/dist
 *.apk
 *.7z
 graphify-out/
+
+.vercel

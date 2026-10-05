@@ -11,14 +11,17 @@ class ApiException implements Exception {
 }
 
 class UnauthorizedException extends ApiException {
-  UnauthorizedException([String? message]) : super(message ?? AppStrings.trNow('unauthorized'), 401);
+  UnauthorizedException([String? message])
+    : super(message ?? AppStrings.trNow('unauthorized'), 401);
 }
 
 class NotFoundException extends ApiException {
-  NotFoundException([String? message]) : super(message ?? AppStrings.trNow('not_found'), 404);
+  NotFoundException([String? message])
+    : super(message ?? AppStrings.trNow('not_found'), 404);
 }
 
 class ValidationException extends ApiException {
   final Map<String, dynamic>? errors;
-  ValidationException([String? message, this.errors]) : super(message ?? AppStrings.trNow('validation_err'), 400);
+  ValidationException([String? message, this.errors])
+    : super(message ?? AppStrings.trNow('validation_err'), 400);
 }

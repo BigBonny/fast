@@ -5,7 +5,7 @@ import '../provider.dart';
 import '../theme.dart';
 
 class RoleSelectionScreen extends StatelessWidget {
-        const RoleSelectionScreen({super.key});
+  const RoleSelectionScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +19,7 @@ class RoleSelectionScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-                    SizedBox(height: 24),
+              SizedBox(height: 24),
               // Logo — website wordmark style
               Center(
                 child: Row(
@@ -37,7 +37,11 @@ class RoleSelectionScreen extends StatelessWidget {
                         ),
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: Icon(Icons.bolt, color: FASTBrand.onAmber, size: 34),
+                      child: Icon(
+                        Icons.bolt,
+                        color: FASTBrand.onAmber,
+                        size: 34,
+                      ),
                     ),
                     const SizedBox(width: 10),
                     ShaderMask(
@@ -66,7 +70,8 @@ class RoleSelectionScreen extends StatelessWidget {
                   ],
                 ),
               ),
-                    SizedBox(height: 32), Text(
+              SizedBox(height: 32),
+              Text(
                 fast.tr('welcome'),
                 textAlign: TextAlign.center,
                 style: TextStyle(
@@ -76,23 +81,22 @@ class RoleSelectionScreen extends StatelessWidget {
                   letterSpacing: -0.5,
                 ),
               ),
-                    SizedBox(height: 8), Text(
+              SizedBox(height: 8),
+              Text(
                 fast.tr('choose_profile'),
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: context.fast.t2,
-                ),
+                style: TextStyle(fontSize: 14, color: context.fast.t2),
               ),
-                    SizedBox(height: 64),
-              
+              SizedBox(height: 64),
+
               // Client Button
               ElevatedButton(
                 onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const AuthScreen(initialRole: 'CLIENT'),
+                      builder: (context) =>
+                          const AuthScreen(initialRole: 'CLIENT'),
                     ),
                   );
                 },
@@ -106,30 +110,46 @@ class RoleSelectionScreen extends StatelessWidget {
                   ),
                   elevation: 0,
                 ),
-                child:       Column(
-                  children: [ Icon(Icons.person_outline, size: 36, color: Color(0xFFF59E0B)),
-                    SizedBox(height: 16), Text(
-                      fast.tr('iam_client'),
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.person_outline,
+                      size: 36,
+                      color: Color(0xFFF59E0B),
                     ),
-                    SizedBox(height: 4), Text(
+                    SizedBox(height: 16),
+                    Text(
+                      fast.tr('iam_client'),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
                       fast.tr('client_desc'),
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 11, color: context.fast.t2, fontWeight: FontWeight.normal, height: 1.4),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: context.fast.t2,
+                        fontWeight: FontWeight.normal,
+                        height: 1.4,
+                      ),
                     ),
                   ],
                 ),
               ),
-              
-                    SizedBox(height: 20),
-              
+
+              SizedBox(height: 20),
+
               // Resto Button
               ElevatedButton(
                 onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const AuthScreen(initialRole: 'RESTAURANT'),
+                      builder: (context) =>
+                          const AuthScreen(initialRole: 'RESTAURANT'),
                     ),
                   );
                 },
@@ -143,19 +163,29 @@ class RoleSelectionScreen extends StatelessWidget {
                   elevation: 0,
                 ),
                 child: Column(
-                  children: [ Icon(Icons.restaurant, size: 36),
-                    SizedBox(height: 16), Text(
+                  children: [
+                    Icon(Icons.restaurant, size: 36),
+                    SizedBox(height: 16),
+                    Text(
                       fast.tr('iam_pro'),
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
-                    SizedBox(height: 4), Text(
+                    SizedBox(height: 4),
+                    Text(
                       fast.tr('pro_desc'),
-                      style: TextStyle(fontSize: 12, color: Color(0xCC09090B), fontWeight: FontWeight.normal),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Color(0xCC09090B),
+                        fontWeight: FontWeight.normal,
+                      ),
                     ),
                   ],
                 ),
               ),
-                    SizedBox(height: 20),
+              SizedBox(height: 20),
 
               // Driver Button
               ElevatedButton(
@@ -163,7 +193,8 @@ class RoleSelectionScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const AuthScreen(initialRole: 'LIVREUR'),
+                      builder: (context) =>
+                          const AuthScreen(initialRole: 'LIVREUR'),
                     ),
                   );
                 },
@@ -177,19 +208,38 @@ class RoleSelectionScreen extends StatelessWidget {
                   ),
                   elevation: 0,
                 ),
-                child:       Column(
-                  children: [ Icon(Icons.delivery_dining_outlined, size: 34, color: Color(0xFF10B981)),
-                    SizedBox(height: 12), Text(
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.delivery_dining_outlined,
+                      size: 34,
+                      color: Color(0xFF10B981),
+                    ),
+                    SizedBox(height: 12),
+                    Text(
                       fast.tr('iam_driver'),
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
-                    SizedBox(height: 4), Text(
+                    SizedBox(height: 4),
+                    Text(
                       fast.tr('driver_desc'),
-                      style: TextStyle(fontSize: 12, color: context.fast.t2, fontWeight: FontWeight.normal),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: context.fast.t2,
+                        fontWeight: FontWeight.normal,
+                      ),
                     ),
-                    SizedBox(height: 4), Text(
+                    SizedBox(height: 4),
+                    Text(
                       fast.tr('driver_badge'),
-                      style: TextStyle(fontSize: 10, color: Color(0xFF10B981), fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: Color(0xFF10B981),
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),

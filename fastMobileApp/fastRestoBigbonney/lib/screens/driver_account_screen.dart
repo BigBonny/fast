@@ -32,7 +32,8 @@ class _DriverAccountScreenState extends State<DriverAccountScreen> {
       final profile = await _deliveryService.getDriverProfile();
       if (!mounted) return;
       setState(() {
-        _earningsPlaceholder = (profile['totalEarnings'] as num?)?.toDouble() ?? 0;
+        _earningsPlaceholder =
+            (profile['totalEarnings'] as num?)?.toDouble() ?? 0;
         _schedules = (profile['schedules'] as List<dynamic>? ?? const [])
             .whereType<Map<String, dynamic>>()
             .toList();
@@ -53,7 +54,9 @@ class _DriverAccountScreenState extends State<DriverAccountScreen> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final user = auth.user;
-    final initial = (user?.name.isNotEmpty ?? false) ? user!.name[0].toUpperCase() : 'L';
+    final initial = (user?.name.isNotEmpty ?? false)
+        ? user!.name[0].toUpperCase()
+        : 'L';
 
     return Scaffold(
       backgroundColor: context.fast.bg,
@@ -63,11 +66,15 @@ class _DriverAccountScreenState extends State<DriverAccountScreen> {
         surfaceTintColor: Colors.transparent,
         title: Text(
           tr(context, 'driver_account'),
-          style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.w900, fontSize: 16),
+          style: TextStyle(
+            color: context.fast.t1,
+            fontWeight: FontWeight.w900,
+            fontSize: 16,
+          ),
         ),
       ),
       body: _loading
-          ?       Center(child: CircularProgressIndicator(color: Color(0xFFF59E0B)))
+          ? Center(child: CircularProgressIndicator(color: Color(0xFFF59E0B)))
           : ListView(
               padding: EdgeInsets.all(16),
               children: [
@@ -90,11 +97,12 @@ class _DriverAccountScreenState extends State<DriverAccountScreen> {
                         ),
                       ),
                     ),
-                          SizedBox(width: 14),
+                    SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [ Text(
+                        children: [
+                          Text(
                             user?.name ?? tr(context, 'driver_lbl'),
                             style: TextStyle(
                               fontSize: 16,
@@ -103,16 +111,19 @@ class _DriverAccountScreenState extends State<DriverAccountScreen> {
                             ),
                           ),
                           if (user?.email.isNotEmpty ?? false)
- Text(
+                            Text(
                               user!.email,
-                              style: TextStyle(fontSize: 12, color: context.fast.t2),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: context.fast.t2,
+                              ),
                             ),
                         ],
                       ),
                     ),
                   ],
                 ),
-                      SizedBox(height: 24),
+                SizedBox(height: 24),
                 Container(
                   padding: EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -121,27 +132,37 @@ class _DriverAccountScreenState extends State<DriverAccountScreen> {
                     border: Border.all(color: context.fast.line),
                   ),
                   child: Row(
-                    children: [ Icon(Icons.payments_outlined, color: Color(0xFFF59E0B), size: 28),
-                            SizedBox(width: 14),
+                    children: [
+                      Icon(
+                        Icons.payments_outlined,
+                        color: Color(0xFFF59E0B),
+                        size: 28,
+                      ),
+                      SizedBox(width: 14),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [ Text(
+                        children: [
+                          Text(
                             '${_earningsPlaceholder.toStringAsFixed(2)} €',
                             style: TextStyle(
                               color: context.fast.t1,
                               fontSize: 22,
                               fontWeight: FontWeight.w900,
                             ),
-                          ), Text(
+                          ),
+                          Text(
                             tr(context, 'earnings_preview'),
-                            style: TextStyle(color: context.fast.t2, fontSize: 12),
+                            style: TextStyle(
+                              color: context.fast.t2,
+                              fontSize: 12,
+                            ),
                           ),
                         ],
                       ),
                     ],
                   ),
                 ),
-                      SizedBox(height: 16),
+                SizedBox(height: 16),
                 Container(
                   decoration: BoxDecoration(
                     color: context.fast.card,
@@ -151,23 +172,45 @@ class _DriverAccountScreenState extends State<DriverAccountScreen> {
                   child: Column(
                     children: [
                       ListTile(
-                        leading: Icon(Icons.calendar_month_outlined, color: Color(0xFF10B981)),
-                        title: Text(tr(context, 'my_planning'), style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold)),
+                        leading: Icon(
+                          Icons.calendar_month_outlined,
+                          color: Color(0xFF10B981),
+                        ),
+                        title: Text(
+                          tr(context, 'my_planning'),
+                          style: TextStyle(
+                            color: context.fast.t1,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         subtitle: Text(
                           _schedules.isEmpty
                               ? tr(context, 'no_slots')
-                              : tr(context, 'slots_count').replaceAll('{n}', '${_schedules.length}'),
-                          style: TextStyle(color: context.fast.t2, fontSize: 11),
+                              : tr(
+                                  context,
+                                  'slots_count',
+                                ).replaceAll('{n}', '${_schedules.length}'),
+                          style: TextStyle(
+                            color: context.fast.t2,
+                            fontSize: 11,
+                          ),
                         ),
-                        trailing: Icon(Icons.open_in_new, color: context.fast.t3, size: 18),
+                        trailing: Icon(
+                          Icons.open_in_new,
+                          color: context.fast.t3,
+                          size: 18,
+                        ),
                         onTap: () => launchUrl(
                           Uri.parse('https://fast-resto.app/livreur/planning'),
                           mode: LaunchMode.externalApplication,
                         ),
                       ),
-                            Divider(height: 1, color: context.fast.line),
+                      Divider(height: 1, color: context.fast.line),
                       ListTile(
-                        leading: const Icon(Icons.logout, color: Color(0xFFEF4444)),
+                        leading: const Icon(
+                          Icons.logout,
+                          color: Color(0xFFEF4444),
+                        ),
                         title: Consumer<AuthProvider>(
                           builder: (context, auth, _) {
                             if (auth.isLoggingOut) {
@@ -181,16 +224,23 @@ class _DriverAccountScreenState extends State<DriverAccountScreen> {
                                       color: Color(0xFFEF4444),
                                     ),
                                   ),
-                                  SizedBox(width: 12), Text(
+                                  SizedBox(width: 12),
+                                  Text(
                                     tr(context, 'logging_out'),
-                                    style: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.bold),
+                                    style: TextStyle(
+                                      color: Color(0xFFEF4444),
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ],
                               );
                             }
                             return Text(
                               tr(context, 'logout'),
-                              style: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                color: Color(0xFFEF4444),
+                                fontWeight: FontWeight.bold,
+                              ),
                             );
                           },
                         ),
@@ -199,8 +249,8 @@ class _DriverAccountScreenState extends State<DriverAccountScreen> {
                     ],
                   ),
                 ),
-                      SizedBox(height: 24),
-                      Center(
+                SizedBox(height: 24),
+                Center(
                   child: Text(
                     tr(context, 'driver_tagline'),
                     style: TextStyle(color: context.fast.faint, fontSize: 11),

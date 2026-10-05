@@ -70,8 +70,9 @@ class _QRVerificationScreenState extends State<QRVerificationScreen>
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: context.fast.line),
               ),
-              child:       Row(
-                children: [ Icon(Icons.info_outline, color: Color(0xFFF59E0B), size: 16),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, color: Color(0xFFF59E0B), size: 16),
                   SizedBox(width: 10),
                   Expanded(
                     child: Text(
@@ -86,7 +87,7 @@ class _QRVerificationScreenState extends State<QRVerificationScreen>
                 ],
               ),
             ),
-                  SizedBox(height: 28),
+            SizedBox(height: 28),
             Container(
               padding: EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -107,11 +108,11 @@ class _QRVerificationScreenState extends State<QRVerificationScreen>
                             data: qrData,
                             version: QrVersions.auto,
                             backgroundColor: Colors.white,
-                            eyeStyle:       QrEyeStyle(
+                            eyeStyle: QrEyeStyle(
                               eyeShape: QrEyeShape.square,
                               color: FASTBrand.onAmber,
                             ),
-                            dataModuleStyle:       QrDataModuleStyle(
+                            dataModuleStyle: QrDataModuleStyle(
                               dataModuleShape: QrDataModuleShape.square,
                               color: FASTBrand.onAmber,
                             ),
@@ -126,9 +127,15 @@ class _QRVerificationScreenState extends State<QRVerificationScreen>
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
-                                  const Color(0xFFF59E0B).withValues(alpha: 0.0),
-                                  const Color(0xFFF59E0B).withValues(alpha: 0.8),
-                                  const Color(0xFFF59E0B).withValues(alpha: 0.0),
+                                  const Color(
+                                    0xFFF59E0B,
+                                  ).withValues(alpha: 0.0),
+                                  const Color(
+                                    0xFFF59E0B,
+                                  ).withValues(alpha: 0.8),
+                                  const Color(
+                                    0xFFF59E0B,
+                                  ).withValues(alpha: 0.0),
                                 ],
                               ),
                             ),
@@ -140,7 +147,8 @@ class _QRVerificationScreenState extends State<QRVerificationScreen>
                 },
               ),
             ),
-                  SizedBox(height: 20), Text(
+            SizedBox(height: 20),
+            Text(
               order.id.toUpperCase(),
               style: const TextStyle(
                 fontFamily: 'monospace',
@@ -150,7 +158,8 @@ class _QRVerificationScreenState extends State<QRVerificationScreen>
                 letterSpacing: 2.0,
               ),
             ),
-                  SizedBox(height: 6), Text(
+            SizedBox(height: 6),
+            Text(
               tr(context, 'valid_at').replaceAll('{n}', order.restaurantName),
               style: TextStyle(
                 fontSize: 12,
@@ -158,7 +167,7 @@ class _QRVerificationScreenState extends State<QRVerificationScreen>
                 fontWeight: FontWeight.w600,
               ),
             ),
-                  SizedBox(height: 24),
+            SizedBox(height: 24),
             Container(
               padding: EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -168,11 +177,23 @@ class _QRVerificationScreenState extends State<QRVerificationScreen>
               ),
               child: Column(
                 children: [
-                  _summaryRow(tr(context, 'restaurant_lbl'), order.restaurantName),
+                  _summaryRow(
+                    tr(context, 'restaurant_lbl'),
+                    order.restaurantName,
+                  ),
                   const SizedBox(height: 8),
-                  _summaryRow(tr(context, 'articles'), tr(context, 'articles_count').replaceAll('{n}', '${order.items.length}')),
+                  _summaryRow(
+                    tr(context, 'articles'),
+                    tr(
+                      context,
+                      'articles_count',
+                    ).replaceAll('{n}', '${order.items.length}'),
+                  ),
                   const SizedBox(height: 8),
-                  _summaryRow(tr(context, 'total'), '${order.total.toStringAsFixed(2)} €'),
+                  _summaryRow(
+                    tr(context, 'total'),
+                    '${order.total.toStringAsFixed(2)} €',
+                  ),
                 ],
               ),
             ),
@@ -188,18 +209,24 @@ class _QRVerificationScreenState extends State<QRVerificationScreen>
   Widget _summaryRow(String label, String value) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [ Text(label, style: TextStyle(fontSize: 12, color: context.fast.t3)), Text(
+      children: [
+        Text(label, style: TextStyle(fontSize: 12, color: context.fast.t3)),
+        Text(
           value,
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: context.fast.t1),
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: context.fast.t1,
+          ),
         ),
       ],
     );
   }
 
   Widget _buildStatusSection(OrderStatus status) {
- Color color;
+    Color color;
     String label;
- IconData icon;
+    IconData icon;
 
     switch (status) {
       case OrderStatus.placed:
@@ -208,12 +235,12 @@ class _QRVerificationScreenState extends State<QRVerificationScreen>
         icon = Icons.receipt_long;
         break;
       case OrderStatus.preparing:
-        color =       Color(0xFFF59E0B);
+        color = Color(0xFFF59E0B);
         label = tr(context, 'qs_preparing');
         icon = Icons.restaurant_menu;
         break;
       case OrderStatus.readyForPickup:
-        color =       Color(0xFF10B981);
+        color = Color(0xFF10B981);
         label = tr(context, 'qs_ready');
         icon = Icons.check_circle;
         break;
@@ -238,8 +265,10 @@ class _QRVerificationScreenState extends State<QRVerificationScreen>
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [ Icon(icon, color: color, size: 16),
-          const SizedBox(width: 8), Text(
+        children: [
+          Icon(icon, color: color, size: 16),
+          const SizedBox(width: 8),
+          Text(
             label,
             style: TextStyle(
               fontSize: 13,

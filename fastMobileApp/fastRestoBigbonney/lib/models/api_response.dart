@@ -15,20 +15,11 @@ class ApiState<T> {
   final T? data;
   final String? error;
 
-  const ApiState({
-    this.result = ApiResult.idle,
-    this.data,
-    this.error,
-  });
+  const ApiState({this.result = ApiResult.idle, this.data, this.error});
 
-  ApiState<T> copyWith({
-    ApiResult? result,
-    T? data,
-    String? error,
-  }) =>
-      ApiState(
-        result: result ?? this.result,
-        data: data ?? this.data,
-        error: error,
-      );
+  ApiState<T> copyWith({ApiResult? result, T? data, String? error}) => ApiState(
+    result: result ?? this.result,
+    data: data ?? this.data,
+    error: error,
+  );
 }

@@ -18,10 +18,7 @@ class ReviewService {
     required double rating,
     required String comment,
   }) async {
-    final body = {
-      'rating': rating,
-      'comment': comment,
-    };
+    final body = {'rating': rating, 'comment': comment};
     final data = await _api.post(
       ApiConfig.reviewsByRestaurant(restaurantId),
       body: body,

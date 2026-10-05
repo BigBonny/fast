@@ -85,8 +85,9 @@ class FASTShades {
 }
 
 extension FASTShadesX on BuildContext {
-  FASTShades get fast =>
-      Theme.of(this).brightness == Brightness.dark ? FASTShades.dark : FASTShades.light;
+  FASTShades get fast => Theme.of(this).brightness == Brightness.dark
+      ? FASTShades.dark
+      : FASTShades.light;
 }
 
 /// FAST brand tokens (used by both themes).
@@ -234,7 +235,10 @@ class FASTTheme {
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         backgroundColor: isDark ? sh.cardHigh : const Color(0xFF17171B),
-        contentTextStyle: TextStyle(color: isDark ? sh.t1 : Colors.white, fontWeight: FontWeight.w600),
+        contentTextStyle: TextStyle(
+          color: isDark ? sh.t1 : Colors.white,
+          fontWeight: FontWeight.w600,
+        ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -242,7 +246,10 @@ class FASTTheme {
         fillColor: sh.cardHigh,
         hintStyle: TextStyle(color: sh.t3, fontSize: 13),
         labelStyle: TextStyle(color: sh.t2, fontSize: 13),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(color: sh.line),
@@ -268,8 +275,16 @@ class FASTTheme {
         backgroundColor: sh.card,
         selectedColor: FASTBrand.amber,
         disabledColor: sh.cardHigh,
-        labelStyle: TextStyle(color: sh.t1, fontWeight: FontWeight.w700, fontSize: 12),
-        secondaryLabelStyle: const TextStyle(color: FASTBrand.onAmber, fontWeight: FontWeight.w700, fontSize: 12),
+        labelStyle: TextStyle(
+          color: sh.t1,
+          fontWeight: FontWeight.w700,
+          fontSize: 12,
+        ),
+        secondaryLabelStyle: const TextStyle(
+          color: FASTBrand.onAmber,
+          fontWeight: FontWeight.w700,
+          fontSize: 12,
+        ),
         side: BorderSide(color: sh.line),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -280,7 +295,9 @@ class FASTTheme {
           foregroundColor: FASTBrand.onAmber,
           elevation: 0,
           textStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
         ),
       ),
@@ -289,7 +306,9 @@ class FASTTheme {
           foregroundColor: sh.t1,
           side: BorderSide(color: sh.line),
           textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
         ),
       ),
@@ -307,7 +326,8 @@ class FASTTheme {
       ),
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith(
-          (states) => states.contains(WidgetState.selected) ? FASTBrand.amber : sh.t3,
+          (states) =>
+              states.contains(WidgetState.selected) ? FASTBrand.amber : sh.t3,
         ),
         trackColor: WidgetStateProperty.resolveWith(
           (states) => states.contains(WidgetState.selected)
@@ -315,7 +335,9 @@ class FASTTheme {
               : sh.faint,
         ),
       ),
-      progressIndicatorTheme: const ProgressIndicatorThemeData(color: FASTBrand.amber),
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: FASTBrand.amber,
+      ),
       iconTheme: IconThemeData(color: sh.t1, size: 22),
       splashFactory: InkSparkle.splashFactory,
     );

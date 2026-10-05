@@ -48,7 +48,10 @@ class PaymentService {
   }
 
   Future<Order> confirmCheckoutSession(String sessionId) async {
-    final data = await _api.post(ApiConfig.confirmCheckoutSession(sessionId), body: {});
+    final data = await _api.post(
+      ApiConfig.confirmCheckoutSession(sessionId),
+      body: {},
+    );
     return Order.fromApiJson(data as Map<String, dynamic>);
   }
 

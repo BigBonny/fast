@@ -49,17 +49,27 @@ class ApiClient {
     return headers;
   }
 
-  Future<dynamic> get(String endpoint, {Map<String, String>? queryParams}) async {
-    final uri = Uri.parse('${ApiConfig.baseUrl}$endpoint')
-        .replace(queryParameters: queryParams);
-    final response = await http.get(uri, headers: _headers).timeout(ApiConfig.timeout);
+  Future<dynamic> get(
+    String endpoint, {
+    Map<String, String>? queryParams,
+  }) async {
+    final uri = Uri.parse(
+      '${ApiConfig.baseUrl}$endpoint',
+    ).replace(queryParameters: queryParams);
+    final response = await http
+        .get(uri, headers: _headers)
+        .timeout(ApiConfig.timeout);
     return _handleResponse(response);
   }
 
   Future<dynamic> post(String endpoint, {Map<String, dynamic>? body}) async {
     final uri = Uri.parse('${ApiConfig.baseUrl}$endpoint');
     final response = await http
-        .post(uri, headers: _headers, body: body != null ? json.encode(body) : null)
+        .post(
+          uri,
+          headers: _headers,
+          body: body != null ? json.encode(body) : null,
+        )
         .timeout(ApiConfig.timeout);
     return _handleResponse(response);
   }
@@ -67,7 +77,11 @@ class ApiClient {
   Future<dynamic> patch(String endpoint, {Map<String, dynamic>? body}) async {
     final uri = Uri.parse('${ApiConfig.baseUrl}$endpoint');
     final response = await http
-        .patch(uri, headers: _headers, body: body != null ? json.encode(body) : null)
+        .patch(
+          uri,
+          headers: _headers,
+          body: body != null ? json.encode(body) : null,
+        )
         .timeout(ApiConfig.timeout);
     return _handleResponse(response);
   }
@@ -75,14 +89,20 @@ class ApiClient {
   Future<dynamic> put(String endpoint, {Map<String, dynamic>? body}) async {
     final uri = Uri.parse('${ApiConfig.baseUrl}$endpoint');
     final response = await http
-        .put(uri, headers: _headers, body: body != null ? json.encode(body) : null)
+        .put(
+          uri,
+          headers: _headers,
+          body: body != null ? json.encode(body) : null,
+        )
         .timeout(ApiConfig.timeout);
     return _handleResponse(response);
   }
 
   Future<dynamic> delete(String endpoint) async {
     final uri = Uri.parse('${ApiConfig.baseUrl}$endpoint');
-    final response = await http.delete(uri, headers: _headers).timeout(ApiConfig.timeout);
+    final response = await http
+        .delete(uri, headers: _headers)
+        .timeout(ApiConfig.timeout);
     return _handleResponse(response);
   }
 
@@ -102,7 +122,10 @@ class ApiClient {
 
     String errorMessage;
     if (body is Map<String, dynamic>) {
-      errorMessage = body['error'] as String? ?? body['message'] as String? ?? 'Erreur serveur';
+      errorMessage =
+          body['error'] as String? ??
+          body['message'] as String? ??
+          'Erreur serveur';
     } else {
       errorMessage = 'Erreur serveur (${response.statusCode})';
     }
@@ -117,10 +140,7 @@ class ApiClient {
     }
 
     if (response.statusCode == 429) {
-      throw ApiException(
-        errorMessage,
-        response.statusCode,
-      );
+      throw ApiException(errorMessage, response.statusCode);
     }
 
     if (response.statusCode == 400 || response.statusCode == 422) {
@@ -130,9 +150,6 @@ class ApiClient {
       );
     }
 
-    throw ApiException(
-      errorMessage,
-      response.statusCode,
-    );
+    throw ApiException(errorMessage, response.statusCode);
   }
 }

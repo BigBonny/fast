@@ -133,21 +133,17 @@ class _AuthScreenState extends State<AuthScreen>
     // account — explain the mode switch instead of confusingly landing
     // on the restaurant side.
     if (isResto && (widget.initialRole ?? 'CLIENT') == 'CLIENT') {
-      fastProv.showToast(
-        '⚡ Compte FAST Pro',
-        fastProv.tr('err_resto_account'),
-      );
+      fastProv.showToast('⚡ Compte FAST Pro', fastProv.tr('err_resto_account'));
     }
 
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (_) =>
-            isResto && !goClient
-                ? const OnboardingScreen()
-                : isLivreur
-                    ? const DriverShell()
-                    : const MainShell(),
+        builder: (_) => isResto && !goClient
+            ? const OnboardingScreen()
+            : isLivreur
+            ? const DriverShell()
+            : const MainShell(),
       ),
     );
   }
@@ -177,7 +173,9 @@ class _AuthScreenState extends State<AuthScreen>
               } else {
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (_) => const RoleSelectionScreen()),
+                  MaterialPageRoute(
+                    builder: (_) => const RoleSelectionScreen(),
+                  ),
                 );
               }
             },
@@ -186,9 +184,12 @@ class _AuthScreenState extends State<AuthScreen>
             _showRestoFields
                 ? fast.tr('space_pro')
                 : widget.initialRole == 'LIVREUR'
-                    ? fast.tr('space_driver')
-                    : fast.tr('space_client'),
-            style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold),
+                ? fast.tr('space_driver')
+                : fast.tr('space_client'),
+            style: TextStyle(
+              color: context.fast.t1,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
         body: SafeArea(
@@ -204,9 +205,13 @@ class _AuthScreenState extends State<AuthScreen>
                   labelColor: context.fast.t1,
                   unselectedLabelColor: context.fast.t2,
                   labelStyle: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 15),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
                   unselectedLabelStyle: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 15),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
                   tabs: [
                     Tab(text: fast.tr('login_tab')),
                     Tab(text: fast.tr('register_tab')),
@@ -216,10 +221,7 @@ class _AuthScreenState extends State<AuthScreen>
                 Expanded(
                   child: TabBarView(
                     controller: _tabController,
-                    children: [
-                      _buildLoginForm(),
-                      _buildRegisterForm(),
-                    ],
+                    children: [_buildLoginForm(), _buildRegisterForm()],
                   ),
                 ),
               ],
@@ -245,12 +247,14 @@ class _AuthScreenState extends State<AuthScreen>
               icon: Icons.email_outlined,
               keyboardType: TextInputType.emailAddress,
               validator: (v) {
-                if (v == null || v.trim().isEmpty) return fast.tr('err_email_required');
+                if (v == null || v.trim().isEmpty) {
+                  return fast.tr('err_email_required');
+                }
                 if (!v.contains('@')) return fast.tr('err_email_invalid');
                 return null;
               },
             ),
-                  SizedBox(height: 20),
+            SizedBox(height: 20),
             _buildTextField(
               controller: _loginPassword,
               label: fast.tr('password'),
@@ -259,9 +263,7 @@ class _AuthScreenState extends State<AuthScreen>
               obscureText: _obscureLoginPwd,
               suffix: IconButton(
                 icon: Icon(
-                  _obscureLoginPwd
-                      ? Icons.visibility_off
-                      : Icons.visibility,
+                  _obscureLoginPwd ? Icons.visibility_off : Icons.visibility,
                   color: context.fast.t3,
                   size: 20,
                 ),
@@ -273,7 +275,7 @@ class _AuthScreenState extends State<AuthScreen>
                 return null;
               },
             ),
-                  SizedBox(height: 32),
+            SizedBox(height: 32),
             Consumer<AuthProvider>(
               builder: (context, auth, _) {
                 if (auth.error != null) {
@@ -281,7 +283,10 @@ class _AuthScreenState extends State<AuthScreen>
                     padding: const EdgeInsets.only(bottom: 16),
                     child: Text(
                       auth.error!,
-                      style: const TextStyle(color: Color(0xFFEF4444), fontSize: 13),
+                      style: const TextStyle(
+                        color: Color(0xFFEF4444),
+                        fontSize: 13,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   );
@@ -292,7 +297,9 @@ class _AuthScreenState extends State<AuthScreen>
             Consumer<AuthProvider>(
               builder: (context, auth, _) {
                 return ElevatedButton(
-                  onPressed: auth.state == AuthState.loading ? null : _handleLogin,
+                  onPressed: auth.state == AuthState.loading
+                      ? null
+                      : _handleLogin,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Color(0xFFF59E0B),
                     foregroundColor: FASTBrand.onAmber,
@@ -303,7 +310,7 @@ class _AuthScreenState extends State<AuthScreen>
                     elevation: 0,
                   ),
                   child: auth.state == AuthState.loading
-                      ?       SizedBox(
+                      ? SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
@@ -314,12 +321,15 @@ class _AuthScreenState extends State<AuthScreen>
                       : Text(
                           fast.tr('login_btn'),
                           style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
                         ),
                 );
               },
             ),
-            if (widget.initialRole != 'RESTAURANT' && widget.initialRole != 'LIVREUR')
+            if (widget.initialRole != 'RESTAURANT' &&
+                widget.initialRole != 'LIVREUR')
               _buildGoogleButton(),
           ],
         ),
@@ -338,7 +348,10 @@ class _AuthScreenState extends State<AuthScreen>
               Expanded(child: Divider(color: context.fast.line)),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Text(fast.tr('or'), style: TextStyle(color: context.fast.t3, fontSize: 12)),
+                child: Text(
+                  fast.tr('or'),
+                  style: TextStyle(color: context.fast.t3, fontSize: 12),
+                ),
               ),
               Expanded(child: Divider(color: context.fast.line)),
             ],
@@ -375,13 +388,21 @@ class _AuthScreenState extends State<AuthScreen>
                       ),
                       child: const Text(
                         'G',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 12),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 10),
                     Text(
                       fast.tr('google'),
-                      style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold, fontSize: 14),
+                      style: TextStyle(
+                        color: context.fast.t1,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
                     ),
                   ],
                 ),
@@ -409,11 +430,13 @@ class _AuthScreenState extends State<AuthScreen>
               hint: 'Jean Dupont',
               icon: Icons.person_outlined,
               validator: (v) {
-                if (v == null || v.trim().isEmpty) return fast.tr('err_name_required');
+                if (v == null || v.trim().isEmpty) {
+                  return fast.tr('err_name_required');
+                }
                 return null;
               },
             ),
-                  SizedBox(height: 20),
+            SizedBox(height: 20),
             _buildTextField(
               controller: _registerEmail,
               label: fast.tr('email'),
@@ -421,12 +444,14 @@ class _AuthScreenState extends State<AuthScreen>
               icon: Icons.email_outlined,
               keyboardType: TextInputType.emailAddress,
               validator: (v) {
-                if (v == null || v.trim().isEmpty) return fast.tr('err_email_required');
+                if (v == null || v.trim().isEmpty) {
+                  return fast.tr('err_email_required');
+                }
                 if (!v.contains('@')) return fast.tr('err_email_invalid');
                 return null;
               },
             ),
-                  SizedBox(height: 20),
+            SizedBox(height: 20),
             _buildTextField(
               controller: _registerPhone,
               label: fast.tr('phone'),
@@ -434,18 +459,25 @@ class _AuthScreenState extends State<AuthScreen>
               icon: Icons.phone_outlined,
               keyboardType: TextInputType.phone,
               validator: (v) {
-                if (v == null || v.trim().isEmpty) return fast.tr('err_phone_required');
+                if (v == null || v.trim().isEmpty) {
+                  return fast.tr('err_phone_required');
+                }
                 return null;
               },
             ),
-                  SizedBox(height: 20),
-            if (widget.initialRole == 'LIVREUR') ...[ Text(
+            SizedBox(height: 20),
+            if (widget.initialRole == 'LIVREUR') ...[
+              Text(
                 fast.tr('availability_mode'),
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: context.fast.t1),
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: context.fast.t1,
+                ),
               ),
-                    SizedBox(height: 8),
+              SizedBox(height: 8),
               SegmentedButton<String>(
-                segments:       [
+                segments: [
                   ButtonSegment(
                     value: 'OCCASIONAL',
                     icon: Icon(Icons.flash_on_outlined),
@@ -458,10 +490,11 @@ class _AuthScreenState extends State<AuthScreen>
                   ),
                 ],
                 selected: {_driverType},
-                onSelectionChanged: (selection) => setState(() => _driverType = selection.first),
+                onSelectionChanged: (selection) =>
+                    setState(() => _driverType = selection.first),
                 showSelectedIcon: false,
                 style: ButtonStyle(
-                  minimumSize:       WidgetStatePropertyAll(Size(0, 48)),
+                  minimumSize: WidgetStatePropertyAll(Size(0, 48)),
                   foregroundColor: WidgetStateProperty.resolveWith(
                     (states) => states.contains(WidgetState.selected)
                         ? context.fast.bg
@@ -469,16 +502,23 @@ class _AuthScreenState extends State<AuthScreen>
                   ),
                   backgroundColor: WidgetStateProperty.resolveWith(
                     (states) => states.contains(WidgetState.selected)
-                        ?       Color(0xFFF59E0B)
+                        ? Color(0xFFF59E0B)
                         : context.fast.card,
                   ),
                 ),
               ),
-                    SizedBox(height: 8), Text(
-                fast.tr(_driverType == 'OCCASIONAL'
-                    ? 'occasional_desc'
-                    : 'permanent_desc'),
-                style: TextStyle(color: context.fast.t2, fontSize: 12, height: 1.4),
+              SizedBox(height: 8),
+              Text(
+                fast.tr(
+                  _driverType == 'OCCASIONAL'
+                      ? 'occasional_desc'
+                      : 'permanent_desc',
+                ),
+                style: TextStyle(
+                  color: context.fast.t2,
+                  fontSize: 12,
+                  height: 1.4,
+                ),
               ),
               const SizedBox(height: 20),
             ],
@@ -490,9 +530,7 @@ class _AuthScreenState extends State<AuthScreen>
               obscureText: _obscureRegisterPwd,
               suffix: IconButton(
                 icon: Icon(
-                  _obscureRegisterPwd
-                      ? Icons.visibility_off
-                      : Icons.visibility,
+                  _obscureRegisterPwd ? Icons.visibility_off : Icons.visibility,
                   color: context.fast.t3,
                   size: 20,
                 ),
@@ -502,12 +540,16 @@ class _AuthScreenState extends State<AuthScreen>
               validator: (v) {
                 if (v == null || v.isEmpty) return fast.tr('err_pwd_required');
                 if (v.length < 8) return fast.tr('err_pwd_min');
-                if (!v.contains(RegExp(r'[A-Z]'))) return fast.tr('err_pwd_upper');
-                if (!v.contains(RegExp(r'[0-9]'))) return fast.tr('err_pwd_digit');
+                if (!v.contains(RegExp(r'[A-Z]'))) {
+                  return fast.tr('err_pwd_upper');
+                }
+                if (!v.contains(RegExp(r'[0-9]'))) {
+                  return fast.tr('err_pwd_digit');
+                }
                 return null;
               },
             ),
-                  SizedBox(height: 32),
+            SizedBox(height: 32),
             Consumer<AuthProvider>(
               builder: (context, auth, _) {
                 if (auth.error != null) {
@@ -515,7 +557,10 @@ class _AuthScreenState extends State<AuthScreen>
                     padding: const EdgeInsets.only(bottom: 16),
                     child: Text(
                       auth.error!,
-                      style: const TextStyle(color: Color(0xFFEF4444), fontSize: 13),
+                      style: const TextStyle(
+                        color: Color(0xFFEF4444),
+                        fontSize: 13,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   );
@@ -526,8 +571,9 @@ class _AuthScreenState extends State<AuthScreen>
             Consumer<AuthProvider>(
               builder: (context, auth, _) {
                 return ElevatedButton(
-                  onPressed:
-                      auth.state == AuthState.loading ? null : _handleRegister,
+                  onPressed: auth.state == AuthState.loading
+                      ? null
+                      : _handleRegister,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Color(0xFFF59E0B),
                     foregroundColor: FASTBrand.onAmber,
@@ -538,7 +584,7 @@ class _AuthScreenState extends State<AuthScreen>
                     elevation: 0,
                   ),
                   child: auth.state == AuthState.loading
-                      ?       SizedBox(
+                      ? SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
@@ -549,7 +595,9 @@ class _AuthScreenState extends State<AuthScreen>
                       : Text(
                           fast.tr('register_btn'),
                           style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
                         ),
                 );
               },
@@ -601,16 +649,20 @@ class _AuthScreenState extends State<AuthScreen>
             prefixIcon: Icon(Icons.language, color: context.fast.t3, size: 18),
             filled: true,
             fillColor: context.fast.card,
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(color: context.fast.line, width: 1),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide:
-                  const BorderSide(color: Color(0xFFF59E0B), width: 1.5),
+              borderSide: const BorderSide(
+                color: Color(0xFFF59E0B),
+                width: 1.5,
+              ),
             ),
           ),
           items: _languages
@@ -626,14 +678,16 @@ class _AuthScreenState extends State<AuthScreen>
     required TextEditingController controller,
     required String label,
     required String hint,
-    required IconData icon, TextInputType? keyboardType,
+    required IconData icon,
+    TextInputType? keyboardType,
     bool obscureText = false,
     Widget? suffix,
     String? Function(String?)? validator,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [ Text(
+      children: [
+        Text(
           label,
           style: TextStyle(
             fontSize: 13,
@@ -641,7 +695,8 @@ class _AuthScreenState extends State<AuthScreen>
             color: context.fast.t1,
           ),
         ),
-              SizedBox(height: 8), TextFormField(
+        SizedBox(height: 8),
+        TextFormField(
           controller: controller,
           obscureText: obscureText,
           keyboardType: keyboardType,
@@ -661,7 +716,10 @@ class _AuthScreenState extends State<AuthScreen>
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFF59E0B), width: 1.5),
+              borderSide: const BorderSide(
+                color: Color(0xFFF59E0B),
+                width: 1.5,
+              ),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
@@ -669,7 +727,10 @@ class _AuthScreenState extends State<AuthScreen>
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
+              borderSide: const BorderSide(
+                color: Color(0xFFEF4444),
+                width: 1.5,
+              ),
             ),
           ),
         ),

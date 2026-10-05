@@ -21,7 +21,8 @@ class LivreurScreen extends StatefulWidget {
   State<LivreurScreen> createState() => _LivreurScreenState();
 }
 
-class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateMixin {
+class _LivreurScreenState extends State<LivreurScreen>
+    with TickerProviderStateMixin {
   final DeliveryService _deliveryService = DeliveryService();
 
   bool _isOnline = false;
@@ -100,7 +101,8 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
       bool serviceEnabled = await geo_loc.Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) return;
 
-      geo_loc.LocationPermission permission = await geo_loc.Geolocator.checkPermission();
+      geo_loc.LocationPermission permission =
+          await geo_loc.Geolocator.checkPermission();
       if (permission == geo_loc.LocationPermission.denied) {
         permission = await geo_loc.Geolocator.requestPermission();
         if (permission == geo_loc.LocationPermission.denied) return;
@@ -115,7 +117,10 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
         });
         if (_mapController != null && _isFollowing) {
           _mapController!.animateCamera(
-            center: Geographic(lon: lastKnown.longitude, lat: lastKnown.latitude),
+            center: Geographic(
+              lon: lastKnown.longitude,
+              lat: lastKnown.latitude,
+            ),
             zoom: 16.0,
           );
         }
@@ -128,56 +133,69 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
       );
 
       _positionSubscription?.cancel();
-      _positionSubscription = geo_loc.Geolocator.getPositionStream(locationSettings: locationSettings).listen((geo_loc.Position position) {
-        if (!mounted) return;
-        final latLng = LatLng(position.latitude, position.longitude);
-        
-        setState(() {
-          _currentPosition = latLng;
-        });
+      _positionSubscription =
+          geo_loc.Geolocator.getPositionStream(
+            locationSettings: locationSettings,
+          ).listen((geo_loc.Position position) {
+            if (!mounted) return;
+            final latLng = LatLng(position.latitude, position.longitude);
 
-        if (_isFollowing && _mapController != null) {
-          _mapController!.animateCamera(
-            center: Geographic(lon: position.longitude, lat: position.latitude),
-            zoom: 16.0,
-          );
-        }
-      });
+            setState(() {
+              _currentPosition = latLng;
+            });
+
+            if (_isFollowing && _mapController != null) {
+              _mapController!.animateCamera(
+                center: Geographic(
+                  lon: position.longitude,
+                  lat: position.latitude,
+                ),
+                zoom: 16.0,
+              );
+            }
+          });
 
       // 3. Attempt single fetch with timeout just in case stream takes too long
       geo_loc.Geolocator.getCurrentPosition(
-        locationSettings: const geo_loc.LocationSettings(
-          accuracy: geo_loc.LocationAccuracy.high,
-          timeLimit: Duration(seconds: 3),
-        ),
-      ).then((pos) {
-        if (mounted) {
-          setState(() {
-            _currentPosition ??= LatLng(pos.latitude, pos.longitude);
+            locationSettings: const geo_loc.LocationSettings(
+              accuracy: geo_loc.LocationAccuracy.high,
+              timeLimit: Duration(seconds: 3),
+            ),
+          )
+          .then((pos) {
+            if (mounted) {
+              setState(() {
+                _currentPosition ??= LatLng(pos.latitude, pos.longitude);
+              });
+              if (_mapController != null && _isFollowing) {
+                _mapController!.animateCamera(
+                  center: Geographic(lon: pos.longitude, lat: pos.latitude),
+                  zoom: 16.0,
+                );
+              }
+            }
+          })
+          .catchError((_) {
+            if (mounted && _currentPosition == null) {
+              // Fallback for emulator with no location
+              final fallbackPos = const LatLng(
+                48.8566,
+                2.3476,
+              ); // Paris fallback
+              setState(() {
+                _currentPosition = fallbackPos;
+              });
+              if (_mapController != null && _isFollowing) {
+                _mapController!.animateCamera(
+                  center: Geographic(
+                    lon: fallbackPos.longitude,
+                    lat: fallbackPos.latitude,
+                  ),
+                  zoom: 16.0,
+                );
+              }
+            }
           });
-          if (_mapController != null && _isFollowing) {
-            _mapController!.animateCamera(
-              center: Geographic(lon: pos.longitude, lat: pos.latitude),
-              zoom: 16.0,
-            );
-          }
-        }
-      }).catchError((_) {
-        if (mounted && _currentPosition == null) {
-          // Fallback for emulator with no location
-          final fallbackPos = const LatLng(48.8566, 2.3476); // Paris fallback
-          setState(() {
-            _currentPosition = fallbackPos;
-          });
-          if (_mapController != null && _isFollowing) {
-            _mapController!.animateCamera(
-              center: Geographic(lon: fallbackPos.longitude, lat: fallbackPos.latitude),
-              zoom: 16.0,
-            );
-          }
-        }
-      });
-
     } catch (_) {}
   }
 
@@ -251,7 +269,10 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
 
     if (_currentPosition != null && _mapController != null) {
       _mapController!.animateCamera(
-        center: Geographic(lon: _currentPosition!.longitude, lat: _currentPosition!.latitude),
+        center: Geographic(
+          lon: _currentPosition!.longitude,
+          lat: _currentPosition!.latitude,
+        ),
         zoom: 16.0,
       );
     }
@@ -285,7 +306,9 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
       setState(() {
         _allAvailableDeliveries = list;
       });
-      if (list.isEmpty || _popupOpportunity != null || _activeDelivery != null) return;
+      if (list.isEmpty || _popupOpportunity != null || _activeDelivery != null) {
+        return;
+      }
 
       // Pick the first available opportunity
       final op = list[0] as Map<String, dynamic>;
@@ -299,16 +322,17 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
     if (!mounted) return;
 
     final restaurant = data['restaurant'] is Map<String, dynamic>
-        ? (data['restaurant'] as Map<String, dynamic>)['name'] as String? ?? 'Restaurant'
+        ? (data['restaurant'] as Map<String, dynamic>)['name'] as String? ??
+              'Restaurant'
         : data['restaurantName'] as String? ?? 'Restaurant';
 
-    final destination = data['destination'] as String? ??
+    final destination =
+        data['destination'] as String? ??
         data['dest'] as String? ??
         tr(context, 'unknown_dest');
 
-    final distance = data['distance'] as String? ??
-        data['dist'] as String? ??
-        '—';
+    final distance =
+        data['distance'] as String? ?? data['dist'] as String? ?? '—';
 
     final gain = (data['gain'] as num?)?.toDouble() ?? 0.0;
 
@@ -324,7 +348,9 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
     });
 
     _opportunityCountdownTimer?.cancel();
-    _opportunityCountdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    _opportunityCountdownTimer = Timer.periodic(const Duration(seconds: 1), (
+      timer,
+    ) {
       if (!mounted) return;
       if (_popupCountdownSeconds <= 1) {
         _declineOpportunity();
@@ -388,7 +414,8 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
         });
 
         // If delivery is not yet complete, poll for status updates
-        if (apiStatus.toUpperCase() != 'DELIVERED' && apiStatus.toUpperCase() != 'CANCELLED') {
+        if (apiStatus.toUpperCase() != 'DELIVERED' &&
+            apiStatus.toUpperCase() != 'CANCELLED') {
           _startActiveDeliveryPolling();
         }
       } else {
@@ -409,16 +436,17 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
 
   Map<String, dynamic> _buildActiveDeliveryMap(Map<String, dynamic> data) {
     final restaurant = data['restaurant'] is Map<String, dynamic>
-        ? (data['restaurant'] as Map<String, dynamic>)['name'] as String? ?? 'Restaurant'
+        ? (data['restaurant'] as Map<String, dynamic>)['name'] as String? ??
+              'Restaurant'
         : data['restaurantName'] as String? ?? 'Restaurant';
 
-    final destination = data['destination'] as String? ??
+    final destination =
+        data['destination'] as String? ??
         data['dest'] as String? ??
         tr(context, 'unknown_dest');
 
-    final distance = data['distance'] as String? ??
-        data['dist'] as String? ??
-        '—';
+    final distance =
+        data['distance'] as String? ?? data['dist'] as String? ?? '—';
 
     final gain = (data['gain'] as num?)?.toDouble() ?? 0.0;
 
@@ -461,7 +489,8 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
       });
 
       // Stop polling if delivery reached a terminal state
-      if (apiStatus.toUpperCase() == 'DELIVERED' || apiStatus.toUpperCase() == 'CANCELLED') {
+      if (apiStatus.toUpperCase() == 'DELIVERED' ||
+          apiStatus.toUpperCase() == 'CANCELLED') {
         _activeDeliveryPollTimer?.cancel();
       }
     } catch (_) {}
@@ -512,11 +541,20 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
             borderRadius: BorderRadius.circular(12),
             side: const BorderSide(color: Color(0xFF10B981)),
           ),
-          title:       Text(tr(context, 'delivered'),
-              style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold, fontSize: 16)),
+          title: Text(
+            tr(context, 'delivered'),
+            style: TextStyle(
+              color: context.fast.t1,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
           content: Text(
-            tr(context, 'earnings_credited').replaceAll('{n}', gain.toStringAsFixed(2)),
-            style:       TextStyle(color: context.fast.t2, fontSize: 12, height: 1.4),
+            tr(
+              context,
+              'earnings_credited',
+            ).replaceAll('{n}', gain.toStringAsFixed(2)),
+            style: TextStyle(color: context.fast.t2, fontSize: 12, height: 1.4),
           ),
           actions: [
             ElevatedButton(
@@ -534,9 +572,14 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF10B981),
                 foregroundColor: FASTBrand.onAmber,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
-              child: const Text('OK', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text(
+                'OK',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
@@ -558,7 +601,9 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
 
   Future<void> _togglePause() async {
     try {
-      final profile = await _deliveryService.updateAvailability(isPaused: !_isPaused);
+      final profile = await _deliveryService.updateAvailability(
+        isPaused: !_isPaused,
+      );
       if (!mounted) return;
       setState(() => _isPaused = profile['isPaused'] as bool? ?? !_isPaused);
       if (_isPaused) {
@@ -580,8 +625,10 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
     TimeOfDay start = const TimeOfDay(hour: 9, minute: 0);
     TimeOfDay finish = const TimeOfDay(hour: 17, minute: 0);
     if (_schedules.isNotEmpty) {
-      final startMinute = (_schedules.first['startMinute'] as num?)?.toInt() ?? 540;
-      final endMinute = (_schedules.first['endMinute'] as num?)?.toInt() ?? 1020;
+      final startMinute =
+          (_schedules.first['startMinute'] as num?)?.toInt() ?? 540;
+      final endMinute =
+          (_schedules.first['endMinute'] as num?)?.toInt() ?? 1020;
       start = TimeOfDay(hour: startMinute ~/ 60, minute: startMinute % 60);
       finish = TimeOfDay(hour: endMinute ~/ 60, minute: endMinute % 60);
     }
@@ -600,9 +647,19 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                        Text(tr(context, 'sched_perm'), style: TextStyle(color: context.fast.t1, fontSize: 20, fontWeight: FontWeight.w900)),
+                  Text(
+                    tr(context, 'sched_perm'),
+                    style: TextStyle(
+                      color: context.fast.t1,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
                   const SizedBox(height: 8),
-                        Text(tr(context, 'sched_sub'), style: TextStyle(color: context.fast.t2, height: 1.4)),
+                  Text(
+                    tr(context, 'sched_sub'),
+                    style: TextStyle(color: context.fast.t2, height: 1.4),
+                  ),
                   const SizedBox(height: 20),
                   Wrap(
                     spacing: 8,
@@ -613,7 +670,9 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                         label: Text(labels[index]),
                         selected: selectedDays.contains(day),
                         onSelected: (selected) => setSheetState(() {
-                          selected ? selectedDays.add(day) : selectedDays.remove(day);
+                          selected
+                              ? selectedDays.add(day)
+                              : selectedDays.remove(day);
                         }),
                       );
                     }),
@@ -624,10 +683,17 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                       Expanded(
                         child: OutlinedButton.icon(
                           icon: const Icon(Icons.schedule),
-                          label: Text('${tr(context, 'slot_start')} ${start.format(context)}'),
+                          label: Text(
+                            '${tr(context, 'slot_start')} ${start.format(context)}',
+                          ),
                           onPressed: () async {
-                            final value = await showTimePicker(context: context, initialTime: start);
-                            if (value != null) setSheetState(() => start = value);
+                            final value = await showTimePicker(
+                              context: context,
+                              initialTime: start,
+                            );
+                            if (value != null) {
+                              setSheetState(() => start = value);
+                            }
                           },
                         ),
                       ),
@@ -635,10 +701,17 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                       Expanded(
                         child: OutlinedButton.icon(
                           icon: const Icon(Icons.schedule),
-                          label: Text('${tr(context, 'slot_end')} ${finish.format(context)}'),
+                          label: Text(
+                            '${tr(context, 'slot_end')} ${finish.format(context)}',
+                          ),
                           onPressed: () async {
-                            final value = await showTimePicker(context: context, initialTime: finish);
-                            if (value != null) setSheetState(() => finish = value);
+                            final value = await showTimePicker(
+                              context: context,
+                              initialTime: finish,
+                            );
+                            if (value != null) {
+                              setSheetState(() => finish = value);
+                            }
                           },
                         ),
                       ),
@@ -649,7 +722,9 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                     width: double.infinity,
                     height: 48,
                     child: ElevatedButton(
-                      onPressed: selectedDays.isEmpty ? null : () => Navigator.pop(sheetContext, true),
+                      onPressed: selectedDays.isEmpty
+                          ? null
+                          : () => Navigator.pop(sheetContext, true),
                       child: Text(tr(context, 'save_slots')),
                     ),
                   ),
@@ -671,12 +746,16 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
     try {
       final profile = await _deliveryService.replaceSchedules(
         timezone: 'Europe/Paris',
-        schedules: selectedDays.map((day) => {
-          'dayOfWeek': day,
-          'startMinute': startMinute,
-          'endMinute': endMinute,
-          'isEnabled': true,
-        }).toList(),
+        schedules: selectedDays
+            .map(
+              (day) => {
+                'dayOfWeek': day,
+                'startMinute': startMinute,
+                'endMinute': endMinute,
+                'isEnabled': true,
+              },
+            )
+            .toList(),
       );
       if (!mounted) return;
       setState(() {
@@ -701,7 +780,7 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         automaticallyImplyLeading: false,
-        title:       Text(
+        title: Text(
           tr(context, 'space_driver'),
           style: TextStyle(
             color: context.fast.t1,
@@ -744,9 +823,13 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
           Positioned.fill(
             child: Consumer<FASTProvider>(
               builder: (context, provider, _) {
-                final restPoints = provider.restaurants.map((r) =>
-                  Feature<Point>(geometry: Point(geo(r.latitude, r.longitude))),
-                ).toList();
+                final restPoints = provider.restaurants
+                    .map(
+                      (r) => Feature<Point>(
+                        geometry: Point(geo(r.latitude, r.longitude)),
+                      ),
+                    )
+                    .toList();
 
                 // Build a lookup map for O(1) access
                 final restMap = {for (final r in provider.restaurants) r.id: r};
@@ -758,9 +841,11 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                     if (restId != null) {
                       final rest = restMap[restId];
                       if (rest != null) {
-                        offerPoints.add(Feature<Point>(
-                          geometry: Point(geo(rest.latitude, rest.longitude)),
-                        ));
+                        offerPoints.add(
+                          Feature<Point>(
+                            geometry: Point(geo(rest.latitude, rest.longitude)),
+                          ),
+                        );
                       }
                     }
                   }
@@ -770,7 +855,10 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                   options: MapOptions(
                     initStyle: openFreeMapStyle,
                     initCenter: _currentPosition != null
-                        ? Geographic(lon: _currentPosition!.longitude, lat: _currentPosition!.latitude)
+                        ? Geographic(
+                            lon: _currentPosition!.longitude,
+                            lat: _currentPosition!.latitude,
+                          )
                         : const Geographic(lon: 2.3522, lat: 48.8566),
                     initZoom: _currentPosition != null ? 16.0 : 12.0,
                     gestures: const MapGestures.all(),
@@ -779,7 +867,10 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                     _mapController = controller;
                     if (_currentPosition != null && _isFollowing) {
                       controller.animateCamera(
-                        center: Geographic(lon: _currentPosition!.longitude, lat: _currentPosition!.latitude),
+                        center: Geographic(
+                          lon: _currentPosition!.longitude,
+                          lat: _currentPosition!.latitude,
+                        ),
                         zoom: 16.0,
                       );
                     }
@@ -811,7 +902,14 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                     if (_currentPosition != null)
                       MarkerLayer(
                         points: [
-                          Feature<Point>(geometry: Point(Geographic(lon: _currentPosition!.longitude, lat: _currentPosition!.latitude))),
+                          Feature<Point>(
+                            geometry: Point(
+                              Geographic(
+                                lon: _currentPosition!.longitude,
+                                lat: _currentPosition!.latitude,
+                              ),
+                            ),
+                          ),
                         ],
                         iconImage: 'marker_driver',
                         iconSize: 1.0,
@@ -861,7 +959,9 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                 color: Colors.black.withValues(alpha: 0.3),
                 child: const Center(
                   child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFF59E0B)),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Color(0xFFF59E0B),
+                    ),
                   ),
                 ),
               ),
@@ -872,9 +972,7 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
             Positioned.fill(
               child: Container(
                 color: Colors.black.withValues(alpha: 0.6),
-                child: Center(
-                  child: _buildOpportunityPopup(),
-                ),
+                child: Center(child: _buildOpportunityPopup()),
               ),
             ),
         ],
@@ -889,7 +987,9 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
       decoration: BoxDecoration(
         color: const Color(0xFF7F1D1D).withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
+        border: Border.all(
+          color: const Color(0xFFEF4444).withValues(alpha: 0.3),
+        ),
       ),
       child: Row(
         children: [
@@ -922,23 +1022,37 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: [ Icon(
-                _driverType == 'PERMANENT' ? Icons.calendar_month_outlined : Icons.flash_on_outlined,
+            children: [
+              Icon(
+                _driverType == 'PERMANENT'
+                    ? Icons.calendar_month_outlined
+                    : Icons.flash_on_outlined,
                 color: const Color(0xFFF59E0B),
                 size: 18,
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  _driverType == 'PERMANENT' ? tr(context, 'driver_perm') : tr(context, 'driver_occ'),
-                  style:       TextStyle(color: context.fast.t1, fontWeight: FontWeight.w900, fontSize: 13),
+                  _driverType == 'PERMANENT'
+                      ? tr(context, 'driver_perm')
+                      : tr(context, 'driver_occ'),
+                  style: TextStyle(
+                    color: context.fast.t1,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 13,
+                  ),
                 ),
               ),
               if (_driverType == 'PERMANENT')
- TextButton.icon(
+                TextButton.icon(
                   onPressed: _editPermanentSchedule,
                   icon: const Icon(Icons.edit_calendar_outlined, size: 16),
-                  label: Text(tr(context, 'slots_count').replaceAll('{n}', '${_schedules.length}')),
+                  label: Text(
+                    tr(
+                      context,
+                      'slots_count',
+                    ).replaceAll('{n}', '${_schedules.length}'),
+                  ),
                 ),
             ],
           ),
@@ -954,7 +1068,11 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                     Expanded(
                       child: Text(
                         slogan,
-                        style:       TextStyle(color: context.fast.t2, fontSize: 9, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: context.fast.t2,
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -973,10 +1091,14 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: _isOnline ? const Color(0xFF0C1D1A).withValues(alpha: 0.95) : context.fast.card.withValues(alpha: 0.95),
+        color: _isOnline
+            ? const Color(0xFF0C1D1A).withValues(alpha: 0.95)
+            : context.fast.card.withValues(alpha: 0.95),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: _isOnline ? const Color(0xFF10B981).withValues(alpha: 0.3) : context.fast.line,
+          color: _isOnline
+              ? const Color(0xFF10B981).withValues(alpha: 0.3)
+              : context.fast.line,
         ),
       ),
       child: Row(
@@ -984,12 +1106,13 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
         children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [ Text(
+            children: [
+              Text(
                 _isPaused
                     ? 'SERVICE EN PAUSE'
                     : _isOnline
-                        ? 'MODE LIVRAISON EN LIGNE'
-                        : 'MODE LIVRAISON HORS LIGNE',
+                    ? 'MODE LIVRAISON EN LIGNE'
+                    : 'MODE LIVRAISON HORS LIGNE',
                 style: TextStyle(
                   fontSize: 9,
                   fontWeight: FontWeight.bold,
@@ -997,15 +1120,20 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                   letterSpacing: 0.8,
                 ),
               ),
-              const SizedBox(height: 2), Text(
+              const SizedBox(height: 2),
+              Text(
                 _isPaused
                     ? tr(context, 'resume_when')
                     : _isOnline
-                        ? tr(context, 'waiting_opps')
-                        : _driverType == 'PERMANENT' && _schedules.isEmpty
-                            ? tr(context, 'add_slots_hint')
-                            : tr(context, 'go_online_hint'),
-                style: TextStyle(color: context.fast.t1, fontSize: 11, fontWeight: FontWeight.bold),
+                    ? tr(context, 'waiting_opps')
+                    : _driverType == 'PERMANENT' && _schedules.isEmpty
+                    ? tr(context, 'add_slots_hint')
+                    : tr(context, 'go_online_hint'),
+                style: TextStyle(
+                  color: context.fast.t1,
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
@@ -1013,8 +1141,10 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
             mainAxisSize: MainAxisSize.min,
             children: [
               if (_driverType == 'PERMANENT' && _isOnline)
- IconButton(
-                  tooltip: _isPaused ? tr(context, 'resume') : tr(context, 'pause_btn'),
+                IconButton(
+                  tooltip: _isPaused
+                      ? tr(context, 'resume')
+                      : tr(context, 'pause_btn'),
                   onPressed: _togglePause,
                   icon: Icon(_isPaused ? Icons.play_arrow : Icons.pause),
                 ),
@@ -1049,7 +1179,7 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
             color: Colors.black.withValues(alpha: 0.5),
             blurRadius: 24,
             offset: const Offset(0, 10),
-          )
+          ),
         ],
       ),
       child: Column(
@@ -1060,22 +1190,34 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFF10B981).withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: const Text(
                   'COURSE PROCHE',
-                  style: TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold, fontSize: 9),
+                  style: TextStyle(
+                    color: Color(0xFF10B981),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 9,
+                  ),
                 ),
-              ), Text(
+              ),
+              Text(
                 '+${(op['gain'] as num).toStringAsFixed(2)} €',
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF10B981)),
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xFF10B981),
+                ),
               ),
             ],
           ),
-                SizedBox(height: 16),
+          SizedBox(height: 16),
 
           // Restaurant info
           Row(
@@ -1086,20 +1228,39 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                   color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.storefront, color: Color(0xFFF59E0B), size: 18),
+                child: const Icon(
+                  Icons.storefront,
+                  color: Color(0xFFF59E0B),
+                  size: 18,
+                ),
               ),
-                    SizedBox(width: 12),
+              SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [ Text(tr(context, 'pickup_lbl'), style: TextStyle(fontSize: 8, color: context.fast.t3, fontWeight: FontWeight.bold)), Text(op['restaurant'] as String,
-                        style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold, fontSize: 13)),
+                  children: [
+                    Text(
+                      tr(context, 'pickup_lbl'),
+                      style: TextStyle(
+                        fontSize: 8,
+                        color: context.fast.t3,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      op['restaurant'] as String,
+                      style: TextStyle(
+                        color: context.fast.t1,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
                   ],
                 ),
               ),
             ],
           ),
-                SizedBox(height: 12),
+          SizedBox(height: 12),
 
           // Destination info
           Row(
@@ -1110,28 +1271,54 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                   color: const Color(0xFF10B981).withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.location_on, color: Color(0xFF10B981), size: 18),
+                child: const Icon(
+                  Icons.location_on,
+                  color: Color(0xFF10B981),
+                  size: 18,
+                ),
               ),
-                    SizedBox(width: 12),
+              SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [ Text(tr(context, 'delivery_lbl'), style: TextStyle(fontSize: 8, color: context.fast.t3, fontWeight: FontWeight.bold)), Text(op['dest'] as String,
-                        style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold, fontSize: 13)),
+                  children: [
+                    Text(
+                      tr(context, 'delivery_lbl'),
+                      style: TextStyle(
+                        fontSize: 8,
+                        color: context.fast.t3,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      op['dest'] as String,
+                      style: TextStyle(
+                        color: context.fast.t1,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
                   ],
                 ),
               ),
             ],
           ),
 
-                SizedBox(height: 20),
-                Divider(color: context.fast.line),
-                SizedBox(height: 12),
+          SizedBox(height: 20),
+          Divider(color: context.fast.line),
+          SizedBox(height: 12),
 
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [ Text('${tr(context, 'dist_lbl')} : ${op['dist'] as String}',
-                  style: TextStyle(color: context.fast.t2, fontSize: 11, fontWeight: FontWeight.bold)),
+            children: [
+              Text(
+                '${tr(context, 'dist_lbl')} : ${op['dist'] as String}',
+                style: TextStyle(
+                  color: context.fast.t2,
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               // Countdown Circle
               Stack(
                 alignment: Alignment.center,
@@ -1142,19 +1329,26 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                     child: CircularProgressIndicator(
                       value: progress,
                       backgroundColor: context.fast.line,
-                      valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFF59E0B)),
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                        Color(0xFFF59E0B),
+                      ),
                       strokeWidth: 3,
                     ),
-                  ), Text(
+                  ),
+                  Text(
                     '$_popupCountdownSeconds',
-                    style: TextStyle(color: context.fast.t1, fontSize: 11, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: context.fast.t1,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
             ],
           ),
 
-                SizedBox(height: 20),
+          SizedBox(height: 20),
 
           // Accept / Decline Buttons
           Row(
@@ -1165,12 +1359,20 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                   style: OutlinedButton.styleFrom(
                     side: BorderSide(color: context.fast.faint),
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
-                  child: Text(tr(context, 'decline'), style: TextStyle(color: context.fast.t2, fontWeight: FontWeight.bold)),
+                  child: Text(
+                    tr(context, 'decline'),
+                    style: TextStyle(
+                      color: context.fast.t2,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
-                    SizedBox(width: 12),
+              SizedBox(width: 12),
               Expanded(
                 flex: 2,
                 child: ElevatedButton(
@@ -1179,10 +1381,15 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                     backgroundColor: Color(0xFF10B981),
                     foregroundColor: FASTBrand.onAmber,
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     elevation: 0,
                   ),
-                  child: Text(tr(context, 'accept_ride'), style: TextStyle(fontWeight: FontWeight.w900)),
+                  child: Text(
+                    tr(context, 'accept_ride'),
+                    style: TextStyle(fontWeight: FontWeight.w900),
+                  ),
                 ),
               ),
             ],
@@ -1196,7 +1403,8 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
     final d = _activeDelivery!;
 
     // Determine which action button to show based on delivery status
-    final bool showPickupButton = _deliveryStatus == 'go_restaurant' || _deliveryStatus == 'waiting';
+    final bool showPickupButton =
+        _deliveryStatus == 'go_restaurant' || _deliveryStatus == 'waiting';
     final bool showDeliverButton = _deliveryStatus == 'delivering';
 
     return Container(
@@ -1204,13 +1412,15 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
       decoration: BoxDecoration(
         color: context.fast.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
+        border: Border.all(
+          color: const Color(0xFFEF4444).withValues(alpha: 0.3),
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.4),
             blurRadius: 16,
             offset: const Offset(0, 4),
-          )
+          ),
         ],
       ),
       child: Column(
@@ -1218,13 +1428,15 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [ Text(
+            children: [
+              Text(
                 tr(context, 'delivering_now'),
                 style: TextStyle(
-                    fontSize: 9,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.redAccent.shade200,
-                    letterSpacing: 0.8),
+                  fontSize: 9,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.redAccent.shade200,
+                  letterSpacing: 0.8,
+                ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -1234,27 +1446,42 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                 ),
                 child: Text(
                   tr(context, 'drv_$_deliveryStatus').toUpperCase(),
-                  style: const TextStyle(color: Color(0xFFF59E0B), fontWeight: FontWeight.bold, fontSize: 9),
+                  style: const TextStyle(
+                    color: Color(0xFFF59E0B),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 9,
+                  ),
                 ),
               ),
             ],
           ),
-                SizedBox(height: 12), Text(
+          SizedBox(height: 12),
+          Text(
             d['restaurant'] as String,
-            style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold, fontSize: 14),
+            style: TextStyle(
+              color: context.fast.t1,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
           ),
-                SizedBox(height: 2), Text(
-            tr(context, 'dest_line').replaceAll('{d}', d['dest'] as String).replaceAll('{dist}', d['dist'] as String),
+          SizedBox(height: 2),
+          Text(
+            tr(context, 'dest_line')
+                .replaceAll('{d}', d['dest'] as String)
+                .replaceAll('{dist}', d['dist'] as String),
             style: TextStyle(color: context.fast.t2, fontSize: 11),
           ),
-                SizedBox(height: 14),
+          SizedBox(height: 14),
           Row(
             children: [
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: () => _openGoogleMaps(d['restaurant'] as String),
                   icon: Icon(Icons.storefront, size: 16),
-                  label: Text(tr(context, 'nav_resto'), style: TextStyle(fontSize: 11)),
+                  label: Text(
+                    tr(context, 'nav_resto'),
+                    style: TextStyle(fontSize: 11),
+                  ),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Color(0xFFF59E0B),
                     side: BorderSide(color: context.fast.faint),
@@ -1262,12 +1489,15 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                   ),
                 ),
               ),
-                    SizedBox(width: 8),
+              SizedBox(width: 8),
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: () => _openGoogleMaps(d['dest'] as String),
                   icon: Icon(Icons.place_outlined, size: 16),
-                  label: Text(tr(context, 'nav_dest'), style: TextStyle(fontSize: 11)),
+                  label: Text(
+                    tr(context, 'nav_dest'),
+                    style: TextStyle(fontSize: 11),
+                  ),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Color(0xFF10B981),
                     side: BorderSide(color: context.fast.faint),
@@ -1277,7 +1507,7 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
               ),
             ],
           ),
-                SizedBox(height: 12),
+          SizedBox(height: 12),
           if (showPickupButton)
             SizedBox(
               width: double.infinity,
@@ -1287,11 +1517,15 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                   backgroundColor: Color(0xFFF59E0B),
                   foregroundColor: FASTBrand.onAmber,
                   padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                   elevation: 0,
                 ),
-                child: Text(tr(context, 'confirm_pickup_pkg'),
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                child: Text(
+                  tr(context, 'confirm_pickup_pkg'),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                ),
               ),
             )
           else if (showDeliverButton || _deliveryStatus == 'arrived')
@@ -1303,27 +1537,39 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
                   backgroundColor: Color(0xFF10B981),
                   foregroundColor: FASTBrand.onAmber,
                   padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                   elevation: 0,
                 ),
-                child: Text(tr(context, 'confirm_delivery_client'),
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                child: Text(
+                  tr(context, 'confirm_delivery_client'),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                ),
               ),
             )
           else
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children:       [
+              children: [
                 SizedBox(
                   width: 14,
                   height: 14,
                   child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFF59E0B))),
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Color(0xFFF59E0B),
+                    ),
+                  ),
                 ),
-                SizedBox(width: 8), Text(
+                SizedBox(width: 8),
+                Text(
                   tr(context, 'updating_route'),
-                  style: TextStyle(color: context.fast.t2, fontSize: 11, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: context.fast.t2,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
@@ -1334,7 +1580,9 @@ class _LivreurScreenState extends State<LivreurScreen> with TickerProviderStateM
 
   Future<void> _openGoogleMaps(String query) async {
     final encoded = Uri.encodeComponent(query);
-    final uri = Uri.parse('https://www.google.com/maps/search/?api=1&query=$encoded');
+    final uri = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=$encoded',
+    );
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 }

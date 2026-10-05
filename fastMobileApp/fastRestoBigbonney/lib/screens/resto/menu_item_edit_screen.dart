@@ -41,13 +41,16 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
     _name = TextEditingController(text: item?.name ?? '');
     _description = TextEditingController(text: item?.description ?? '');
     _price = TextEditingController(
-        text: item != null ? item.price.toStringAsFixed(2) : '');
+      text: item != null ? item.price.toStringAsFixed(2) : '',
+    );
     _image = TextEditingController(text: item?.image ?? '');
     _category = TextEditingController(text: item?.category ?? '');
     _prepTime = TextEditingController(
-        text: item != null && item.prepTime > 0 ? '${item.prepTime}' : '');
+      text: item != null && item.prepTime > 0 ? '${item.prepTime}' : '',
+    );
     _prepTimeRush = TextEditingController(
-        text: item != null && item.prepTimeRush > 0 ? '${item.prepTimeRush}' : '');
+      text: item != null && item.prepTimeRush > 0 ? '${item.prepTimeRush}' : '',
+    );
     _videoUrl = TextEditingController(text: item?.videoUrl ?? '');
     _available = item?.available ?? true;
     if (item != null) _dietary.addAll(item.dietaryTags);
@@ -113,20 +116,28 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: context.fast.card,
-        title: Text(tr(context, 'del_dish'),
-            style: TextStyle(color: context.fast.t1)),
+        title: Text(
+          tr(context, 'del_dish'),
+          style: TextStyle(color: context.fast.t1),
+        ),
         content: Text(
           tr(context, 'del_dish_confirm').replaceAll('{n}', widget.item!.name),
           style: TextStyle(color: context.fast.t2),
         ),
-        actions: [ TextButton(
+        actions: [
+          TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text(tr(context, 'cancel'),
-                style: TextStyle(color: context.fast.t2)),
-          ), TextButton(
+            child: Text(
+              tr(context, 'cancel'),
+              style: TextStyle(color: context.fast.t2),
+            ),
+          ),
+          TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text(tr(context, 'del'),
-                style: TextStyle(color: Color(0xFFEF4444))),
+            child: Text(
+              tr(context, 'del'),
+              style: TextStyle(color: Color(0xFFEF4444)),
+            ),
           ),
         ],
       ),
@@ -134,7 +145,9 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
     if (confirmed != true || !mounted) return;
 
     setState(() => _loading = true);
-    final ok = await context.read<RestoProvider>().deleteMenuItem(widget.item!.id);
+    final ok = await context.read<RestoProvider>().deleteMenuItem(
+      widget.item!.id,
+    );
     if (!mounted) return;
     setState(() => _loading = false);
     if (ok) Navigator.pop(context, true);
@@ -145,7 +158,8 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
   void _showSupplementDialog({MenuItemSupplement? existing}) {
     final nameCtrl = TextEditingController(text: existing?.name ?? '');
     final priceCtrl = TextEditingController(
-        text: existing != null ? existing.price.toStringAsFixed(2) : '');
+      text: existing != null ? existing.price.toStringAsFixed(2) : '',
+    );
 
     showDialog(
       context: context,
@@ -160,15 +174,22 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
           children: [
             _dialogField(tr(context, 'supp_name'), nameCtrl),
             const SizedBox(height: 12),
-            _dialogField(tr(context, 'price_lbl'), priceCtrl,
-                keyboard: TextInputType.number),
+            _dialogField(
+              tr(context, 'price_lbl'),
+              priceCtrl,
+              keyboard: TextInputType.number,
+            ),
           ],
         ),
-        actions: [ TextButton(
+        actions: [
+          TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text(tr(context, 'cancel'),
-                style: TextStyle(color: context.fast.t2)),
-          ), TextButton(
+            child: Text(
+              tr(context, 'cancel'),
+              style: TextStyle(color: context.fast.t2),
+            ),
+          ),
+          TextButton(
             onPressed: () async {
               final n = nameCtrl.text.trim();
               final p = double.tryParse(priceCtrl.text.trim());
@@ -180,11 +201,13 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                 // Create mode: if item not saved yet add to local list only
                 if (!_isEdit) {
                   setState(() {
-                    _supplements.add(MenuItemSupplement(
-                      id: 'local_${DateTime.now().millisecondsSinceEpoch}',
-                      name: n,
-                      price: p,
-                    ));
+                    _supplements.add(
+                      MenuItemSupplement(
+                        id: 'local_${DateTime.now().millisecondsSinceEpoch}',
+                        name: n,
+                        price: p,
+                      ),
+                    );
                   });
                 } else {
                   try {
@@ -192,10 +215,12 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                     setState(() => _supplements.add(s));
                   } catch (_) {
                     if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(tr(context, 'error_add')),
-                        backgroundColor: Color(0xFFEF4444),
-                      ));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(tr(context, 'error_add')),
+                          backgroundColor: Color(0xFFEF4444),
+                        ),
+                      );
                     }
                   }
                 }
@@ -205,16 +230,23 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                   try {
                     final s = await svc.updateSupplement(existing.id, n, p);
                     setState(() {
-                      final idx = _supplements.indexWhere((x) => x.id == existing.id);
+                      final idx = _supplements.indexWhere(
+                        (x) => x.id == existing.id,
+                      );
                       if (idx != -1) _supplements[idx] = s;
                     });
                   } catch (_) {}
                 } else {
                   setState(() {
-                    final idx = _supplements.indexWhere((x) => x.id == existing.id);
+                    final idx = _supplements.indexWhere(
+                      (x) => x.id == existing.id,
+                    );
                     if (idx != -1) {
                       _supplements[idx] = MenuItemSupplement(
-                          id: existing.id, name: n, price: p);
+                        id: existing.id,
+                        name: n,
+                        price: p,
+                      );
                     }
                   });
                 }
@@ -223,7 +255,9 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
             child: Text(
               existing == null ? 'Ajouter' : 'Sauvegarder',
               style: const TextStyle(
-                  color: Color(0xFF00C8B3), fontWeight: FontWeight.bold),
+                color: Color(0xFF00C8B3),
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
@@ -254,11 +288,14 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
         title: Text(
           _isEdit ? tr(context, 'edit_dish') : tr(context, 'new_dish'),
           style: TextStyle(
-              color: context.fast.t1, fontWeight: FontWeight.bold, fontSize: 18),
+            color: context.fast.t1,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
         ),
         actions: [
           if (_isEdit)
- IconButton(
+            IconButton(
               icon: const Icon(Icons.delete_outline, color: Color(0xFFEF4444)),
               onPressed: _loading ? null : _delete,
             ),
@@ -273,17 +310,18 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
               controller: _name,
               label: tr(context, 'dish_name_lbl'),
               icon: Icons.restaurant_menu,
-              validator: (v) =>
-                  v == null || v.trim().isEmpty ? tr(context, 'required_f') : null,
+              validator: (v) => v == null || v.trim().isEmpty
+                  ? tr(context, 'required_f')
+                  : null,
             ),
-                  SizedBox(height: 16),
+            SizedBox(height: 16),
             _field(
               controller: _description,
               label: tr(context, 'description'),
               icon: Icons.notes,
               maxLines: 3,
             ),
-                  SizedBox(height: 16),
+            SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
@@ -293,8 +331,12 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                     icon: Icons.euro,
                     keyboard: TextInputType.number,
                     validator: (v) {
-                      if (v == null || v.trim().isEmpty) return tr(context, 'required_f');
-                      if (double.tryParse(v.trim()) == null) return tr(context, 'invalid_f');
+                      if (v == null || v.trim().isEmpty) {
+                        return tr(context, 'required_f');
+                      }
+                      if (double.tryParse(v.trim()) == null) {
+                        return tr(context, 'invalid_f');
+                      }
                       return null;
                     },
                   ),
@@ -305,25 +347,26 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                     controller: _category,
                     label: tr(context, 'category_lbl'),
                     icon: Icons.category_outlined,
-                    validator: (v) =>
-                        v == null || v.trim().isEmpty ? tr(context, 'required_f') : null,
+                    validator: (v) => v == null || v.trim().isEmpty
+                        ? tr(context, 'required_f')
+                        : null,
                   ),
                 ),
               ],
             ),
-                  SizedBox(height: 16),
+            SizedBox(height: 16),
             _field(
               controller: _image,
               label: 'URL image (optionnel)',
               icon: Icons.image_outlined,
             ),
-                  SizedBox(height: 16),
+            SizedBox(height: 16),
             _field(
               controller: _videoUrl,
               label: tr(context, 'video_url_lbl'),
               icon: Icons.play_circle_outline,
             ),
-                  SizedBox(height: 16),
+            SizedBox(height: 16),
             // Per-dish prep times (minutes, 0/vide = délai restaurant par défaut)
             Row(
               children: [
@@ -350,10 +393,14 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
               padding: const EdgeInsets.only(top: 6, left: 4),
               child: Text(
                 tr(context, 'prep_example'),
-                style: TextStyle(color: context.fast.t3, fontSize: 11, height: 1.3),
+                style: TextStyle(
+                  color: context.fast.t3,
+                  fontSize: 11,
+                  height: 1.3,
+                ),
               ),
             ),
-                  SizedBox(height: 24),
+            SizedBox(height: 24),
 
             // Available toggle
             Container(
@@ -364,12 +411,18 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
               ),
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               child: Row(
-                children: [ Icon(Icons.visibility_outlined,
-                      color: context.fast.t3, size: 20),
-                        SizedBox(width: 12),
-                        Expanded(
-                    child: Text(tr(context, 'available'),
-                        style: TextStyle(color: context.fast.t1, fontSize: 15)),
+                children: [
+                  Icon(
+                    Icons.visibility_outlined,
+                    color: context.fast.t3,
+                    size: 20,
+                  ),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      tr(context, 'available'),
+                      style: TextStyle(color: context.fast.t1, fontSize: 15),
+                    ),
                   ),
                   Switch(
                     value: _available,
@@ -379,28 +432,32 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                 ],
               ),
             ),
-                  SizedBox(height: 24),
+            SizedBox(height: 24),
 
             // Dietary tags
- Text(tr(context, 'food_labels'),
-                style: TextStyle(
-                    color: context.fast.t2,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600)),
-                  SizedBox(height: 10),
+            Text(
+              tr(context, 'food_labels'),
+              style: TextStyle(
+                color: context.fast.t2,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 10),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: DietaryPreference.values.map((pref) {
                 final selected = _dietary.contains(pref);
                 return FilterChip(
-                  label: Text(pref.label,
-                      style: TextStyle(
-                          color: selected
-                              ? FASTBrand.onAmber
-                              : context.fast.t1,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600)),
+                  label: Text(
+                    pref.label,
+                    style: TextStyle(
+                      color: selected ? FASTBrand.onAmber : context.fast.t1,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   selected: selected,
                   onSelected: (v) => setState(() {
                     if (v) {
@@ -414,35 +471,48 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                   checkmarkColor: FASTBrand.onAmber,
                   side: BorderSide.none,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6)),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
                 );
               }).toList(),
             ),
-                  SizedBox(height: 24),
+            SizedBox(height: 24),
 
             // ─── Supplements ──────────────────────────────
             Row(
-              children: [ Text(tr(context, 'supplements'),
-                    style: TextStyle(
-                        color: context.fast.t2,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600)),
-                const Spacer(), TextButton.icon(
+              children: [
+                Text(
+                  tr(context, 'supplements'),
+                  style: TextStyle(
+                    color: context.fast.t2,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const Spacer(),
+                TextButton.icon(
                   onPressed: () => _showSupplementDialog(),
-                  icon: const Icon(Icons.add, size: 16,
-                      color: Color(0xFF00C8B3)),
-                  label: Text(tr(context, 'add'),
-                      style: TextStyle(
-                          color: Color(0xFF00C8B3),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600)),
+                  icon: const Icon(
+                    Icons.add,
+                    size: 16,
+                    color: Color(0xFF00C8B3),
+                  ),
+                  label: Text(
+                    tr(context, 'add'),
+                    style: TextStyle(
+                      color: Color(0xFF00C8B3),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+                    padding: EdgeInsets.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
                 ),
               ],
             ),
-                  SizedBox(height: 8),
+            SizedBox(height: 8),
             if (_supplements.isEmpty)
               Container(
                 padding: EdgeInsets.all(16),
@@ -451,10 +521,11 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: context.fast.line),
                 ),
-                child:       Center(
-                  child: Text(tr(context, 'no_supp'),
-                      style: TextStyle(
-                          color: context.fast.faint, fontSize: 13)),
+                child: Center(
+                  child: Text(
+                    tr(context, 'no_supp'),
+                    style: TextStyle(color: context.fast.faint, fontSize: 13),
+                  ),
                 ),
               )
             else
@@ -473,28 +544,46 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                         ListTile(
                           dense: true,
                           contentPadding: EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 0),
-                          title: Text(s.name,
-                              style: TextStyle(
-                                  color: context.fast.t1, fontSize: 14)),
+                            horizontal: 16,
+                            vertical: 0,
+                          ),
+                          title: Text(
+                            s.name,
+                            style: TextStyle(
+                              color: context.fast.t1,
+                              fontSize: 14,
+                            ),
+                          ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
-                            children: [ Text('+${s.price.toStringAsFixed(2)}€',
-                                  style: const TextStyle(
-                                      color: Color(0xFF00C8B3),
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold)),
-                                    SizedBox(width: 8), IconButton(
-                                icon: Icon(Icons.edit_outlined,
-                                    color: context.fast.t3, size: 18),
+                            children: [
+                              Text(
+                                '+${s.price.toStringAsFixed(2)}€',
+                                style: const TextStyle(
+                                  color: Color(0xFF00C8B3),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              IconButton(
+                                icon: Icon(
+                                  Icons.edit_outlined,
+                                  color: context.fast.t3,
+                                  size: 18,
+                                ),
                                 onPressed: () =>
                                     _showSupplementDialog(existing: s),
                                 padding: EdgeInsets.zero,
                                 constraints: const BoxConstraints(),
                               ),
-                              const SizedBox(width: 4), IconButton(
-                                icon: const Icon(Icons.close,
-                                    color: Color(0xFFEF4444), size: 18),
+                              const SizedBox(width: 4),
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.close,
+                                  color: Color(0xFFEF4444),
+                                  size: 18,
+                                ),
                                 onPressed: () => _deleteSupplement(s),
                                 padding: EdgeInsets.zero,
                                 constraints: const BoxConstraints(),
@@ -503,16 +592,18 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                           ),
                         ),
                         if (idx < _supplements.length - 1)
-                                Divider(
-                              height: 1, color: context.fast.line,
-                              indent: 16),
+                          Divider(
+                            height: 1,
+                            color: context.fast.line,
+                            indent: 16,
+                          ),
                       ],
                     );
                   }).toList(),
                 ),
               ),
 
-                  SizedBox(height: 32),
+            SizedBox(height: 32),
 
             SizedBox(
               height: 50,
@@ -523,18 +614,24 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                   foregroundColor: FASTBrand.onAmber,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
                 child: _loading
-                    ?       SizedBox(
+                    ? SizedBox(
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2, color: FASTBrand.onAmber))
+                          strokeWidth: 2,
+                          color: FASTBrand.onAmber,
+                        ),
+                      )
                     : Text(
                         _isEdit ? 'Sauvegarder' : tr(context, 'create_dish'),
                         style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
               ),
             ),
@@ -545,8 +642,11 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
     );
   }
 
-  Widget _dialogField(String label, TextEditingController ctrl,
-      {TextInputType? keyboard}) {
+  Widget _dialogField(
+    String label,
+    TextEditingController ctrl, {
+    TextInputType? keyboard,
+  }) {
     return TextField(
       controller: ctrl,
       keyboardType: keyboard,
@@ -564,8 +664,10 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: Color(0xFF00C8B3)),
         ),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 10,
+        ),
       ),
     );
   }
@@ -573,7 +675,8 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
   Widget _field({
     required TextEditingController controller,
     required String label,
-    required IconData icon, TextInputType? keyboard,
+    required IconData icon,
+    TextInputType? keyboard,
     int maxLines = 1,
     String? Function(String?)? validator,
   }) {
@@ -605,8 +708,10 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
           borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(color: Color(0xFFEF4444)),
         ),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
       ),
     );
   }

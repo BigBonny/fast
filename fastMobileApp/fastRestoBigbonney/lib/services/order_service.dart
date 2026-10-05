@@ -44,8 +44,11 @@ class OrderService {
     await _api.post(ApiConfig.cancelOrder(orderId));
   }
 
-  Future<Order> updateOrderStatus(String orderId, String status,
-      {int? prepTimeMinutes}) async {
+  Future<Order> updateOrderStatus(
+    String orderId,
+    String status, {
+    int? prepTimeMinutes,
+  }) async {
     final data = await _api.patch(
       ApiConfig.updateOrderStatus(orderId),
       body: {

@@ -25,7 +25,8 @@ class CommandesScreen extends StatefulWidget {
   State<CommandesScreen> createState() => _CommandesScreenState();
 }
 
-class _CommandesScreenState extends State<CommandesScreen> with TickerProviderStateMixin {
+class _CommandesScreenState extends State<CommandesScreen>
+    with TickerProviderStateMixin {
   late TabController _tabController;
   final _orderService = OrderService();
   final _deliveryService = DeliveryService();
@@ -71,7 +72,9 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
     // Default to History if no active orders exist, otherwise default to Tracking
     final provider = Provider.of<FASTProvider>(context, listen: false);
     final hasActiveOrder = provider.orders.any(
-      (o) => o.status != OrderStatus.completed && o.status != OrderStatus.cancelled,
+      (o) =>
+          o.status != OrderStatus.completed &&
+          o.status != OrderStatus.cancelled,
     );
     _tabController = TabController(
       length: 2,
@@ -93,7 +96,8 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
     }
     super.dispose();
   }
- TextEditingController _getHistoryController(String orderId) {
+
+  TextEditingController _getHistoryController(String orderId) {
     if (!_controllers.containsKey(orderId)) {
       _controllers[orderId] = TextEditingController();
     }
@@ -125,8 +129,14 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
           indicatorWeight: 2,
           labelColor: Color(0xFFF59E0B),
           unselectedLabelColor: context.fast.t3,
-          labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-          unselectedLabelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+          labelStyle: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
+          unselectedLabelStyle: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
           tabs: [
             Tab(text: provider.tr('tracking_tab')),
             Tab(text: provider.tr('history_tab')),
@@ -135,10 +145,7 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
       ),
       body: TabBarView(
         controller: _tabController,
-        children: [
-          _buildSuiviTab(provider),
-          _buildHistoriqueTab(provider),
-        ],
+        children: [_buildSuiviTab(provider), _buildHistoriqueTab(provider)],
       ),
     );
   }
@@ -146,36 +153,57 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
   // ─── SUIVI TAB ─────────────────────────────────────────────────────────────
   Widget _buildSuiviTab(FASTProvider provider) {
     final activeOrders = provider.orders
-        .where((o) => o.status != OrderStatus.completed && o.status != OrderStatus.cancelled)
+        .where(
+          (o) =>
+              o.status != OrderStatus.completed &&
+              o.status != OrderStatus.cancelled,
+        )
         .toList();
 
     if (activeOrders.isEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _stopLocationTracking());
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _stopLocationTracking(),
+      );
       return Center(
         child: Padding(
           padding: EdgeInsets.all(32),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [ Text('🚶', style: TextStyle(fontSize: 48)),
-                    SizedBox(height: 12), Text(
+            children: [
+              Text('🚶', style: TextStyle(fontSize: 48)),
+              SizedBox(height: 12),
+              Text(
                 provider.tr('no_tracking'),
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: context.fast.t1),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: context.fast.t1,
+                ),
               ),
-                    SizedBox(height: 6), Text(
+              SizedBox(height: 6),
+              Text(
                 provider.tr('no_tracking_sub'),
                 style: TextStyle(fontSize: 11, color: context.fast.t2),
                 textAlign: TextAlign.center,
               ),
-                    SizedBox(height: 16),
+              SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => provider.navigateToScreen('home'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFFF59E0B),
                   foregroundColor: FASTBrand.onAmber,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                   elevation: 0,
                 ),
-                child: Text(provider.tr('discover'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                child: Text(
+                  provider.tr('discover'),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
               ),
             ],
           ),
@@ -197,8 +225,8 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
     final walkProgress = isCompleted
         ? 1.0
         : isCancelled
-            ? 0.0
-            : _walkProgress.clamp(0.0, 1.0);
+        ? 0.0
+        : _walkProgress.clamp(0.0, 1.0);
 
     // Trigger confetti when a new completion is detected
     if (isCompleted && _lastCompletedId != activeOrder.id) {
@@ -221,7 +249,7 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: activeOrders.length,
-                    separatorBuilder: (_, __) =>       SizedBox(width: 8),
+                    separatorBuilder: (_, __) => SizedBox(width: 8),
                     itemBuilder: (context, index) {
                       final o = activeOrders[index];
                       final selected = index == _selectedActiveIndex;
@@ -231,23 +259,32 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
-                            color: selected ? FASTBrand.onAmber : context.fast.t1,
+                            color: selected
+                                ? FASTBrand.onAmber
+                                : context.fast.t1,
                           ),
                         ),
                         selected: selected,
                         selectedColor: Color(0xFFF59E0B),
                         backgroundColor: context.fast.card,
-                        onSelected: (_) => setState(() => _selectedActiveIndex = index),
+                        onSelected: (_) =>
+                            setState(() => _selectedActiveIndex = index),
                       );
                     },
                   ),
                 ),
                 const SizedBox(height: 12),
               ],
-              _buildTrackerHeader(context, activeOrder, isCompleted, isCancelled),
-                    SizedBox(height: 16),
+              _buildTrackerHeader(
+                context,
+                activeOrder,
+                isCompleted,
+                isCancelled,
+              ),
+              SizedBox(height: 16),
               if (!isCancelled) ...[
-                if (activeOrder.isDelivery) ...[ Text(
+                if (activeOrder.isDelivery) ...[
+                  Text(
                     provider.tr('tracking_delivery'),
                     style: TextStyle(
                       fontSize: 9,
@@ -258,7 +295,8 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                   ),
                   const SizedBox(height: 8),
                   _buildDeliveryTrackingCard(activeOrder),
-                ] else ...[ Text(
+                ] else ...[
+                  Text(
                     provider.tr('tracking_walk'),
                     style: TextStyle(
                       fontSize: 9,
@@ -274,12 +312,18 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
               ],
 
               // Contextual status text card
-              _buildStatusDescriptionCard(context, activeOrder, isCompleted, isCancelled),
+              _buildStatusDescriptionCard(
+                context,
+                activeOrder,
+                isCompleted,
+                isCancelled,
+              ),
               const SizedBox(height: 20),
 
               // QR Verification button — pickup only
               if (!activeOrder.isDelivery &&
-                  (activeOrder.status == OrderStatus.readyForPickup || isCompleted))
+                  (activeOrder.status == OrderStatus.readyForPickup ||
+                      isCompleted))
                 _buildQRButton(context, activeOrder),
 
               // Cancellation trigger
@@ -298,7 +342,12 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
     );
   }
 
-  Widget _buildTrackerHeader(BuildContext context, Order order, bool isCompleted, bool isCancelled) {
+  Widget _buildTrackerHeader(
+    BuildContext context,
+    Order order,
+    bool isCompleted,
+    bool isCancelled,
+  ) {
     return Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -315,17 +364,22 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
               order.restaurantImage,
               width: 56,
               height: 56,
-              placeholder: Container(color: context.fast.cardHigh, width: 56, height: 56),
+              placeholder: Container(
+                color: context.fast.cardHigh,
+                width: 56,
+                height: 56,
+              ),
             ),
           ),
-                SizedBox(width: 12),
+          SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [ Text(
+                  children: [
+                    Text(
                       'SUIVI ACTIF • ${order.id}',
                       style: const TextStyle(
                         fontFamily: 'monospace',
@@ -337,20 +391,40 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                     _buildStatusBadge(order.status),
                   ],
                 ),
-                      SizedBox(height: 4), Text(
+                SizedBox(height: 4),
+                Text(
                   order.restaurantName,
-                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: context.fast.t1),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 15,
+                    color: context.fast.t1,
+                  ),
                 ),
-                      SizedBox(height: 6),
+                SizedBox(height: 6),
                 Row(
-                  children: [ Icon(Icons.directions_walk, size: 12, color: context.fast.t2),
-                          SizedBox(width: 4), Text(
+                  children: [
+                    Icon(
+                      Icons.directions_walk,
+                      size: 12,
+                      color: context.fast.t2,
+                    ),
+                    SizedBox(width: 4),
+                    Text(
                       isCompleted
                           ? context.read<FASTProvider>().tr('order_picked')
                           : isCancelled
-                              ? context.read<FASTProvider>().tr('order_cancelled_lbl')
-                              : context.read<FASTProvider>().tr('eta_in').replaceAll('{n}', '${_liveEtaMinutes(order)}'),
-                      style: TextStyle(fontSize: 11, color: context.fast.t2, fontWeight: FontWeight.bold),
+                          ? context.read<FASTProvider>().tr(
+                              'order_cancelled_lbl',
+                            )
+                          : context
+                                .read<FASTProvider>()
+                                .tr('eta_in')
+                                .replaceAll('{n}', '${_liveEtaMinutes(order)}'),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: context.fast.t2,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
@@ -416,7 +490,11 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
           Flexible(
             child: Text(
               label,
-              style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: c),
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w800,
+                color: c,
+              ),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -426,8 +504,8 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
   }
 
   Widget _buildStatusBadge(OrderStatus status) {
- Color bg;
- Color fg;
+    Color bg;
+    Color fg;
     String label;
     final fast = context.read<FASTProvider>();
     switch (status) {
@@ -437,13 +515,13 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
         label = fast.tr('st_ordered');
         break;
       case OrderStatus.preparing:
-        bg =       Color(0xFFF59E0B).withValues(alpha: 0.15);
-        fg =       Color(0xFFF59E0B);
+        bg = Color(0xFFF59E0B).withValues(alpha: 0.15);
+        fg = Color(0xFFF59E0B);
         label = fast.tr('st_preparing');
         break;
       case OrderStatus.readyForPickup:
-        bg =       Color(0xFF10B981).withValues(alpha: 0.15);
-        fg =       Color(0xFF10B981);
+        bg = Color(0xFF10B981).withValues(alpha: 0.15);
+        fg = Color(0xFF10B981);
         label = fast.tr('st_ready');
         break;
       case OrderStatus.completed:
@@ -470,9 +548,15 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
     );
   }
 
-  Widget _buildVectorMapCard(BuildContext context, double progress, Order order) {
+  Widget _buildVectorMapCard(
+    BuildContext context,
+    double progress,
+    Order order,
+  ) {
     final provider = Provider.of<FASTProvider>(context, listen: false);
-    final rest = provider.restaurants.where((r) => r.id == order.restaurantId).firstOrNull;
+    final rest = provider.restaurants
+        .where((r) => r.id == order.restaurantId)
+        .firstOrNull;
     final restLat = rest?.latitude ?? 48.8566;
     final restLon = rest?.longitude ?? 2.3522;
 
@@ -514,7 +598,9 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                 polylines: [
                   Feature(
                     geometry: LineString.from(
-                      routePoints.map((p) => geo(p.latitude, p.longitude)).toList(),
+                      routePoints
+                          .map((p) => geo(p.latitude, p.longitude))
+                          .toList(),
                     ),
                   ),
                 ],
@@ -545,7 +631,10 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                context.read<FASTProvider>().tr('pct_route').replaceAll('{n}', '${(progress * 100).round()}'),
+                context
+                    .read<FASTProvider>()
+                    .tr('pct_route')
+                    .replaceAll('{n}', '${(progress * 100).round()}'),
                 style: const TextStyle(
                   color: Color(0xFFF59E0B),
                   fontWeight: FontWeight.bold,
@@ -594,7 +683,9 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
       final delivery = data['delivery'] as Map<String, dynamic>?;
       if (!mounted) return;
       setState(() {
-        _deliveryStatusLabel = _deliveryStatusToLabel(delivery?['status'] as String?);
+        _deliveryStatusLabel = _deliveryStatusToLabel(
+          delivery?['status'] as String?,
+        );
         final driver = delivery?['driver'] as Map<String, dynamic>?;
         _deliveryDriverName = driver?['name'] as String?;
       });
@@ -631,21 +722,38 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: [ Icon(Icons.delivery_dining, color: Color(0xFF10B981), size: 28),
-                    SizedBox(width: 12),
+            children: [
+              Icon(Icons.delivery_dining, color: Color(0xFF10B981), size: 28),
+              SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  _deliveryStatusLabel ?? _deliveryStatusToLabel(order.deliveryStatus),
-                  style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold, fontSize: 13),
+                  _deliveryStatusLabel ??
+                      _deliveryStatusToLabel(order.deliveryStatus),
+                  style: TextStyle(
+                    color: context.fast.t1,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
                 ),
               ),
             ],
           ),
           if (_deliveryDriverName != null) ...[
-                  SizedBox(height: 10), Text(context.read<FASTProvider>().tr('driver_lbl').replaceAll('{n}', '$_deliveryDriverName'), style: TextStyle(fontSize: 12, color: context.fast.t2)),
+            SizedBox(height: 10),
+            Text(
+              context
+                  .read<FASTProvider>()
+                  .tr('driver_lbl')
+                  .replaceAll('{n}', '$_deliveryDriverName'),
+              style: TextStyle(fontSize: 12, color: context.fast.t2),
+            ),
           ],
           if (order.deliveryAddress.isNotEmpty) ...[
-                  SizedBox(height: 8), Text('📍 ${order.deliveryAddress}', style: TextStyle(fontSize: 11, color: context.fast.t3)),
+            SizedBox(height: 8),
+            Text(
+              '📍 ${order.deliveryAddress}',
+              style: TextStyle(fontSize: 11, color: context.fast.t3),
+            ),
           ],
         ],
       ),
@@ -658,14 +766,24 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
     _trackingOrderId = null;
   }
 
-  Future<void> _startLocationTracking(FASTProvider provider, Order order) async {
-    final rest = provider.restaurants.where((r) => r.id == order.restaurantId).firstOrNull;
+  Future<void> _startLocationTracking(
+    FASTProvider provider,
+    Order order,
+  ) async {
+    final rest = provider.restaurants
+        .where((r) => r.id == order.restaurantId)
+        .firstOrNull;
     if (rest == null) return;
 
     final restPoint = LatLng(rest.latitude, rest.longitude);
-    final start = await LocationService.instance.getCurrentLocation(forceRefresh: true);
+    final start = await LocationService.instance.getCurrentLocation(
+      forceRefresh: true,
+    );
     if (start != null) {
-      _routePolyline = await LocationService.instance.getWalkingRoute(start, restPoint);
+      _routePolyline = await LocationService.instance.getWalkingRoute(
+        start,
+        restPoint,
+      );
       if (mounted) setState(() {});
     }
 
@@ -674,46 +792,62 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
       distanceFilter: 15,
     );
 
-    _locationSub = geo_loc.Geolocator.getPositionStream(locationSettings: settings).listen((pos) async {
-      if (!mounted || _trackingOrderId != order.id) return;
-      final current = LatLng(pos.latitude, pos.longitude);
+    _locationSub =
+        geo_loc.Geolocator.getPositionStream(locationSettings: settings).listen(
+          (pos) async {
+            if (!mounted || _trackingOrderId != order.id) return;
+            final current = LatLng(pos.latitude, pos.longitude);
 
-      if (_routePolyline.isEmpty) {
-        _routePolyline = await LocationService.instance.getWalkingRoute(current, restPoint);
-      }
+            if (_routePolyline.isEmpty) {
+              _routePolyline = await LocationService.instance.getWalkingRoute(
+                current,
+                restPoint,
+              );
+            }
 
-      final progress = LocationService.instance.progressAlongRoute(current, _routePolyline);
-      _walkProgress = progress;
+            final progress = LocationService.instance.progressAlongRoute(
+              current,
+              _routePolyline,
+            );
+            _walkProgress = progress;
 
-      final now = DateTime.now();
-      if (_lastTrackingPatch == null || now.difference(_lastTrackingPatch!) > const Duration(seconds: 20)) {
-        _lastTrackingPatch = now;
-        provider.fetchUserLocation();
-        try {
-          await _orderService.updateTracking(
-            orderId: order.id,
-            gpsProgress: progress * 100,
-            latitude: pos.latitude,
-            longitude: pos.longitude,
-            isReadyAtEntrance: progress >= 0.92,
-          );
-          provider.updateOrderTrackingLocally(
-            order.id,
-            gpsProgress: progress * 100,
-            isReadyAtEntrance: progress >= 0.92,
-          );
-        } catch (_) {}
-      }
+            final now = DateTime.now();
+            if (_lastTrackingPatch == null ||
+                now.difference(_lastTrackingPatch!) >
+                    const Duration(seconds: 20)) {
+              _lastTrackingPatch = now;
+              provider.fetchUserLocation();
+              try {
+                await _orderService.updateTracking(
+                  orderId: order.id,
+                  gpsProgress: progress * 100,
+                  latitude: pos.latitude,
+                  longitude: pos.longitude,
+                  isReadyAtEntrance: progress >= 0.92,
+                );
+                provider.updateOrderTrackingLocally(
+                  order.id,
+                  gpsProgress: progress * 100,
+                  isReadyAtEntrance: progress >= 0.92,
+                );
+              } catch (_) {}
+            }
 
-      if (mounted) setState(() {});
-    });
+            if (mounted) setState(() {});
+          },
+        );
   }
 
-  Widget _buildStatusDescriptionCard(BuildContext context, Order order, bool isCompleted, bool isCancelled) {
+  Widget _buildStatusDescriptionCard(
+    BuildContext context,
+    Order order,
+    bool isCompleted,
+    bool isCancelled,
+  ) {
     String title = '';
     String desc = '';
- IconData icon = Icons.info;
- Color iconColor =       Color(0xFFF59E0B);
+    IconData icon = Icons.info;
+    Color iconColor = Color(0xFFF59E0B);
 
     final fast = context.read<FASTProvider>();
     if (isCancelled) {
@@ -769,17 +903,27 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
             ),
             child: Icon(icon, color: iconColor, size: 20),
           ),
-                SizedBox(width: 12),
+          SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [ Text(
+              children: [
+                Text(
                   title,
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: context.fast.t1),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    color: context.fast.t1,
+                  ),
                 ),
-                      SizedBox(height: 4), Text(
+                SizedBox(height: 4),
+                Text(
                   desc,
-                  style: TextStyle(fontSize: 11, color: context.fast.t2, height: 1.4),
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: context.fast.t2,
+                    height: 1.4,
+                  ),
                 ),
               ],
             ),
@@ -796,15 +940,19 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
         width: double.infinity,
         child: OutlinedButton.icon(
           onPressed: () {
-            Navigator.of(context).push(MaterialPageRoute(
-              builder: (_) => QRVerificationScreen(order: order),
-              fullscreenDialog: true,
-            ));
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => QRVerificationScreen(order: order),
+                fullscreenDialog: true,
+              ),
+            );
           },
           style: OutlinedButton.styleFrom(
             side: const BorderSide(color: Color(0xFFF59E0B), width: 1),
             padding: const EdgeInsets.symmetric(vertical: 14),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
           icon: const Icon(Icons.qr_code, color: Color(0xFFF59E0B), size: 18),
           label: Text(
@@ -820,12 +968,17 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
     );
   }
 
-  Widget _buildCancelAction(BuildContext context, FASTProvider provider, Order order) {
+  Widget _buildCancelAction(
+    BuildContext context,
+    FASTProvider provider,
+    Order order,
+  ) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.only(top: 16),
         child: TextButton(
-          onPressed: () => _showHonestCancellationSheet(context, provider, order),
+          onPressed: () =>
+              _showHonestCancellationSheet(context, provider, order),
           child: Text(
             provider.tr('cancel_order'),
             style: const TextStyle(
@@ -839,13 +992,17 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
     );
   }
 
-  void _showHonestCancellationSheet(BuildContext context, FASTProvider provider, Order order) {
+  void _showHonestCancellationSheet(
+    BuildContext context,
+    FASTProvider provider,
+    Order order,
+  ) {
     final bool prepStarted = order.status != OrderStatus.placed;
 
     showModalBottomSheet(
       context: context,
       backgroundColor: context.fast.card,
-      shape:       RoundedRectangleBorder(
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
@@ -855,53 +1012,90 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-                    Row(
-                children: [ Icon(Icons.warning, color: Color(0xFFEF4444)),
-                  SizedBox(width: 8), Text(
+              Row(
+                children: [
+                  Icon(Icons.warning, color: Color(0xFFEF4444)),
+                  SizedBox(width: 8),
+                  Text(
                     tr(context, 'cancel_policy'),
-                    style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: context.fast.t1),
+                    style: TextStyle(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 16,
+                      color: context.fast.t1,
+                    ),
                   ),
                 ],
               ),
-                    SizedBox(height: 12), Text(
+              SizedBox(height: 12),
+              Text(
                 tr(context, 'cancel_policy_intro'),
-                style: TextStyle(fontSize: 11, color: context.fast.t2, height: 1.4),
+                style: TextStyle(
+                  fontSize: 11,
+                  color: context.fast.t2,
+                  height: 1.4,
+                ),
               ),
-                    SizedBox(height: 16),
+              SizedBox(height: 16),
 
               Container(
                 padding: EdgeInsets.all(12),
                 margin: EdgeInsets.only(bottom: 8),
                 decoration: BoxDecoration(
-                  color: !prepStarted ?       Color(0xFF10B981).withValues(alpha: Theme.of(context).brightness == Brightness.dark ? 0.12 : 0.08) : context.fast.bg,
+                  color: !prepStarted
+                      ? Color(0xFF10B981).withValues(
+                          alpha: Theme.of(context).brightness == Brightness.dark
+                              ? 0.12
+                              : 0.08,
+                        )
+                      : context.fast.bg,
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                    color: !prepStarted ?       Color(0xFF10B981).withValues(alpha: 0.3) : context.fast.line,
+                    color: !prepStarted
+                        ? Color(0xFF10B981).withValues(alpha: 0.3)
+                        : context.fast.line,
                   ),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [ Icon(
-                      !prepStarted ? Icons.check_circle : Icons.radio_button_off,
-                      color: !prepStarted ?       Color(0xFF10B981) : context.fast.t3,
+                  children: [
+                    Icon(
+                      !prepStarted
+                          ? Icons.check_circle
+                          : Icons.radio_button_off,
+                      color: !prepStarted ? Color(0xFF10B981) : context.fast.t3,
                       size: 16,
                     ),
-                          SizedBox(width: 10),
+                    SizedBox(width: 10),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [ Text(
+                        children: [
+                          Text(
                             tr(context, 'cancel_case1'),
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: context.fast.t1),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              color: context.fast.t1,
+                            ),
                           ),
-                                SizedBox(height: 2), Text(
+                          SizedBox(height: 2),
+                          Text(
                             tr(context, 'cancel_case1_desc'),
-                            style: TextStyle(fontSize: 10, color: context.fast.t2, height: 1.3),
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: context.fast.t2,
+                              height: 1.3,
+                            ),
                           ),
                           if (!prepStarted) ...[
-                            const SizedBox(height: 6), Text(
+                            const SizedBox(height: 6),
+                            Text(
                               '👉 ACTIF. Remboursement : ${order.subtotal.toStringAsFixed(2)} €',
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: Color(0xFF10B981)),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 10,
+                                color: Color(0xFF10B981),
+                              ),
                             ),
                           ],
                         ],
@@ -914,35 +1108,62 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
               Container(
                 padding: EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: prepStarted ?       Color(0xFFEF4444).withValues(alpha: Theme.of(context).brightness == Brightness.dark ? 0.14 : 0.08) : context.fast.bg,
+                  color: prepStarted
+                      ? Color(0xFFEF4444).withValues(
+                          alpha: Theme.of(context).brightness == Brightness.dark
+                              ? 0.14
+                              : 0.08,
+                        )
+                      : context.fast.bg,
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                    color: prepStarted ?       Color(0xFFEF4444).withValues(alpha: 0.3) : context.fast.line,
+                    color: prepStarted
+                        ? Color(0xFFEF4444).withValues(alpha: 0.3)
+                        : context.fast.line,
                   ),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [ Icon(
+                  children: [
+                    Icon(
                       prepStarted ? Icons.error : Icons.radio_button_off,
-                      color: prepStarted ?       Color(0xFFEF4444) : context.fast.t3,
+                      color: prepStarted ? Color(0xFFEF4444) : context.fast.t3,
                       size: 16,
                     ),
-                          SizedBox(width: 10),
+                    SizedBox(width: 10),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [ Text(
+                        children: [
+                          Text(
                             tr(context, 'cancel_case2'),
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: context.fast.t1),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              color: context.fast.t1,
+                            ),
                           ),
-                                SizedBox(height: 2), Text(
+                          SizedBox(height: 2),
+                          Text(
                             tr(context, 'cancel_case2_desc'),
-                            style: TextStyle(fontSize: 10, color: context.fast.t2, height: 1.3),
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: context.fast.t2,
+                              height: 1.3,
+                            ),
                           ),
                           if (prepStarted) ...[
-                            const SizedBox(height: 6), Text(
-                              tr(context, 'active_debit').replaceAll('{n}', order.total.toStringAsFixed(2)),
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: Color(0xFFEF4444)),
+                            const SizedBox(height: 6),
+                            Text(
+                              tr(context, 'active_debit').replaceAll(
+                                '{n}',
+                                order.total.toStringAsFixed(2),
+                              ),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 10,
+                                color: Color(0xFFEF4444),
+                              ),
                             ),
                           ],
                         ],
@@ -952,7 +1173,7 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                 ),
               ),
 
-                    SizedBox(height: 24),
+              SizedBox(height: 24),
 
               Row(
                 children: [
@@ -962,9 +1183,17 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                       style: OutlinedButton.styleFrom(
                         side: BorderSide(color: context.fast.line),
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
-                      child: Text(tr(context, 'keep_order'), style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold)),
+                      child: Text(
+                        tr(context, 'keep_order'),
+                        style: TextStyle(
+                          color: context.fast.t1,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -978,10 +1207,15 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                         backgroundColor: const Color(0xFFEF4444),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                         elevation: 0,
                       ),
-                      child: Text(tr(context, 'confirm_cancel'), style: TextStyle(fontWeight: FontWeight.bold)),
+                      child: Text(
+                        tr(context, 'confirm_cancel'),
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ),
                 ],
@@ -993,14 +1227,22 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
     );
   }
 
-  Widget _buildCompletionOverlay(BuildContext context, FASTProvider provider, Order order) {
-    if (_ratingSubmitted && _confettiController.isCompleted) return const SizedBox.shrink();
+  Widget _buildCompletionOverlay(
+    BuildContext context,
+    FASTProvider provider,
+    Order order,
+  ) {
+    if (_ratingSubmitted && _confettiController.isCompleted) {
+      return const SizedBox.shrink();
+    }
 
     return Positioned.fill(
       child: AnimatedBuilder(
         animation: _confettiController,
         builder: (context, child) {
-          final confettiFade = _confettiController.value < 0.7 ? 1.0 : (1.0 - (_confettiController.value - 0.7) / 0.3);
+          final confettiFade = _confettiController.value < 0.7
+              ? 1.0
+              : (1.0 - (_confettiController.value - 0.7) / 0.3);
           return Stack(
             children: [
               if (_confettiController.value < 0.9)
@@ -1031,7 +1273,11 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
     );
   }
 
-  Widget _buildRatingCard(BuildContext context, FASTProvider provider, Order order) {
+  Widget _buildRatingCard(
+    BuildContext context,
+    FASTProvider provider,
+    Order order,
+  ) {
     return Container(
       decoration: BoxDecoration(
         color: context.fast.card,
@@ -1057,38 +1303,43 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
               ),
             ),
           ),
-                SizedBox(height: 16),
+          SizedBox(height: 16),
 
           Row(
-            children: [ Text('🎉', style: TextStyle(fontSize: 22)),
-                    SizedBox(width: 10),
+            children: [
+              Text('🎉', style: TextStyle(fontSize: 22)),
+              SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [ Text(
+                  children: [
+                    Text(
                       tr(context, 'picked_up_excl'),
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w900,
                         color: context.fast.t1,
                       ),
-                    ), Text(
+                    ),
+                    Text(
                       order.restaurantName,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: context.fast.t2,
-                      ),
+                      style: TextStyle(fontSize: 12, color: context.fast.t2),
                     ),
                   ],
                 ),
               ),
             ],
           ),
-                SizedBox(height: 20), Text(
+          SizedBox(height: 20),
+          Text(
             tr(context, 'review_prompt'),
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: context.fast.t1),
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: context.fast.t1,
+            ),
           ),
-                SizedBox(height: 10),
+          SizedBox(height: 10),
           StatefulBuilder(
             builder: (context, setInnerState) {
               return Row(
@@ -1101,8 +1352,10 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                     child: Padding(
                       padding: EdgeInsets.only(right: 6),
                       child: Icon(
-                        filled ? Icons.star_rounded : Icons.star_outline_rounded,
-                        color: filled ?       Color(0xFFF59E0B) : context.fast.faint,
+                        filled
+                            ? Icons.star_rounded
+                            : Icons.star_outline_rounded,
+                        color: filled ? Color(0xFFF59E0B) : context.fast.faint,
                         size: 32,
                       ),
                     ),
@@ -1111,7 +1364,8 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
               );
             },
           ),
-                SizedBox(height: 14), TextField(
+          SizedBox(height: 14),
+          TextField(
             controller: _commentController,
             maxLines: 2,
             style: TextStyle(fontSize: 13, color: context.fast.t1),
@@ -1120,7 +1374,10 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
               hintStyle: TextStyle(color: context.fast.faint, fontSize: 12),
               filled: true,
               fillColor: context.fast.bg,
-              contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 12,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
                 borderSide: BorderSide(color: context.fast.line),
@@ -1135,7 +1392,7 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
               ),
             ),
           ),
-                SizedBox(height: 16),
+          SizedBox(height: 16),
 
           Row(
             children: [
@@ -1144,11 +1401,14 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                   onPressed: () => setState(() => _ratingSubmitted = true),
                   child: Text(
                     tr(context, 'skip_tuto'),
-                    style: TextStyle(color: context.fast.t3, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: context.fast.t3,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
-                    SizedBox(width: 12),
+              SizedBox(width: 12),
               Expanded(
                 flex: 2,
                 child: ElevatedButton(
@@ -1169,7 +1429,9 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                     disabledBackgroundColor: context.fast.line,
                     disabledForegroundColor: context.fast.faint,
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     elevation: 0,
                   ),
                   child: const Text(
@@ -1195,12 +1457,19 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
           padding: EdgeInsets.all(32),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [ Text('📜', style: TextStyle(fontSize: 48)),
-                    SizedBox(height: 12), Text(
+            children: [
+              Text('📜', style: TextStyle(fontSize: 48)),
+              SizedBox(height: 12),
+              Text(
                 tr(context, 'no_history'),
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: context.fast.t1),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: context.fast.t1,
+                ),
               ),
-                    SizedBox(height: 6), Text(
+              SizedBox(height: 6),
+              Text(
                 tr(context, 'history_hint'),
                 style: TextStyle(fontSize: 11, color: context.fast.t2),
                 textAlign: TextAlign.center,
@@ -1221,7 +1490,11 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
     );
   }
 
-  Widget _buildOrderHistoryCard(BuildContext context, FASTProvider provider, Order order) {
+  Widget _buildOrderHistoryCard(
+    BuildContext context,
+    FASTProvider provider,
+    Order order,
+  ) {
     final formattedDate = _parseIsoDate(order.createdAt);
     final isCompleted = order.status == OrderStatus.completed;
 
@@ -1249,17 +1522,22 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                     order.restaurantImage,
                     width: 44,
                     height: 44,
-                    placeholder: Container(color: context.fast.cardHigh, width: 44, height: 44),
+                    placeholder: Container(
+                      color: context.fast.cardHigh,
+                      width: 44,
+                      height: 44,
+                    ),
                   ),
                 ),
-                      SizedBox(width: 12),
+                SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [ Text(
+                        children: [
+                          Text(
                             order.id,
                             style: TextStyle(
                               fontFamily: 'monospace',
@@ -1271,12 +1549,21 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                           _buildStatusLabel(order.status),
                         ],
                       ),
-                            SizedBox(height: 2), Text(
+                      SizedBox(height: 2),
+                      Text(
                         order.restaurantName,
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: context.fast.t1),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                          color: context.fast.t1,
+                        ),
                       ),
-                            SizedBox(height: 4), Text(
-                        tr(context, 'ordered_on').replaceAll('{n}', formattedDate),
+                      SizedBox(height: 4),
+                      Text(
+                        tr(
+                          context,
+                          'ordered_on',
+                        ).replaceAll('{n}', formattedDate),
                         style: TextStyle(fontSize: 10, color: context.fast.t3),
                       ),
                     ],
@@ -1285,7 +1572,7 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
               ],
             ),
           ),
-          
+
           // Items list
           Padding(
             padding: EdgeInsets.all(16),
@@ -1297,34 +1584,61 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                     padding: EdgeInsets.only(bottom: 6),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [ Text(
+                      children: [
+                        Text(
                           '${cartItem.quantity}x  ${cartItem.menuItem.name}',
-                          style: TextStyle(fontSize: 12, color: context.fast.t1),
-                        ), Text(
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: context.fast.t1,
+                          ),
+                        ),
+                        Text(
                           '€${(cartItem.menuItem.price * cartItem.quantity).toStringAsFixed(2)}',
-                          style: TextStyle(fontSize: 11, color: context.fast.t2, fontFamily: 'monospace'),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: context.fast.t2,
+                            fontFamily: 'monospace',
+                          ),
                         ),
                       ],
                     ),
                   );
                 }),
-                
-                      Divider(color: context.fast.line, height: 20),
-                
+
+                Divider(color: context.fast.line, height: 20),
+
                 // commission flat fee
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [ Text(tr(context, 'service_fee_fast'), style: TextStyle(fontSize: 11, color: context.fast.t3)), Text('€${order.serviceFee.toStringAsFixed(2)}', style: TextStyle(fontSize: 11, color: context.fast.t3, fontFamily: 'monospace')),
+                  children: [
+                    Text(
+                      tr(context, 'service_fee_fast'),
+                      style: TextStyle(fontSize: 11, color: context.fast.t3),
+                    ),
+                    Text(
+                      '€${order.serviceFee.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: context.fast.t3,
+                        fontFamily: 'monospace',
+                      ),
+                    ),
                   ],
                 ),
-                      SizedBox(height: 6),
+                SizedBox(height: 6),
                 // total paid
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [ Text(
+                  children: [
+                    Text(
                       tr(context, 'total_paid'),
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: context.fast.t1),
-                    ), Text(
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: context.fast.t1,
+                      ),
+                    ),
+                    Text(
                       '€${order.total.toStringAsFixed(2)}',
                       style: const TextStyle(
                         fontSize: 13,
@@ -1341,23 +1655,34 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
 
           // Rating Feedback panel (only for completed orders)
           if (isCompleted) ...[
-                  Divider(color: context.fast.line, height: 1),
+            Divider(color: context.fast.line, height: 1),
             Container(
               padding: EdgeInsets.all(16),
               color: context.fast.bg.withValues(alpha: 0.3),
               child: order.userRatingSubmitted
-                  ?       Row(
+                  ? Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: [ Icon(Icons.check_circle_outline, color: Color(0xFF10B981), size: 16),
-                        SizedBox(width: 8), Text(
+                      children: [
+                        Icon(
+                          Icons.check_circle_outline,
+                          color: Color(0xFF10B981),
+                          size: 16,
+                        ),
+                        SizedBox(width: 8),
+                        Text(
                           tr(context, 'review_sent_ok'),
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF10B981)),
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF10B981),
+                          ),
                         ),
                       ],
                     )
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [ Text(
+                      children: [
+                        Text(
                           tr(context, 'rate_venue'),
                           style: TextStyle(
                             fontSize: 9,
@@ -1366,14 +1691,15 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                             color: context.fast.t3,
                           ),
                         ),
-                              SizedBox(height: 8),
-                        
+                        SizedBox(height: 8),
+
                         // Stars Picker
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: List.generate(5, (starIdx) {
                             final double starValue = starIdx + 1.0;
-                            final double currentRating = _orderRatings[order.id] ?? 5.0;
+                            final double currentRating =
+                                _orderRatings[order.id] ?? 5.0;
                             final isLit = starValue <= currentRating;
                             return IconButton(
                               onPressed: () {
@@ -1383,23 +1709,31 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                               },
                               icon: Icon(
                                 isLit ? Icons.star : Icons.star_border,
-                                color: isLit ?       Color(0xFFF59E0B) : context.fast.line,
+                                color: isLit
+                                    ? Color(0xFFF59E0B)
+                                    : context.fast.line,
                                 size: 28,
                               ),
                             );
                           }),
                         ),
-                        
-                              SizedBox(height: 10),
-                        
+
+                        SizedBox(height: 10),
+
                         // Comments field
- TextField(
+                        TextField(
                           controller: _getHistoryController(order.id),
                           maxLines: 1,
-                          style: TextStyle(fontSize: 11, color: context.fast.t1),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: context.fast.t1,
+                          ),
                           decoration: InputDecoration(
                             hintText: tr(context, 'review_ph'),
-                            hintStyle: TextStyle(color: context.fast.t3, fontSize: 10),
+                            hintStyle: TextStyle(
+                              color: context.fast.t3,
+                              fontSize: 10,
+                            ),
                             filled: true,
                             fillColor: context.fast.bg,
                             border: OutlineInputBorder(
@@ -1412,49 +1746,66 @@ class _CommandesScreenState extends State<CommandesScreen> with TickerProviderSt
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(color: Color(0xFFF59E0B)),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFF59E0B),
+                              ),
                             ),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
                           ),
                         ),
-                        
-                              SizedBox(height: 12),
-                        
+
+                        SizedBox(height: 12),
+
                         // Submit button
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
                             onPressed: () {
-                              final text = _getHistoryController(order.id).text.trim();
+                              final text = _getHistoryController(
+                                order.id,
+                              ).text.trim();
                               if (text.isEmpty) return;
                               final rating = _orderRatings[order.id] ?? 5.0;
-                              provider.submitRestaurantRating(order.id, order.restaurantId, rating, text);
+                              provider.submitRestaurantRating(
+                                order.id,
+                                order.restaurantId,
+                                rating,
+                                text,
+                              );
                               _getHistoryController(order.id).clear();
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Color(0xFFF59E0B),
                               foregroundColor: FASTBrand.onAmber,
                               padding: const EdgeInsets.symmetric(vertical: 10),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
                               elevation: 0,
                             ),
                             child: Text(
                               tr(context, 'submit_review'),
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 11,
+                              ),
                             ),
                           ),
                         ),
                       ],
                     ),
             ),
-          ]
+          ],
         ],
       ),
     );
   }
 
   Widget _buildStatusLabel(OrderStatus status) {
- Color fg = Colors.grey;
+    Color fg = Colors.grey;
     switch (status) {
       case OrderStatus.completed:
         fg = const Color(0xFF10B981);
@@ -1504,19 +1855,25 @@ class _ConfettiPainter extends CustomPainter {
       const Color(0xFF3B82F6),
       const Color(0xFFEC4899),
       const Color(0xFFA855F7),
-      const Color(0xFFEF4444), Colors.white,
+      const Color(0xFFEF4444),
+      Colors.white,
     ];
 
     for (int i = 0; i < _count; i++) {
       final startX = random.nextDouble() * size.width;
       final speed = 0.4 + random.nextDouble() * 0.6;
-      final y = (progress * speed * size.height * 1.6) - (random.nextDouble() * size.height * 0.2);
+      final y =
+          (progress * speed * size.height * 1.6) -
+          (random.nextDouble() * size.height * 0.2);
       final x = startX + sin(progress * 6 + i) * 30;
 
       if (y < 0 || y > size.height) continue;
 
       final color = colors[random.nextInt(colors.length)];
-      final paint = Paint()..color = color.withValues(alpha: (1.0 - progress * 0.8).clamp(0.0, 1.0));
+      final paint = Paint()
+        ..color = color.withValues(
+          alpha: (1.0 - progress * 0.8).clamp(0.0, 1.0),
+        );
       final w = 6.0 + random.nextDouble() * 6;
       final h = 3.0 + random.nextDouble() * 4;
       final angle = progress * 8 + random.nextDouble() * pi;
@@ -1581,9 +1938,12 @@ class MapRoadmapPainter extends CustomPainter {
 
     path.moveTo(startPt.dx, startPt.dy);
     path.cubicTo(
-      controlPt1.dx, controlPt1.dy,
-      controlPt2.dx, controlPt2.dy,
-      midPt.dx, midPt.dy,
+      controlPt1.dx,
+      controlPt1.dy,
+      controlPt2.dx,
+      controlPt2.dy,
+      midPt.dx,
+      midPt.dy,
     );
     path.quadraticBezierTo(controlPt3.dx, controlPt3.dy, endPt.dx, endPt.dy);
 
@@ -1609,7 +1969,15 @@ class MapRoadmapPainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
     canvas.drawPath(path, neonPaint);
 
-    final Offset progressPt = _getPositionOnCubicPath(startPt, controlPt1, controlPt2, midPt, controlPt3, endPt, progress);
+    final Offset progressPt = _getPositionOnCubicPath(
+      startPt,
+      controlPt1,
+      controlPt2,
+      midPt,
+      controlPt3,
+      endPt,
+      progress,
+    );
 
     final radarPaint = Paint()
       ..color = const Color(0xFFF59E0B).withValues(alpha: 0.15 + (pulse * 0.15))
@@ -1633,13 +2001,23 @@ class MapRoadmapPainter extends CustomPainter {
 
     if (orderStatus == OrderStatus.readyForPickup) {
       final kitchenRadarPaint = Paint()
-        ..color = const Color(0xFF10B981).withValues(alpha: 0.1 + (pulse * 0.15))
+        ..color = const Color(
+          0xFF10B981,
+        ).withValues(alpha: 0.1 + (pulse * 0.15))
         ..style = PaintingStyle.fill;
       canvas.drawCircle(endPt, 10 + (pulse * 10), kitchenRadarPaint);
     }
   }
 
-  Offset _getPositionOnCubicPath(Offset p0, Offset p1, Offset p2, Offset p3, Offset p4, Offset p5, double t) {
+  Offset _getPositionOnCubicPath(
+    Offset p0,
+    Offset p1,
+    Offset p2,
+    Offset p3,
+    Offset p4,
+    Offset p5,
+    double t,
+  ) {
     if (t < 0.5) {
       final double localT = t * 2.0;
       final double u = 1.0 - localT;
@@ -1648,8 +2026,16 @@ class MapRoadmapPainter extends CustomPainter {
       final double uuu = uu * u;
       final double ttt = tt * localT;
 
-      final double x = uuu * p0.dx + 3.0 * uu * localT * p1.dx + 3.0 * u * tt * p2.dx + ttt * p3.dx;
-      final double y = uuu * p0.dy + 3.0 * uu * localT * p1.dy + 3.0 * u * tt * p2.dy + ttt * p3.dy;
+      final double x =
+          uuu * p0.dx +
+          3.0 * uu * localT * p1.dx +
+          3.0 * u * tt * p2.dx +
+          ttt * p3.dx;
+      final double y =
+          uuu * p0.dy +
+          3.0 * uu * localT * p1.dy +
+          3.0 * u * tt * p2.dy +
+          ttt * p3.dy;
       return Offset(x, y);
     } else {
       final double localT = (t - 0.5) * 2.0;

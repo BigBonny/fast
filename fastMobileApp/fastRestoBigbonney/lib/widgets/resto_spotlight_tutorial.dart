@@ -11,7 +11,7 @@ class RestoSpotlightTutorial extends StatelessWidget {
   final VoidCallback onNext;
   final VoidCallback onSkip;
 
-        RestoSpotlightTutorial({
+  const RestoSpotlightTutorial({
     super.key,
     required this.targetRect,
     required this.title,
@@ -40,7 +40,8 @@ class RestoSpotlightTutorial extends StatelessWidget {
     final card = Semantics(
       liveRegion: true,
       namesRoute: true,
-      label: tr(context, 'tutor_step').replaceAll('{a}', '${step + 1}').replaceAll('{b}', '$totalSteps') + ' $title. $description',
+      label:
+          '${tr(context, 'tutor_step').replaceAll('{a}', '${step + 1}').replaceAll('{b}', '$totalSteps')} $title. $description',
       child: Material(
         color: context.fast.card,
         elevation: 18,
@@ -76,17 +77,19 @@ class RestoSpotlightTutorial extends StatelessWidget {
                       ),
                     ),
                   ),
-                        Spacer(), TextButton(
+                  Spacer(),
+                  TextButton(
                     onPressed: onSkip,
                     style: TextButton.styleFrom(
-                      minimumSize:       Size(48, 48),
+                      minimumSize: Size(48, 48),
                       foregroundColor: context.fast.t2,
                     ),
                     child: Text(tr(context, 'skip_tuto')),
                   ),
                 ],
               ),
-                    SizedBox(height: 10), Text(
+              SizedBox(height: 10),
+              Text(
                 title,
                 style: TextStyle(
                   color: context.fast.t1,
@@ -94,7 +97,8 @@ class RestoSpotlightTutorial extends StatelessWidget {
                   fontWeight: FontWeight.w900,
                 ),
               ),
-                    SizedBox(height: 8), Text(
+              SizedBox(height: 8),
+              Text(
                 description,
                 style: TextStyle(
                   color: context.fast.t2,
@@ -102,7 +106,7 @@ class RestoSpotlightTutorial extends StatelessWidget {
                   height: 1.5,
                 ),
               ),
-                    SizedBox(height: 20),
+              SizedBox(height: 20),
               Row(
                 children: [
                   Expanded(
@@ -112,16 +116,17 @@ class RestoSpotlightTutorial extends StatelessWidget {
                         value: (step + 1) / totalSteps,
                         minHeight: 5,
                         backgroundColor: context.fast.faint,
-                        valueColor: const AlwaysStoppedAnimation( Color(0xFFF59E0B),
+                        valueColor: const AlwaysStoppedAnimation(
+                          Color(0xFFF59E0B),
                         ),
                       ),
                     ),
                   ),
-                        SizedBox(width: 16),
+                  SizedBox(width: 16),
                   ElevatedButton(
                     onPressed: onNext,
                     style: ElevatedButton.styleFrom(
-                      minimumSize:       Size(112, 48),
+                      minimumSize: Size(112, 48),
                       backgroundColor: Color(0xFFF59E0B),
                       foregroundColor: FASTBrand.onAmber,
                       shape: RoundedRectangleBorder(

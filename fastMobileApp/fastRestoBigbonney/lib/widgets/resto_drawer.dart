@@ -66,9 +66,7 @@ class RestoDrawer extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16, 10, 4, 14),
               decoration: const BoxDecoration(
                 color: Color(0xFF020617),
-                border: Border(
-                  bottom: BorderSide(color: Color(0xFF1E293B)),
-                ),
+                border: Border(bottom: BorderSide(color: Color(0xFF1E293B))),
               ),
               child: Row(
                 children: [
@@ -124,18 +122,24 @@ class RestoDrawer extends StatelessWidget {
               child: ListView(
                 padding: const EdgeInsets.all(10),
                 children: [
-                  _row(context,
-                      emoji: '📋',
-                      label: provider.tr('my_service'),
-                      onTap: () => _go(context, 4)),
-                  _row(context,
-                      emoji: '🛍️',
-                      label: provider.tr('nav_orders'),
-                      onTap: () => _go(context, 0)),
-                  _row(context,
-                      emoji: '🍽️',
-                      label: provider.tr('menu'),
-                      onTap: () => _go(context, 1)),
+                  _row(
+                    context,
+                    emoji: '📋',
+                    label: provider.tr('my_service'),
+                    onTap: () => _go(context, 4),
+                  ),
+                  _row(
+                    context,
+                    emoji: '🛍️',
+                    label: provider.tr('nav_orders'),
+                    onTap: () => _go(context, 0),
+                  ),
+                  _row(
+                    context,
+                    emoji: '🍽️',
+                    label: provider.tr('menu'),
+                    onTap: () => _go(context, 1),
+                  ),
                   _settingsItem(context, provider, resto),
                   Padding(
                     padding: const EdgeInsets.only(bottom: 4),
@@ -146,12 +150,15 @@ class RestoDrawer extends StatelessWidget {
                         onTap: () async {
                           await provider.setViewAsClient(true);
                           if (!context.mounted) return;
-                          Navigator.of(context)
-                              .popUntil((route) => route.isFirst);
+                          Navigator.of(
+                            context,
+                          ).popUntil((route) => route.isFirst);
                         },
                         child: Ink(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 12),
+                            horizontal: 12,
+                            vertical: 12,
+                          ),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(10),
                             gradient: const LinearGradient(
@@ -160,13 +167,15 @@ class RestoDrawer extends StatelessWidget {
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.shopping_bag_outlined,
-                                  color: Colors.white, size: 18),
+                              const Icon(
+                                Icons.shopping_bag_outlined,
+                                color: Colors.white,
+                                size: 18,
+                              ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       provider.tr('client_mode'),
@@ -179,16 +188,20 @@ class RestoDrawer extends StatelessWidget {
                                     Text(
                                       provider.tr('client_mode_sub'),
                                       style: TextStyle(
-                                        color: Colors.white
-                                            .withValues(alpha: 0.85),
+                                        color: Colors.white.withValues(
+                                          alpha: 0.85,
+                                        ),
                                         fontSize: 11,
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
-                              const Icon(Icons.arrow_forward,
-                                  color: Colors.white, size: 18),
+                              const Icon(
+                                Icons.arrow_forward,
+                                color: Colors.white,
+                                size: 18,
+                              ),
                             ],
                           ),
                         ),
@@ -198,8 +211,10 @@ class RestoDrawer extends StatelessWidget {
 
                   const SizedBox(height: 14),
                   Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
                     child: Text(
                       provider.tr('advanced_tools'),
                       style: TextStyle(
@@ -210,27 +225,33 @@ class RestoDrawer extends StatelessWidget {
                       ),
                     ),
                   ),
-                  _row(context,
-                      emoji: '📈',
-                      label: provider.tr('stats'),
-                      onTap: () => _go(context, 2)),
-                  _row(context,
-                      emoji: '🤖',
-                      label: provider.tr('ai_intel'),
-                      subtitle: provider.tr('ai_intel_sub'),
-                      onTap: () =>
-                          _push(context, const MenuAiScannerScreen())),
-                  _row(context,
-                      emoji: '👥',
-                      label: provider.tr('my_team'),
-                      subtitle: provider.tr('my_team_sub'),
-                      onTap: () =>
-                          _push(context, const RestoStaffScreen())),
+                  _row(
+                    context,
+                    emoji: '📈',
+                    label: provider.tr('stats'),
+                    onTap: () => _go(context, 2),
+                  ),
+                  _row(
+                    context,
+                    emoji: '🤖',
+                    label: provider.tr('ai_intel'),
+                    subtitle: provider.tr('ai_intel_sub'),
+                    onTap: () => _push(context, const MenuAiScannerScreen()),
+                  ),
+                  _row(
+                    context,
+                    emoji: '👥',
+                    label: provider.tr('my_team'),
+                    subtitle: provider.tr('my_team_sub'),
+                    onTap: () => _push(context, const RestoStaffScreen()),
+                  ),
 
                   const SizedBox(height: 14),
                   Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
                     child: Text(
                       provider.tr('legal'),
                       style: TextStyle(
@@ -241,14 +262,18 @@ class RestoDrawer extends StatelessWidget {
                       ),
                     ),
                   ),
-                  _row(context,
-                      emoji: '📄',
-                      label: provider.tr('cgu'),
-                      onTap: () => _showLegal(context, 'CGU')),
-                  _row(context,
-                      emoji: '🔐',
-                      label: provider.tr('privacy'),
-                      onTap: () => _showLegal(context, tr(context, 'privacy'))),
+                  _row(
+                    context,
+                    emoji: '📄',
+                    label: provider.tr('cgu'),
+                    onTap: () => _showLegal(context, 'CGU'),
+                  ),
+                  _row(
+                    context,
+                    emoji: '🔐',
+                    label: provider.tr('privacy'),
+                    onTap: () => _showLegal(context, tr(context, 'privacy')),
+                  ),
                 ],
               ),
             ),
@@ -266,8 +291,11 @@ class RestoDrawer extends StatelessWidget {
                     if (!context.mounted) return;
                     Navigator.of(context).popUntil((route) => route.isFirst);
                   },
-                  icon: const Icon(Icons.logout,
-                      color: Color(0xFFEF4444), size: 18),
+                  icon: const Icon(
+                    Icons.logout,
+                    color: Color(0xFFEF4444),
+                    size: 18,
+                  ),
                   label: Text(
                     provider.tr('logout'),
                     style: const TextStyle(
@@ -336,8 +364,7 @@ class RestoDrawer extends StatelessWidget {
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right,
-                    size: 18, color: _subtext(context)),
+                Icon(Icons.chevron_right, size: 18, color: _subtext(context)),
               ],
             ),
           ),
@@ -347,7 +374,10 @@ class RestoDrawer extends StatelessWidget {
   }
 
   Widget _settingsItem(
-      BuildContext context, FASTProvider provider, RestoProvider resto) {
+    BuildContext context,
+    FASTProvider provider,
+    RestoProvider resto,
+  ) {
     return Theme(
       data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
       child: Material(
@@ -365,8 +395,7 @@ class RestoDrawer extends StatelessWidget {
           ),
           iconColor: _subtext(context),
           collapsedIconColor: _subtext(context),
-          childrenPadding:
-              const EdgeInsets.only(left: 16, right: 8, bottom: 8),
+          childrenPadding: const EdgeInsets.only(left: 16, right: 8, bottom: 8),
           children: [
             // Rush mode toggle
             SwitchListTile(
@@ -384,8 +413,11 @@ class RestoDrawer extends StatelessWidget {
                 provider.tr('rush_desc'),
                 style: TextStyle(color: _subtext(context), fontSize: 11),
               ),
-              secondary: const Icon(Icons.local_fire_department,
-                  color: FASTPro.magenta, size: 20),
+              secondary: const Icon(
+                Icons.local_fire_department,
+                color: FASTPro.magenta,
+                size: 20,
+              ),
               activeThumbColor: FASTPro.magenta,
               value: resto.isRushMode,
               onChanged: (_) => resto.toggleRushMode(),
@@ -394,26 +426,50 @@ class RestoDrawer extends StatelessWidget {
             // Theme picker
             Row(
               children: [
-                _themeOpt(context, provider, ThemeMode.system,
-                    Icons.phone_android, provider.tr('theme_auto')),
+                _themeOpt(
+                  context,
+                  provider,
+                  ThemeMode.system,
+                  Icons.phone_android,
+                  provider.tr('theme_auto'),
+                ),
                 const SizedBox(width: 8),
-                _themeOpt(context, provider, ThemeMode.light,
-                    Icons.wb_sunny_outlined, provider.tr('theme_light')),
+                _themeOpt(
+                  context,
+                  provider,
+                  ThemeMode.light,
+                  Icons.wb_sunny_outlined,
+                  provider.tr('theme_light'),
+                ),
                 const SizedBox(width: 8),
-                _themeOpt(context, provider, ThemeMode.dark,
-                    Icons.nightlight_outlined, provider.tr('theme_dark')),
+                _themeOpt(
+                  context,
+                  provider,
+                  ThemeMode.dark,
+                  Icons.nightlight_outlined,
+                  provider.tr('theme_dark'),
+                ),
               ],
             ),
             const SizedBox(height: 8),
             _languagePicker(context, provider),
             const SizedBox(height: 8),
             // Advanced settings + tutorial shortcuts
-            _miniItem(context, Icons.tune, provider.tr('advanced_settings'),
-                () => _go(context, 3)),
-            _miniItem(context, Icons.help_outline, provider.tr('replay_tutorial'), () {
-              Navigator.of(context).pop();
-              onReplayTutorial();
-            }),
+            _miniItem(
+              context,
+              Icons.tune,
+              provider.tr('advanced_settings'),
+              () => _go(context, 3),
+            ),
+            _miniItem(
+              context,
+              Icons.help_outline,
+              provider.tr('replay_tutorial'),
+              () {
+                Navigator.of(context).pop();
+                onReplayTutorial();
+              },
+            ),
           ],
         ),
       ),
@@ -421,7 +477,11 @@ class RestoDrawer extends StatelessWidget {
   }
 
   Widget _miniItem(
-      BuildContext context, IconData icon, String label, VoidCallback onTap) {
+    BuildContext context,
+    IconData icon,
+    String label,
+    VoidCallback onTap,
+  ) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
@@ -452,8 +512,7 @@ class RestoDrawer extends StatelessWidget {
       isExpanded: true,
       icon: Icon(Icons.expand_more, color: _subtext(context), size: 18),
       decoration: InputDecoration(
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(color: _chipBorder(context)),
@@ -468,8 +527,12 @@ class RestoDrawer extends StatelessWidget {
       style: TextStyle(color: _text(context), fontSize: 12),
       dropdownColor: _bg(context),
       items: AppStrings.languages
-          .map((l) =>
-              DropdownMenuItem(value: l.$1, child: Text(l.$2, style: const TextStyle(fontSize: 12))))
+          .map(
+            (l) => DropdownMenuItem(
+              value: l.$1,
+              child: Text(l.$2, style: const TextStyle(fontSize: 12)),
+            ),
+          )
           .toList(),
       onChanged: (v) {
         if (v != null) provider.setAppLanguage(v);
@@ -477,8 +540,13 @@ class RestoDrawer extends StatelessWidget {
     );
   }
 
-  Widget _themeOpt(BuildContext context, FASTProvider provider,
-      ThemeMode mode, IconData icon, String label) {
+  Widget _themeOpt(
+    BuildContext context,
+    FASTProvider provider,
+    ThemeMode mode,
+    IconData icon,
+    String label,
+  ) {
     final sel = provider.themeMode == mode;
     return Expanded(
       child: GestureDetector(
@@ -486,8 +554,9 @@ class RestoDrawer extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color:
-                sel ? FASTPro.teal.withValues(alpha: 0.15) : _chipBg(context),
+            color: sel
+                ? FASTPro.teal.withValues(alpha: 0.15)
+                : _chipBg(context),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
               color: sel ? FASTPro.teal : _chipBorder(context),
@@ -495,8 +564,11 @@ class RestoDrawer extends StatelessWidget {
           ),
           child: Column(
             children: [
-              Icon(icon,
-                  size: 16, color: sel ? FASTPro.teal : _subtext(context)),
+              Icon(
+                icon,
+                size: 16,
+                color: sel ? FASTPro.teal : _subtext(context),
+              ),
               const SizedBox(height: 2),
               Text(
                 label,
@@ -516,11 +588,11 @@ class RestoDrawer extends StatelessWidget {
   void _showLegal(BuildContext context, String type) {
     final content = type == 'CGU'
         ? tr(context, 'terms_intro') +
-            tr(context, 'fast_service_desc') +
-            tr(context, 'legal_orders')
+              tr(context, 'fast_service_desc') +
+              tr(context, 'legal_orders')
         : tr(context, 'privacy_collect') +
-            tr(context, 'privacy_data') +
-            tr(context, 'data_rights');
+              tr(context, 'privacy_data') +
+              tr(context, 'data_rights');
 
     Navigator.of(context).pop();
     showDialog(
@@ -554,8 +626,10 @@ class RestoDrawer extends StatelessWidget {
               ),
               elevation: 0,
             ),
-            child: Text(tr(context, 'close'),
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            child: Text(
+              tr(context, 'close'),
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),

@@ -198,8 +198,10 @@ class RestoProvider extends ChangeNotifier {
   }
 
   static String _ordersSignature(List<Order> orders) => orders
-      .map((o) =>
-          '${o.id}:${o.status}:${o.prepTimerSeconds}:${o.prepStartedAt}:${o.gpsProgress}:${o.isReadyAtEntrance}')
+      .map(
+        (o) =>
+            '${o.id}:${o.status}:${o.prepTimerSeconds}:${o.prepStartedAt}:${o.gpsProgress}:${o.isReadyAtEntrance}',
+      )
       .join('|');
 
   void _startPolling() {

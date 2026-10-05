@@ -147,6 +147,7 @@ class FASTProvider extends ChangeNotifier {
       }
     });
   }
+
   bool get viewAsClient => _viewAsClient;
   String get appLanguage => _appLanguage;
 
@@ -177,11 +178,14 @@ class FASTProvider extends ChangeNotifier {
   void toggleFavorite(String restaurantId) {
     if (!_favoriteIds.add(restaurantId)) _favoriteIds.remove(restaurantId);
     SharedPreferences.getInstance().then(
-      (prefs) => prefs.setString('fast_favorites', json.encode(_favoriteIds.toList())),
+      (prefs) =>
+          prefs.setString('fast_favorites', json.encode(_favoriteIds.toList())),
     );
     notifyListeners();
   }
-  String get userInitial => _userName.isNotEmpty ? _userName[0].toUpperCase() : '?';
+
+  String get userInitial =>
+      _userName.isNotEmpty ? _userName[0].toUpperCase() : '?';
 
   // Points from API (synced via AuthProvider.getMe)
   String get membershipLevel {
@@ -315,7 +319,9 @@ class FASTProvider extends ChangeNotifier {
   /// Start or stop polling based on whether there are active orders
   void syncOrderPolling() {
     final hasActive = _orders.any(
-      (o) => o.status != OrderStatus.completed && o.status != OrderStatus.cancelled,
+      (o) =>
+          o.status != OrderStatus.completed &&
+          o.status != OrderStatus.cancelled,
     );
     if (hasActive) {
       startOrderPolling();
@@ -433,14 +439,16 @@ class FASTProvider extends ChangeNotifier {
     _themeMode = themePref == 'light'
         ? ThemeMode.light
         : themePref == 'system'
-            ? ThemeMode.system
-            : ThemeMode.dark;
+        ? ThemeMode.system
+        : ThemeMode.dark;
 
     // 5. Load favorites
     final savedFavs = prefs.getString('fast_favorites');
     if (savedFavs != null) {
       try {
-        _favoriteIds = (json.decode(savedFavs) as List<dynamic>).cast<String>().toSet();
+        _favoriteIds = (json.decode(savedFavs) as List<dynamic>)
+            .cast<String>()
+            .toSet();
       } catch (_) {}
     }
 
@@ -451,20 +459,33 @@ class FASTProvider extends ChangeNotifier {
   // Save to persistence
   Future<void> _saveRestaurants() async {
     final prefs = await SharedPreferences.getInstance();
-    prefs.setString('fast_resto_restaurants', json.encode(_restaurants.map((x) => x.toJson()).toList()));
+    prefs.setString(
+      'fast_resto_restaurants',
+      json.encode(_restaurants.map((x) => x.toJson()).toList()),
+    );
   }
 
   Future<void> _saveOrders() async {
     final prefs = await SharedPreferences.getInstance();
-    prefs.setString('fast_resto_orders', json.encode(_orders.map((x) => x.toJson()).toList()));
+    prefs.setString(
+      'fast_resto_orders',
+      json.encode(_orders.map((x) => x.toJson()).toList()),
+    );
   }
 
   Future<void> _saveNotifications() async {
     final prefs = await SharedPreferences.getInstance();
-    prefs.setString('fast_resto_notifications', json.encode(_notifications.map((x) => x.toJson()).toList()));
+    prefs.setString(
+      'fast_resto_notifications',
+      json.encode(_notifications.map((x) => x.toJson()).toList()),
+    );
   }
 
-  Future<void> updateProfile({String? name, String? email, String? phone}) async {
+  Future<void> updateProfile({
+    String? name,
+    String? email,
+    String? phone,
+  }) async {
     final body = <String, dynamic>{};
     if (name != null) body['name'] = name;
     if (email != null) body['email'] = email;
@@ -524,7 +545,10 @@ class FASTProvider extends ChangeNotifier {
     if (id == null) {
       _selectedRestaurant = null;
     } else {
-      _selectedRestaurant = _restaurants.firstWhere((r) => r.id == id, orElse: () => _restaurants.first);
+      _selectedRestaurant = _restaurants.firstWhere(
+        (r) => r.id == id,
+        orElse: () => _restaurants.first,
+      );
     }
     notifyListeners();
   }
@@ -621,28 +645,40 @@ class FASTProvider extends ChangeNotifier {
     final list = _restaurants.where((rest) {
       // A restaurant can carry several categories ("Burger, Tacos") —
       // match if ANY of them equals the selected filter.
-      final matchesCategory = _selectedCategory == 'all' ||
+      final matchesCategory =
+          _selectedCategory == 'all' ||
           rest.category
               .split(',')
               .any((c) => normalizeCategoryId(c) == _selectedCategory);
 
       final kw = _searchKeyword.toLowerCase();
-      final matchesSearch = rest.name.toLowerCase().contains(kw) ||
+      final matchesSearch =
+          rest.name.toLowerCase().contains(kw) ||
           rest.description.toLowerCase().contains(kw) ||
-          rest.menu.any((item) =>
-              item.name.toLowerCase().contains(kw) || item.description.toLowerCase().contains(kw));
+          rest.menu.any(
+            (item) =>
+                item.name.toLowerCase().contains(kw) ||
+                item.description.toLowerCase().contains(kw),
+          );
 
-      final matchesDietary = _selectedDietary.isEmpty ||
-          _selectedDietary.every((pref) =>
-              rest.dietaryOptions.contains(pref) ||
-              rest.menu.any((item) => item.dietaryTags.contains(pref)));
+      final matchesDietary =
+          _selectedDietary.isEmpty ||
+          _selectedDietary.every(
+            (pref) =>
+                rest.dietaryOptions.contains(pref) ||
+                rest.menu.any((item) => item.dietaryTags.contains(pref)),
+          );
 
       // Radius only applies when we actually have a GPS fix
-      final matchesRadius = _searchRadiusKm == null ||
+      final matchesRadius =
+          _searchRadiusKm == null ||
           _userLocation == null ||
           getRealDistance(rest) <= _searchRadiusKm!;
 
-      return matchesCategory && matchesSearch && matchesDietary && matchesRadius;
+      return matchesCategory &&
+          matchesSearch &&
+          matchesDietary &&
+          matchesRadius;
     }).toList();
 
     // Nearest first when we have a real position
@@ -771,7 +807,8 @@ class FASTProvider extends ChangeNotifier {
     Timer.periodic(const Duration(milliseconds: 125), (timer) {
       ticks++;
       // Select random restaurant to show in rolling ticker
-      _surpriseMeRolledRestaurant = _restaurants[rand.nextInt(_restaurants.length)];
+      _surpriseMeRolledRestaurant =
+          _restaurants[rand.nextInt(_restaurants.length)];
       notifyListeners();
 
       if (ticks >= totalTicks) {
@@ -780,10 +817,12 @@ class FASTProvider extends ChangeNotifier {
         _selectedRestaurant = _surpriseMeRolledRestaurant;
         _currentScreen = 'restaurant';
         _surpriseMeRolledRestaurant = null;
-        
+
         showToast(
           AppStrings.trNow('surprise_title'),
-          AppStrings.trNow('surprise_msg').replaceAll('{n}', _selectedRestaurant!.name),
+          AppStrings.trNow(
+            'surprise_msg',
+          ).replaceAll('{n}', _selectedRestaurant!.name),
         );
         notifyListeners();
       }
@@ -791,28 +830,43 @@ class FASTProvider extends ChangeNotifier {
   }
 
   // Cart Management
-  double get cartSubtotal => _cart.fold(0.0, (sum, item) => sum + (item.menuItem.price * item.quantity));
+  double get cartSubtotal => _cart.fold(
+    0.0,
+    (sum, item) => sum + (item.menuItem.price * item.quantity),
+  );
   double get flatServiceFee => 1.50; // Constant flat fee
   double get cartDeliveryFee {
     if (_fulfillmentType != FulfillmentType.delivery || _cart.isEmpty) return 0;
     return _selectedRestaurant?.deliveryFee ?? 2.99;
   }
-  double get cartTotal => _cart.isEmpty ? 0.0 : cartSubtotal + flatServiceFee + cartDeliveryFee;
+
+  double get cartTotal =>
+      _cart.isEmpty ? 0.0 : cartSubtotal + flatServiceFee + cartDeliveryFee;
 
   void setFulfillmentType(FulfillmentType type) {
     _fulfillmentType = type;
     notifyListeners();
   }
 
-  void setDeliveryAddress(String address, {double? latitude, double? longitude}) {
+  void setDeliveryAddress(
+    String address, {
+    double? latitude,
+    double? longitude,
+  }) {
     _deliveryAddress = address;
     _deliveryLatitude = latitude;
     _deliveryLongitude = longitude;
     notifyListeners();
   }
+
   int get cartCount => _cart.fold(0, (sum, item) => sum + item.quantity);
 
-  void addToCart(MenuItem item, int qty, List<String> selectedOptions, String allergyNotes) {
+  void addToCart(
+    MenuItem item,
+    int qty,
+    List<String> selectedOptions,
+    String allergyNotes,
+  ) {
     final existingIndex = _cart.indexWhere((c) => c.menuItem.id == item.id);
     if (existingIndex > -1) {
       _cart[existingIndex].quantity += qty;
@@ -824,9 +878,21 @@ class FASTProvider extends ChangeNotifier {
         _cart[existingIndex].allergyNotes = allergyNotes;
       }
     } else {
-      _cart.add(CartItem(menuItem: item, quantity: qty, selectedOptions: selectedOptions, allergyNotes: allergyNotes));
+      _cart.add(
+        CartItem(
+          menuItem: item,
+          quantity: qty,
+          selectedOptions: selectedOptions,
+          allergyNotes: allergyNotes,
+        ),
+      );
     }
-    showToast(AppStrings.trNow('added_cart'), AppStrings.trNow('added_cart_msg').replaceAll('{n}', '$qty').replaceAll('{item}', item.name));
+    showToast(
+      AppStrings.trNow('added_cart'),
+      AppStrings.trNow(
+        'added_cart_msg',
+      ).replaceAll('{n}', '$qty').replaceAll('{item}', item.name),
+    );
     notifyListeners();
   }
 
@@ -863,7 +929,9 @@ class FASTProvider extends ChangeNotifier {
       AppStrings.trNow('payment_confirmed'),
       wasGroupOrder
           ? AppStrings.trNow('part_paid_waiting')
-          : AppStrings.trNow('order_registered_at').replaceAll('{n}', order.restaurantName),
+          : AppStrings.trNow(
+              'order_registered_at',
+            ).replaceAll('{n}', order.restaurantName),
       'success',
     );
     _saveOrders();
@@ -874,12 +942,14 @@ class FASTProvider extends ChangeNotifier {
   Future<void> syncGroupCartToServer() async {
     if (_activeGroupId == null || _cart.isEmpty) return;
     final items = _cart
-        .map((c) => {
-              'menuItemId': c.menuItem.id,
-              'quantity': c.quantity,
-              'selectedOptions': c.selectedOptions,
-              'allergyNotes': c.allergyNotes,
-            })
+        .map(
+          (c) => {
+            'menuItemId': c.menuItem.id,
+            'quantity': c.quantity,
+            'selectedOptions': c.selectedOptions,
+            'allergyNotes': c.allergyNotes,
+          },
+        )
         .toList();
     await _groupService.saveCart(_activeGroupId!, items: items);
   }
@@ -912,13 +982,20 @@ class FASTProvider extends ChangeNotifier {
     }
   }
 
-  void updateOrderTrackingLocally(String orderId, {double? gpsProgress, bool? isReadyAtEntrance}) {
+  void updateOrderTrackingLocally(
+    String orderId, {
+    double? gpsProgress,
+    bool? isReadyAtEntrance,
+  }) {
     final idx = _orders.indexWhere((o) => o.id == orderId);
     if (idx == -1) return;
     if (gpsProgress != null) _orders[idx].gpsProgress = gpsProgress;
-    if (isReadyAtEntrance != null) _orders[idx].isReadyAtEntrance = isReadyAtEntrance;
+    if (isReadyAtEntrance != null) {
+      _orders[idx].isReadyAtEntrance = isReadyAtEntrance;
+    }
     notifyListeners();
   }
+
   Future<void> placeOrder(int walkTimeMinutes) async {
     if (_selectedRestaurant == null || _cart.isEmpty) return;
 
@@ -927,12 +1004,14 @@ class FASTProvider extends ChangeNotifier {
 
     try {
       final items = _cart
-          .map((c) => {
-                'menuItemId': c.menuItem.id,
-                'quantity': c.quantity,
-                'selectedOptions': c.selectedOptions.toString(),
-                'allergyNotes': c.allergyNotes,
-              })
+          .map(
+            (c) => {
+              'menuItemId': c.menuItem.id,
+              'quantity': c.quantity,
+              'selectedOptions': c.selectedOptions.toString(),
+              'allergyNotes': c.allergyNotes,
+            },
+          )
           .toList();
 
       final order = await _orderService.placeOrder(
@@ -948,7 +1027,9 @@ class FASTProvider extends ChangeNotifier {
 
       addNotification(
         AppStrings.trNow('order_placed_notif'),
-        AppStrings.trNow('order_registered_at').replaceAll('{n}', _selectedRestaurant!.name),
+        AppStrings.trNow(
+          'order_registered_at',
+        ).replaceAll('{n}', _selectedRestaurant!.name),
         'success',
       );
 
@@ -989,7 +1070,12 @@ class FASTProvider extends ChangeNotifier {
   }
 
   // Submit reviews via API — no local fallback
-  Future<void> submitRestaurantRating(String orderId, String restaurantId, double rating, String comment) async {
+  Future<void> submitRestaurantRating(
+    String orderId,
+    String restaurantId,
+    double rating,
+    String comment,
+  ) async {
     _error = null;
 
     try {

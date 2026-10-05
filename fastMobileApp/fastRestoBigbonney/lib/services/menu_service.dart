@@ -13,8 +13,14 @@ class MenuService {
         .toList();
   }
 
-  Future<MenuItem> createItem(String restaurantId, Map<String, dynamic> body) async {
-    final data = await _api.post(ApiConfig.menuByRestaurant(restaurantId), body: body);
+  Future<MenuItem> createItem(
+    String restaurantId,
+    Map<String, dynamic> body,
+  ) async {
+    final data = await _api.post(
+      ApiConfig.menuByRestaurant(restaurantId),
+      body: body,
+    );
     return MenuItem.fromApiJson(data as Map<String, dynamic>);
   }
 
@@ -35,7 +41,11 @@ class MenuService {
     return MenuItem.fromApiJson(data as Map<String, dynamic>);
   }
 
-  Future<MenuItemSupplement> addSupplement(String menuItemId, String name, double price) async {
+  Future<MenuItemSupplement> addSupplement(
+    String menuItemId,
+    String name,
+    double price,
+  ) async {
     final data = await _api.post(
       ApiConfig.menuItemSupplements(menuItemId),
       body: {'name': name, 'price': price},
@@ -43,7 +53,11 @@ class MenuService {
     return MenuItemSupplement.fromJson(data as Map<String, dynamic>);
   }
 
-  Future<MenuItemSupplement> updateSupplement(String supplementId, String name, double price) async {
+  Future<MenuItemSupplement> updateSupplement(
+    String supplementId,
+    String name,
+    double price,
+  ) async {
     final data = await _api.patch(
       ApiConfig.menuSupplement(supplementId),
       body: {'name': name, 'price': price},
