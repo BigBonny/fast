@@ -45,9 +45,12 @@ workflows:
         script: |
           cd "fastMobileApp/fastRestoBigbonney"
           # No --build-number: pubspec version code must stay ahead of installed builds
-          flutter build apk --release
+          # --split-per-abi: one ~45 MB APK per CPU arch instead of one ~125 MB
+          # universal APK — smaller download/install, same features. Install
+          # app-arm64-v8a-release.apk on virtually all modern phones.
+          flutter build apk --release --split-per-abi
     artifacts:
-      - "fastMobileApp/fastRestoBigbonney/build/app/outputs/flutter-apk/app-release.apk"
+      - "fastMobileApp/fastRestoBigbonney/build/app/outputs/flutter-apk/app-*-release.apk"
 
   ios-app-store:
     name: FAST iOS App Store
