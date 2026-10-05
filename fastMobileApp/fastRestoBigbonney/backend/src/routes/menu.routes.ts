@@ -14,7 +14,8 @@ router.post('/suggest-prep-time', authenticate, requireRestaurantAccess('STAFF')
 // Restaurant owner
 router.post('/restaurant/:restaurantId/scan', authenticate, requireRestaurantAccess('STAFF'), asyncHandler(scanMenu));
 router.post('/restaurant/:restaurantId', authenticate, requireRestaurantAccess('STAFF'), asyncHandler(createMenuItem));
-router.patch('/:id', authenticate, requireRestaurantAccess('STAFF'), asyncHandler(updateMenuItem));
+// GUEST allowed only to toggle isAvailable (enforced in controller)
+router.patch('/:id', authenticate, requireRestaurantAccess('GUEST'), asyncHandler(updateMenuItem));
 router.delete('/:id', authenticate, requireRestaurantAccess('STAFF'), asyncHandler(deleteMenuItem));
 
 // Supplements

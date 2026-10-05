@@ -22,6 +22,7 @@ import 'screens/role_selection_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/resto/onboarding_screen.dart' as resto_onboarding;
 import 'screens/resto/kitchen_screen.dart';
+import 'screens/resto/guest_menu_shell.dart';
 import 'screens/group_screen.dart';
 import 'screens/livreur_screen.dart';
 import 'screens/driver_account_screen.dart';
@@ -214,8 +215,12 @@ class _FASTAppState extends State<FASTApp> with WidgetsBindingObserver {
     final auth = context.watch<AuthProvider>();
     final fast = context.watch<FASTProvider>();
     if (auth.isLoggedIn) {
-      // Cook/guest accounts land straight on the kitchen board —
-      // no stats, no payments, no settings.
+      // Staff accounts land on the kitchen board — no stats, no
+      // payments, no settings. Guest accounts land on the menu screen
+      // where they can only mark dishes sold out / available.
+      if (auth.user?.role == 'GUEST') {
+        return const GuestMenuShell();
+      }
       if (auth.user?.isStaff ?? false) {
         return const KitchenScreen();
       }
