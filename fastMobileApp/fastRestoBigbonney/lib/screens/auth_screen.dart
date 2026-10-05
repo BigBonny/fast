@@ -314,9 +314,7 @@ class _AuthScreenState extends State<AuthScreen>
                 );
               },
             ),
-            if (widget.initialRole != 'RESTAURANT' &&
-                widget.initialRole != 'LIVREUR')
-              _buildGoogleButton(),
+            _buildGoogleButton(),
           ],
         ),
       ),
@@ -588,6 +586,7 @@ class _AuthScreenState extends State<AuthScreen>
                 );
               },
             ),
+            _buildGoogleButton(),
           ],
         ),
       ),

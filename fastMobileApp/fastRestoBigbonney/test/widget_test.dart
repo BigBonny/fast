@@ -51,6 +51,51 @@ void main() {
     expect(user.staffRole, 'GUEST');
   });
 
+  test('Favorites are scoped per account, not shared on one device', () async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    // Seed the pre-fix device-wide key — user A inherits it once via the
+    // migration, then it must be removed so user B never sees it.
+    SharedPreferences.setMockInitialValues({
+      'fast_favorites': '["resto-legacy"]',
+    });
+    const settle = Duration(milliseconds: 50);
+    final provider = FASTProvider();
+    await Future<void>.delayed(settle);
+
+    // Log in as user A — migrates the legacy device list once.
+    provider.resetSession();
+    provider.syncFromAuth(
+        id: 'user-a', name: 'A', email: 'a@test.dev', phone: '');
+    await Future<void>.delayed(settle);
+    expect(provider.isFavorite('resto-legacy'), isTrue);
+
+    provider.toggleFavorite('resto-a');
+    await Future<void>.delayed(settle);
+    expect(provider.isFavorite('resto-a'), isTrue);
+
+    // Log in as user B on the same device — must NOT see A's favorites
+    // or the already-migrated legacy list.
+    provider.resetSession();
+    provider.syncFromAuth(
+        id: 'user-b', name: 'B', email: 'b@test.dev', phone: '');
+    await Future<void>.delayed(settle);
+    expect(provider.isFavorite('resto-a'), isFalse);
+    expect(provider.isFavorite('resto-legacy'), isFalse);
+
+    // Back to user A — their list is intact.
+    provider.resetSession();
+    provider.syncFromAuth(
+        id: 'user-a', name: 'A', email: 'a@test.dev', phone: '');
+    await Future<void>.delayed(settle);
+    expect(provider.isFavorite('resto-a'), isTrue);
+    expect(provider.isFavorite('resto-legacy'), isTrue);
+
+    // The legacy device-wide key was migrated away, not shared.
+    expect(
+        (await SharedPreferences.getInstance()).getString('fast_favorites'),
+        isNull);
+  });
+
   testWidgets('Translations can be read from button callbacks', (tester) async {
     SharedPreferences.setMockInitialValues({});
     String? label;
