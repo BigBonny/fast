@@ -59,11 +59,20 @@ export const updateMenuItem = async (req: Request, res: Response): Promise<void>
     return;
   }
 
+  // Guest staff can ONLY toggle availability (sold out) — every other
+  // field is stripped so nothing else can be modified.
+  const isGuest = req.user!.role === 'GUEST';
+  const patchData: any = isGuest ? { isAvailable: data.isAvailable } : { ...data };
+  if (isGuest && typeof data.isAvailable !== 'boolean') {
+    res.status(403).json({ error: 'Accès invité : disponibilité uniquement' });
+    return;
+  }
+
   const updated = await prisma.menuItem.update({
     where: { id },
     data: {
-      ...data,
-      dietaryTags: data.dietaryTags
+      ...patchData,
+      dietaryTags: !isGuest && data.dietaryTags
         ? {
             deleteMany: {},
             create: data.dietaryTags.map((opt) => ({ option: opt as any })),

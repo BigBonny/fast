@@ -118,8 +118,8 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
               // Role picker
               Row(
                 children: [
-                  _roleChip(ctx, setSheet, 'GUEST', tr(context, 'cook'),
-                      tr(context, 'board_only'), role, (r) => role = r),
+                  _roleChip(ctx, setSheet, 'GUEST', tr(context, 'guest_lbl'),
+                      tr(context, 'menu_soldout_sub'), role, (r) => role = r),
                   const SizedBox(width: 8),
                   _roleChip(ctx, setSheet, 'STAFF', tr(context, 'manager'),
                       tr(context, 'orders_menu'), role, (r) => role = r),
@@ -356,7 +356,9 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(
-                                    isGuest ? 'CUISINIER' : 'MANAGER',
+                                    isGuest
+                                        ? tr(context, 'guest_badge')
+                                        : 'MANAGER',
                                     style: TextStyle(
                                         color: isGuest
                                             ? FASTPro.magenta

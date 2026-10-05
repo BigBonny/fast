@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../resto_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../models.dart';
 import 'menu_ai_scanner_screen.dart';
 import 'menu_item_edit_screen.dart';
@@ -103,6 +104,9 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
   Widget build(BuildContext context) {
     return Consumer<RestoProvider>(
       builder: (context, prov, _) {
+        // GUEST staff accounts can only toggle availability (sold out).
+        final isGuest =
+            context.watch<AuthProvider>().user?.role == 'GUEST';
         final allItems = prov.menu;
         final categories = ['all', ...{for (final m in allItems) m.category}];
         final filtered = _filter == 'all'
@@ -111,21 +115,23 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
 
         return Scaffold(
           backgroundColor: Colors.transparent,
-          floatingActionButton: FloatingActionButton.extended(
-            onPressed: () => _showAddOptions(context),
-            backgroundColor: const Color(0xFF00C8B3),
-            icon: const Icon(Icons.add, color: Colors.black),
-            label: Text(tr(context, 'add'),
-                style: TextStyle(
-                    color: Colors.black, fontWeight: FontWeight.bold)),
-          ),
+          floatingActionButton: isGuest
+              ? null
+              : FloatingActionButton.extended(
+                  onPressed: () => _showAddOptions(context),
+                  backgroundColor: const Color(0xFF00C8B3),
+                  icon: const Icon(Icons.add, color: Colors.black),
+                  label: Text(tr(context, 'add'),
+                      style: TextStyle(
+                          color: Colors.black, fontWeight: FontWeight.bold)),
+                ),
           body: prov.menuLoading
               ? const Center(
                   child: CircularProgressIndicator(
                       color: Color(0xFF00C8B3)))
               : allItems.isEmpty
-                  ? _buildEmpty(context)
-                  : _buildList(context, prov, categories, filtered),
+                  ? _buildEmpty(context, isGuest)
+                  : _buildList(context, prov, categories, filtered, isGuest),
         );
       },
     );
@@ -247,7 +253,7 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
     );
   }
 
-  Widget _buildEmpty(BuildContext context) {
+  Widget _buildEmpty(BuildContext context, bool isGuest) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -261,7 +267,8 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
                 SizedBox(height: 8), Text(tr(context, 'first_dish'),
               style: TextStyle(color: context.fast.t3, fontSize: 13)),
                 SizedBox(height: 24),
-          ElevatedButton.icon(
+          if (!isGuest)
+            ElevatedButton.icon(
             onPressed: () => _openEdit(context),
             style: ElevatedButton.styleFrom(
               backgroundColor: Color(0xFF00C8B3),
@@ -284,6 +291,7 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
     RestoProvider prov,
     List<String> categories,
     List<MenuItem> items,
+    bool isGuest,
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -357,7 +365,8 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
           child: ListView.builder(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
             itemCount: items.length,
-            itemBuilder: (_, i) => _buildCard(context, prov, items[i]),
+            itemBuilder: (_, i) =>
+                _buildCard(context, prov, items[i], isGuest),
           ),
         ),
       ],
@@ -365,7 +374,7 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
   }
 
   Widget _buildCard(
-      BuildContext context, RestoProvider prov, MenuItem item) {
+      BuildContext context, RestoProvider prov, MenuItem item, bool isGuest) {
     return Container(
       margin: EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
@@ -379,21 +388,52 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
       ),
       child: Row(
         children: [
-          // Image
-          ClipRRect(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(10),
-              bottomLeft: Radius.circular(10),
-            ),
-            child: item.image.isNotEmpty
-                ? FastImage(
-                    item.image,
-                    width: 72,
-                    height: 72,
-                    fit: BoxFit.cover,
-                    placeholder: _imagePlaceholder(),
-                  )
-                : _imagePlaceholder(),
+          // Image + prep-time badge
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(10),
+                  bottomLeft: Radius.circular(10),
+                ),
+                child: item.image.isNotEmpty
+                    ? FastImage(
+                        item.image,
+                        width: 72,
+                        height: 72,
+                        fit: BoxFit.cover,
+                        placeholder: _imagePlaceholder(),
+                      )
+                    : _imagePlaceholder(),
+              ),
+              Positioned(
+                bottom: 4,
+                left: 4,
+                child: GestureDetector(
+                  onTap: isGuest ? null : () => _openEdit(context, item: item),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 5, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: item.prepTime > 0
+                          ? const Color(0xFF00C8B3)
+                          : context.fast.cardHigh.withValues(alpha: 0.85),
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: Text(
+                      item.prepTime > 0 ? '~${item.prepTime}m' : '+⏱',
+                      style: TextStyle(
+                        color: item.prepTime > 0
+                            ? Colors.black
+                            : context.fast.t3,
+                        fontSize: 9,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
 
           // Info
@@ -480,7 +520,8 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
                     ),
                   ),
                 ),
-                Row(
+                if (!isGuest)
+                  Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(

@@ -274,50 +274,32 @@ class _RestoMainShellState extends State<RestoMainShell> {
               Expanded(child: _pages[_currentIndex]),
             ],
           ),
-          bottomNavigationBar: BottomNavigationBar(
-            currentIndex: _currentIndex,
-            onTap: (index) => setState(() => _currentIndex = index),
-            backgroundColor: FASTPro.header,
-            selectedItemColor: FASTPro.teal,
-            unselectedItemColor: const Color(0xFF94A3B8),
-            type: BottomNavigationBarType.fixed,
-            items: [
-              BottomNavigationBarItem(
-                icon: KeyedSubtree(
-                  key: _ordersKey,
-                  child: const Icon(Icons.receipt_long),
-                ),
-                label: tr(context, 'nav_orders'),
+          bottomNavigationBar: Container(
+            decoration: const BoxDecoration(
+              color: FASTPro.header,
+              border: Border(
+                top: BorderSide(color: Color(0xFF1E293B), width: 1),
               ),
-              BottomNavigationBarItem(
-                icon: KeyedSubtree(
-                  key: _menuKey,
-                  child: const Icon(Icons.restaurant_menu),
+            ),
+            child: SafeArea(
+              top: false,
+              child: SizedBox(
+                height: 64,
+                child: Row(
+                  children: [
+                    _navItem(0, Icons.receipt_long, tr(context, 'nav_orders'),
+                        key: _ordersKey),
+                    _navItem(1, Icons.restaurant_menu, tr(context, 'menu'),
+                        key: _menuKey),
+                    _rushItem(provider),
+                    _navItem(3, Icons.settings, tr(context, 'nav_settings'),
+                        key: _settingsKey),
+                    _navItem(4, Icons.storefront, tr(context, 'nav_profile'),
+                        key: _profileKey),
+                  ],
                 ),
-                label: tr(context, 'menu'),
               ),
-              BottomNavigationBarItem(
-                icon: KeyedSubtree(
-                  key: _statsKey,
-                  child: const Icon(Icons.bar_chart),
-                ),
-                label: tr(context, 'nav_stats'),
-              ),
-              BottomNavigationBarItem(
-                icon: KeyedSubtree(
-                  key: _settingsKey,
-                  child: const Icon(Icons.settings),
-                ),
-                label: tr(context, 'nav_settings'),
-              ),
-              BottomNavigationBarItem(
-                icon: KeyedSubtree(
-                  key: _profileKey,
-                  child: const Icon(Icons.storefront),
-                ),
-                label: tr(context, 'nav_profile'),
-              ),
-            ],
+            ),
           ),
         ),
         if (_showTutorial)
@@ -331,6 +313,85 @@ class _RestoMainShellState extends State<RestoMainShell> {
             onSkip: _finishTutorial,
           ),
       ],
+    );
+  }
+
+  Widget _navItem(int index, IconData icon, String label, {Key? key}) {
+    final active = _currentIndex == index;
+    return Expanded(
+      child: KeyedSubtree(
+        key: key,
+        child: InkWell(
+          onTap: () => setState(() => _currentIndex = index),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon,
+                  size: 22,
+                  color: active ? FASTPro.teal : const Color(0xFF94A3B8)),
+              const SizedBox(height: 3),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: active ? FontWeight.w800 : FontWeight.w500,
+                  color: active ? FASTPro.teal : const Color(0xFF94A3B8),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Big red warning-style button — toggles Rush Mode instantly.
+  Widget _rushItem(RestoProvider provider) {
+    final active = provider.isRushMode;
+    return Expanded(
+      child: KeyedSubtree(
+        key: _statsKey,
+        child: InkWell(
+          onTap: () => provider.toggleRushMode(),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: 40,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: active
+                      ? const Color(0xFFEF4444)
+                      : const Color(0xFFEF4444).withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                      color: const Color(0xFFEF4444), width: 1.5),
+                ),
+                child: Icon(
+                  Icons.warning_amber_rounded,
+                  size: 18,
+                  color: active ? Colors.white : const Color(0xFFEF4444),
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                'RUSH',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1,
+                  color: active
+                      ? const Color(0xFFEF4444)
+                      : const Color(0xFF94A3B8),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
