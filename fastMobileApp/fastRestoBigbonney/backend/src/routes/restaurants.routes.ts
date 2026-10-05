@@ -19,7 +19,7 @@ router.get('/', asyncHandler(listRestaurants));
 router.get('/:id', asyncHandler(getRestaurant));
 
 // Restaurant owner
-router.get('/account/mine', authenticate, requireRestaurantAccess('GUEST'), asyncHandler(getMyRestaurant));
+router.get('/account/mine', authenticate, requireRestaurantAccess('STAFF'), asyncHandler(getMyRestaurant));
 router.post('/', authenticate, requireRole('RESTAURANT'), asyncHandler(createRestaurant));
 router.patch('/:id', authenticate, requireRole('RESTAURANT'), asyncHandler(updateRestaurant));
 router.post('/toggle-rush', authenticate, requireRestaurantAccess('STAFF'), asyncHandler(toggleRushMode));

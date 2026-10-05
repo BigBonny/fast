@@ -5,6 +5,7 @@
 // the active ThemeMode. Brand colors are theme-independent constants.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 /// Semantic color set that flips with the active brightness.
 class FASTShades {
@@ -201,6 +202,7 @@ class FASTTheme {
       ),
       textTheme: textTheme,
       appBarTheme: AppBarTheme(
+        systemOverlayStyle: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
         backgroundColor: sh.bg,
         foregroundColor: sh.t1,
         elevation: 0,

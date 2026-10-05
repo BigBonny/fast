@@ -1,6 +1,9 @@
 class ApiConfig {
   // Production backend (Vercel)
-  static const String baseUrl = 'https://backend-six-iota-69.vercel.app/api';
+  static const String baseUrl = String.fromEnvironment(
+    'FAST_API_URL',
+    defaultValue: 'https://backend-six-iota-69.vercel.app/api',
+  );
   static Duration timeout = const Duration(seconds: 30);
 
   // Auth
@@ -23,6 +26,7 @@ class ApiConfig {
   // Menu
   static String menuByRestaurant(String id) => '/menu/restaurant/$id';
   static String menuItem(String id) => '/menu/$id';
+  static String managedMenuByRestaurant(String id) => '/menu/restaurant/$id/manage';
   static String scanMenu(String restaurantId) =>
       '/menu/restaurant/$restaurantId/scan';
   static String menuItemSupplements(String menuItemId) =>
@@ -47,6 +51,11 @@ class ApiConfig {
   static const String stripeConnectAccountLink =
       '/payments/connect/account-link';
   static const String stripeConnectStatus = '/payments/connect/status';
+  static const String paymentMethods = '/payments/methods';
+  static const String setupPaymentMethod = '/payments/methods/setup';
+  static String paymentMethod(String id) => '/payments/methods/$id';
+  static const String addresses = '/addresses';
+  static String savedAddress(String id) => '/addresses/$id';
 
   // Reviews
   static String reviewsByRestaurant(String id) => '/reviews/restaurant/$id';

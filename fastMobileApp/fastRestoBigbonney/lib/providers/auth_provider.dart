@@ -17,6 +17,7 @@ class AuthProvider extends ChangeNotifier {
   bool get isLoggedIn => _state == AuthState.authenticated && _user != null;
   bool get isRestaurant => _user?.isRestaurant ?? false;
   bool get isLivreur => _user?.isLivreur ?? false;
+  bool get isBusy => _state == AuthState.loading || _isLoggingOut;
 
   /// Try auto-login on app start using stored token
   Future<void> autoLogin() async {
@@ -157,32 +158,35 @@ class AuthProvider extends ChangeNotifier {
   Future<void> logout() async {
     if (_isLoggingOut) return;
     _isLoggingOut = true;
-    _state = AuthState.loading;
     notifyListeners();
 
     // Fire-and-forget the backend logout with a short timeout.
     // We don't want to block the user if the network is slow.
+    final revoke = AuthService().logout().timeout(
+      const Duration(seconds: 5),
+      onTimeout: () {},
+    ).catchError((_) {});
     try {
-      await AuthService().logout().timeout(
-        const Duration(seconds: 5),
-        onTimeout: () {},
-      );
-    } catch (_) {
-      // Proceed with local logout even if API call fails
+      // Clear only the token, not all secure storage
+      await ApiClient().clearSecureData();
+      _user = null;
+      _state = AuthState.unauthenticated;
+      _error = null;
+      notifyListeners();
+      try {
+        await revoke;
+      } catch (_) {
+        // Proceed with local logout even if API call fails
+      }
+
+      // Forget the Google account too so the next login shows the picker
+      try {
+        await _googleSignIn.signOut().timeout(const Duration(seconds: 2));
+      } catch (_) {}
+    } finally {
+      _isLoggingOut = false;
+      notifyListeners();
     }
-
-    // Forget the Google account too so the next login shows the picker
-    try {
-      await _googleSignIn.signOut();
-    } catch (_) {}
-
-    // Clear only the token, not all secure storage
-    await ApiClient().clearSecureData();
-    _user = null;
-    _state = AuthState.unauthenticated;
-    _error = null;
-    _isLoggingOut = false;
-    notifyListeners();
   }
 
   Future<bool> deleteAccount() async {

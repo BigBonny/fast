@@ -3,6 +3,7 @@ import { prisma } from '../services/prisma';
 import { createMenuItemSchema, updateMenuItemSchema } from '../utils/validation';
 import { env } from '../config/env';
 import { getRestaurantIdForUser } from '../middleware/auth';
+import { parseOcrResponse } from '../utils/menuOcr';
 
 export const listMenuItems = async (req: Request, res: Response): Promise<void> => {
   const restaurantId = req.params.restaurantId as string;
@@ -13,6 +14,20 @@ export const listMenuItems = async (req: Request, res: Response): Promise<void> 
     orderBy: { category: 'asc' },
   });
 
+  res.json(items);
+};
+
+export const listManagedMenuItems = async (req: Request, res: Response): Promise<void> => {
+  const restaurantId = req.params.restaurantId as string;
+  if (await getRestaurantIdForUser(req.user!) !== restaurantId) {
+    res.status(403).json({ error: 'Accès refusé' });
+    return;
+  }
+  const items = await prisma.menuItem.findMany({
+    where: { restaurantId },
+    include: { dietaryTags: true, supplements: true },
+    orderBy: [{ category: 'asc' }, { name: 'asc' }],
+  });
   res.json(items);
 };
 
@@ -61,7 +76,7 @@ export const updateMenuItem = async (req: Request, res: Response): Promise<void>
 
   // Guest staff can ONLY toggle availability (sold out) — every other
   // field is stripped so nothing else can be modified.
-  const isGuest = req.user!.role === 'GUEST';
+  const isGuest = req.user!.role === 'GUEST' || req.user!.staffRole === 'GUEST';
   const patchData: any = isGuest ? { isAvailable: data.isAvailable } : { ...data };
   if (isGuest && typeof data.isAvailable !== 'boolean') {
     res.status(403).json({ error: 'Accès invité : disponibilité uniquement' });
@@ -214,6 +229,7 @@ async function geminiGenerate(
     `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
     {
       method: 'POST',
+      signal: AbortSignal.timeout(15000),
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts }],
@@ -270,6 +286,7 @@ async function parseMenuImageWithPixtral(base64Image: string): Promise<Array<{ n
 
   const response = await fetch("https://api.mistral.ai/v1/chat/completions", {
     method: "POST",
+    signal: AbortSignal.timeout(15000),
     headers: {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${apiKey}`,
@@ -299,9 +316,7 @@ async function parseMenuImageWithPixtral(base64Image: string): Promise<Array<{ n
 
   const data = await response.json() as any;
   const content = data.choices[0].message.content;
-  console.log('[scanMenu] Mistral output:', content);
-  const parsed = JSON.parse(content);
-  return parsed.items || [];
+  return parseOcrResponse(content);
 }
 
 export const scanMenu = async (req: Request, res: Response): Promise<void> => {
@@ -325,8 +340,16 @@ export const scanMenu = async (req: Request, res: Response): Promise<void> => {
       : imageBase64
         ? [imageBase64]
         : [];
-  if (images.length === 0) {
+  if (images.length === 0 || images.some(image => typeof image !== 'string' || !image.trim())) {
     res.status(400).json({ error: 'imageBase64 requis' });
+    return;
+  }
+  if (images.reduce((size, image) => size + image.length, 0) > 4000000) {
+    res.status(413).json({ code: 'SCAN_IMAGE_TOO_LARGE', error: 'Images trop volumineuses.' });
+    return;
+  }
+  if (!env.geminiApiKey && !env.mistralApiKey) {
+    res.status(503).json({ code: 'SCAN_UNAVAILABLE', error: 'Le service de reconnaissance des menus n’est pas configuré.' });
     return;
   }
 
@@ -337,14 +360,18 @@ export const scanMenu = async (req: Request, res: Response): Promise<void> => {
     if (env.geminiApiKey) {
       try {
         const content = await geminiGenerate(menuPrompt, img);
-        const items = (JSON.parse(content).items || []) as never[];
+        const items = parseOcrResponse(content);
         if (items.length > 0) return items;
       } catch (primaryErr) {
-        console.log('[scanMenu] primary Gemini failed, retrying:', (primaryErr as Error).message);
+        console.log('[scanMenu] primary Gemini failed, retrying');
       }
       // Empty result or provider error — retry once with the flash model.
-      const content = await geminiGenerate(menuPrompt, img, GEMINI_RETRY_MODEL);
-      return (JSON.parse(content).items || []) as never[];
+      try {
+        const content = await geminiGenerate(menuPrompt, img, GEMINI_RETRY_MODEL);
+        return parseOcrResponse(content);
+      } catch (error) {
+        if (!env.mistralApiKey) throw error;
+      }
     }
     return parseMenuImageWithPixtral(img);
   };
@@ -368,11 +395,11 @@ export const scanMenu = async (req: Request, res: Response): Promise<void> => {
         allItems.push(...fallback);
         console.log('[scanMenu] Mistral fallback items:', fallback.length);
       } catch {
-        res.status(500).json({ error: 'Échec de la reconnaissance OCR. Veuillez réessayer avec une image plus nette.' });
+        res.status(503).json({ code: 'SCAN_UNAVAILABLE', error: 'Le service de reconnaissance des menus est temporairement indisponible.' });
         return;
       }
     } else {
-      res.status(500).json({ error: 'Échec de la reconnaissance OCR. Veuillez réessayer avec une image plus nette.' });
+      res.status(503).json({ code: 'SCAN_UNAVAILABLE', error: 'Le service de reconnaissance des menus est temporairement indisponible.' });
       return;
     }
   } else if (allItems.length === 0 && env.mistralApiKey) {
@@ -402,7 +429,7 @@ export const scanMenu = async (req: Request, res: Response): Promise<void> => {
   console.log('[scanMenu] frames:', images.length, 'merged items:', parsedItems.length);
 
   if (parsedItems.length === 0) {
-    res.status(400).json({ error: 'Aucun plat détecté. Assurez-vous que les prix sont bien lisibles (ex: 12.50€).' });
+    res.status(422).json({ code: 'SCAN_NO_ITEMS', error: 'Aucun plat lisible détecté. Filmez lentement et gardez les noms et prix dans le cadre.' });
     return;
   }
 
@@ -436,13 +463,14 @@ export const scanMenu = async (req: Request, res: Response): Promise<void> => {
         include: { dietaryTags: true },
       }));
     } catch (dbErr) {
-      console.error('[scanMenu] menuItem.create failed for', item.name, dbErr);
+      console.error('[scanMenu] database insert failed', { code: (dbErr as { code?: string }).code ?? 'UNKNOWN', restaurantId });
       failed.push(item.name);
     }
   }
 
   if (created.length === 0) {
     res.status(500).json({
+      code: 'SCAN_SAVE_FAILED',
       error: 'Erreur lors de l\'enregistrement des plats détectés. Réessayez.',
     });
     return;

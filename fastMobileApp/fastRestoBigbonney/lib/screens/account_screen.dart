@@ -8,6 +8,8 @@ import '../providers/auth_provider.dart';
 import '../widgets/notification_center.dart';
 import '../theme.dart';
 import '../l10n/tr.dart';
+import 'saved_addresses_screen.dart';
+import 'saved_cards_screen.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -420,7 +422,10 @@ class _AccountScreenState extends State<AccountScreen>
               border: Border.all(color: context.fast.line),
             ),
             child: ListTile(
-              onTap: () => _showPaymentMethodsInfo(context),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SavedCardsScreen()),
+              ),
               leading: Icon(
                 Icons.credit_card,
                 color: Color(0xFFF59E0B),
@@ -1181,106 +1186,12 @@ class _AccountScreenState extends State<AccountScreen>
 
   // ─── Adresses Tab ────────────────────────────────────────────────────────────
   Widget _buildAdressesTab() {
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: context.fast.card,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: context.fast.line),
-            ),
-            child: Center(
-              child: Column(
-                children: [
-                  Icon(
-                    Icons.location_on_outlined,
-                    size: 40,
-                    color: context.fast.faint,
-                  ),
-                  SizedBox(height: 12),
-                  Text(
-                    tr(context, 'no_addresses'),
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      color: context.fast.t2,
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    tr(context, 'addresses_hint'),
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: context.fast.t3,
-                      height: 1.5,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+    return const SavedAddressesScreen(embedded: true);
   }
 
   // ─── Notifs Tab ──────────────────────────────────────────────────────────────
   Widget _buildNotifsTab(FASTProvider provider) {
     return NotificationCenterList(provider: provider);
-  }
-
-  // ─── Payment methods info ───────────────────────────────────────────────────
-  void _showPaymentMethodsInfo(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: context.fast.card,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: context.fast.line),
-        ),
-        title: Row(
-          children: [
-            Icon(Icons.credit_card, color: Color(0xFFF59E0B), size: 20),
-            SizedBox(width: 8),
-            Text(
-              tr(context, 'payment_methods'),
-              style: TextStyle(
-                color: context.fast.t1,
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
-        content: Text(
-          tr(context, 'stripe_secure') + tr(context, 'stripe_info'),
-          style: TextStyle(color: context.fast.t2, fontSize: 12, height: 1.5),
-        ),
-        actions: [
-          ElevatedButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFFF59E0B),
-              foregroundColor: FASTBrand.onAmber,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              elevation: 0,
-            ),
-            child: Text(
-              tr(context, 'understood'),
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   // ─── Change password dialog ─────────────────────────────────────────────────

@@ -83,7 +83,7 @@ export const getOrder = async (req: Request, res: Response): Promise<void> => {
   const isOwner = order.userId === req.user!.userId;
   const isRestaurantOwner = order.restaurant.ownerId === req.user!.userId;
   const userRestaurantId = await getRestaurantIdForUser(req.user!);
-  const isStaff = userRestaurantId === order.restaurantId;
+  const isStaff = req.user!.role === 'STAFF' && req.user!.staffRole !== 'GUEST' && userRestaurantId === order.restaurantId;
   if (!isOwner && !isRestaurantOwner && !isStaff) {
     res.status(403).json({ error: 'Accès refusé' });
     return;

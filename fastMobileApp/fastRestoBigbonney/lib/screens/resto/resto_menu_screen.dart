@@ -129,7 +129,7 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
     return Consumer<RestoProvider>(
       builder: (context, prov, _) {
         // GUEST staff accounts can only toggle availability (sold out).
-        final isGuest = context.watch<AuthProvider>().user?.role == 'GUEST';
+        final isGuest = context.watch<AuthProvider>().user?.isGuest ?? false;
         final allItems = prov.menu;
         final categories = [
           'all',
@@ -470,7 +470,7 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Text(
-            '${items.length} plat${items.length == 1 ? '' : 's'}',
+            tr(context, 'dishes_count').replaceAll('{n}', '${items.length}'),
             style: TextStyle(color: context.fast.t3, fontSize: 12),
           ),
         ),

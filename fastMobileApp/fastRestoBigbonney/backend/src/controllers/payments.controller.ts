@@ -5,6 +5,7 @@ import { prisma } from '../services/prisma';
 import { placeOrderSchema } from '../utils/validation';
 import { computeCartPricing } from '../utils/cartPricing';
 import { generatePickupToken } from '../utils/pickupToken';
+import { getStripeCustomerId } from './payment_methods.controller';
 import {
   distanceKm,
   driverGainFromDeliveryFee,
@@ -328,27 +329,14 @@ export const createCheckoutSession = async (req: Request, res: Response): Promis
 
     // Reuse the user's Stripe Customer (matched by email) so saved cards
     // resurface at checkout; Stripe creates one on the first payment.
-    const user = await prisma.user.findUnique({
-      where: { id: req.user!.userId },
-      select: { email: true },
-    });
-    let stripeCustomerId: string | null = null;
-    if (user?.email) {
-      const existing = await stripe.customers.list({ email: user.email, limit: 1 });
-      stripeCustomerId = existing.data[0]?.id ?? null;
-    }
+    const stripeCustomerId = await getStripeCustomerId(stripe, req.user!.userId, true);
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       currency: env.stripeCurrency,
-      ...(stripeCustomerId
-        ? { customer: stripeCustomerId }
-        : {
-            customer_email: user?.email,
-            customer_creation: 'always' as const,
-          }),
+      customer: stripeCustomerId!,
       saved_payment_method_options: {
-        allow_redisplay_filters: ['always'],
+        allow_redisplay_filters: ['always', 'limited', 'unspecified'],
       },
       client_reference_id: checkout.id,
       metadata: {
@@ -440,11 +428,15 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
     const signature = req.headers['stripe-signature'];
     let event: Stripe.Event;
 
-    if (env.stripeWebhookSecret && signature) {
-      event = stripe.webhooks.constructEvent(req.body, signature, env.stripeWebhookSecret);
-    } else {
-      event = JSON.parse(Buffer.isBuffer(req.body) ? req.body.toString('utf8') : String(req.body));
+    if (!env.stripeWebhookSecret) {
+      res.status(503).json({ code: 'PAYMENT_UNAVAILABLE', error: 'Webhook Stripe non configuré' });
+      return;
     }
+    if (typeof signature !== 'string') {
+      res.status(400).json({ error: 'Signature Stripe requise' });
+      return;
+    }
+    event = stripe.webhooks.constructEvent(req.body, signature, env.stripeWebhookSecret);
 
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session;

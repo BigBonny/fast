@@ -27,6 +27,7 @@ export const env = {
   stripeSecretKey: process.env.STRIPE_SECRET_KEY || '',
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
   stripeCurrency: process.env.STRIPE_CURRENCY || 'eur',
+  publicBaseUrl: (process.env.PUBLIC_BASE_URL || 'https://backend-six-iota-69.vercel.app').replace(/\/$/, ''),
   stripeSuccessUrl: process.env.STRIPE_SUCCESS_URL || 'https://backend-lovat-xi-0axv990rct.vercel.app/api/payments/checkout/success?session_id={CHECKOUT_SESSION_ID}',
   stripeCancelUrl: process.env.STRIPE_CANCEL_URL || 'https://backend-lovat-xi-0axv990rct.vercel.app/api/payments/checkout/cancel',
 };

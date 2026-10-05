@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:camera/camera.dart';
+import 'package:geolocator/geolocator.dart' show Geolocator;
+import '../../api/api_exceptions.dart';
 import 'package:video_thumbnail/video_thumbnail.dart' as vt;
 import '../../resto_provider.dart';
 import '../../services/restaurant_service.dart';
@@ -29,6 +31,27 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
   Timer? _recordTimer;
   int _recordElapsed = 0;
   static const _maxRecordSeconds = 8;
+  static const _maxPayloadCharacters = 3600000;
+  final _recordWatch = Stopwatch();
+  bool _startingRecording = false;
+  bool _stoppingRecording = false;
+  bool _stopRequested = false;
+  bool _initializing = false;
+  bool _cameraPermissionDenied = false;
+  Timer? _returnTimer;
+
+  void _fail(Object error, {bool camera = false}) {
+    if (!mounted) return;
+    final denied = error is CameraException && error.code.contains('Denied');
+    final message = error is ApiException ? error.message
+        : tr(context, denied ? 'camera_permission_hint'
+            : camera ? 'camera_unavailable' : 'scan_failed');
+    setState(() {
+      _state = -1;
+      _cameraPermissionDenied = denied;
+      _errorMessage = message;
+    });
+  }
 
   @override
   void initState() {
@@ -37,11 +60,21 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
   }
 
   Future<void> _initializeCamera() async {
+    if (_initializing || !mounted) return;
+    _initializing = true;
+    setState(() {
+      _state = 0;
+      _cameraPermissionDenied = false;
+      _isCameraInitialized = false;
+    });
     try {
+      await _cameraController?.dispose();
+      _cameraController = null;
+      if (!mounted) return;
       _cameras = await availableCameras();
       if (_cameras.isEmpty) {
         debugPrint('[Scanner] No cameras found.');
-        return;
+        throw CameraException('CameraUnavailable', 'No camera');
       }
 
       // Initialize the back camera
@@ -52,11 +85,11 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
 
       _cameraController = CameraController(
         backCamera,
-        ResolutionPreset.medium,
+        ResolutionPreset.high,
         enableAudio: false,
       );
 
-      await _cameraController!.initialize();
+      await _cameraController!.initialize().timeout(const Duration(seconds: 15));
       if (mounted) {
         setState(() {
           _isCameraInitialized = true;
@@ -64,12 +97,17 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
       }
     } catch (e) {
       debugPrint('[Scanner] Camera initialization error: $e');
+      _fail(e, camera: true);
+    } finally {
+      _initializing = false;
     }
   }
 
   @override
   void dispose() {
     _recordTimer?.cancel();
+    _returnTimer?.cancel();
+    _recordWatch.stop();
     _cameraController?.dispose();
     super.dispose();
   }
@@ -83,15 +121,23 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
   Future<void> _startVideoRecording() async {
     if (_cameraController == null ||
         !_cameraController!.value.isInitialized ||
-        _isRecording) {
+        _isRecording || _startingRecording || _stoppingRecording || _state != 0) {
       return;
     }
+    _startingRecording = true;
+    _stopRequested = false;
     try {
       await _cameraController!.startVideoRecording();
+      if (!mounted) return;
+      _recordWatch..reset()..start();
       setState(() {
         _state = 3;
         _recordElapsed = 0;
       });
+      if (_stopRequested) {
+        await _stopVideoAndProcess();
+        return;
+      }
       _recordTimer = Timer.periodic(const Duration(seconds: 1), (t) {
         if (!mounted) return;
         setState(() => _recordElapsed++);
@@ -101,38 +147,38 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
       });
     } catch (e) {
       debugPrint('[Scanner] Video start error: $e');
+      _fail(e, camera: true);
+    } finally {
+      _startingRecording = false;
     }
-  }
-
-  Future<void> _toggleVideoRecording() async {
-    if (_isRecording) {
-      await _stopVideoAndProcess();
-      return;
-    }
-    await _startVideoRecording();
   }
 
   bool get _isRecording => _state == 3;
 
   Future<void> _stopVideoAndProcess() async {
+    if (_startingRecording && !_isRecording) {
+      _stopRequested = true;
+      return;
+    }
+    if (_stoppingRecording || !_isRecording || !mounted) return;
+    _stoppingRecording = true;
     _recordTimer?.cancel();
     _recordTimer = null;
+    _recordWatch.stop();
+    final durationMs = _recordWatch.elapsedMilliseconds.clamp(100, 8000);
+    setState(() => _state = 1);
     try {
       final video = await _cameraController!.stopVideoRecording();
       if (!mounted) return;
-      setState(() => _state = 1);
-      await _processVideo(video);
+      await _processVideo(video, durationMs: durationMs);
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          _state = -1;
-          _errorMessage = tr(context, 'video_err').replaceAll('{n}', '$e');
-        });
-      }
+      _fail(e);
+    } finally {
+      _stoppingRecording = false;
     }
   }
 
-  Future<void> _processVideo(XFile video) async {
+  Future<void> _processVideo(XFile video, {required int durationMs}) async {
     final restoProvider = Provider.of<RestoProvider>(context, listen: false);
     final restaurantId = restoProvider.restaurantId;
     if (restaurantId == null) {
@@ -147,16 +193,23 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
       // Sample frames across the clip — pans across menu boards/screens
       // mean each frame catches different dishes.
       final frames = <String>[];
-      for (final ms in [600, 1600, 2800, 4000, 5200, 6500, 7400]) {
+      int payloadSize = 0;
+      for (final fraction in [0.1, 0.25, 0.4, 0.55, 0.7, 0.85]) {
+        if (!mounted) return;
+        final ms = (durationMs * fraction).round();
         final bytes = await vt.VideoThumbnail.thumbnailData(
           video: video.path,
           imageFormat: vt.ImageFormat.JPEG,
           timeMs: ms,
-          quality: 90,
+          quality: 85,
           maxWidth: 1600,
         );
+        if (!mounted) return;
         if (bytes != null && bytes.isNotEmpty) {
-          frames.add(base64Encode(bytes));
+          final encoded = base64Encode(bytes);
+          if (payloadSize + encoded.length > _maxPayloadCharacters) continue;
+          payloadSize += encoded.length;
+          frames.add(encoded);
         }
       }
       if (frames.isEmpty) {
@@ -171,16 +224,11 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
       await restoProvider.loadMenu();
       if (!mounted) return;
       setState(() => _state = 2);
-      Timer(const Duration(seconds: 2), () {
+      _returnTimer = Timer(const Duration(seconds: 2), () {
         if (mounted) Navigator.pop(context);
       });
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          _state = -1;
-          _errorMessage = tr(context, 'analysis_err').replaceAll('{n}', '$e');
-        });
-      }
+      _fail(e);
     }
   }
 
@@ -202,12 +250,7 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
       await _processImage(file);
     } catch (e) {
       debugPrint('[Scanner] Error taking picture: $e');
-      if (mounted) {
-        setState(() {
-          _state = -1;
-          _errorMessage = 'Erreur lors de l\'import: ${e.toString()}';
-        });
-      }
+      _fail(e);
     }
   }
 
@@ -220,18 +263,13 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
         imageQuality: 85,
       );
 
-      if (file == null) return; // User cancelled
+      if (file == null || !mounted) return; // User cancelled
 
       setState(() => _state = 1);
 
       await _processImage(file);
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          _state = -1;
-          _errorMessage = 'Erreur lors de l\'import: ${e.toString()}';
-        });
-      }
+      _fail(e);
     }
   }
 
@@ -252,7 +290,11 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
     try {
       // Read image bytes and encode as base64
       final bytes = await imageFile.readAsBytes();
+      if (!mounted) return;
       final imageBase64 = base64Encode(bytes);
+      if (imageBase64.length > _maxPayloadCharacters) {
+        throw ValidationException(tr(context, 'scan_image_too_large'));
+      }
 
       final service = RestaurantService();
       await service.scanMenu(restaurantId, imageBase64);
@@ -263,36 +305,28 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
       if (!mounted) return;
       setState(() => _state = 2);
 
-      Timer(const Duration(seconds: 2), () {
+      _returnTimer = Timer(const Duration(seconds: 2), () {
         if (mounted) Navigator.pop(context);
       });
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          _state = -1;
-          _errorMessage = tr(
-            context,
-            'analysis_err',
-          ).replaceAll('{n}', e.toString());
-        });
-      }
+      _fail(e);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: (_state == 0 || _state == 3) ? Colors.black : context.fast.bg,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: (_state == 0 || _state == 3) ? Colors.black : context.fast.bg,
         elevation: 0,
-        iconTheme: IconThemeData(color: context.fast.t1),
+        iconTheme: IconThemeData(color: (_state == 0 || _state == 3) ? Colors.white : context.fast.t1),
         title: Text(
           tr(context, 'ai_assistant'),
-          style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold),
+          style: TextStyle(color: (_state == 0 || _state == 3) ? Colors.white : context.fast.t1, fontWeight: FontWeight.bold),
         ),
       ),
-      extendBodyBehindAppBar: true,
+      extendBodyBehindAppBar: false,
       body: Stack(
         children: [
           // Live Camera Preview as the background (also while recording)
@@ -364,7 +398,7 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                   Text(
                     tr(context, 'scan_hint'),
                     style: TextStyle(
-                      color: context.fast.t1,
+                      color: Colors.white,
                       fontWeight: FontWeight.w600,
                       fontSize: 13,
                       shadows: [
@@ -381,8 +415,9 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
             ),
 
           // Control buttons at the bottom
-          if (_state == 0)
+          if (_state == 0 || _state == 3)
             Positioned(
+              key: const ValueKey('scanner-controls'),
               bottom: 48,
               left: 0,
               right: 0,
@@ -392,10 +427,10 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                 children: [
                   // Gallery picker button
                   IconButton(
-                    onPressed: () => _captureAndScan(ImageSource.gallery),
+                    onPressed: _isRecording ? null : () => _captureAndScan(ImageSource.gallery),
                     icon: Icon(
                       Icons.photo_library_outlined,
-                      color: context.fast.t1,
+                      color: Colors.white,
                       size: 28,
                     ),
                   ),
@@ -406,12 +441,11 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       GestureDetector(
-                        onTap: _takeInAppPicture,
+                        onTap: _isRecording ? _stopVideoAndProcess
+                            : _isCameraInitialized ? _takeInAppPicture : null,
                         onLongPressStart: (_) => _startVideoRecording(),
                         onLongPressEnd: (_) => _stopVideoAndProcess(),
-                        onLongPressCancel: () {
-                          if (_isRecording) _stopVideoAndProcess();
-                        },
+                        onLongPressCancel: _stopVideoAndProcess,
                         child: Container(
                           width: 76,
                           height: 76,
@@ -423,10 +457,10 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                               width: 6,
                             ),
                           ),
-                          child: const Center(
+                          child: Center(
                             child: Icon(
-                              Icons.camera_alt,
-                              color: Color(0xFF17171B),
+                              _isRecording ? Icons.stop : Icons.camera_alt,
+                              color: _isRecording ? FASTBrand.error : FASTBrand.onAmber,
                               size: 28,
                             ),
                           ),
@@ -508,35 +542,7 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                 ),
               ),
             ),
-            Positioned(
-              bottom: 48,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: InkWell(
-                  onTap: _toggleVideoRecording,
-                  borderRadius: BorderRadius.circular(38),
-                  child: Container(
-                    width: 76,
-                    height: 76,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 6),
-                    ),
-                    child: Center(
-                      child: Container(
-                        width: 30,
-                        height: 30,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEF4444),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
+
           ],
 
           if (_state == 1)
@@ -590,7 +596,7 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                   Icon(Icons.error_outline, color: Color(0xFFEF4444), size: 80),
                   SizedBox(height: 24),
                   Text(
-                    'Erreur d\'import',
+                    tr(context, 'scan_failed'),
                     style: TextStyle(
                       color: Color(0xFFEF4444),
                       fontSize: 20,
@@ -608,9 +614,7 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                   ),
                   SizedBox(height: 24),
                   ElevatedButton(
-                    onPressed: () {
-                      setState(() => _state = 0);
-                    },
+                    onPressed: _initializeCamera,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color(0xFF00C8B3),
                       foregroundColor: FASTBrand.onAmber,
@@ -619,6 +623,14 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                       ),
                     ),
                     child: Text(tr(context, 'retry')),
+                  ),
+                  if (_cameraPermissionDenied)
+                    TextButton(onPressed: Geolocator.openAppSettings,
+                        child: Text(tr(context, 'open_settings'))),
+                  TextButton.icon(
+                    onPressed: () => _captureAndScan(ImageSource.gallery),
+                    icon: const Icon(Icons.photo_library_outlined),
+                    label: Text(tr(context, 'choose_photo')),
                   ),
                 ],
               ),

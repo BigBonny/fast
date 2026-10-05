@@ -6,7 +6,7 @@ class MenuService {
   final _api = ApiClient();
 
   Future<List<MenuItem>> getMenuByRestaurant(String restaurantId) async {
-    final data = await _api.get(ApiConfig.menuByRestaurant(restaurantId));
+    final data = await _api.get(ApiConfig.managedMenuByRestaurant(restaurantId));
     final list = data as List<dynamic>;
     return list
         .map((e) => MenuItem.fromApiJson(e as Map<String, dynamic>))

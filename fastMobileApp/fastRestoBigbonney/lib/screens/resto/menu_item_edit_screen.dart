@@ -627,7 +627,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                         ),
                       )
                     : Text(
-                        _isEdit ? 'Sauvegarder' : tr(context, 'create_dish'),
+                        _isEdit ? tr(context, 'save') : tr(context, 'create_dish'),
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,

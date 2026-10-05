@@ -5,10 +5,15 @@ import '../models.dart';
 
 /// Shorthand localization helper — resolves `key` against the language
 /// selected in [FASTProvider]. Usable anywhere a BuildContext is available.
-String tr(BuildContext context, String key) =>
-    Provider.of<FASTProvider>(context).tr(key);
+String tr(BuildContext context, String key) {
+  Localizations.maybeLocaleOf(context);
+  return Provider.of<FASTProvider>(context, listen: false).tr(key);
+}
 
 const _catKeys = <String, String>{
+  'all': 'cat_all',
+  'burger': 'cat_burgers',
+  'sandwich': 'cat_sandwichs',
   'burgers': 'cat_burgers',
   'Burgers': 'cat_burgers',
   'tacos': 'cat_tacos',
