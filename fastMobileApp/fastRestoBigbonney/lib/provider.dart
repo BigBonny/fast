@@ -63,8 +63,10 @@ class FASTProvider extends ChangeNotifier {
   String _userEmail = '';
   String _userPhone = '';
   int _userPoints = 0;
-  // Theme follows the phone by default — 'Auto' stays Auto across restarts.
+  // Theme follows local daylight by default — 'Auto' stays Auto across restarts.
   ThemeMode _themeMode = ThemeMode.system;
+  Timer? _autoThemeTimer;
+  ThemeMode? _lastResolvedTheme;
   // Owners can flip to the client experience with the same account.
   bool _viewAsClient = false;
   // Preferred interface language chosen at signup.
@@ -122,6 +124,29 @@ class FASTProvider extends ChangeNotifier {
   String get userPhone => _userPhone;
   int get userPoints => _userPoints;
   ThemeMode get themeMode => _themeMode;
+
+  /// Effective theme: 'Auto' resolves by local clock — light during
+  /// daytime (07:00–19:00), dark at night. Manual picks pass through.
+  ThemeMode get resolvedThemeMode {
+    if (_themeMode != ThemeMode.system) return _themeMode;
+    final h = DateTime.now().hour;
+    return (h >= 7 && h < 19) ? ThemeMode.light : ThemeMode.dark;
+  }
+
+  /// Checks once a minute whether Auto should flip light↔dark so the
+  /// change applies live without waiting for a restart.
+  void _startAutoThemeWatcher() {
+    _autoThemeTimer?.cancel();
+    _lastResolvedTheme = resolvedThemeMode;
+    _autoThemeTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+      if (_themeMode != ThemeMode.system) return;
+      final now = resolvedThemeMode;
+      if (now != _lastResolvedTheme) {
+        _lastResolvedTheme = now;
+        notifyListeners();
+      }
+    });
+  }
   bool get viewAsClient => _viewAsClient;
   String get appLanguage => _appLanguage;
 
@@ -353,6 +378,7 @@ class FASTProvider extends ChangeNotifier {
 
   FASTProvider() {
     _initializeData();
+    _startAutoThemeWatcher();
   }
 
   // Load persistence and initial setup
@@ -465,6 +491,7 @@ class FASTProvider extends ChangeNotifier {
 
   Future<void> setThemeMode(ThemeMode mode) async {
     _themeMode = mode;
+    _lastResolvedTheme = resolvedThemeMode;
     final prefs = await SharedPreferences.getInstance();
     String val = 'dark';
     if (mode == ThemeMode.light) val = 'light';
