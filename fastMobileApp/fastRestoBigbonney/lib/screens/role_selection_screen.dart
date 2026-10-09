@@ -185,65 +185,7 @@ class RoleSelectionScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              SizedBox(height: 20),
-
-              // Driver Button
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          const AuthScreen(initialRole: 'LIVREUR'),
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: context.fast.card,
-                  foregroundColor: context.fast.t1,
-                  padding: EdgeInsets.symmetric(vertical: 20),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    side: BorderSide(color: context.fast.faint),
-                  ),
-                  elevation: 0,
-                ),
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.delivery_dining_outlined,
-                      size: 34,
-                      color: Color(0xFF10B981),
-                    ),
-                    SizedBox(height: 12),
-                    Text(
-                      fast.tr('iam_driver'),
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      fast.tr('driver_desc'),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: context.fast.t2,
-                        fontWeight: FontWeight.normal,
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      fast.tr('driver_badge'),
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: Color(0xFF10B981),
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              // Driver role is hidden for now — may return later.
               const SizedBox(height: 24),
             ],
           ),

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { m, AnimatePresence } from "framer-motion";
 import {
-  Zap, Home, ClipboardList, Users, Bike, ShoppingCart,
+  Zap, Home, ClipboardList, Users, ShoppingCart,
   User, Store, Heart, Settings, LogOut, ChevronDown,
 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
@@ -16,7 +16,6 @@ const navLinks = [
   { labelKey: "nav_home", href: "/", icon: Home },
   { labelKey: "nav_orders", href: "/orders", icon: ClipboardList },
   { labelKey: "nav_group", href: "/group-order", icon: Users },
-  { labelKey: "nav_deliver", href: "/deliver", icon: Bike },
 ];
 
 export default function Navbar() {
