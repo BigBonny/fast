@@ -6,14 +6,13 @@ import { usePathname } from "next/navigation";
 import { m } from "framer-motion";
 import { getCart, getCartCount } from "@/lib/localCart";
 import { useTheme } from "@/lib/useTheme";
-import { Home, ClipboardList, ShoppingCart, Bike, Users } from "lucide-react";
+import { Home, ClipboardList, ShoppingCart, Users } from "lucide-react";
 import Navbar from "@/components/Navbar";
 
 const navItems = [
   { name: "Accueil", path: "/", icon: Home, color: "#06b6d4" },
   { name: "Commandes", path: "/orders", icon: ClipboardList, color: "#8b5cf6" },
   { name: "Groupe", path: "/group-order", icon: Users, color: "#ec4899" },
-  { name: "Livrer", path: "/deliver", icon: Bike, color: "#f59e0b" },
   { name: "Panier", path: "/cart", icon: ShoppingCart, color: "#10b981" },
 ];
 
