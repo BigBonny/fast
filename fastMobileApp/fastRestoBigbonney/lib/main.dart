@@ -27,7 +27,7 @@ import 'screens/group_screen.dart';
 import 'screens/livreur_screen.dart';
 import 'screens/driver_account_screen.dart';
 import 'widgets/client_drawer.dart';
-import 'widgets/fast_glow_background.dart';
+
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -396,9 +396,10 @@ class _MainShellState extends State<MainShell>
     return Scaffold(
       drawer: const ClientDrawer(),
       appBar: AppBar(
-        // On home the app bar blends into the dark branded hero
+        // Transparent on home so the hero fills the top edge; solid on
+        // other screens. Keeps only the drawer menu and account icon.
         backgroundColor: onHome
-            ? FastGlowBackground.topColor
+            ? Colors.transparent
             : context.fast.bg.withValues(alpha: 0.95),
         systemOverlayStyle: onHome ? SystemUiOverlayStyle.light : null,
         surfaceTintColor: Colors.transparent,
@@ -407,54 +408,31 @@ class _MainShellState extends State<MainShell>
         iconTheme: IconThemeData(
           color: onHome ? Colors.white : context.fast.t1,
         ),
-        title: GestureDetector(
-          onTap: () {
-            provider.selectRestaurant(null);
-            provider.navigateToScreen('home');
-          },
-          child: Row(
-            children: [
-              // Logo mark: zap + gradient FAST wordmark (matches website Navbar)
-              const Icon(Icons.bolt, color: FASTBrand.amber, size: 22),
-              ShaderMask(
-                shaderCallback: (bounds) => const LinearGradient(
-                  colors: [
-                    Color(0xFFF59E0B),
-                    Color(0xFFFBBF24),
-                    Color(0xFFF97316),
-                  ],
-                ).createShader(bounds),
-                child: const Text(
-                  'FAST',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w900,
-                    fontStyle: FontStyle.italic,
-                    fontSize: 20,
-                    letterSpacing: -0.5,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-              const Icon(Icons.bolt, color: FASTBrand.amber, size: 22),
-              const SizedBox(width: 8),
-              Container(
-                width: 6,
-                height: 6,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF00C8B3),
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF00C8B3).withValues(alpha: 0.6),
-                      blurRadius: 6,
-                      spreadRadius: 1,
+        title: onHome
+            ? const SizedBox.shrink()
+            : GestureDetector(
+                onTap: () {
+                  provider.selectRestaurant(null);
+                  provider.navigateToScreen('home');
+                },
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.bolt, color: FASTBrand.amber, size: 22),
+                    Text(
+                      'FAST',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontStyle: FontStyle.italic,
+                        fontSize: 20,
+                        letterSpacing: -0.5,
+                        color: Colors.white,
+                      ),
                     ),
+                    Icon(Icons.bolt, color: FASTBrand.amber, size: 22),
                   ],
                 ),
               ),
-            ],
-          ),
-        ),
         actions: [
           IconButton(
             onPressed: () {
