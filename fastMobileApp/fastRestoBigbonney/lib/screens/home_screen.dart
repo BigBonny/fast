@@ -46,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
             // Branded hero — dark glow background, headline + search pill
             FastGlowBackground(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(minHeight: 250),
+                constraints: const BoxConstraints(minHeight: 340),
                 child: Stack(
                   children: [
                     // Food imagery from the brand visual, right side —
@@ -78,14 +78,14 @@ class _HomeScreenState extends State<HomeScreen> {
                               colors: [
                                 FastGlowBackground.topColor,
                                 FastGlowBackground.topColor.withValues(
-                                  alpha: 0.88,
+                                  alpha: 0.9,
                                 ),
                                 FastGlowBackground.topColor.withValues(
-                                  alpha: 0.35,
+                                  alpha: 0.55,
                                 ),
                                 Colors.transparent,
                               ],
-                              stops: const [0.0, 0.40, 0.62, 0.85],
+                              stops: const [0.0, 0.35, 0.55, 0.8],
                             ),
                           ),
                         ),
@@ -98,123 +98,141 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: CustomPaint(painter: _HeroFlamesPainter()),
                       ),
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'CHAQUE MINUTE COMPTE',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 2.4,
-                                  color: Color(0xFF9D8FC0),
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              FractionallySizedBox(
-                                widthFactor: 0.58,
-                                child: RichText(
-                                  text: TextSpan(
-                                    style: const TextStyle(
-                                      fontSize: 26,
-                                      fontWeight: FontWeight.w900,
-                                      letterSpacing: -0.5,
-                                      color: Colors.white,
-                                      height: 1.15,
-                                    ),
-                                    children: [
-                                      TextSpan(text: tr(context, 'hero_order')),
-                                      TextSpan(
-                                        text: tr(context, 'hero_fast'),
-                                        style: const TextStyle(
-                                          color: Color(0xFFF59E0B),
-                                        ),
-                                      ),
-                                      TextSpan(text: tr(context, 'hero_now')),
-                                    ],
+                    Positioned.fill(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 22, 20, 6),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                const Text(
+                                  'CHAQUE MINUTE COMPTE',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 2.4,
+                                    color: Color(0xFF9D8FC0),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                tr(context, 'hero_sub'),
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Color(0xFFB8AECF),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        // Search Bar — white pill on the dark hero
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-                          child: Focus(
-                            onFocusChange: (focus) {
-                              setState(() {
-                                _isFocusingSearch = focus;
-                              });
-                            },
-                            child: TextField(
-                              controller: _searchController,
-                              onChanged: (val) => provider.setKeyword(val),
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: Color(0xFF1A1425),
-                              ),
-                              decoration: InputDecoration(
-                                hintText: provider.tr('search_hint'),
-                                hintStyle: const TextStyle(
-                                  color: Color(0xFF8A8496),
-                                ),
-                                prefixIcon: const Icon(
-                                  Icons.search,
-                                  color: Color(0xFF8A8496),
-                                  size: 18,
-                                ),
-                                suffixIcon: provider.searchKeyword.isNotEmpty
-                                    ? IconButton(
-                                        onPressed: () {
-                                          provider.setKeyword('');
-                                          _searchController.clear();
-                                        },
-                                        icon: const Icon(
-                                          Icons.close,
-                                          color: Color(0xFF8A8496),
-                                          size: 16,
+                                const SizedBox(height: 10),
+                                // Headline — big, heavy italic with a dynamic
+                                // slant so it never reads as a straight line
+                                Transform.rotate(
+                                  angle: -0.028,
+                                  child: RichText(
+                                    textAlign: TextAlign.center,
+                                    text: TextSpan(
+                                      style: const TextStyle(
+                                        fontSize: 31,
+                                        fontWeight: FontWeight.w900,
+                                        fontStyle: FontStyle.italic,
+                                        letterSpacing: -0.5,
+                                        color: Colors.white,
+                                        height: 1.12,
+                                        shadows: [
+                                          Shadow(
+                                            color: Colors.black45,
+                                            blurRadius: 10,
+                                            offset: Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      children: [
+                                        TextSpan(
+                                          text: tr(context, 'hero_order'),
                                         ),
-                                      )
-                                    : null,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  vertical: 0,
+                                        TextSpan(
+                                          text: tr(context, 'hero_fast'),
+                                          style: const TextStyle(
+                                            color: Color(0xFFF59E0B),
+                                          ),
+                                        ),
+                                        TextSpan(text: tr(context, 'hero_now')),
+                                      ],
+                                    ),
+                                  ),
                                 ),
-                                filled: true,
-                                fillColor: Colors.white,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(30),
-                                  borderSide: BorderSide.none,
+                                const SizedBox(height: 6),
+                                Text(
+                                  tr(context, 'hero_sub'),
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    color: Color(0xFFB8AECF),
+                                  ),
                                 ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(30),
-                                  borderSide: BorderSide.none,
+                              ],
+                            ),
+                          ),
+                          // Search Bar — white pill on the dark hero, dropped low
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
+                            child: Focus(
+                              onFocusChange: (focus) {
+                                setState(() {
+                                  _isFocusingSearch = focus;
+                                });
+                              },
+                              child: TextField(
+                                controller: _searchController,
+                                onChanged: (val) => provider.setKeyword(val),
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Color(0xFF1A1425),
                                 ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(30),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFFF59E0B),
-                                    width: 1.5,
+                                decoration: InputDecoration(
+                                  hintText: provider.tr('search_hint'),
+                                  hintStyle: const TextStyle(
+                                    color: Color(0xFF8A8496),
+                                  ),
+                                  prefixIcon: const Icon(
+                                    Icons.search,
+                                    color: Color(0xFF8A8496),
+                                    size: 18,
+                                  ),
+                                  suffixIcon: provider.searchKeyword.isNotEmpty
+                                      ? IconButton(
+                                          onPressed: () {
+                                            provider.setKeyword('');
+                                            _searchController.clear();
+                                          },
+                                          icon: const Icon(
+                                            Icons.close,
+                                            color: Color(0xFF8A8496),
+                                            size: 16,
+                                          ),
+                                        )
+                                      : null,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 0,
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(30),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(30),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(30),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFFF59E0B),
+                                      width: 1.5,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -1533,6 +1551,41 @@ class _HeroFlamesPainter extends CustomPainter {
       endWidth: 1,
     );
 
+    // Neon violet arc hugging the left border
+    _drawFlame(
+      canvas,
+      Path()..addArc(
+        Rect.fromCenter(
+          center: Offset(size.width * 0.03, size.height * 0.52),
+          width: size.width * 0.6,
+          height: size.height * 1.35,
+        ),
+        -0.95,
+        1.9,
+      ),
+      colors: const [Color(0xFF8B5CF6), Color(0xFFC4B5FD), Color(0xFF7C3AED)],
+      startWidth: 5.5,
+      endWidth: 1,
+    );
+
+    // Neon violet arc sweeping along the top border
+    _drawFlame(
+      canvas,
+      Path()
+        ..moveTo(size.width * 0.02, size.height * 0.16)
+        ..cubicTo(
+          size.width * 0.25,
+          -size.height * 0.04,
+          size.width * 0.62,
+          -size.height * 0.06,
+          size.width * 0.92,
+          size.height * 0.13,
+        ),
+      colors: const [Color(0xFF7C3AED), Color(0xFF9D8FC0), Color(0xFF8B5CF6)],
+      startWidth: 4,
+      endWidth: 1,
+    );
+
     // Smaller second ring curling under the food
     _drawFlame(
       canvas,
@@ -1550,18 +1603,18 @@ class _HeroFlamesPainter extends CustomPainter {
       endWidth: 1,
     );
 
-    // Orange swoosh under the headline
+    // Orange swoosh — wide arc centered under the headline
     _drawFlame(
       canvas,
       Path()
-        ..moveTo(size.width * 0.02, size.height * 0.60)
+        ..moveTo(size.width * 0.20, size.height * 0.60)
         ..cubicTo(
-          size.width * 0.12,
-          size.height * 0.71,
-          size.width * 0.28,
-          size.height * 0.50,
-          size.width * 0.50,
-          size.height * 0.66,
+          size.width * 0.33,
+          size.height * 0.73,
+          size.width * 0.58,
+          size.height * 0.53,
+          size.width * 0.80,
+          size.height * 0.68,
         ),
       colors: const [Color(0xFFF97316), Color(0xFFEF4444), Color(0xFFFBBF24)],
       startWidth: 5,
