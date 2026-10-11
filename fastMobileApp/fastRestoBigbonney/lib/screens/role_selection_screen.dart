@@ -16,6 +16,7 @@ class RoleSelectionScreen extends StatelessWidget {
       body: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.light,
         child: FastGlowBackground(
+          expand: true,
           child: SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24.0),

@@ -45,118 +45,167 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             // Branded hero — dark glow background, headline + search pill
             FastGlowBackground(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'CHAQUE MINUTE COMPTE',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 2.4,
-                            color: Color(0xFF9D8FC0),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 250),
+                child: Stack(
+                  children: [
+                    // Food imagery from the brand visual, right side
+                    Positioned.fill(
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: FractionallySizedBox(
+                          widthFactor: 0.48,
+                          heightFactor: 1.0,
+                          child: Image.asset(
+                            'assets/images/hero_food.png',
+                            width: double.infinity,
+                            height: double.infinity,
+                            fit: BoxFit.cover,
                           ),
                         ),
-                        const SizedBox(height: 6),
-                        RichText(
-                          text: TextSpan(
-                            style: const TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: -0.5,
-                              color: Colors.white,
-                              height: 1.15,
-                            ),
-                            children: [
-                              TextSpan(text: tr(context, 'hero_order')),
-                              TextSpan(
-                                text: tr(context, 'hero_fast'),
-                                style: const TextStyle(
-                                  color: Color(0xFFF59E0B),
-                                ),
-                              ),
-                              TextSpan(text: tr(context, 'hero_now')),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          tr(context, 'hero_sub'),
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFFB8AECF),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
-                  // Search Bar — white pill on the dark hero
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-                    child: Focus(
-                      onFocusChange: (focus) {
-                        setState(() {
-                          _isFocusingSearch = focus;
-                        });
-                      },
-                      child: TextField(
-                        controller: _searchController,
-                        onChanged: (val) => provider.setKeyword(val),
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: Color(0xFF1A1425),
-                        ),
-                        decoration: InputDecoration(
-                          hintText: provider.tr('search_hint'),
-                          hintStyle: const TextStyle(color: Color(0xFF8A8496)),
-                          prefixIcon: const Icon(
-                            Icons.search,
-                            color: Color(0xFF8A8496),
-                            size: 18,
-                          ),
-                          suffixIcon: provider.searchKeyword.isNotEmpty
-                              ? IconButton(
-                                  onPressed: () {
-                                    provider.setKeyword('');
-                                    _searchController.clear();
-                                  },
-                                  icon: const Icon(
-                                    Icons.close,
-                                    color: Color(0xFF8A8496),
-                                    size: 16,
-                                  ),
-                                )
-                              : null,
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: 0,
-                          ),
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(30),
-                            borderSide: BorderSide.none,
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(30),
-                            borderSide: BorderSide.none,
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(30),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFF59E0B),
-                              width: 1.5,
+                    // Melt the image's left edge into the hero background
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                              colors: [
+                                FastGlowBackground.topColor,
+                                FastGlowBackground.topColor.withValues(
+                                  alpha: 0.88,
+                                ),
+                                FastGlowBackground.topColor.withValues(
+                                  alpha: 0.35,
+                                ),
+                                Colors.transparent,
+                              ],
+                              stops: const [0.0, 0.40, 0.62, 0.85],
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'CHAQUE MINUTE COMPTE',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 2.4,
+                                  color: Color(0xFF9D8FC0),
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              RichText(
+                                text: TextSpan(
+                                  style: const TextStyle(
+                                    fontSize: 26,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: -0.5,
+                                    color: Colors.white,
+                                    height: 1.15,
+                                  ),
+                                  children: [
+                                    TextSpan(text: tr(context, 'hero_order')),
+                                    TextSpan(
+                                      text: tr(context, 'hero_fast'),
+                                      style: const TextStyle(
+                                        color: Color(0xFFF59E0B),
+                                      ),
+                                    ),
+                                    TextSpan(text: tr(context, 'hero_now')),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                tr(context, 'hero_sub'),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFFB8AECF),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Search Bar — white pill on the dark hero
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+                          child: Focus(
+                            onFocusChange: (focus) {
+                              setState(() {
+                                _isFocusingSearch = focus;
+                              });
+                            },
+                            child: TextField(
+                              controller: _searchController,
+                              onChanged: (val) => provider.setKeyword(val),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Color(0xFF1A1425),
+                              ),
+                              decoration: InputDecoration(
+                                hintText: provider.tr('search_hint'),
+                                hintStyle: const TextStyle(
+                                  color: Color(0xFF8A8496),
+                                ),
+                                prefixIcon: const Icon(
+                                  Icons.search,
+                                  color: Color(0xFF8A8496),
+                                  size: 18,
+                                ),
+                                suffixIcon: provider.searchKeyword.isNotEmpty
+                                    ? IconButton(
+                                        onPressed: () {
+                                          provider.setKeyword('');
+                                          _searchController.clear();
+                                        },
+                                        icon: const Icon(
+                                          Icons.close,
+                                          color: Color(0xFF8A8496),
+                                          size: 16,
+                                        ),
+                                      )
+                                    : null,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 0,
+                                ),
+                                filled: true,
+                                fillColor: Colors.white,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                  borderSide: BorderSide.none,
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                  borderSide: BorderSide.none,
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFFF59E0B),
+                                    width: 1.5,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
 

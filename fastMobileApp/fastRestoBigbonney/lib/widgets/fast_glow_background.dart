@@ -6,9 +6,17 @@ import 'package:flutter/material.dart';
 /// glow arcs (purple/magenta upper-left, orange sweeping the right),
 /// matching the FAST landing/signup visuals.
 class FastGlowBackground extends StatelessWidget {
-  const FastGlowBackground({super.key, required this.child});
+  const FastGlowBackground({
+    super.key,
+    required this.child,
+    this.expand = false,
+  });
 
   final Widget child;
+
+  /// Fill all available space (full-screen backdrops) instead of
+  /// shrinking to [child] (hero bands inside a Column).
+  final bool expand;
 
   static const Color topColor = Color(0xFF1B0B33);
   static const Color bottomColor = Color(0xFF0A0416);
@@ -16,6 +24,8 @@ class FastGlowBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: double.infinity,
+      height: expand ? double.infinity : null,
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
