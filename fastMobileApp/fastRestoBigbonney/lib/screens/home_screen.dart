@@ -49,23 +49,25 @@ class _HomeScreenState extends State<HomeScreen> {
                 constraints: const BoxConstraints(minHeight: 250),
                 child: Stack(
                   children: [
-                    // Food imagery from the brand visual, left side
+                    // Food imagery from the brand visual, right side —
+                    // right-biased so cover never clips the dishes
                     Positioned.fill(
                       child: Align(
-                        alignment: Alignment.centerLeft,
+                        alignment: Alignment.centerRight,
                         child: FractionallySizedBox(
-                          widthFactor: 0.48,
+                          widthFactor: 0.55,
                           heightFactor: 1.0,
                           child: Image.asset(
                             'assets/images/hero_food.png',
                             width: double.infinity,
                             height: double.infinity,
                             fit: BoxFit.cover,
+                            alignment: Alignment.centerRight,
                           ),
                         ),
                       ),
                     ),
-                    // Melt the image's right edge into the hero background
+                    // Melt the image's left edge into the hero background
                     Positioned.fill(
                       child: IgnorePointer(
                         child: DecoratedBox(
@@ -74,28 +76,35 @@ class _HomeScreenState extends State<HomeScreen> {
                               begin: Alignment.centerLeft,
                               end: Alignment.centerRight,
                               colors: [
-                                Colors.transparent,
-                                FastGlowBackground.topColor.withValues(
-                                  alpha: 0.35,
-                                ),
+                                FastGlowBackground.topColor,
                                 FastGlowBackground.topColor.withValues(
                                   alpha: 0.88,
                                 ),
-                                FastGlowBackground.topColor,
+                                FastGlowBackground.topColor.withValues(
+                                  alpha: 0.35,
+                                ),
+                                Colors.transparent,
                               ],
-                              stops: const [0.15, 0.38, 0.60, 1.0],
+                              stops: const [0.0, 0.40, 0.62, 0.85],
                             ),
                           ),
                         ),
                       ),
                     ),
+                    // Fiery ink trails — swoosh under the headline, ring
+                    // sweeping around the food, ember glow behind search
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: CustomPaint(painter: _HeroFlamesPainter()),
+                      ),
+                    ),
                     Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Padding(
                           padding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Text(
                                 'CHAQUE MINUTE COMPTE',
@@ -107,32 +116,33 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                               const SizedBox(height: 6),
-                              RichText(
-                                textAlign: TextAlign.right,
-                                text: TextSpan(
-                                  style: const TextStyle(
-                                    fontSize: 26,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: -0.5,
-                                    color: Colors.white,
-                                    height: 1.15,
-                                  ),
-                                  children: [
-                                    TextSpan(text: tr(context, 'hero_order')),
-                                    TextSpan(
-                                      text: tr(context, 'hero_fast'),
-                                      style: const TextStyle(
-                                        color: Color(0xFFF59E0B),
-                                      ),
+                              FractionallySizedBox(
+                                widthFactor: 0.58,
+                                child: RichText(
+                                  text: TextSpan(
+                                    style: const TextStyle(
+                                      fontSize: 26,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: -0.5,
+                                      color: Colors.white,
+                                      height: 1.15,
                                     ),
-                                    TextSpan(text: tr(context, 'hero_now')),
-                                  ],
+                                    children: [
+                                      TextSpan(text: tr(context, 'hero_order')),
+                                      TextSpan(
+                                        text: tr(context, 'hero_fast'),
+                                        style: const TextStyle(
+                                          color: Color(0xFFF59E0B),
+                                        ),
+                                      ),
+                                      TextSpan(text: tr(context, 'hero_now')),
+                                    ],
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 tr(context, 'hero_sub'),
-                                textAlign: TextAlign.right,
                                 style: const TextStyle(
                                   fontSize: 12,
                                   color: Color(0xFFB8AECF),
@@ -1470,4 +1480,139 @@ class _PulsingEmojiState extends State<_PulsingEmoji>
       },
     );
   }
+}
+
+/// Paints the brand's fiery ink trails over the hero: an orange swoosh
+/// under the headline, glowing flame rings sweeping around the food on
+/// the right, and a soft ember glow behind the search pill. Strokes
+/// taper off like flame tongues — nothing is a straight line.
+class _HeroFlamesPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Ember glow behind the search bar
+    final ember = Paint()
+      ..shader =
+          RadialGradient(
+            colors: [
+              const Color(0xFFFF0066).withValues(alpha: 0.30),
+              const Color(0xFFF97316).withValues(alpha: 0.12),
+              Colors.transparent,
+            ],
+            stops: const [0.0, 0.45, 1.0],
+          ).createShader(
+            Rect.fromCenter(
+              center: Offset(size.width * 0.5, size.height),
+              width: size.width * 0.9,
+              height: size.height * 0.8,
+            ),
+          )
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 24);
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(size.width * 0.5, size.height),
+        width: size.width * 0.9,
+        height: size.height * 0.75,
+      ),
+      ember,
+    );
+
+    // Large flame ring sweeping over the food (right side)
+    _drawFlame(
+      canvas,
+      Path()..addArc(
+        Rect.fromCenter(
+          center: Offset(size.width * 0.78, size.height * 0.40),
+          width: size.width * 0.95,
+          height: size.height * 1.55,
+        ),
+        -2.55,
+        2.5,
+      ),
+      colors: const [Color(0xFFFF0066), Color(0xFFF97316), Color(0xFFFBBF24)],
+      startWidth: 6,
+      endWidth: 1,
+    );
+
+    // Smaller second ring curling under the food
+    _drawFlame(
+      canvas,
+      Path()..addArc(
+        Rect.fromCenter(
+          center: Offset(size.width * 0.66, size.height * 0.86),
+          width: size.width * 0.55,
+          height: size.height * 0.75,
+        ),
+        -0.9,
+        1.9,
+      ),
+      colors: const [Color(0xFFF97316), Color(0xFFEF4444)],
+      startWidth: 4.5,
+      endWidth: 1,
+    );
+
+    // Orange swoosh under the headline
+    _drawFlame(
+      canvas,
+      Path()
+        ..moveTo(size.width * 0.02, size.height * 0.60)
+        ..cubicTo(
+          size.width * 0.12,
+          size.height * 0.71,
+          size.width * 0.28,
+          size.height * 0.50,
+          size.width * 0.50,
+          size.height * 0.66,
+        ),
+      colors: const [Color(0xFFF97316), Color(0xFFEF4444), Color(0xFFFBBF24)],
+      startWidth: 5,
+      endWidth: 1,
+    );
+  }
+
+  /// Draws [path] as a tapered glowing stroke: a blurred color trail
+  /// underneath plus a brighter thinning core, fading toward the tip.
+  void _drawFlame(
+    Canvas canvas,
+    Path path, {
+    required List<Color> colors,
+    required double startWidth,
+    required double endWidth,
+  }) {
+    final metrics = path.computeMetrics().toList();
+    if (metrics.isEmpty) return;
+    final m = metrics.first;
+    const segs = 26;
+    for (int pass = 0; pass < 2; pass++) {
+      final glow = pass == 0;
+      for (int i = 0; i < segs; i++) {
+        final t = (i + 0.5) / segs;
+        final seg = m.extractPath(
+          m.length * i / segs,
+          m.length * (i + 1) / segs,
+        );
+        final w = startWidth + (endWidth - startWidth) * t;
+        final paint = Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeCap = StrokeCap.round
+          ..strokeWidth = glow ? w * 2.4 : w
+          ..color = _lerpColors(
+            colors,
+            t,
+          ).withValues(alpha: (glow ? 0.22 : 0.92) * (1 - t * 0.45));
+        if (glow) {
+          paint.maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
+        }
+        canvas.drawPath(seg, paint);
+      }
+    }
+  }
+
+  Color _lerpColors(List<Color> cs, double t) {
+    final x = t * (cs.length - 1);
+    final i = x.floor().clamp(0, cs.length - 2);
+    return Color.lerp(cs[i], cs[i + 1], x - i)!;
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
