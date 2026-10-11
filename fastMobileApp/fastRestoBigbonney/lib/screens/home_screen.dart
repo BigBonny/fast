@@ -41,223 +41,267 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Stack(
       children: [
-        Column(
-          children: [
-            // Branded hero — dark glow background, headline + search pill
-            FastGlowBackground(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(minHeight: 340),
-                child: Stack(
-                  children: [
-                    // Food imagery from the brand visual, right side —
-                    // right-biased so cover never clips the dishes
-                    Positioned.fill(
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: FractionallySizedBox(
-                          widthFactor: 0.55,
-                          heightFactor: 1.0,
-                          child: Image.asset(
-                            'assets/images/hero_food.png',
-                            width: double.infinity,
-                            height: double.infinity,
-                            fit: BoxFit.cover,
-                            alignment: Alignment.centerRight,
-                          ),
-                        ),
-                      ),
-                    ),
-                    // Melt the image's left edge into the hero background
-                    Positioned.fill(
-                      child: IgnorePointer(
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                              colors: [
-                                FastGlowBackground.topColor,
-                                FastGlowBackground.topColor.withValues(
-                                  alpha: 0.9,
-                                ),
-                                FastGlowBackground.topColor.withValues(
-                                  alpha: 0.55,
-                                ),
-                                Colors.transparent,
-                              ],
-                              stops: const [0.0, 0.35, 0.55, 0.8],
+        Container(color: context.fast.bg),
+        LayoutBuilder(
+          builder: (context, viewport) => ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              // Branded hero — dark glow background, headline + search pill
+              FastGlowBackground(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: 340),
+                  child: Stack(
+                    children: [
+                      // Food imagery from the brand visual, right side —
+                      // right-biased so cover never clips the dishes
+                      Positioned.fill(
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: FractionallySizedBox(
+                            widthFactor: 0.55,
+                            heightFactor: 1.0,
+                            // Fade the image's own left edge into the glow so
+                            // there is no hard seam where the food begins
+                            child: ShaderMask(
+                              blendMode: BlendMode.dstIn,
+                              shaderCallback: (rect) => const LinearGradient(
+                                begin: Alignment.centerLeft,
+                                end: Alignment.centerRight,
+                                colors: [
+                                  Colors.transparent,
+                                  Colors.white,
+                                  Colors.white,
+                                ],
+                                stops: [0.0, 0.30, 1.0],
+                              ).createShader(rect),
+                              child: Image.asset(
+                                'assets/images/hero_food.png',
+                                width: double.infinity,
+                                height: double.infinity,
+                                fit: BoxFit.cover,
+                                alignment: Alignment.centerRight,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    // Fiery ink trails — swoosh under the headline, ring
-                    // sweeping around the food, ember glow behind search
-                    Positioned.fill(
-                      child: IgnorePointer(
-                        child: CustomPaint(painter: _HeroFlamesPainter()),
-                      ),
-                    ),
-                    // Non-positioned child: gives the Stack its height so the
-                    // fill layers above have something bounded to paint into
-                    SizedBox(
-                      height: 340,
-                      width: double.infinity,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(20, 22, 20, 6),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                const Text(
-                                  'CHAQUE MINUTE COMPTE',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 2.4,
-                                    color: Color(0xFF9D8FC0),
+                      // Melt the image's left edge into the hero background
+                      Positioned.fill(
+                        child: IgnorePointer(
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.centerLeft,
+                                end: Alignment.centerRight,
+                                colors: [
+                                  FastGlowBackground.topColor,
+                                  FastGlowBackground.topColor.withValues(
+                                    alpha: 0.9,
                                   ),
-                                ),
-                                const SizedBox(height: 10),
-                                // Headline — big, heavy italic with a dynamic
-                                // slant so it never reads as a straight line
-                                Transform.rotate(
-                                  angle: -0.028,
-                                  child: RichText(
+                                  FastGlowBackground.topColor.withValues(
+                                    alpha: 0.55,
+                                  ),
+                                  Colors.transparent,
+                                ],
+                                stops: const [0.0, 0.35, 0.55, 0.8],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      // Fiery ink trails — swoosh under the headline, ring
+                      // sweeping around the food, ember glow behind search
+                      Positioned.fill(
+                        child: IgnorePointer(
+                          child: CustomPaint(painter: _HeroFlamesPainter()),
+                        ),
+                      ),
+                      // Non-positioned child: gives the Stack its height so the
+                      // fill layers above have something bounded to paint into
+                      SizedBox(
+                        height: 340,
+                        width: double.infinity,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(20, 22, 20, 6),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  const Text(
+                                    'CHAQUE MINUTE COMPTE',
                                     textAlign: TextAlign.center,
-                                    text: TextSpan(
-                                      style: const TextStyle(
-                                        fontSize: 31,
-                                        fontWeight: FontWeight.w900,
-                                        fontStyle: FontStyle.italic,
-                                        letterSpacing: -0.5,
-                                        color: Colors.white,
-                                        height: 1.12,
-                                        shadows: [
-                                          Shadow(
-                                            color: Colors.black45,
-                                            blurRadius: 10,
-                                            offset: Offset(0, 2),
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 2.4,
+                                      color: Color(0xFF9D8FC0),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  // Headline — big, heavy italic with a dynamic
+                                  // slant so it never reads as a straight line
+                                  Transform.rotate(
+                                    angle: -0.028,
+                                    child: RichText(
+                                      textAlign: TextAlign.center,
+                                      text: TextSpan(
+                                        style: const TextStyle(
+                                          fontSize: 31,
+                                          fontWeight: FontWeight.w900,
+                                          fontStyle: FontStyle.italic,
+                                          letterSpacing: -0.5,
+                                          color: Colors.white,
+                                          height: 1.12,
+                                          shadows: [
+                                            Shadow(
+                                              color: Colors.black45,
+                                              blurRadius: 10,
+                                              offset: Offset(0, 2),
+                                            ),
+                                          ],
+                                        ),
+                                        children: [
+                                          TextSpan(
+                                            text: tr(context, 'hero_order'),
+                                          ),
+                                          TextSpan(
+                                            text: tr(context, 'hero_fast'),
+                                            style: const TextStyle(
+                                              color: Color(0xFFF59E0B),
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text: tr(context, 'hero_now'),
                                           ),
                                         ],
                                       ),
-                                      children: [
-                                        TextSpan(
-                                          text: tr(context, 'hero_order'),
-                                        ),
-                                        TextSpan(
-                                          text: tr(context, 'hero_fast'),
-                                          style: const TextStyle(
-                                            color: Color(0xFFF59E0B),
-                                          ),
-                                        ),
-                                        TextSpan(text: tr(context, 'hero_now')),
-                                      ],
                                     ),
                                   ),
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  tr(context, 'hero_sub'),
-                                  textAlign: TextAlign.center,
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    tr(context, 'hero_sub'),
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      color: Color(0xFFB8AECF),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // Search Bar — white pill on the dark hero, dropped low
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                20,
+                                18,
+                                20,
+                                24,
+                              ),
+                              child: Focus(
+                                onFocusChange: (focus) {
+                                  setState(() {
+                                    _isFocusingSearch = focus;
+                                  });
+                                },
+                                child: TextField(
+                                  controller: _searchController,
+                                  onChanged: (val) => provider.setKeyword(val),
                                   style: const TextStyle(
                                     fontSize: 13,
-                                    color: Color(0xFFB8AECF),
+                                    color: Color(0xFF1A1425),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          // Search Bar — white pill on the dark hero, dropped low
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
-                            child: Focus(
-                              onFocusChange: (focus) {
-                                setState(() {
-                                  _isFocusingSearch = focus;
-                                });
-                              },
-                              child: TextField(
-                                controller: _searchController,
-                                onChanged: (val) => provider.setKeyword(val),
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  color: Color(0xFF1A1425),
-                                ),
-                                decoration: InputDecoration(
-                                  hintText: provider.tr('search_hint'),
-                                  hintStyle: const TextStyle(
-                                    color: Color(0xFF8A8496),
-                                  ),
-                                  prefixIcon: const Icon(
-                                    Icons.search,
-                                    color: Color(0xFF8A8496),
-                                    size: 18,
-                                  ),
-                                  suffixIcon: provider.searchKeyword.isNotEmpty
-                                      ? IconButton(
-                                          onPressed: () {
-                                            provider.setKeyword('');
-                                            _searchController.clear();
-                                          },
-                                          icon: const Icon(
-                                            Icons.close,
-                                            color: Color(0xFF8A8496),
-                                            size: 16,
-                                          ),
-                                        )
-                                      : null,
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    vertical: 0,
-                                  ),
-                                  filled: true,
-                                  fillColor: Colors.white,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(30),
-                                    borderSide: BorderSide.none,
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(30),
-                                    borderSide: BorderSide.none,
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(30),
-                                    borderSide: const BorderSide(
-                                      color: Color(0xFFF59E0B),
-                                      width: 1.5,
+                                  decoration: InputDecoration(
+                                    hintText: provider.tr('search_hint'),
+                                    hintStyle: const TextStyle(
+                                      color: Color(0xFF8A8496),
+                                    ),
+                                    prefixIcon: const Icon(
+                                      Icons.search,
+                                      color: Color(0xFF8A8496),
+                                      size: 18,
+                                    ),
+                                    suffixIcon:
+                                        provider.searchKeyword.isNotEmpty
+                                        ? IconButton(
+                                            onPressed: () {
+                                              provider.setKeyword('');
+                                              _searchController.clear();
+                                            },
+                                            icon: const Icon(
+                                              Icons.close,
+                                              color: Color(0xFF8A8496),
+                                              size: 16,
+                                            ),
+                                          )
+                                        : null,
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      vertical: 0,
+                                    ),
+                                    filled: true,
+                                    fillColor: Colors.white,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                      borderSide: const BorderSide(
+                                        color: Color(0xFFF59E0B),
+                                        width: 1.5,
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Autocomplete Suggestions Panel OR Main Page Content
-            Expanded(
-              child: isSearching
-                  ? _buildSuggestionsPanel(context, provider, suggCategories)
-                  : Container(
-                      decoration: BoxDecoration(
-                        color: context.fast.bg,
-                        borderRadius: BorderRadius.vertical(
-                          top: Radius.circular(24),
+                          ],
                         ),
                       ),
-                      child: _buildMainContent(context, provider, filteredRest),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Autocomplete Suggestions Panel OR Main Page Content — both
+              // scroll together with the hero above them
+              if (isSearching)
+                SizedBox(
+                  height: (viewport.maxHeight - 340) < 240
+                      ? 240.0
+                      : viewport.maxHeight - 340,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: context.fast.bg,
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(24),
+                      ),
                     ),
-            ),
-          ],
+                    child: _buildSuggestionsPanel(
+                      context,
+                      provider,
+                      suggCategories,
+                    ),
+                  ),
+                )
+              else
+                Container(
+                  decoration: BoxDecoration(
+                    color: context.fast.bg,
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(24),
+                    ),
+                  ),
+                  child: _buildMainContent(context, provider, filteredRest),
+                ),
+            ],
+          ),
         ),
 
         // Slot Machine Selection Overlay
@@ -509,7 +553,9 @@ class _HomeScreenState extends State<HomeScreen> {
     List<Restaurant> filteredRest,
   ) {
     return ListView(
-      padding: EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       children: [
         // Bento/Actionable Carousel Banners
         _buildActionableBanners(context, provider),
