@@ -49,10 +49,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 constraints: const BoxConstraints(minHeight: 250),
                 child: Stack(
                   children: [
-                    // Food imagery from the brand visual, right side
+                    // Food imagery from the brand visual, left side
                     Positioned.fill(
                       child: Align(
-                        alignment: Alignment.centerRight,
+                        alignment: Alignment.centerLeft,
                         child: FractionallySizedBox(
                           widthFactor: 0.48,
                           heightFactor: 1.0,
@@ -65,7 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
-                    // Melt the image's left edge into the hero background
+                    // Melt the image's right edge into the hero background
                     Positioned.fill(
                       child: IgnorePointer(
                         child: DecoratedBox(
@@ -74,28 +74,28 @@ class _HomeScreenState extends State<HomeScreen> {
                               begin: Alignment.centerLeft,
                               end: Alignment.centerRight,
                               colors: [
-                                FastGlowBackground.topColor,
-                                FastGlowBackground.topColor.withValues(
-                                  alpha: 0.88,
-                                ),
+                                Colors.transparent,
                                 FastGlowBackground.topColor.withValues(
                                   alpha: 0.35,
                                 ),
-                                Colors.transparent,
+                                FastGlowBackground.topColor.withValues(
+                                  alpha: 0.88,
+                                ),
+                                FastGlowBackground.topColor,
                               ],
-                              stops: const [0.0, 0.40, 0.62, 0.85],
+                              stops: const [0.15, 0.38, 0.60, 1.0],
                             ),
                           ),
                         ),
                       ),
                     ),
                     Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Padding(
                           padding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               const Text(
                                 'CHAQUE MINUTE COMPTE',
@@ -108,6 +108,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               const SizedBox(height: 6),
                               RichText(
+                                textAlign: TextAlign.right,
                                 text: TextSpan(
                                   style: const TextStyle(
                                     fontSize: 26,
@@ -131,6 +132,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               const SizedBox(height: 4),
                               Text(
                                 tr(context, 'hero_sub'),
+                                textAlign: TextAlign.right,
                                 style: const TextStyle(
                                   fontSize: 12,
                                   color: Color(0xFFB8AECF),
