@@ -13,17 +13,10 @@ workflows:
   android-apk:
     name: FAST Android APK
     max_build_duration: 40
-    cache:
-      cache_paths:
-        - $FLUTTER_ROOT/.pub-cache
-        - $HOME/.gradle/caches
-        - $HOME/.gradle/wrapper
     environment:
       flutter: stable
       groups:
         - appstore_credentials
-      vars:
-        CM_CLONE_DEPTH: 1
     triggering:
       events:
         - push
@@ -62,12 +55,6 @@ workflows:
   ios-app-store:
     name: FAST iOS App Store
     max_build_duration: 60
-    cache:
-      cache_paths:
-        - $FLUTTER_ROOT/.pub-cache
-        - $HOME/Library/Caches/CocoaPods
-        - $HOME/.gradle/caches
-        - $HOME/.gradle/wrapper
     environment:
       flutter: stable
       xcode: latest
@@ -77,7 +64,6 @@ workflows:
       vars:
         BUNDLE_ID: "com.fast.resto.fastRestoBigbonney"
         APP_NAME: "FAST"
-        CM_CLONE_DEPTH: 1
     # No triggering block — iOS builds are started manually so they don't
     # occupy the single build machine while Android APK builds queue behind.
     scripts:
