@@ -227,9 +227,9 @@ class _RestoMainShellState extends State<RestoMainShell> {
               ElevatedButton.icon(
                 key: _kitchenKey,
                 onPressed: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                    builder: (_) => const KitchenScreen(),
-                  ));
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const KitchenScreen()),
+                  );
                 },
                 icon: Icon(Icons.soup_kitchen, size: 18),
                 label: Text(
@@ -260,7 +260,9 @@ class _RestoMainShellState extends State<RestoMainShell> {
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   color: FASTPro.magenta,
                   child: Text(
-                    tr(context, 'rush_banner'),
+                    provider.rushMinutesRemaining != null
+                        ? '${tr(context, 'rush_banner')}  ·  ${tr(context, 'rush_remaining').replaceAll('{m}', '${provider.rushMinutesRemaining}')}'
+                        : tr(context, 'rush_banner'),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
@@ -363,38 +365,85 @@ class _RestoMainShellState extends State<RestoMainShell> {
     );
   }
 
-  /// Big red warning-style button — toggles Rush Mode instantly.
+  /// Big glossy red circle raised slightly above the nav bar — opens a
+  /// confirmation sheet so Rush Mode can't be toggled accidentally.
   Widget _rushItem(RestoProvider provider) {
     final active = provider.isRushMode;
     return Expanded(
       child: KeyedSubtree(
         key: _statsKey,
         child: InkWell(
-          onTap: () => provider.toggleRushMode(),
+          onTap: () => _showRushSheet(provider),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                width: 40,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: active
-                      ? const Color(0xFFEF4444)
-                      : const Color(0xFFEF4444).withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: const Color(0xFFEF4444),
-                    width: 1.5,
+              Transform.translate(
+                offset: const Offset(0, -8),
+                child: Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: const RadialGradient(
+                      center: Alignment(0, -0.35),
+                      radius: 0.9,
+                      colors: [
+                        Color(0xFFF87171),
+                        Color(0xFFEF4444),
+                        Color(0xFFB91C1C),
+                      ],
+                      stops: [0.0, 0.55, 1.0],
+                    ),
+                    border: Border.all(
+                      color: const Color(0xFFFCA5A5),
+                      width: 1.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(
+                          0xFFEF4444,
+                        ).withValues(alpha: active ? 0.65 : 0.35),
+                        blurRadius: active ? 18 : 10,
+                        spreadRadius: active ? 2 : 0,
+                      ),
+                      const BoxShadow(
+                        color: Color(0xFF7F1D1D),
+                        blurRadius: 0,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Specular highlight — glossy dome look
+                      Positioned(
+                        top: 6,
+                        child: Container(
+                          width: 26,
+                          height: 10,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.white.withValues(alpha: 0.55),
+                                Colors.white.withValues(alpha: 0),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const Icon(
+                        Icons.warning_rounded,
+                        color: Colors.white,
+                        size: 26,
+                      ),
+                    ],
                   ),
                 ),
-                child: Icon(
-                  Icons.warning_amber_rounded,
-                  size: 18,
-                  color: active ? Colors.white : const Color(0xFFEF4444),
-                ),
               ),
-              const SizedBox(height: 3),
               Text(
                 'RUSH',
                 style: TextStyle(
@@ -411,6 +460,210 @@ class _RestoMainShellState extends State<RestoMainShell> {
         ),
       ),
     );
+  }
+
+  /// Activation requires a confirm + picks a duration; deactivation is
+  /// a single confirm with the remaining time shown.
+  Future<void> _showRushSheet(RestoProvider provider) async {
+    if (provider.isRushMode) {
+      final remaining = provider.rushMinutesRemaining;
+      final confirmed = await showModalBottomSheet<bool>(
+        context: context,
+        backgroundColor: FASTPro.header,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (sheetContext) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  tr(context, 'rush_off_title'),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  remaining != null
+                      ? tr(
+                          context,
+                          'rush_off_desc_timed',
+                        ).replaceAll('{m}', '$remaining')
+                      : tr(context, 'rush_off_desc'),
+                  style: const TextStyle(
+                    color: Color(0xFF94A3B8),
+                    fontSize: 13,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton.icon(
+                  onPressed: () => Navigator.pop(sheetContext, true),
+                  icon: const Icon(Icons.power_settings_new, size: 18),
+                  label: Text(
+                    tr(context, 'rush_deactivate_cta'),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFEF4444),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: () => Navigator.pop(sheetContext, false),
+                  child: Text(
+                    tr(context, 'cancel'),
+                    style: const TextStyle(color: Color(0xFF94A3B8)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      if (confirmed == true) await provider.setRushMode(false);
+      return;
+    }
+
+    int? selected = 30;
+    final confirmed = await showModalBottomSheet<int?>(
+      context: context,
+      backgroundColor: FASTPro.header,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (sheetContext, setSheetState) {
+          const durations = [15, 30, 45, 60, 90];
+          return SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    tr(context, 'rush_confirm_title'),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    tr(context, 'rush_confirm_desc'),
+                    style: const TextStyle(
+                      color: Color(0xFF94A3B8),
+                      fontSize: 13,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    tr(context, 'rush_duration'),
+                    style: const TextStyle(
+                      color: Color(0xFF94A3B8),
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final m in durations)
+                        ChoiceChip(
+                          label: Text('$m min'),
+                          selected: selected == m,
+                          onSelected: (_) => setSheetState(() => selected = m),
+                          selectedColor: const Color(0xFFEF4444),
+                          backgroundColor: const Color(0xFF1E293B),
+                          labelStyle: TextStyle(
+                            color: selected == m
+                                ? Colors.white
+                                : const Color(0xFF94A3B8),
+                            fontWeight: FontWeight.bold,
+                          ),
+                          side: BorderSide(
+                            color: selected == m
+                                ? const Color(0xFFEF4444)
+                                : const Color(0xFF334155),
+                          ),
+                        ),
+                      ChoiceChip(
+                        label: Text(tr(context, 'rush_until_off')),
+                        selected: selected == null,
+                        onSelected: (_) => setSheetState(() => selected = null),
+                        selectedColor: const Color(0xFFEF4444),
+                        backgroundColor: const Color(0xFF1E293B),
+                        labelStyle: TextStyle(
+                          color: selected == null
+                              ? Colors.white
+                              : const Color(0xFF94A3B8),
+                          fontWeight: FontWeight.bold,
+                        ),
+                        side: BorderSide(
+                          color: selected == null
+                              ? const Color(0xFFEF4444)
+                              : const Color(0xFF334155),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton.icon(
+                    onPressed: () =>
+                        Navigator.pop(sheetContext, selected ?? -1),
+                    icon: const Icon(Icons.warning_rounded, size: 18),
+                    label: Text(
+                      tr(context, 'rush_activate_cta'),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFEF4444),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: () => Navigator.pop(sheetContext),
+                    child: Text(
+                      tr(context, 'cancel'),
+                      style: const TextStyle(color: Color(0xFF94A3B8)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+    if (confirmed != null) {
+      await provider.setRushMode(
+        true,
+        minutes: confirmed == -1 ? null : confirmed,
+      );
+    }
   }
 }
 

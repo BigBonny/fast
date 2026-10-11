@@ -233,9 +233,22 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
             Center(
               child: Padding(
                 padding: EdgeInsets.all(32.0),
-                child: Text(
-                  tr(context, 'no_active_orders'),
-                  style: TextStyle(color: context.fast.t2),
+                child: Column(
+                  children: [
+                    Text(
+                      tr(context, 'no_active_orders'),
+                      style: TextStyle(
+                        color: context.fast.t2,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      tr(context, 'orders_realtime_hint'),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: context.fast.t3, fontSize: 12),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -324,18 +337,49 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
               runSpacing: 8,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                Text('#${order.id.substring(order.id.length > 6 ? order.id.length - 6 : 0)}',
-                    style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.bold, fontSize: 16)),
+                Text(
+                  '#${order.id.substring(order.id.length > 6 ? order.id.length - 6 : 0)}',
+                  style: TextStyle(
+                    color: context.fast.t1,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
                 if (order.groupCode != null)
-                  Text(order.groupCode!, style: const TextStyle(color: FASTPro.teal, fontWeight: FontWeight.w900)),
+                  Text(
+                    order.groupCode!,
+                    style: const TextStyle(
+                      color: FASTPro.teal,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
                 if (proxLabel != null)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(color: proxColor, borderRadius: BorderRadius.circular(6)),
-                    child: Text(proxLabel, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: proxColor,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      proxLabel,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 10,
+                      ),
+                    ),
                   ),
-                Text(orderStatusLabel(context, order.status),
-                    style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 12)),
+                Text(
+                  orderStatusLabel(context, order.status),
+                  style: TextStyle(
+                    color: statusColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
               ],
             ),
           ),
@@ -414,7 +458,10 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                       ),
                       const Spacer(),
                       Text(
-                        tr(context, 'pct_route').replaceAll('{n}', '${order.gpsProgress.clamp(0, 100).round()}'),
+                        tr(context, 'pct_route').replaceAll(
+                          '{n}',
+                          '${order.gpsProgress.clamp(0, 100).round()}',
+                        ),
                         style: TextStyle(
                           color: proxColor ?? context.fast.t3,
                           fontSize: 11,
