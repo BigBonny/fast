@@ -130,14 +130,40 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
+                                  // Brand mark + tagline centered at the top
+                                  // of the hero, matching the reference design
+                                  const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.bolt,
+                                        color: FASTBrand.amber,
+                                        size: 22,
+                                      ),
+                                      Text(
+                                        'FAST',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w900,
+                                          fontStyle: FontStyle.italic,
+                                          fontSize: 22,
+                                          letterSpacing: -0.5,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      Icon(
+                                        Icons.bolt,
+                                        color: FASTBrand.amber,
+                                        size: 22,
+                                      ),
+                                    ],
+                                  ),
                                   const Text(
-                                    'CHAQUE MINUTE COMPTE',
+                                    'Chaque minute compte',
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w900,
-                                      letterSpacing: 2.4,
-                                      color: Color(0xFF9D8FC0),
+                                      fontSize: 12,
+                                      color: Color(0xFFD8D0E8),
+                                      fontStyle: FontStyle.italic,
                                     ),
                                   ),
                                   const SizedBox(height: 10),
