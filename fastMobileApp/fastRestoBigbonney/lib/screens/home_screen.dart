@@ -98,7 +98,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: CustomPaint(painter: _HeroFlamesPainter()),
                       ),
                     ),
-                    Positioned.fill(
+                    // Non-positioned child: gives the Stack its height so the
+                    // fill layers above have something bounded to paint into
+                    SizedBox(
+                      height: 340,
+                      width: double.infinity,
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.center,
@@ -709,7 +713,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // Actionable Banners — synced with website quick categories
   Widget _buildActionableBanners(BuildContext context, FASTProvider provider) {
     return SizedBox(
-      height: 140,
+      height: 150,
       child: ListView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -819,6 +823,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 Text(
                   title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w900,
