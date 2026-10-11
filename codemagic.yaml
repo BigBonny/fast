@@ -13,6 +13,12 @@ workflows:
   android-apk:
     name: FAST Android APK
     max_build_duration: 40
+    clone_depth: 1
+    cache:
+      cache_paths:
+        - $FLUTTER_ROOT/.pub-cache
+        - $HOME/.gradle/caches
+        - $HOME/.gradle/wrapper
     environment:
       flutter: stable
       groups:
@@ -55,6 +61,13 @@ workflows:
   ios-app-store:
     name: FAST iOS App Store
     max_build_duration: 60
+    clone_depth: 1
+    cache:
+      cache_paths:
+        - $FLUTTER_ROOT/.pub-cache
+        - $HOME/Library/Caches/CocoaPods
+        - $HOME/.gradle/caches
+        - $HOME/.gradle/wrapper
     environment:
       flutter: stable
       xcode: latest
