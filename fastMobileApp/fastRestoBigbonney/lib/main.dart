@@ -27,6 +27,7 @@ import 'screens/group_screen.dart';
 import 'screens/livreur_screen.dart';
 import 'screens/driver_account_screen.dart';
 import 'widgets/client_drawer.dart';
+import 'widgets/fast_glow_background.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -81,14 +82,22 @@ class _FASTAppState extends State<FASTApp> with WidgetsBindingObserver {
       _sessionUserId = user.id;
       fast.resetSession();
       resto.resetSession();
-      fast.syncFromAuth(id: user.id, name: user.name, email: user.email,
-          phone: user.phone, points: user.points);
-    } else if (auth.state == AuthState.unauthenticated && _sessionUserId != null) {
+      fast.syncFromAuth(
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        points: user.points,
+      );
+    } else if (auth.state == AuthState.unauthenticated &&
+        _sessionUserId != null) {
       _sessionUserId = null;
       fast.resetSession();
       resto.resetSession();
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _navigatorKey.currentState?.popUntil((route) => route.isFirst);
+        if (mounted) {
+          _navigatorKey.currentState?.popUntil((route) => route.isFirst);
+        }
       });
     }
   }
@@ -209,7 +218,8 @@ class _FASTAppState extends State<FASTApp> with WidgetsBindingObserver {
       navigatorKey: _navigatorKey,
       builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
         value: Theme.of(context).brightness == Brightness.dark
-            ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+            ? SystemUiOverlayStyle.light
+            : SystemUiOverlayStyle.dark,
         child: child ?? const SizedBox.shrink(),
       ),
       debugShowCheckedModeBanner: false,
@@ -381,14 +391,22 @@ class _MainShellState extends State<MainShell>
         break;
     }
 
+    final onHome = provider.currentScreen == 'home';
+
     return Scaffold(
       drawer: const ClientDrawer(),
       appBar: AppBar(
-        backgroundColor: context.fast.bg.withValues(alpha: 0.95),
+        // On home the app bar blends into the dark branded hero
+        backgroundColor: onHome
+            ? FastGlowBackground.topColor
+            : context.fast.bg.withValues(alpha: 0.95),
+        systemOverlayStyle: onHome ? SystemUiOverlayStyle.light : null,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         titleSpacing: 0,
-        iconTheme: IconThemeData(color: context.fast.t1),
+        iconTheme: IconThemeData(
+          color: onHome ? Colors.white : context.fast.t1,
+        ),
         title: GestureDetector(
           onTap: () {
             provider.selectRestaurant(null);

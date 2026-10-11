@@ -6,6 +6,7 @@ import '../provider.dart';
 import '../models.dart';
 import '../theme.dart';
 import '../widgets/fast_image.dart';
+import '../widgets/fast_glow_background.dart';
 import '../l10n/tr.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -42,76 +43,118 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         Column(
           children: [
-            // Search Bar (full width — no ASAP pill)
-            Container(
-              color: context.fast.bg,
-              padding: EdgeInsets.fromLTRB(16, 12, 16, 16),
+            // Branded hero — dark glow background, headline + search pill
+            FastGlowBackground(
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      // Search field — full width
-                      Expanded(
-                        child: Focus(
-                          onFocusChange: (focus) {
-                            setState(() {
-                              _isFocusingSearch = focus;
-                            });
-                          },
-                          child: TextField(
-                            controller: _searchController,
-                            onChanged: (val) => provider.setKeyword(val),
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: context.fast.t1,
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'CHAQUE MINUTE COMPTE',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 2.4,
+                            color: Color(0xFF9D8FC0),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        RichText(
+                          text: TextSpan(
+                            style: const TextStyle(
+                              fontSize: 26,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -0.5,
+                              color: Colors.white,
+                              height: 1.15,
                             ),
-                            decoration: InputDecoration(
-                              hintText: provider.tr('search_hint'),
-                              hintStyle: TextStyle(color: context.fast.t3),
-                              prefixIcon: Icon(
-                                Icons.search,
-                                color: context.fast.t3,
-                                size: 18,
-                              ),
-                              suffixIcon: provider.searchKeyword.isNotEmpty
-                                  ? IconButton(
-                                      onPressed: () {
-                                        provider.setKeyword('');
-                                        _searchController.clear();
-                                      },
-                                      icon: Icon(
-                                        Icons.close,
-                                        color: context.fast.t3,
-                                        size: 16,
-                                      ),
-                                    )
-                                  : null,
-                              contentPadding: EdgeInsets.symmetric(vertical: 0),
-                              filled: true,
-                              fillColor: context.fast.cardHigh,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: context.fast.line,
-                                ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: context.fast.line,
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(
+                            children: [
+                              TextSpan(text: tr(context, 'hero_order')),
+                              TextSpan(
+                                text: tr(context, 'hero_fast'),
+                                style: const TextStyle(
                                   color: Color(0xFFF59E0B),
                                 ),
                               ),
+                              TextSpan(text: tr(context, 'hero_now')),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          tr(context, 'hero_sub'),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFFB8AECF),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Search Bar — white pill on the dark hero
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+                    child: Focus(
+                      onFocusChange: (focus) {
+                        setState(() {
+                          _isFocusingSearch = focus;
+                        });
+                      },
+                      child: TextField(
+                        controller: _searchController,
+                        onChanged: (val) => provider.setKeyword(val),
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFF1A1425),
+                        ),
+                        decoration: InputDecoration(
+                          hintText: provider.tr('search_hint'),
+                          hintStyle: const TextStyle(color: Color(0xFF8A8496)),
+                          prefixIcon: const Icon(
+                            Icons.search,
+                            color: Color(0xFF8A8496),
+                            size: 18,
+                          ),
+                          suffixIcon: provider.searchKeyword.isNotEmpty
+                              ? IconButton(
+                                  onPressed: () {
+                                    provider.setKeyword('');
+                                    _searchController.clear();
+                                  },
+                                  icon: const Icon(
+                                    Icons.close,
+                                    color: Color(0xFF8A8496),
+                                    size: 16,
+                                  ),
+                                )
+                              : null,
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 0,
+                          ),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                            borderSide: BorderSide.none,
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFF59E0B),
+                              width: 1.5,
                             ),
                           ),
                         ),
                       ),
-                    ],
+                    ),
                   ),
                 ],
               ),
@@ -385,49 +428,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return ListView(
       padding: EdgeInsets.symmetric(vertical: 8),
       children: [
-        // Hero headline (matches website homepage)
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 4, 16, 14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'CHAQUE MINUTE COMPTE',
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 2.4,
-                  color: context.fast.t3,
-                ),
-              ),
-              const SizedBox(height: 6),
-              RichText(
-                text: TextSpan(
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -0.5,
-                    color: context.fast.t1,
-                    height: 1.15,
-                  ),
-                  children: [
-                    TextSpan(text: tr(context, 'hero_order')),
-                    TextSpan(
-                      text: tr(context, 'hero_fast'),
-                      style: TextStyle(color: Color(0xFFF59E0B)),
-                    ),
-                    TextSpan(text: tr(context, 'hero_now')),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                tr(context, 'hero_sub'),
-                style: TextStyle(fontSize: 12, color: context.fast.t2),
-              ),
-            ],
-          ),
-        ),
         // Bento/Actionable Carousel Banners
         _buildActionableBanners(context, provider),
 

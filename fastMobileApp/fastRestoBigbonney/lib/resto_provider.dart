@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'models.dart';
 import 'services/order_service.dart';
 import 'services/menu_service.dart';
+import 'services/restaurant_service.dart';
 import 'services/stats_service.dart';
 import 'models/resto_stats.dart';
 import 'api/api_exceptions.dart';
@@ -18,6 +19,8 @@ class RestoProvider extends ChangeNotifier {
   bool _isTutorialDone = false;
   bool _skipSplash = false;
   bool _isRushMode = false;
+  DateTime? _rushEndsAt;
+  Timer? _rushTimer;
   String _theme = 'dark'; // data-theme equivalent
 
   // Orders specific to Resto
@@ -62,9 +65,13 @@ class RestoProvider extends ChangeNotifier {
     _statsLoading = false;
     _isApiLoaded = false;
     _isRushMode = false;
+    _rushEndsAt = null;
+    _rushTimer?.cancel();
+    _rushTimer = null;
     _error = null;
     notifyListeners();
   }
+
   final _orderService = OrderService();
   final _menuService = MenuService();
   final _statsService = StatsService();
@@ -75,6 +82,15 @@ class RestoProvider extends ChangeNotifier {
   bool get isTutorialDone => _isTutorialDone;
   bool get skipSplash => _skipSplash;
   bool get isRushMode => _isRushMode;
+
+  /// Minutes left in the current timed rush — null when the rush is
+  /// open-ended ("until turned off") or inactive.
+  int? get rushMinutesRemaining {
+    if (!_isRushMode || _rushEndsAt == null) return null;
+    final seconds = _rushEndsAt!.difference(DateTime.now()).inSeconds;
+    return seconds <= 0 ? 0 : (seconds / 60).ceil();
+  }
+
   String get theme => _theme;
   List<Order> get restoOrders => _restoOrders;
   List<MenuItem> get menu => _menu;
@@ -98,7 +114,10 @@ class RestoProvider extends ChangeNotifier {
   }
 
   /// Load orders from API and start polling
-  Future<void> loadFromApi({String? restaurantId, bool menuOnly = false}) async {
+  Future<void> loadFromApi({
+    String? restaurantId,
+    bool menuOnly = false,
+  }) async {
     final generation = ++_sessionGeneration;
     stopPolling();
     _restaurantId = restaurantId;
@@ -112,7 +131,33 @@ class RestoProvider extends ChangeNotifier {
     if (_disposed || generation != _sessionGeneration) return;
     _isApiLoaded = true;
     if (!menuOnly) _startPolling();
+    _reconcileRushWithServer();
     notifyListeners();
+  }
+
+  /// Aligns the local rush flag with the server's `isRushMode` — covers
+  /// a timed rush that expired while the app was closed and any drift
+  /// between this device and the backend.
+  Future<void> _reconcileRushWithServer() async {
+    final generation = _sessionGeneration;
+    try {
+      final data = await RestaurantService().getMyRestaurant();
+      if (_disposed || generation != _sessionGeneration) return;
+      final serverRush = data['isRushMode'] == true;
+      if (serverRush == _isRushMode) return;
+      final res = await ApiClient().post(ApiConfig.toggleRush);
+      if (_disposed || generation != _sessionGeneration) return;
+      if (res is Map && res['isRushMode'] is bool) {
+        _isRushMode = res['isRushMode'] as bool;
+      } else {
+        _isRushMode = !_isRushMode;
+      }
+      if (!_isRushMode) _rushEndsAt = null;
+      _scheduleRushTimer();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('fast_rush', _isRushMode);
+      notifyListeners();
+    } catch (_) {}
   }
 
   // ─── Menu CRUD ──────────────────────────────────────────────
@@ -276,6 +321,21 @@ class RestoProvider extends ChangeNotifier {
     _isTutorialDone = prefs.getBool('fast_tutorial_done') ?? false;
     _skipSplash = prefs.getBool('fast_skip_splash') ?? false;
     _isRushMode = prefs.getBool('fast_rush') ?? false;
+    final rushUntil = prefs.getInt('fast_rush_until');
+    _rushEndsAt = rushUntil != null
+        ? DateTime.fromMillisecondsSinceEpoch(rushUntil)
+        : null;
+    if (_isRushMode &&
+        _rushEndsAt != null &&
+        !DateTime.now().isBefore(_rushEndsAt!)) {
+      // Timed rush expired while the app was closed — restore normal
+      // prep locally; the server flag is reconciled on API load.
+      _isRushMode = false;
+      _rushEndsAt = null;
+      await prefs.setBool('fast_rush', false);
+      await prefs.remove('fast_rush_until');
+    }
+    _scheduleRushTimer();
     _theme = prefs.getString('fast_r_theme') ?? 'dark';
 
     notifyListeners();
@@ -312,13 +372,25 @@ class RestoProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> toggleRushMode() async {
-    _isRushMode = !_isRushMode;
+  /// Turns Rush Mode on or off. When [minutes] is provided the rush
+  /// auto-deactivates at the end of the window — including after an app
+  /// restart, via the restored [rushEndsAt].
+  Future<void> setRushMode(bool on, {int? minutes}) async {
+    _isRushMode = on;
+    _rushEndsAt = on && minutes != null
+        ? DateTime.now().add(Duration(minutes: minutes))
+        : null;
+    _scheduleRushTimer();
 
-    // Sync with API
+    // Sync with API — the response is authoritative for the real state.
     if (_isApiLoaded) {
       try {
-        await ApiClient().post(ApiConfig.toggleRush);
+        final res = await ApiClient().post(ApiConfig.toggleRush);
+        if (res is Map && res['isRushMode'] is bool) {
+          _isRushMode = res['isRushMode'] as bool;
+          if (!_isRushMode) _rushEndsAt = null;
+          _scheduleRushTimer();
+        }
       } catch (e) {
         _error = _extractErrorMessage(e);
       }
@@ -326,7 +398,34 @@ class RestoProvider extends ChangeNotifier {
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('fast_rush', _isRushMode);
+    if (_rushEndsAt != null) {
+      await prefs.setInt(
+        'fast_rush_until',
+        _rushEndsAt!.millisecondsSinceEpoch,
+      );
+    } else {
+      await prefs.remove('fast_rush_until');
+    }
     notifyListeners();
+  }
+
+  Future<void> toggleRushMode() => setRushMode(!_isRushMode);
+
+  /// Auto-deactivates a timed rush when its window ends and refreshes
+  /// the countdown shown in the UI once a minute.
+  void _scheduleRushTimer() {
+    _rushTimer?.cancel();
+    if (!_isRushMode || _rushEndsAt == null) {
+      _rushTimer = null;
+      return;
+    }
+    _rushTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+      if (_rushEndsAt == null || !DateTime.now().isBefore(_rushEndsAt!)) {
+        setRushMode(false);
+      } else {
+        notifyListeners();
+      }
+    });
   }
 
   Future<void> clearAllSettingsAndRestart() async {
