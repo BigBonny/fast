@@ -122,19 +122,8 @@ class RoleSelectionScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  // Orange underline accent
-                  Center(
-                    child: Container(
-                      width: 80,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFF97316), Color(0xFFEF4444)],
-                        ),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
+                  // Curved orange underline accent
+                  const Center(child: _CurvedUnderline()),
                   const SizedBox(height: 48),
 
                   // Client card — light card, person icon
@@ -193,6 +182,45 @@ class RoleSelectionScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Small orange swoosh under the welcome subtitle — a shallow arc
+/// dipping in the middle, like the reference design.
+class _CurvedUnderline extends StatelessWidget {
+  const _CurvedUnderline();
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      size: const Size(96, 14),
+      painter: _CurvedUnderlinePainter(),
+    );
+  }
+}
+
+class _CurvedUnderlinePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = Path()
+      ..moveTo(0, size.height * 0.2)
+      ..quadraticBezierTo(
+        size.width * 0.5,
+        size.height,
+        size.width,
+        size.height * 0.2,
+      );
+    final paint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFFF97316), Color(0xFFEF4444)],
+      ).createShader(Offset.zero & size)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4
+      ..strokeCap = StrokeCap.round;
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _RoleCard extends StatelessWidget {
