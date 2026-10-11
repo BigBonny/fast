@@ -78,13 +78,8 @@ workflows:
         BUNDLE_ID: "com.fast.resto.fastRestoBigbonney"
         APP_NAME: "FAST"
         CM_CLONE_DEPTH: 1
-    triggering:
-      events:
-        - push
-      branch_patterns:
-        - pattern: master
-          include: true
-      cancel_previous_builds: true
+    # No triggering block — iOS builds are started manually so they don't
+    # occupy the single build machine while Android APK builds queue behind.
     scripts:
       - name: Install dependencies
         script: |
