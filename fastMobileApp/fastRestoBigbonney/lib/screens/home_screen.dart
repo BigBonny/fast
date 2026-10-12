@@ -48,26 +48,27 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               // Branded hero — dark glow background, headline + search pill
               FastGlowBackground(
-                child: Builder(
-                  builder: (context) {
+                arcs: false,
+                child: LayoutBuilder(
+                  builder: (context, box) {
                     // The hero extends under the floating AppBar; the brand
                     // mark sits level with the nav icons, like the reference.
                     final statusBar = MediaQuery.of(context).padding.top;
-                    const heroBody = 280.0;
+                    const heroBody = 268.0;
                     final heroHeight = statusBar + heroBody;
+                    // Reference proportion: the photo spans ~half the screen
+                    // width (bowl centre-right, tacos top-right, pizza cut
+                    // by the edge, sushi bottom-left), never zoomed.
+                    final photoW = box.maxWidth * 0.56;
                     return SizedBox(
                       height: heroHeight,
                       width: double.infinity,
                       child: Stack(
                         children: [
-                          // The reference's food photo (bowl, tacos, pizza,
-                          // sushi + the diagonal fiery streak above them),
-                          // anchored bottom-right at its natural aspect so
-                          // nothing is zoomed or cropped away.
                           Positioned(
                             right: 0,
                             bottom: 0,
-                            top: statusBar + 8,
+                            width: photoW,
                             child: ShaderMask(
                               blendMode: BlendMode.dstIn,
                               shaderCallback: (rect) => const LinearGradient(
@@ -78,30 +79,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                   Colors.white,
                                   Colors.white,
                                 ],
-                                stops: [0.0, 0.22, 1.0],
+                                stops: [0.0, 0.18, 1.0],
                               ).createShader(rect),
-                              child: ShaderMask(
-                                blendMode: BlendMode.dstIn,
-                                shaderCallback: (rect) => const LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    Colors.transparent,
-                                    Colors.white,
-                                    Colors.white,
-                                  ],
-                                  stops: [0.0, 0.16, 1.0],
-                                ).createShader(rect),
-                                child: Image.asset(
-                                  'assets/images/hero_food.png',
-                                  fit: BoxFit.fitHeight,
-                                  alignment: Alignment.bottomRight,
-                                ),
+                              child: Image.asset(
+                                'assets/images/hero_food.png',
+                                width: photoW,
+                                fit: BoxFit.fitWidth,
+                                alignment: Alignment.bottomRight,
                               ),
                             ),
                           ),
                           // Soft dark veil on the left so the headline stays
-                          // crisp where it overlaps the photo
+                          // crisp where it meets the photo
                           Positioned.fill(
                             child: IgnorePointer(
                               child: DecoratedBox(
@@ -111,14 +100,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                     end: Alignment.centerRight,
                                     colors: [
                                       FastGlowBackground.topColor.withValues(
-                                        alpha: 0.75,
+                                        alpha: 0.55,
                                       ),
                                       FastGlowBackground.topColor.withValues(
-                                        alpha: 0.45,
+                                        alpha: 0.35,
                                       ),
                                       Colors.transparent,
                                     ],
-                                    stops: const [0.0, 0.32, 0.55],
+                                    stops: const [0.0, 0.30, 0.50],
                                   ),
                                 ),
                               ),
@@ -173,10 +162,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           Positioned(
                             left: 20,
                             right: 0,
-                            top: statusBar + 86,
+                            top: statusBar + 84,
                             child: FractionallySizedBox(
                               alignment: Alignment.centerLeft,
-                              widthFactor: 0.62,
+                              widthFactor: 0.58,
                               child: Transform.rotate(
                                 angle: -0.035,
                                 alignment: Alignment.centerLeft,
@@ -186,11 +175,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                     RichText(
                                       text: TextSpan(
                                         style: const TextStyle(
-                                          fontSize: 30,
+                                          fontSize: 32,
                                           fontWeight: FontWeight.w900,
-                                          letterSpacing: -0.8,
+                                          letterSpacing: -1.0,
                                           color: Colors.white,
-                                          height: 1.05,
+                                          height: 1.02,
                                           shadows: [
                                             Shadow(
                                               color: Colors.black54,
@@ -338,12 +327,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 SizedBox(
                   height:
                       (viewport.maxHeight -
-                              280 -
+                              268 -
                               MediaQuery.of(context).padding.top) <
                           240
                       ? 240.0
                       : viewport.maxHeight -
-                            280 -
+                            268 -
                             MediaQuery.of(context).padding.top,
                   child: Container(
                     decoration: BoxDecoration(
