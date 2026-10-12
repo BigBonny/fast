@@ -191,67 +191,61 @@ class _HomeScreenState extends State<HomeScreen> {
                           Positioned(
                             left: 20,
                             right: 0,
-                            top: statusBar + 78,
+                            top: statusBar + 96,
                             child: FractionallySizedBox(
                               alignment: Alignment.centerLeft,
                               widthFactor: 0.66,
-                              child: Transform.rotate(
-                                angle: -0.035,
-                                alignment: Alignment.centerLeft,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    RichText(
-                                      text: TextSpan(
-                                        style: const TextStyle(
-                                          fontSize: 30,
-                                          fontWeight: FontWeight.w900,
-                                          letterSpacing: -0.8,
-                                          color: Colors.white,
-                                          height: 1.05,
-                                          shadows: [
-                                            Shadow(
-                                              color: Colors.black54,
-                                              blurRadius: 12,
-                                              offset: Offset(0, 2),
-                                            ),
-                                          ],
-                                        ),
-                                        children: [
-                                          TextSpan(
-                                            text: tr(context, 'hero_order'),
-                                          ),
-                                          TextSpan(
-                                            text: tr(context, 'hero_fast'),
-                                            style: const TextStyle(
-                                              color: Color(0xFFF59E0B),
-                                            ),
-                                          ),
-                                          TextSpan(
-                                            text: tr(context, 'hero_now'),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      tr(context, 'hero_sub'),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  RichText(
+                                    text: TextSpan(
                                       style: const TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w800,
-                                        color: Color(0xFFFBBF24),
-                                        height: 1.2,
+                                        fontSize: 30,
+                                        fontWeight: FontWeight.w900,
+                                        letterSpacing: -0.8,
+                                        color: Colors.white,
+                                        height: 1.05,
                                         shadows: [
                                           Shadow(
                                             color: Colors.black54,
-                                            blurRadius: 10,
+                                            blurRadius: 12,
                                             offset: Offset(0, 2),
                                           ),
                                         ],
                                       ),
+                                      children: [
+                                        TextSpan(
+                                          text: tr(context, 'hero_order'),
+                                        ),
+                                        TextSpan(
+                                          text: tr(context, 'hero_fast'),
+                                          style: const TextStyle(
+                                            color: Color(0xFFF59E0B),
+                                          ),
+                                        ),
+                                        TextSpan(text: tr(context, 'hero_now')),
+                                      ],
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    tr(context, 'hero_sub'),
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w800,
+                                      color: Color(0xFFFBBF24),
+                                      height: 1.2,
+                                      shadows: [
+                                        Shadow(
+                                          color: Colors.black54,
+                                          blurRadius: 10,
+                                          offset: Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
