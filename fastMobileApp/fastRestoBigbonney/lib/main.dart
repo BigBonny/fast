@@ -28,7 +28,6 @@ import 'screens/livreur_screen.dart';
 import 'screens/driver_account_screen.dart';
 import 'widgets/client_drawer.dart';
 
-
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setSystemUIOverlayStyle(
@@ -394,6 +393,9 @@ class _MainShellState extends State<MainShell>
     final onHome = provider.currentScreen == 'home';
 
     return Scaffold(
+      // On home the hero fills the top edge — body extends under the
+      // transparent AppBar so there's no light band above the dark hero.
+      extendBodyBehindAppBar: onHome,
       drawer: const ClientDrawer(),
       appBar: AppBar(
         // Transparent on home so the hero fills the top edge; solid on

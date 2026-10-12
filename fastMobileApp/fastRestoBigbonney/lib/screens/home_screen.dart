@@ -52,40 +52,41 @@ class _HomeScreenState extends State<HomeScreen> {
                   constraints: const BoxConstraints(minHeight: 340),
                   child: Stack(
                     children: [
-                      // Food imagery from the brand visual, right side —
-                      // right-biased so cover never clips the dishes
+                      // Food imagery on the right, clipped to an organic curved
+                      // edge that melts into the dark background — no hard seam
                       Positioned.fill(
                         child: Align(
                           alignment: Alignment.centerRight,
                           child: FractionallySizedBox(
                             widthFactor: 0.55,
                             heightFactor: 1.0,
-                            // Fade the image's own left edge into the glow so
-                            // there is no hard seam where the food begins
-                            child: ShaderMask(
-                              blendMode: BlendMode.dstIn,
-                              shaderCallback: (rect) => const LinearGradient(
-                                begin: Alignment.centerLeft,
-                                end: Alignment.centerRight,
-                                colors: [
-                                  Colors.transparent,
-                                  Colors.white,
-                                  Colors.white,
-                                ],
-                                stops: [0.0, 0.30, 1.0],
-                              ).createShader(rect),
-                              child: Image.asset(
-                                'assets/images/hero_food.png',
-                                width: double.infinity,
-                                height: double.infinity,
-                                fit: BoxFit.cover,
-                                alignment: Alignment.centerRight,
+                            child: ClipPath(
+                              clipper: const _FoodImageClipper(),
+                              child: ShaderMask(
+                                blendMode: BlendMode.dstIn,
+                                shaderCallback: (rect) => const LinearGradient(
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                  colors: [
+                                    Colors.transparent,
+                                    Colors.white,
+                                    Colors.white,
+                                  ],
+                                  stops: [0.0, 0.25, 1.0],
+                                ).createShader(rect),
+                                child: Image.asset(
+                                  'assets/images/hero_food.png',
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                  fit: BoxFit.cover,
+                                  alignment: Alignment.centerRight,
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
-                      // Melt the image's left edge into the hero background
+                      // Soft dark veil on the left side for text legibility
                       Positioned.fill(
                         child: IgnorePointer(
                           child: DecoratedBox(
@@ -96,199 +97,215 @@ class _HomeScreenState extends State<HomeScreen> {
                                 colors: [
                                   FastGlowBackground.topColor,
                                   FastGlowBackground.topColor.withValues(
-                                    alpha: 0.9,
+                                    alpha: 0.85,
                                   ),
                                   FastGlowBackground.topColor.withValues(
-                                    alpha: 0.55,
+                                    alpha: 0.5,
                                   ),
                                   Colors.transparent,
                                 ],
-                                stops: const [0.0, 0.35, 0.55, 0.8],
+                                stops: const [0.0, 0.38, 0.58, 0.85],
                               ),
                             ),
                           ),
                         ),
                       ),
-                      // Fiery ink trails — swoosh under the headline, ring
-                      // sweeping around the food, ember glow behind search
-                      Positioned.fill(
-                        child: IgnorePointer(
-                          child: CustomPaint(painter: _HeroFlamesPainter()),
-                        ),
-                      ),
                       // Non-positioned child: gives the Stack its height so the
-                      // fill layers above have something bounded to paint into
-                      SizedBox(
-                        height: 340,
-                        width: double.infinity,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(20, 22, 20, 6),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  // Brand mark + tagline centered at the top
-                                  // of the hero, matching the reference design
-                                  const Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
+                      // fill layers above have something bounded to paint into.
+                      // Extends under the floating AppBar — extra top inset clears it.
+                      Builder(
+                        builder: (context) {
+                          final topInset =
+                              MediaQuery.of(context).padding.top +
+                              kToolbarHeight;
+                          return SizedBox(
+                            height: 340 + topInset,
+                            width: double.infinity,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.fromLTRB(
+                                    20,
+                                    topInset + 4,
+                                    20,
+                                    6,
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     children: [
-                                      Icon(
-                                        Icons.bolt,
-                                        color: FASTBrand.amber,
-                                        size: 22,
-                                      ),
-                                      Text(
-                                        'FAST',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w900,
-                                          fontStyle: FontStyle.italic,
-                                          fontSize: 22,
-                                          letterSpacing: -0.5,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                      Icon(
-                                        Icons.bolt,
-                                        color: FASTBrand.amber,
-                                        size: 22,
-                                      ),
-                                    ],
-                                  ),
-                                  const Text(
-                                    'Chaque minute compte',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFFD8D0E8),
-                                      fontStyle: FontStyle.italic,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  // Headline — big, heavy italic with a dynamic
-                                  // slant so it never reads as a straight line
-                                  Transform.rotate(
-                                    angle: -0.028,
-                                    child: RichText(
-                                      textAlign: TextAlign.center,
-                                      text: TextSpan(
-                                        style: const TextStyle(
-                                          fontSize: 31,
-                                          fontWeight: FontWeight.w900,
-                                          fontStyle: FontStyle.italic,
-                                          letterSpacing: -0.5,
-                                          color: Colors.white,
-                                          height: 1.12,
-                                          shadows: [
-                                            Shadow(
-                                              color: Colors.black45,
-                                              blurRadius: 10,
-                                              offset: Offset(0, 2),
-                                            ),
-                                          ],
-                                        ),
+                                      // Brand mark + tagline centered at the top
+                                      // of the hero, matching the reference design
+                                      const Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
-                                          TextSpan(
-                                            text: tr(context, 'hero_order'),
+                                          Icon(
+                                            Icons.bolt,
+                                            color: FASTBrand.amber,
+                                            size: 22,
                                           ),
-                                          TextSpan(
-                                            text: tr(context, 'hero_fast'),
-                                            style: const TextStyle(
-                                              color: Color(0xFFF59E0B),
+                                          Text(
+                                            'FAST',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w900,
+                                              fontStyle: FontStyle.italic,
+                                              fontSize: 22,
+                                              letterSpacing: -0.5,
+                                              color: Colors.white,
                                             ),
                                           ),
-                                          TextSpan(
-                                            text: tr(context, 'hero_now'),
+                                          Icon(
+                                            Icons.bolt,
+                                            color: FASTBrand.amber,
+                                            size: 22,
                                           ),
                                         ],
                                       ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    tr(context, 'hero_sub'),
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      color: Color(0xFFB8AECF),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            // Search Bar — white pill on the dark hero, dropped low
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(
-                                20,
-                                18,
-                                20,
-                                24,
-                              ),
-                              child: Focus(
-                                onFocusChange: (focus) {
-                                  setState(() {
-                                    _isFocusingSearch = focus;
-                                  });
-                                },
-                                child: TextField(
-                                  controller: _searchController,
-                                  onChanged: (val) => provider.setKeyword(val),
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    color: Color(0xFF1A1425),
-                                  ),
-                                  decoration: InputDecoration(
-                                    hintText: provider.tr('search_hint'),
-                                    hintStyle: const TextStyle(
-                                      color: Color(0xFF8A8496),
-                                    ),
-                                    prefixIcon: const Icon(
-                                      Icons.search,
-                                      color: Color(0xFF8A8496),
-                                      size: 18,
-                                    ),
-                                    suffixIcon:
-                                        provider.searchKeyword.isNotEmpty
-                                        ? IconButton(
-                                            onPressed: () {
-                                              provider.setKeyword('');
-                                              _searchController.clear();
-                                            },
-                                            icon: const Icon(
-                                              Icons.close,
-                                              color: Color(0xFF8A8496),
-                                              size: 16,
+                                      const Text(
+                                        'Chaque minute compte',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Color(0xFFD8D0E8),
+                                          fontStyle: FontStyle.italic,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 10),
+                                      // Headline — big, heavy italic with a dynamic
+                                      // slant so it never reads as a straight line
+                                      Transform.rotate(
+                                        angle: -0.028,
+                                        child: RichText(
+                                          textAlign: TextAlign.center,
+                                          text: TextSpan(
+                                            style: const TextStyle(
+                                              fontSize: 31,
+                                              fontWeight: FontWeight.w900,
+                                              fontStyle: FontStyle.italic,
+                                              letterSpacing: -0.5,
+                                              color: Colors.white,
+                                              height: 1.12,
+                                              shadows: [
+                                                Shadow(
+                                                  color: Colors.black45,
+                                                  blurRadius: 10,
+                                                  offset: Offset(0, 2),
+                                                ),
+                                              ],
                                             ),
-                                          )
-                                        : null,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      vertical: 0,
-                                    ),
-                                    filled: true,
-                                    fillColor: Colors.white,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(30),
-                                      borderSide: BorderSide.none,
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(30),
-                                      borderSide: BorderSide.none,
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(30),
-                                      borderSide: const BorderSide(
-                                        color: Color(0xFFF59E0B),
-                                        width: 1.5,
+                                            children: [
+                                              TextSpan(
+                                                text: tr(context, 'hero_order'),
+                                              ),
+                                              TextSpan(
+                                                text: tr(context, 'hero_fast'),
+                                                style: const TextStyle(
+                                                  color: Color(0xFFF59E0B),
+                                                ),
+                                              ),
+                                              TextSpan(
+                                                text: tr(context, 'hero_now'),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        tr(context, 'hero_sub'),
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          color: Color(0xFFB8AECF),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                // Search Bar — white pill on the dark hero, dropped low
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    20,
+                                    18,
+                                    20,
+                                    24,
+                                  ),
+                                  child: Focus(
+                                    onFocusChange: (focus) {
+                                      setState(() {
+                                        _isFocusingSearch = focus;
+                                      });
+                                    },
+                                    child: TextField(
+                                      controller: _searchController,
+                                      onChanged: (val) =>
+                                          provider.setKeyword(val),
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        color: Color(0xFF1A1425),
+                                      ),
+                                      decoration: InputDecoration(
+                                        hintText: provider.tr('search_hint'),
+                                        hintStyle: const TextStyle(
+                                          color: Color(0xFF8A8496),
+                                        ),
+                                        prefixIcon: const Icon(
+                                          Icons.search,
+                                          color: Color(0xFF8A8496),
+                                          size: 18,
+                                        ),
+                                        suffixIcon:
+                                            provider.searchKeyword.isNotEmpty
+                                            ? IconButton(
+                                                onPressed: () {
+                                                  provider.setKeyword('');
+                                                  _searchController.clear();
+                                                },
+                                                icon: const Icon(
+                                                  Icons.close,
+                                                  color: Color(0xFF8A8496),
+                                                  size: 16,
+                                                ),
+                                              )
+                                            : null,
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              vertical: 0,
+                                            ),
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            30,
+                                          ),
+                                          borderSide: BorderSide.none,
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            30,
+                                          ),
+                                          borderSide: BorderSide.none,
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            30,
+                                          ),
+                                          borderSide: const BorderSide(
+                                            color: Color(0xFFF59E0B),
+                                            width: 1.5,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ),
-                              ),
+                              ],
                             ),
-                          ],
-                        ),
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -299,9 +316,17 @@ class _HomeScreenState extends State<HomeScreen> {
               // scroll together with the hero above them
               if (isSearching)
                 SizedBox(
-                  height: (viewport.maxHeight - 340) < 240
+                  height:
+                      (viewport.maxHeight -
+                              340 -
+                              MediaQuery.of(context).padding.top -
+                              kToolbarHeight) <
+                          240
                       ? 240.0
-                      : viewport.maxHeight - 340,
+                      : viewport.maxHeight -
+                            340 -
+                            MediaQuery.of(context).padding.top -
+                            kToolbarHeight,
                   child: Container(
                     decoration: BoxDecoration(
                       color: context.fast.bg,
@@ -1578,172 +1603,42 @@ class _PulsingEmojiState extends State<_PulsingEmoji>
   }
 }
 
-/// Paints the brand's fiery ink trails over the hero: an orange swoosh
-/// under the headline, glowing flame rings sweeping around the food on
-/// the right, and a soft ember glow behind the search pill. Strokes
-/// taper off like flame tongues — nothing is a straight line.
-class _HeroFlamesPainter extends CustomPainter {
+/// Clips the food image's left edge into a smooth organic curve that
+/// melts into the dark hero background — matches the reference design
+/// where the food photo has a curved boundary, not a straight cut.
+class _FoodImageClipper extends CustomClipper<Path> {
+  const _FoodImageClipper();
+
   @override
-  void paint(Canvas canvas, Size size) {
-    // Ember glow behind the search bar
-    final ember = Paint()
-      ..shader =
-          RadialGradient(
-            colors: [
-              const Color(0xFFFF0066).withValues(alpha: 0.30),
-              const Color(0xFFF97316).withValues(alpha: 0.12),
-              Colors.transparent,
-            ],
-            stops: const [0.0, 0.45, 1.0],
-          ).createShader(
-            Rect.fromCenter(
-              center: Offset(size.width * 0.5, size.height),
-              width: size.width * 0.9,
-              height: size.height * 0.8,
-            ),
-          )
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 24);
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(size.width * 0.5, size.height),
-        width: size.width * 0.9,
-        height: size.height * 0.75,
-      ),
-      ember,
+  Path getClip(Size size) {
+    final path = Path();
+    // Start from the top, slightly inset
+    path.moveTo(size.width * 0.3, 0);
+    // Curve down: bulge left in the upper third (revealing background),
+    // then sweep back right toward the bottom
+    path.cubicTo(
+      size.width * -0.05,
+      size.height * 0.2,
+      size.width * -0.12,
+      size.height * 0.42,
+      size.width * 0.18,
+      size.height * 0.62,
     );
-
-    // Large flame ring sweeping over the food (right side)
-    _drawFlame(
-      canvas,
-      Path()..addArc(
-        Rect.fromCenter(
-          center: Offset(size.width * 0.78, size.height * 0.40),
-          width: size.width * 0.95,
-          height: size.height * 1.55,
-        ),
-        -2.55,
-        2.5,
-      ),
-      colors: const [Color(0xFFFF0066), Color(0xFFF97316), Color(0xFFFBBF24)],
-      startWidth: 6,
-      endWidth: 1,
+    path.cubicTo(
+      size.width * 0.28,
+      size.height * 0.75,
+      size.width * 0.08,
+      size.height * 0.88,
+      size.width * 0.22,
+      size.height,
     );
-
-    // Neon violet arc hugging the left border
-    _drawFlame(
-      canvas,
-      Path()..addArc(
-        Rect.fromCenter(
-          center: Offset(size.width * 0.03, size.height * 0.52),
-          width: size.width * 0.6,
-          height: size.height * 1.35,
-        ),
-        -0.95,
-        1.9,
-      ),
-      colors: const [Color(0xFF8B5CF6), Color(0xFFC4B5FD), Color(0xFF7C3AED)],
-      startWidth: 5.5,
-      endWidth: 1,
-    );
-
-    // Neon violet arc sweeping along the top border
-    _drawFlame(
-      canvas,
-      Path()
-        ..moveTo(size.width * 0.02, size.height * 0.16)
-        ..cubicTo(
-          size.width * 0.25,
-          -size.height * 0.04,
-          size.width * 0.62,
-          -size.height * 0.06,
-          size.width * 0.92,
-          size.height * 0.13,
-        ),
-      colors: const [Color(0xFF7C3AED), Color(0xFF9D8FC0), Color(0xFF8B5CF6)],
-      startWidth: 4,
-      endWidth: 1,
-    );
-
-    // Smaller second ring curling under the food
-    _drawFlame(
-      canvas,
-      Path()..addArc(
-        Rect.fromCenter(
-          center: Offset(size.width * 0.66, size.height * 0.86),
-          width: size.width * 0.55,
-          height: size.height * 0.75,
-        ),
-        -0.9,
-        1.9,
-      ),
-      colors: const [Color(0xFFF97316), Color(0xFFEF4444)],
-      startWidth: 4.5,
-      endWidth: 1,
-    );
-
-    // Orange swoosh — wide arc centered under the headline
-    _drawFlame(
-      canvas,
-      Path()
-        ..moveTo(size.width * 0.20, size.height * 0.60)
-        ..cubicTo(
-          size.width * 0.33,
-          size.height * 0.73,
-          size.width * 0.58,
-          size.height * 0.53,
-          size.width * 0.80,
-          size.height * 0.68,
-        ),
-      colors: const [Color(0xFFF97316), Color(0xFFEF4444), Color(0xFFFBBF24)],
-      startWidth: 5,
-      endWidth: 1,
-    );
-  }
-
-  /// Draws [path] as a tapered glowing stroke: a blurred color trail
-  /// underneath plus a brighter thinning core, fading toward the tip.
-  void _drawFlame(
-    Canvas canvas,
-    Path path, {
-    required List<Color> colors,
-    required double startWidth,
-    required double endWidth,
-  }) {
-    final metrics = path.computeMetrics().toList();
-    if (metrics.isEmpty) return;
-    final m = metrics.first;
-    const segs = 26;
-    for (int pass = 0; pass < 2; pass++) {
-      final glow = pass == 0;
-      for (int i = 0; i < segs; i++) {
-        final t = (i + 0.5) / segs;
-        final seg = m.extractPath(
-          m.length * i / segs,
-          m.length * (i + 1) / segs,
-        );
-        final w = startWidth + (endWidth - startWidth) * t;
-        final paint = Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeCap = StrokeCap.round
-          ..strokeWidth = glow ? w * 2.4 : w
-          ..color = _lerpColors(
-            colors,
-            t,
-          ).withValues(alpha: (glow ? 0.22 : 0.92) * (1 - t * 0.45));
-        if (glow) {
-          paint.maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
-        }
-        canvas.drawPath(seg, paint);
-      }
-    }
-  }
-
-  Color _lerpColors(List<Color> cs, double t) {
-    final x = t * (cs.length - 1);
-    final i = x.floor().clamp(0, cs.length - 2);
-    return Color.lerp(cs[i], cs[i + 1], x - i)!;
+    // Close around the bottom-right corner
+    path.lineTo(size.width, size.height);
+    path.lineTo(size.width, 0);
+    path.close();
+    return path;
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
