@@ -129,14 +129,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                     end: Alignment.centerRight,
                                     colors: [
                                       FastGlowBackground.topColor.withValues(
-                                        alpha: 0.55,
+                                        alpha: 0.70,
                                       ),
                                       FastGlowBackground.topColor.withValues(
-                                        alpha: 0.35,
+                                        alpha: 0.42,
                                       ),
                                       Colors.transparent,
                                     ],
-                                    stops: const [0.0, 0.30, 0.50],
+                                    stops: const [0.0, 0.34, 0.54],
                                   ),
                                 ),
                               ),
@@ -191,10 +191,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           Positioned(
                             left: 20,
                             right: 0,
-                            top: statusBar + 84,
+                            top: statusBar + 78,
                             child: FractionallySizedBox(
                               alignment: Alignment.centerLeft,
-                              widthFactor: 0.58,
+                              widthFactor: 0.66,
                               child: Transform.rotate(
                                 angle: -0.035,
                                 alignment: Alignment.centerLeft,
@@ -204,11 +204,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                     RichText(
                                       text: TextSpan(
                                         style: const TextStyle(
-                                          fontSize: 34,
+                                          fontSize: 30,
                                           fontWeight: FontWeight.w900,
-                                          letterSpacing: -1.0,
+                                          letterSpacing: -0.8,
                                           color: Colors.white,
-                                          height: 1.02,
+                                          height: 1.05,
                                           shadows: [
                                             Shadow(
                                               color: Colors.black54,
@@ -233,11 +233,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ],
                                       ),
                                     ),
-                                    const SizedBox(height: 6),
+                                    const SizedBox(height: 8),
                                     Text(
                                       tr(context, 'hero_sub'),
                                       style: const TextStyle(
-                                        fontSize: 16,
+                                        fontSize: 15,
                                         fontWeight: FontWeight.w800,
                                         color: Color(0xFFFBBF24),
                                         height: 1.2,
