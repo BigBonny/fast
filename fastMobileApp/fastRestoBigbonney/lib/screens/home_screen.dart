@@ -54,12 +54,18 @@ class _HomeScreenState extends State<HomeScreen> {
                     // The hero extends under the floating AppBar; the brand
                     // mark sits level with the nav icons, like the reference.
                     final statusBar = MediaQuery.of(context).padding.top;
-                    const heroBody = 268.0;
+                    const heroBody = 330.0;
                     final heroHeight = statusBar + heroBody;
-                    // Reference proportion: the photo spans ~half the screen
-                    // width (bowl centre-right, tacos top-right, pizza cut
-                    // by the edge, sushi bottom-left), never zoomed.
-                    final photoW = box.maxWidth * 0.56;
+                    // The photo owns the lower-right; measured from the
+                    // reference it spans ~60% of the width at natural aspect.
+                    final photoW = box.maxWidth * 0.62;
+                    // Asset is 323x312 → natural height for this width.
+                    final photoH = photoW * 312 / 323;
+                    // Where the photo's left edge and top edge sit in hero
+                    // coordinates — the streak painter needs these to draw
+                    // the diagonal slash continuing into the purple.
+                    final photoLeft = box.maxWidth - photoW;
+                    final photoTop = heroHeight - photoH;
                     return SizedBox(
                       height: heroHeight,
                       width: double.infinity,
@@ -69,23 +75,46 @@ class _HomeScreenState extends State<HomeScreen> {
                             right: 0,
                             bottom: 0,
                             width: photoW,
-                            child: ShaderMask(
-                              blendMode: BlendMode.dstIn,
-                              shaderCallback: (rect) => const LinearGradient(
-                                begin: Alignment.centerLeft,
-                                end: Alignment.centerRight,
-                                colors: [
-                                  Colors.transparent,
-                                  Colors.white,
-                                  Colors.white,
-                                ],
-                                stops: [0.0, 0.18, 1.0],
-                              ).createShader(rect),
-                              child: Image.asset(
-                                'assets/images/hero_food.png',
-                                width: photoW,
-                                fit: BoxFit.fitWidth,
-                                alignment: Alignment.bottomRight,
+                            height: photoH,
+                            child: ClipPath(
+                              // Cuts the top-left corner along the line the
+                              // baked fiery streak travels — purple above,
+                              // food below, just like the reference.
+                              clipper: const _HeroPhotoClip(),
+                              child: ShaderMask(
+                                blendMode: BlendMode.dstIn,
+                                shaderCallback: (rect) => const LinearGradient(
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                  colors: [
+                                    Colors.transparent,
+                                    Colors.white,
+                                    Colors.white,
+                                  ],
+                                  stops: [0.0, 0.16, 1.0],
+                                ).createShader(rect),
+                                child: Image.asset(
+                                  'assets/images/hero_food.png',
+                                  width: photoW,
+                                  height: photoH,
+                                  fit: BoxFit.fill,
+                                  alignment: Alignment.bottomRight,
+                                ),
+                              ),
+                            ),
+                          ),
+                          // The diagonal neon slash — continues the streak
+                          // baked into the photo across the purple toward
+                          // the top-right corner, the reference's signature.
+                          Positioned.fill(
+                            child: IgnorePointer(
+                              child: CustomPaint(
+                                painter: _HeroStreakPainter(
+                                  photoLeft: photoLeft,
+                                  photoTop: photoTop,
+                                  photoW: photoW,
+                                  photoH: photoH,
+                                ),
                               ),
                             ),
                           ),
@@ -1608,4 +1637,88 @@ class _PulsingEmojiState extends State<_PulsingEmoji>
       },
     );
   }
+}
+
+/// Cuts the food photo's top-left corner along the diagonal line the
+/// baked fiery streak travels: it enters the crop's left edge ~22% down
+/// and exits the top ~56% across. Everything above-left of that line
+/// stays transparent so the purple hero shows through — in the
+/// reference the glowing slash is the boundary between text zone and
+/// food, not a straight photo edge.
+class _HeroPhotoClip extends CustomClipper<Path> {
+  const _HeroPhotoClip();
+
+  @override
+  Path getClip(Size size) {
+    return Path()
+      ..moveTo(0, size.height * 0.22)
+      ..lineTo(size.width * 0.56, 0)
+      ..lineTo(size.width, 0)
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
+}
+
+/// Paints the neon slash that continues the streak baked into the food
+/// photo: from the point it crosses the photo's left edge, along the
+/// same diagonal, out to the screen's top-right corner — hot pink at
+/// the bowl, burning to orange/amber at the far end, with a halo pass
+/// underneath so it reads as light, not a line.
+class _HeroStreakPainter extends CustomPainter {
+  const _HeroStreakPainter({
+    required this.photoLeft,
+    required this.photoTop,
+    required this.photoW,
+    required this.photoH,
+  });
+
+  final double photoLeft;
+  final double photoTop;
+  final double photoW;
+  final double photoH;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Streak's known points in photo space (see _HeroPhotoClip).
+    final a = Offset(photoLeft, photoTop + photoH * 0.22);
+    final b = Offset(photoLeft + photoW * 0.56, photoTop);
+    final dir = (b - a) / (b - a).distance;
+    // Extend past the photo's top-right to the screen edge + a bit more
+    // so it dies beyond the corner, like the reference's light trail.
+    final end = b + dir * (size.width - b.dx) * 1.35;
+    final start = a - dir * photoW * 0.06;
+
+    final rect = Rect.fromPoints(start, end);
+    // Wide blurred halo passes first, then the bright core on top.
+    for (final (w, alpha, blur) in const [
+      (10.0, 0.30, 10.0),
+      (4.5, 0.55, 5.0),
+      (2.2, 1.0, 0.0),
+    ]) {
+      final paint = Paint()
+        ..shader = LinearGradient(
+          colors: [
+            const Color(0xFFFF2E93).withValues(alpha: alpha),
+            const Color(0xFFF97316).withValues(alpha: alpha),
+            const Color(0xFFFBBF24).withValues(alpha: alpha),
+          ],
+          stops: const [0.0, 0.55, 1.0],
+        ).createShader(rect)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = w
+        ..strokeCap = StrokeCap.round;
+      if (blur > 0) {
+        paint.maskFilter = MaskFilter.blur(BlurStyle.normal, blur);
+      }
+      canvas.drawLine(start, end, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _HeroStreakPainter old) =>
+      old.photoLeft != photoLeft || old.photoTop != photoTop;
 }
