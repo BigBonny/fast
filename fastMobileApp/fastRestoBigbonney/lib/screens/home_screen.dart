@@ -156,14 +156,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                     Icon(
                                       Icons.bolt,
                                       color: FASTBrand.amber,
-                                      size: 30,
+                                      size: 34,
                                     ),
                                     Text(
                                       'FAST',
                                       style: TextStyle(
                                         fontWeight: FontWeight.w900,
                                         fontStyle: FontStyle.italic,
-                                        fontSize: 30,
+                                        fontSize: 34,
                                         letterSpacing: -1,
                                         color: Colors.white,
                                       ),
@@ -171,7 +171,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     Icon(
                                       Icons.bolt,
                                       color: FASTBrand.amber,
-                                      size: 30,
+                                      size: 34,
                                     ),
                                   ],
                                 ),
@@ -204,7 +204,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     RichText(
                                       text: TextSpan(
                                         style: const TextStyle(
-                                          fontSize: 32,
+                                          fontSize: 34,
                                           fontWeight: FontWeight.w900,
                                           letterSpacing: -1.0,
                                           color: Colors.white,
@@ -237,7 +237,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     Text(
                                       tr(context, 'hero_sub'),
                                       style: const TextStyle(
-                                        fontSize: 15,
+                                        fontSize: 16,
                                         fontWeight: FontWeight.w800,
                                         color: Color(0xFFFBBF24),
                                         height: 1.2,
@@ -1693,11 +1693,27 @@ class _HeroStreakPainter extends CustomPainter {
     final start = a - dir * photoW * 0.06;
 
     final rect = Rect.fromPoints(start, end);
+    // Soft pink wash around the line so the upper-right purple carries
+    // the glow like the reference, not just a thread of light.
+    final wash = Paint()
+      ..shader = LinearGradient(
+        colors: [
+          const Color(0xFFFF2E93).withValues(alpha: 0.28),
+          const Color(0xFFF97316).withValues(alpha: 0.16),
+          const Color(0xFFFBBF24).withValues(alpha: 0.10),
+        ],
+        stops: const [0.0, 0.55, 1.0],
+      ).createShader(rect)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 26
+      ..strokeCap = StrokeCap.round
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 22);
+    canvas.drawLine(start, end, wash);
     // Wide blurred halo passes first, then the bright core on top.
     for (final (w, alpha, blur) in const [
-      (10.0, 0.30, 10.0),
-      (4.5, 0.55, 5.0),
-      (2.2, 1.0, 0.0),
+      (12.0, 0.40, 12.0),
+      (5.5, 0.62, 6.0),
+      (2.6, 1.0, 0.0),
     ]) {
       final paint = Paint()
         ..shader = LinearGradient(
