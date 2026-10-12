@@ -10,6 +10,7 @@ class FastGlowBackground extends StatelessWidget {
     super.key,
     required this.child,
     this.expand = false,
+    this.arcs = true,
   });
 
   final Widget child;
@@ -17,6 +18,10 @@ class FastGlowBackground extends StatelessWidget {
   /// Fill all available space (full-screen backdrops) instead of
   /// shrinking to [child] (hero bands inside a Column).
   final bool expand;
+
+  /// Paint the thin neon arc lines on top of the diffuse glows. Off for
+  /// the home hero, which layers a photo and wants only soft light.
+  final bool arcs;
 
   static const Color topColor = Color(0xFF1B0B33);
   static const Color bottomColor = Color(0xFF0A0416);
@@ -33,12 +38,19 @@ class FastGlowBackground extends StatelessWidget {
           colors: [topColor, bottomColor],
         ),
       ),
-      child: CustomPaint(painter: _GlowArcsPainter(), child: child),
+      child: CustomPaint(
+        painter: _GlowArcsPainter(arcs: arcs),
+        child: child,
+      ),
     );
   }
 }
 
 class _GlowArcsPainter extends CustomPainter {
+  _GlowArcsPainter({required this.arcs});
+
+  final bool arcs;
+
   @override
   void paint(Canvas canvas, Size size) {
     final rect = Offset.zero & size;
@@ -65,6 +77,26 @@ class _GlowArcsPainter extends CustomPainter {
       color: const Color(0xFFEC4899),
       opacity: 0.16,
     );
+
+    if (!arcs) {
+      // Photo heroes: a stronger magenta bloom in the top-left corner
+      // and warm light pooling bottom-center, like the reference art.
+      _radialGlow(
+        canvas,
+        center: Offset(size.width * 0.0, size.height * 0.05),
+        radius: size.width * 0.55,
+        color: const Color(0xFFD946EF),
+        opacity: 0.28,
+      );
+      _radialGlow(
+        canvas,
+        center: Offset(size.width * 0.5, size.height * 1.05),
+        radius: size.width * 0.55,
+        color: const Color(0xFFF43F5E),
+        opacity: 0.22,
+      );
+      return;
+    }
 
     // Thin neon arcs — blurred halo stroke plus a crisp core line.
     // Orange arc sweeping the right edge.
@@ -148,5 +180,6 @@ class _GlowArcsPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _GlowArcsPainter oldDelegate) =>
+      oldDelegate.arcs != arcs;
 }
