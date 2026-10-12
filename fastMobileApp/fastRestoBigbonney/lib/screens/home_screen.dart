@@ -142,10 +142,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                           ),
-                          // Brand mark + tagline — centered, level with the
-                          // menu / account icons in the AppBar
+                          // Brand mark + tagline — centered, slightly above
+                          // the nav icon row like the reference
                           Positioned(
-                            top: statusBar + 6,
+                            top: statusBar * 0.4,
                             left: 0,
                             right: 0,
                             child: Column(
@@ -186,8 +186,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               ],
                             ),
                           ),
-                          // Headline block — left of the photo, like the
-                          // reference, with a slight upward tilt
+                          // Headline block — left of the photo, tilted a touch
+                          // so the sentence feels like it lifts as it goes
                           Positioned(
                             left: 20,
                             right: 0,
@@ -195,57 +195,76 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: FractionallySizedBox(
                               alignment: Alignment.centerLeft,
                               widthFactor: 0.66,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  RichText(
-                                    text: TextSpan(
+                              child: Transform.rotate(
+                                angle: -0.028,
+                                alignment: Alignment.centerLeft,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    RichText(
+                                      text: TextSpan(
+                                        style: const TextStyle(
+                                          fontSize: 30,
+                                          fontWeight: FontWeight.w900,
+                                          letterSpacing: -0.8,
+                                          color: Colors.white,
+                                          height: 1.05,
+                                          shadows: [
+                                            Shadow(
+                                              color: Colors.black54,
+                                              blurRadius: 12,
+                                              offset: Offset(0, 2),
+                                            ),
+                                          ],
+                                        ),
+                                        children: [
+                                          TextSpan(
+                                            text: tr(context, 'hero_order'),
+                                          ),
+                                          // "Fast." is the brand — never
+                                          // translated, always amber
+                                          const TextSpan(
+                                            text: 'Fast. ',
+                                            style: TextStyle(
+                                              color: Color(0xFFF59E0B),
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text: tr(context, 'hero_now'),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      tr(context, 'hero_sub'),
                                       style: const TextStyle(
-                                        fontSize: 30,
-                                        fontWeight: FontWeight.w900,
-                                        letterSpacing: -0.8,
-                                        color: Colors.white,
-                                        height: 1.05,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w800,
+                                        color: Color(0xFFFBBF24),
+                                        height: 1.2,
                                         shadows: [
                                           Shadow(
                                             color: Colors.black54,
-                                            blurRadius: 12,
+                                            blurRadius: 10,
                                             offset: Offset(0, 2),
                                           ),
                                         ],
                                       ),
-                                      children: [
-                                        TextSpan(
-                                          text: tr(context, 'hero_order'),
-                                        ),
-                                        TextSpan(
-                                          text: tr(context, 'hero_fast'),
-                                          style: const TextStyle(
-                                            color: Color(0xFFF59E0B),
-                                          ),
-                                        ),
-                                        TextSpan(text: tr(context, 'hero_now')),
-                                      ],
                                     ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    tr(context, 'hero_sub'),
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w800,
-                                      color: Color(0xFFFBBF24),
-                                      height: 1.2,
-                                      shadows: [
-                                        Shadow(
-                                          color: Colors.black54,
-                                          blurRadius: 10,
-                                          offset: Offset(0, 2),
-                                        ),
-                                      ],
+                                    const SizedBox(height: 2),
+                                    // Curved orange swoosh under the last
+                                    // line, like the reference's hand-drawn
+                                    // highlight beneath "votre arrivée."
+                                    SizedBox(
+                                      width: 150,
+                                      height: 10,
+                                      child: CustomPaint(
+                                        painter: _HeroUnderlinePainter(),
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
                           ),
@@ -1731,4 +1750,35 @@ class _HeroStreakPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _HeroStreakPainter old) =>
       old.photoLeft != photoLeft || old.photoTop != photoTop;
+}
+
+/// The hand-drawn orange swoosh under the hero's last line — a bezier
+/// that dips slightly then sweeps up to the right, tapering at both
+/// ends like a marker underline.
+class _HeroUnderlinePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = Path()
+      ..moveTo(0, size.height * 0.7)
+      ..quadraticBezierTo(size.width * 0.45, size.height * 1.15, size.width, 0);
+    for (final (w, alpha, blur) in const [(5.0, 0.35, 4.0), (2.4, 1.0, 0.0)]) {
+      final paint = Paint()
+        ..shader = LinearGradient(
+          colors: [
+            const Color(0xFFF97316).withValues(alpha: alpha),
+            const Color(0xFFFBBF24).withValues(alpha: alpha),
+          ],
+        ).createShader(Offset.zero & size)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = w
+        ..strokeCap = StrokeCap.round;
+      if (blur > 0) {
+        paint.maskFilter = MaskFilter.blur(BlurStyle.normal, blur);
+      }
+      canvas.drawPath(path, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
