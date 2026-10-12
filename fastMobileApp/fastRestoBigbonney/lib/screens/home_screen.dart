@@ -191,7 +191,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           Positioned(
                             left: 20,
                             right: 0,
-                            top: statusBar + 96,
+                            top: statusBar + 86,
                             child: FractionallySizedBox(
                               alignment: Alignment.centerLeft,
                               widthFactor: 0.66,
@@ -214,7 +214,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       child: Text(
                                         'Fast.',
                                         style: TextStyle(
-                                          fontSize: 29,
+                                          fontSize: 32,
                                           fontWeight: FontWeight.w900,
                                           letterSpacing: -0.8,
                                           color: Color(0xFFF59E0B),
@@ -1792,7 +1792,7 @@ class _HeroUnderlinePainter extends CustomPainter {
 /// Shared white headline style for the stacked hero lines
 /// ("Commandez." / "Maintenant.") — "Fast." has its own amber variant.
 const _heroHeadline = TextStyle(
-  fontSize: 29,
+  fontSize: 32,
   fontWeight: FontWeight.w900,
   letterSpacing: -0.8,
   color: Colors.white,
