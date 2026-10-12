@@ -58,7 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     final heroHeight = statusBar + heroBody;
                     // The photo owns the lower-right; measured from the
                     // reference it spans ~60% of the width at natural aspect.
-                    final photoW = box.maxWidth * 0.62;
+                    final photoW = box.maxWidth * 0.58;
                     // Asset is 323x312 → natural height for this width.
                     final photoH = photoW * 312 / 323;
                     // Where the photo's left edge and top edge sit in hero
@@ -201,13 +201,23 @@ class _HomeScreenState extends State<HomeScreen> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    RichText(
-                                      text: TextSpan(
-                                        style: const TextStyle(
-                                          fontSize: 30,
+                                    // Three stacked lines, each stepping a
+                                    // bit further right — the cascade that
+                                    // makes the sentence feel like it's
+                                    // moving away, like the reference.
+                                    Text(
+                                      tr(context, 'hero_order'),
+                                      style: _heroHeadline,
+                                    ),
+                                    const Padding(
+                                      padding: EdgeInsets.only(left: 12),
+                                      child: Text(
+                                        'Fast.',
+                                        style: TextStyle(
+                                          fontSize: 29,
                                           fontWeight: FontWeight.w900,
                                           letterSpacing: -0.8,
-                                          color: Colors.white,
+                                          color: Color(0xFFF59E0B),
                                           height: 1.05,
                                           shadows: [
                                             Shadow(
@@ -217,39 +227,35 @@ class _HomeScreenState extends State<HomeScreen> {
                                             ),
                                           ],
                                         ),
-                                        children: [
-                                          TextSpan(
-                                            text: tr(context, 'hero_order'),
-                                          ),
-                                          // "Fast." is the brand — never
-                                          // translated, always amber
-                                          const TextSpan(
-                                            text: 'Fast. ',
-                                            style: TextStyle(
-                                              color: Color(0xFFF59E0B),
-                                            ),
-                                          ),
-                                          TextSpan(
-                                            text: tr(context, 'hero_now'),
-                                          ),
-                                        ],
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 24),
+                                      child: Text(
+                                        tr(context, 'hero_now').trim(),
+                                        style: _heroHeadline,
                                       ),
                                     ),
                                     const SizedBox(height: 8),
-                                    Text(
-                                      tr(context, 'hero_sub'),
-                                      style: const TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w800,
-                                        color: Color(0xFFFBBF24),
-                                        height: 1.2,
-                                        shadows: [
-                                          Shadow(
-                                            color: Colors.black54,
-                                            blurRadius: 10,
-                                            offset: Offset(0, 2),
-                                          ),
-                                        ],
+                                    // Fixed width so the sub wraps before the
+                                    // bowl's edge instead of riding over it
+                                    SizedBox(
+                                      width: 185,
+                                      child: Text(
+                                        tr(context, 'hero_sub'),
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w800,
+                                          color: Color(0xFFFBBF24),
+                                          height: 1.2,
+                                          shadows: [
+                                            Shadow(
+                                              color: Colors.black54,
+                                              blurRadius: 10,
+                                              offset: Offset(0, 2),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                     const SizedBox(height: 2),
@@ -1782,3 +1788,16 @@ class _HeroUnderlinePainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
+
+/// Shared white headline style for the stacked hero lines
+/// ("Commandez." / "Maintenant.") — "Fast." has its own amber variant.
+const _heroHeadline = TextStyle(
+  fontSize: 29,
+  fontWeight: FontWeight.w900,
+  letterSpacing: -0.8,
+  color: Colors.white,
+  height: 1.05,
+  shadows: [
+    Shadow(color: Colors.black54, blurRadius: 12, offset: Offset(0, 2)),
+  ],
+);
