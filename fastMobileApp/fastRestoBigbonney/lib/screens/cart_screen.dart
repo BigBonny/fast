@@ -959,6 +959,13 @@ class _CartScreenState extends State<CartScreen> {
 
     try {
       final rest = provider.selectedRestaurant!;
+      if (!rest.paymentsReady) {
+        provider.showToast(
+          tr(context, 'payment_fail'),
+          tr(context, 'restaurant_not_connected'),
+        );
+        return;
+      }
       final items = provider.cart
           .map(
             (c) => {

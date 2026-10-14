@@ -751,6 +751,8 @@ class AppStrings {
         'Compte connecté — finalisez l\'activation des paiements',
     'stripe_required':
         'Stripe Connect non configuré — requis pour recevoir les paiements',
+    'restaurant_not_connected':
+        'Ce restaurant ne peut pas encore recevoir de paiements en ligne. Réessayez plus tard.',
     'preview_notice':
         'Ceci est un aperçu de la vitrine que vos clients voient sur l\'application FAST. Modifiez ces informations depuis l\'onglet Paramètres.',
     'my_restaurant': 'Mon Restaurant',
@@ -1532,6 +1534,8 @@ class AppStrings {
     'stripe_connected': 'Account connected — finish enabling payments',
     'stripe_required':
         'Stripe Connect not configured — required to receive payments',
+    'restaurant_not_connected':
+        'This restaurant cannot receive online payments yet. Please try again later.',
     'preview_notice':
         'This is a preview of the storefront your customers see on the FAST app. Edit this info in the Settings tab.',
     'my_restaurant': 'My Restaurant',
@@ -2264,6 +2268,8 @@ class AppStrings {
     'stripe_active': 'Stripe Connect aktif — ödemeler açık',
     'stripe_connected': 'Hesap bağlandı — ödeme aktivasyonunu tamamlayın',
     'stripe_required': 'Stripe Connect ayarlanmadı — ödeme almak için gerekli',
+    'restaurant_not_connected':
+        'Bu restoran henüz online ödeme alamıyor. Lütfen daha sonra tekrar deneyin.',
     'preview_notice':
         'Bu, müşterilerinizin FAST uygulamasında gördüğü vitrinin önizlemesidir. Bu bilgileri Ayarlar sekmesinden düzenleyin.',
     'my_restaurant': 'Restoranım',
@@ -2977,6 +2983,8 @@ class AppStrings {
     'stripe_active': 'Stripe Connect مفعّل — المدفوعات مفعلة',
     'stripe_connected': 'الحساب متصل — أكمل تفعيل المدفوعات',
     'stripe_required': 'Stripe Connect غير مُعد — مطلوب لاستلام المدفوعات',
+    'restaurant_not_connected':
+        'لا يمكن لهذا المطعم استقبال المدفوعات الإلكترونية بعد. يرجى المحاولة لاحقاً.',
     'preview_notice':
         'هذه معاينة للواجهة التي يراها عملاؤك على تطبيق FAST. عدّل هذه المعلومات من علامة الإعدادات.',
     'my_restaurant': 'مطعمي',
@@ -3710,6 +3718,8 @@ class AppStrings {
     'stripe_connected': 'Cuenta conectada — termina de activar los pagos',
     'stripe_required':
         'Stripe Connect no configurado — necesario para recibir pagos',
+    'restaurant_not_connected':
+        'Este restaurante aún no puede recibir pagos en línea. Inténtalo más tarde.',
     'preview_notice':
         'Esta es una vista previa del escaparate que ven tus clientes en la app FAST. Edita esta información en la pestaña Ajustes.',
     'my_restaurant': 'Mi restaurante',
@@ -4447,6 +4457,8 @@ class AppStrings {
     'stripe_connected': 'Conta ligada — conclui a ativação dos pagamentos',
     'stripe_required':
         'Stripe Connect não configurado — necessário para receber pagamentos',
+    'restaurant_not_connected':
+        'Este restaurante ainda não pode receber pagamentos online. Tenta mais tarde.',
     'preview_notice':
         'Esta é uma pré-visualização da montra que os teus clientes veem na app FAST. Edita estas informações no separador Definições.',
     'my_restaurant': 'O meu restaurante',
@@ -5185,6 +5197,8 @@ class AppStrings {
         'Account collegato — completa l\'attivazione dei pagamenti',
     'stripe_required':
         'Stripe Connect non configurato — necessario per ricevere pagamenti',
+    'restaurant_not_connected':
+        'Questo ristorante non può ancora ricevere pagamenti online. Riprova più tardi.',
     'preview_notice':
         'Questa è un\'anteprima della vetrina che i clienti vedono sull\'app FAST. Modifica queste info dalla scheda Impostazioni.',
     'my_restaurant': 'Il mio ristorante',
@@ -5873,6 +5887,7 @@ class AppStrings {
     'stripe_active': 'Stripe Connect 已激活——支付已启用',
     'stripe_connected': '账户已连接——请完成支付激活',
     'stripe_required': 'Stripe Connect 未配置——收款需要',
+    'restaurant_not_connected': '该餐厅暂时无法接收在线支付，请稍后再试。',
     'preview_notice': '这是客户在 FAST 应用上看到的店面预览。请在"设置"标签中修改这些信息。',
     'my_restaurant': '我的餐厅',
     'preview_of': '预览 — {n}',

@@ -206,6 +206,35 @@ export const createCheckoutSession = async (req: Request, res: Response): Promis
       return;
     }
 
+    // Payments must go to the restaurant's own Connect account — refuse
+    // checkout while it's incomplete instead of collecting on the platform.
+    if (!restaurant.stripeAccountId || !restaurant.stripeChargesEnabled) {
+      if (restaurant.stripeAccountId) {
+        // The stored flag can lag behind onboarding; refresh before refusing.
+        try {
+          const account = await stripe.accounts.retrieve(restaurant.stripeAccountId);
+          restaurant.stripeChargesEnabled = account.charges_enabled;
+          restaurant.stripePayoutsEnabled = account.payouts_enabled;
+          await prisma.restaurant.update({
+            where: { id: restaurant.id },
+            data: {
+              stripeChargesEnabled: account.charges_enabled,
+              stripePayoutsEnabled: account.payouts_enabled,
+            },
+          });
+        } catch {
+          // Stripe unreachable — fall back to the stored flag.
+        }
+      }
+      if (!restaurant.stripeAccountId || !restaurant.stripeChargesEnabled) {
+        res.status(409).json({
+          code: 'RESTAURANT_NOT_CONNECTED',
+          error: 'Ce restaurant ne peut pas encore recevoir de paiements',
+        });
+        return;
+      }
+    }
+
     let groupOrderResponse: { code: string; status: string } | null = null;
     if (data.groupId) {
       const member = await prisma.groupMember.findUnique({
@@ -446,6 +475,19 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
           : session.payment_intent?.id ?? null;
         await createPaidOrderFromCheckout(session.metadata.checkoutId, paymentIntentId);
       }
+    }
+
+    // Keep the Connect flags fresh so checkout decisions don't depend on
+    // the owner reopening their settings screen.
+    if (event.type === 'account.updated') {
+      const account = event.data.object as Stripe.Account;
+      await prisma.restaurant.updateMany({
+        where: { stripeAccountId: account.id },
+        data: {
+          stripeChargesEnabled: account.charges_enabled,
+          stripePayoutsEnabled: account.payouts_enabled,
+        },
+      });
     }
 
     res.json({ received: true });

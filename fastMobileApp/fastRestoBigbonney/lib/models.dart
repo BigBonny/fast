@@ -253,6 +253,7 @@ class Restaurant {
   final bool deliveryEnabled;
   final double deliveryFee;
   final double deliveryRadiusKm;
+  final bool paymentsReady;
 
   Restaurant({
     required this.id,
@@ -273,6 +274,7 @@ class Restaurant {
     this.deliveryEnabled = true,
     this.deliveryFee = 2.99,
     this.deliveryRadiusKm = 5.0,
+    this.paymentsReady = true,
   });
 
   Map<String, dynamic> toJson() => {
@@ -291,6 +293,7 @@ class Restaurant {
     'dietaryOptions': dietaryOptions.map((o) => o.label).toList(),
     'menu': menu.map((m) => m.toJson()).toList(),
     'address': address,
+    'paymentsReady': paymentsReady,
   };
 
   factory Restaurant.fromJson(Map<String, dynamic> json) => Restaurant(
@@ -324,6 +327,8 @@ class Restaurant {
     deliveryEnabled: json['deliveryEnabled'] as bool? ?? true,
     deliveryFee: (json['deliveryFee'] as num?)?.toDouble() ?? 2.99,
     deliveryRadiusKm: (json['deliveryRadiusKm'] as num?)?.toDouble() ?? 5.0,
+    // Cached entries predate the flag — don't block ordering on stale data.
+    paymentsReady: json['paymentsReady'] as bool? ?? true,
   );
 
   /// Parse from backend API JSON format
@@ -358,6 +363,7 @@ class Restaurant {
     deliveryEnabled: json['deliveryEnabled'] as bool? ?? true,
     deliveryFee: (json['deliveryFee'] as num?)?.toDouble() ?? 2.99,
     deliveryRadiusKm: (json['deliveryRadiusKm'] as num?)?.toDouble() ?? 5.0,
+    paymentsReady: json['paymentsReady'] as bool? ?? false,
   );
 
   static List<DietaryPreference> _parseDietaryOptions(dynamic options) {

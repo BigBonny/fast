@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../resto_provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../services/payment_service.dart';
 import '../../widgets/resto_drawer.dart';
 import '../../widgets/resto_spotlight_tutorial.dart';
 import 'kitchen_screen.dart';
@@ -271,6 +272,9 @@ class _RestoMainShellState extends State<RestoMainShell> {
                     ),
                   ),
                 ),
+              _StripeSetupBanner(
+                onSetup: () => setState(() => _currentIndex = 3),
+              ),
               Expanded(child: _pages[_currentIndex]),
             ],
           ),
@@ -679,4 +683,101 @@ class _TutorialStep {
     required this.title,
     required this.description,
   });
+}
+
+/// Persistent warning shown until the restaurant's Stripe Connect account
+/// can receive charges — payouts can't happen without it, so it stays
+/// visible instead of being dismissible. Tapping opens Settings; the
+/// status re-fetches whenever the app returns to the foreground so
+/// finishing onboarding in the browser is picked up immediately.
+class _StripeSetupBanner extends StatefulWidget {
+  final VoidCallback onSetup;
+
+  const _StripeSetupBanner({required this.onSetup});
+
+  @override
+  State<_StripeSetupBanner> createState() => _StripeSetupBannerState();
+}
+
+class _StripeSetupBannerState extends State<_StripeSetupBanner>
+    with WidgetsBindingObserver {
+  bool _ready = true; // optimistic until the first status check resolves
+  bool _connected = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _refresh();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _refresh();
+  }
+
+  Future<void> _refresh() async {
+    try {
+      final status = await PaymentService().getConnectStatus();
+      if (!mounted) return;
+      setState(() {
+        _connected = status['connected'] as bool? ?? false;
+        _ready =
+            _connected && (status['chargesEnabled'] as bool? ?? false);
+      });
+    } catch (_) {
+      // Status check failing (e.g. Stripe not configured server-side)
+      // shouldn't nag the owner — the settings banner still shows it.
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_ready) return const SizedBox.shrink();
+    return InkWell(
+      onTap: () {
+        widget.onSetup();
+        _refresh();
+      },
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+        color: const Color(0xFFF59E0B),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.account_balance_outlined,
+              color: Colors.white,
+              size: 16,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                tr(
+                  context,
+                  _connected ? 'stripe_connected' : 'stripe_required',
+                ),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 11,
+                ),
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right,
+              color: Colors.white,
+              size: 18,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
