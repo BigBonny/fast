@@ -54,7 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     // The hero extends under the floating AppBar; the brand
                     // mark sits level with the nav icons, like the reference.
                     final statusBar = MediaQuery.of(context).padding.top;
-                    const heroBody = 330.0;
+                    const heroBody = 292.0;
                     final heroHeight = statusBar + heroBody;
                     // The photo owns the lower-right; measured from the
                     // reference it spans ~60% of the width at natural aspect.
@@ -191,7 +191,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           Positioned(
                             left: 20,
                             right: 0,
-                            top: statusBar + 86,
+                            top: statusBar + 78,
                             child: FractionallySizedBox(
                               alignment: Alignment.centerLeft,
                               widthFactor: 0.66,
