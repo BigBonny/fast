@@ -475,11 +475,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: ActionChip(
                       backgroundColor: context.fast.card,
                       side: BorderSide(color: context.fast.line),
-                      avatar: Icon(
-                        categoryIconData(cat.id),
-                        size: 16,
-                        color: FASTBrand.amberDeep,
-                      ),
+                      avatar: Text(cat.icon),
                       label: Text(
                         catLabel(context, cat.id),
                         style: TextStyle(
@@ -1093,23 +1089,8 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: isActive
-                          ? Colors.white.withValues(alpha: 0.25)
-                          : context.fast.amberSoftBg,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      categoryIconData(cat.id),
-                      size: 20,
-                      color: isActive ? FASTBrand.onAmber : FASTBrand.amberDeep,
-                    ),
-                  ),
-                  SizedBox(height: 5),
+                  Text(cat.icon, style: const TextStyle(fontSize: 22)),
+                  SizedBox(height: 4),
                   Text(
                     catLabel(context, cat.id),
                     style: TextStyle(
@@ -1820,50 +1801,3 @@ const _heroHeadline = TextStyle(
     Shadow(color: Colors.black54, blurRadius: 12, offset: Offset(0, 2)),
   ],
 );
-
-/// Material icon for each category id — consistent glyph sizing across the
-/// strip, replacing the system-emoji renders that varied per platform font.
-IconData categoryIconData(String id) {
-  const icons = <String, IconData>{
-    'all': Icons.restaurant,
-    'burger': Icons.lunch_dining,
-    'tacos': Icons.breakfast_dining,
-    'kebab': Icons.kebab_dining,
-    'pizza': Icons.local_pizza,
-    'poulet': Icons.dinner_dining,
-    'sandwich': Icons.fastfood,
-    'fast-food': Icons.takeout_dining,
-    'hot-dogs': Icons.set_meal,
-    'sushi': Icons.tapas,
-    'poke': Icons.rice_bowl,
-    'chinois': Icons.ramen_dining,
-    'vietnamien': Icons.soup_kitchen,
-    'indien': Icons.set_meal,
-    'thailandais': Icons.dining,
-    'coreen': Icons.egg_alt,
-    'mexicain': Icons.whatshot,
-    'italien': Icons.flatware,
-    'grec': Icons.eco,
-    'monde': Icons.public,
-    'grillades': Icons.outdoor_grill,
-    'poisson': Icons.waves,
-    'vegan': Icons.grass,
-    'halal': Icons.nightlight,
-    'boulangerie': Icons.bakery_dining,
-    'sandwicherie': Icons.brunch_dining,
-    'crepes': Icons.cookie,
-    'dessert': Icons.cake,
-    'glaces': Icons.icecream,
-    'bubble-tea': Icons.local_drink,
-    'cafe': Icons.local_cafe,
-    'brasserie': Icons.sports_bar,
-    'traditionnel': Icons.restaurant_menu,
-    'gastronomique': Icons.room_service,
-    'buffet': Icons.flatware,
-    'mediterraneen': Icons.beach_access,
-    'africain': Icons.fireplace,
-    'antillais': Icons.liquor,
-    'autre': Icons.more_horiz,
-  };
-  return icons[id] ?? Icons.restaurant;
-}
