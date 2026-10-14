@@ -465,7 +465,18 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
       res.status(400).json({ error: 'Signature Stripe requise' });
       return;
     }
-    event = stripe.webhooks.constructEvent(req.body, signature, env.stripeWebhookSecret);
+    const secrets = [env.stripeWebhookSecret, env.stripeConnectWebhookSecret].filter(Boolean);
+    event = null as unknown as Stripe.Event;
+    let lastError: unknown;
+    for (const secret of secrets) {
+      try {
+        event = stripe.webhooks.constructEvent(req.body, signature, secret);
+        break;
+      } catch (err) {
+        lastError = err;
+      }
+    }
+    if (!event) throw lastError;
 
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session;
