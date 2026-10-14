@@ -128,7 +128,10 @@ class _AuthScreenState extends State<AuthScreen>
     // account — explain the mode switch instead of confusingly landing
     // on the restaurant side.
     if (isResto && (widget.initialRole ?? 'CLIENT') == 'CLIENT') {
-      fastProv.showToast('⚡ Compte FAST Pro', fastProv.tr('err_resto_account'));
+      fastProv.showToast(
+        '⚡ ${fastProv.tr('fast_pro_account')}',
+        fastProv.tr('err_resto_account'),
+      );
     }
 
     Navigator.of(context).popUntil((route) => route.isFirst);
@@ -229,7 +232,7 @@ class _AuthScreenState extends State<AuthScreen>
             _buildTextField(
               controller: _loginEmail,
               label: fast.tr('email'),
-              hint: 'adresse@exemple.com',
+              hint: fast.tr('email_hint'),
               icon: Icons.email_outlined,
               keyboardType: TextInputType.emailAddress,
               validator: (v) {
@@ -283,9 +286,7 @@ class _AuthScreenState extends State<AuthScreen>
             Consumer<AuthProvider>(
               builder: (context, auth, _) {
                 return ElevatedButton(
-                  onPressed: auth.isBusy
-                      ? null
-                      : _handleLogin,
+                  onPressed: auth.isBusy ? null : _handleLogin,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Color(0xFFF59E0B),
                     foregroundColor: FASTBrand.onAmber,
@@ -424,7 +425,7 @@ class _AuthScreenState extends State<AuthScreen>
             _buildTextField(
               controller: _registerEmail,
               label: fast.tr('email'),
-              hint: 'adresse@exemple.com',
+              hint: fast.tr('email_hint'),
               icon: Icons.email_outlined,
               keyboardType: TextInputType.emailAddress,
               validator: (v) {
@@ -555,9 +556,7 @@ class _AuthScreenState extends State<AuthScreen>
             Consumer<AuthProvider>(
               builder: (context, auth, _) {
                 return ElevatedButton(
-                  onPressed: auth.isBusy
-                      ? null
-                      : _handleRegister,
+                  onPressed: auth.isBusy ? null : _handleRegister,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Color(0xFFF59E0B),
                     foregroundColor: FASTBrand.onAmber,

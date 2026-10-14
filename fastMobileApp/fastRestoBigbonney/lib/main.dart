@@ -417,10 +417,10 @@ class _MainShellState extends State<MainShell>
                   provider.selectRestaurant(null);
                   provider.navigateToScreen('home');
                 },
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.bolt, color: FASTBrand.amber, size: 22),
+                    const Icon(Icons.bolt, color: FASTBrand.amber, size: 22),
                     Text(
                       'FAST',
                       style: TextStyle(
@@ -428,10 +428,10 @@ class _MainShellState extends State<MainShell>
                         fontStyle: FontStyle.italic,
                         fontSize: 20,
                         letterSpacing: -0.5,
-                        color: Colors.white,
+                        color: context.fast.t1,
                       ),
                     ),
-                    Icon(Icons.bolt, color: FASTBrand.amber, size: 22),
+                    const Icon(Icons.bolt, color: FASTBrand.amber, size: 22),
                   ],
                 ),
               ),

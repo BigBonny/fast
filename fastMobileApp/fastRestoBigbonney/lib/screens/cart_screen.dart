@@ -145,7 +145,7 @@ class _CartScreenState extends State<CartScreen> {
           ],
           // Order list Card
           Text(
-            'PANIER DE ${rest.name.toUpperCase()}',
+            tr(context, 'cart_of').replaceAll('{n}', rest.name.toUpperCase()),
             style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.bold,

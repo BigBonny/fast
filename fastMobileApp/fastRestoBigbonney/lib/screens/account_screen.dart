@@ -831,7 +831,10 @@ class _AccountScreenState extends State<AccountScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: Text('Annuler', style: TextStyle(color: context.fast.t3)),
+            child: Text(
+              tr(context, 'cancel'),
+              style: TextStyle(color: context.fast.t3),
+            ),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -854,9 +857,9 @@ class _AccountScreenState extends State<AccountScreen>
               ),
               elevation: 0,
             ),
-            child: const Text(
-              'Enregistrer',
-              style: TextStyle(fontWeight: FontWeight.bold),
+            child: Text(
+              tr(context, 'save'),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -874,7 +877,7 @@ class _AccountScreenState extends State<AccountScreen>
           side: const BorderSide(color: Color(0xFFEF4444), width: 1),
         ),
         title: Text(
-          'Supprimer le compte ?',
+          tr(context, 'del_account_q'),
           style: TextStyle(
             color: Color(0xFFEF4444),
             fontWeight: FontWeight.bold,
@@ -888,7 +891,10 @@ class _AccountScreenState extends State<AccountScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: Text('Annuler', style: TextStyle(color: context.fast.t3)),
+            child: Text(
+              tr(context, 'cancel'),
+              style: TextStyle(color: context.fast.t3),
+            ),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -915,9 +921,9 @@ class _AccountScreenState extends State<AccountScreen>
               ),
               elevation: 0,
             ),
-            child: const Text(
-              'Supprimer',
-              style: TextStyle(fontWeight: FontWeight.bold),
+            child: Text(
+              tr(context, 'del'),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
         ],

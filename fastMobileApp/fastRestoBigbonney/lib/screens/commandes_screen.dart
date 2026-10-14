@@ -1434,9 +1434,12 @@ class _CommandesScreenState extends State<CommandesScreen>
                     ),
                     elevation: 0,
                   ),
-                  child: const Text(
-                    'Envoyer l\'avis',
-                    style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13),
+                  child: Text(
+                    tr(context, 'send_review'),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
               ),

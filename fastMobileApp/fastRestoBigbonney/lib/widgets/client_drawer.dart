@@ -106,7 +106,7 @@ class ClientDrawer extends StatelessWidget {
                             Text(
                               provider.userName.isNotEmpty
                                   ? provider.userName
-                                  : 'Mon compte',
+                                  : tr(context, 'my_account'),
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w800,
