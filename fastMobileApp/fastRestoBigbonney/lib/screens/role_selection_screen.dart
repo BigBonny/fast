@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'auth_screen.dart';
 import '../provider.dart';
-import '../theme.dart';
 import '../widgets/fast_glow_background.dart';
 
 class RoleSelectionScreen extends StatelessWidget {
@@ -25,37 +24,6 @@ class RoleSelectionScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: 40),
-                  // Logo — ⚡ FAST ⚡ wordmark + tagline
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.bolt, color: FASTBrand.amber, size: 40),
-                      const SizedBox(width: 6),
-                      const Text(
-                        'FAST',
-                        style: TextStyle(
-                          fontSize: 44,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white,
-                          fontStyle: FontStyle.italic,
-                          letterSpacing: -1.5,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      const Icon(Icons.bolt, color: FASTBrand.amber, size: 40),
-                    ],
-                  ),
-                  const Text(
-                    'Chaque minute compte',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: Color(0xFFD8D0E8),
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                  const SizedBox(height: 48),
 
                   // "Bienvenue sur FAST" headline — FAST restyled big + orange
                   Builder(

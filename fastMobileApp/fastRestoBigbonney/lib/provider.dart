@@ -180,7 +180,9 @@ class FASTProvider extends ChangeNotifier {
     if (_themeMode != ThemeMode.system) return _themeMode;
     final now = DateTime.now();
     if (_userLocation != null) {
-      return isDaylightAt(now, _userLocation!) ? ThemeMode.light : ThemeMode.dark;
+      return isDaylightAt(now, _userLocation!)
+          ? ThemeMode.light
+          : ThemeMode.dark;
     }
     final h = now.hour;
     return (h >= 7 && h < 19) ? ThemeMode.light : ThemeMode.dark;
@@ -189,17 +191,32 @@ class FASTProvider extends ChangeNotifier {
   static bool isDaylightAt(DateTime instant, LatLng location) {
     final utc = instant.toUtc();
     final day = utc.difference(DateTime.utc(utc.year)).inDays + 1;
-    final yearDays = DateTime.utc(utc.year + 1).difference(DateTime.utc(utc.year)).inDays;
+    final yearDays = DateTime.utc(
+      utc.year + 1,
+    ).difference(DateTime.utc(utc.year)).inDays;
     final gamma = 2 * pi / yearDays * (day - 1 + (utc.hour - 12) / 24);
-    final declination = 0.006918 - 0.399912 * cos(gamma) + 0.070257 * sin(gamma)
-        - 0.006758 * cos(2 * gamma) + 0.000907 * sin(2 * gamma)
-        - 0.002697 * cos(3 * gamma) + 0.00148 * sin(3 * gamma);
-    final equation = 229.18 * (0.000075 + 0.001868 * cos(gamma) - 0.032077 * sin(gamma)
-        - 0.014615 * cos(2 * gamma) - 0.040849 * sin(2 * gamma));
-    final solarMinutes = (utc.hour * 60 + utc.minute + equation + 4 * location.longitude) % 1440;
+    final declination =
+        0.006918 -
+        0.399912 * cos(gamma) +
+        0.070257 * sin(gamma) -
+        0.006758 * cos(2 * gamma) +
+        0.000907 * sin(2 * gamma) -
+        0.002697 * cos(3 * gamma) +
+        0.00148 * sin(3 * gamma);
+    final equation =
+        229.18 *
+        (0.000075 +
+            0.001868 * cos(gamma) -
+            0.032077 * sin(gamma) -
+            0.014615 * cos(2 * gamma) -
+            0.040849 * sin(2 * gamma));
+    final solarMinutes =
+        (utc.hour * 60 + utc.minute + equation + 4 * location.longitude) % 1440;
     final hourAngle = (solarMinutes / 4 - 180) * pi / 180;
     final latitude = location.latitude * pi / 180;
-    final elevation = sin(latitude) * sin(declination) + cos(latitude) * cos(declination) * cos(hourAngle);
+    final elevation =
+        sin(latitude) * sin(declination) +
+        cos(latitude) * cos(declination) * cos(hourAngle);
     return elevation > sin(-0.833 * pi / 180);
   }
 
@@ -1163,7 +1180,7 @@ class FASTProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       _orderError = _extractErrorMessage(e);
-      showToast('Erreur de commande', _orderError!);
+      showToast(tr('order_error'), _orderError!);
       notifyListeners();
     }
   }

@@ -712,7 +712,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const Icon(Icons.favorite, color: Color(0xFFEF4444), size: 14),
                 const SizedBox(width: 6),
                 Text(
-                  'MES FAVORIS',
+                  tr(context, 'favorites').toUpperCase(),
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
@@ -1474,7 +1474,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Text('🎯', style: TextStyle(fontSize: 40)),
               SizedBox(height: 12),
               Text(
-                'CHOIX DE VOTRE REPAS',
+                tr(context, 'choose_meal'),
                 style: TextStyle(
                   color: Color(0xFFF59E0B),
                   fontWeight: FontWeight.w900,

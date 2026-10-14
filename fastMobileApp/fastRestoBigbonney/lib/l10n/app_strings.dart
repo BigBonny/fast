@@ -55,13 +55,19 @@ class AppStrings {
   // ──────────────────────────── French (base) ────────────────────────────
   static const _fr = <String, String>{
     'leave_kitchen': 'Quitter la cuisine',
-    'camera_permission_hint': 'Autorisez la caméra dans les réglages, puis réessayez. Vous pouvez aussi importer une photo.',
-    'camera_unavailable': 'La caméra est indisponible. Réessayez ou importez une photo.',
+    'camera_permission_hint':
+        'Autorisez la caméra dans les réglages, puis réessayez. Vous pouvez aussi importer une photo.',
+    'camera_unavailable':
+        'La caméra est indisponible. Réessayez ou importez une photo.',
     'scan_failed': 'Impossible d’importer le menu',
-    'scan_image_too_large': 'La photo est trop volumineuse. Choisissez une photo plus petite.',
-    'scan_unavailable': 'Le service d’analyse des menus est indisponible. Réessayez plus tard ou ajoutez vos plats manuellement.',
-    'scan_no_items': 'Aucun plat lisible détecté. Gardez les noms et les prix dans le cadre et filmez lentement.',
-    'scan_save_failed': 'Les plats détectés n’ont pas pu être enregistrés. Réessayez.',
+    'scan_image_too_large':
+        'La photo est trop volumineuse. Choisissez une photo plus petite.',
+    'scan_unavailable':
+        'Le service d’analyse des menus est indisponible. Réessayez plus tard ou ajoutez vos plats manuellement.',
+    'scan_no_items':
+        'Aucun plat lisible détecté. Gardez les noms et les prix dans le cadre et filmez lentement.',
+    'scan_save_failed':
+        'Les plats détectés n’ont pas pu être enregistrés. Réessayez.',
     'open_settings': 'Ouvrir les réglages',
     'choose_photo': 'Importer une photo',
     'with_friends': 'AVEC MES AMIS',
@@ -70,13 +76,16 @@ class AppStrings {
     'accept_in': 'Accepter en :',
     'card_add': 'Ajouter une carte',
     'no_saved_cards': 'Aucune carte enregistrée',
-    'payment_unavailable': 'Les paiements ne sont pas encore configurés. Réessayez plus tard.',
+    'payment_unavailable':
+        'Les paiements ne sont pas encore configurés. Réessayez plus tard.',
     'card_expires': 'Expire le {n}',
-    'card_setup_info': 'Votre carte est enregistrée de façon sécurisée chez Stripe. Aucun paiement ne sera prélevé.',
+    'card_setup_info':
+        'Votre carte est enregistrée de façon sécurisée chez Stripe. Aucun paiement ne sera prélevé.',
     'address_add': 'Ajouter une adresse',
     'address_label': 'Nom de l’adresse',
     'address_default': 'Adresse par défaut',
-    'email_verification_unavailable': 'La vérification e-mail n’est pas encore disponible. Vous pouvez modifier votre adresse e-mail dans vos informations personnelles.',
+    'email_verification_unavailable':
+        'La vérification e-mail n’est pas encore disponible. Vous pouvez modifier votre adresse e-mail dans vos informations personnelles.',
     'welcome': 'Bienvenue sur FAST',
     'choose_profile': 'Choisissez votre profil pour continuer',
     'iam_client': 'Je suis un Client',
@@ -462,6 +471,12 @@ class AppStrings {
     'get_started': 'Commencer !',
     'view_cart': 'Voir le panier',
     'at_restaurant': 'Chez :',
+    'cart_of': 'PANIER DE {n}',
+    'choose_meal': 'CHOIX DE VOTRE REPAS',
+    'order_error': 'Erreur de commande',
+    'send_review': 'Envoyer l\'avis',
+    'email_hint': 'adresse@exemple.com',
+    'fast_pro_account': 'Compte FAST Pro',
     'cat_all': 'Tous',
     'cat_burger': 'Burgers',
     'cat_tacos': 'Tacos',
@@ -841,12 +856,15 @@ class AppStrings {
   // ──────────────────────────── English ────────────────────────────
   static const _en = <String, String>{
     'leave_kitchen': 'Leave kitchen',
-    'camera_permission_hint': 'Allow camera access in Settings, then retry. You can also import a photo.',
+    'camera_permission_hint':
+        'Allow camera access in Settings, then retry. You can also import a photo.',
     'camera_unavailable': 'The camera is unavailable. Retry or import a photo.',
     'scan_failed': 'Menu import failed',
     'scan_image_too_large': 'The photo is too large. Choose a smaller photo.',
-    'scan_unavailable': 'Menu analysis is unavailable. Retry later or add dishes manually.',
-    'scan_no_items': 'No readable dishes detected. Keep names and prices in the frame and move slowly.',
+    'scan_unavailable':
+        'Menu analysis is unavailable. Retry later or add dishes manually.',
+    'scan_no_items':
+        'No readable dishes detected. Keep names and prices in the frame and move slowly.',
     'scan_save_failed': 'The detected dishes could not be saved. Please retry.',
     'open_settings': 'Open Settings',
     'choose_photo': 'Import a photo',
@@ -856,13 +874,16 @@ class AppStrings {
     'accept_in': 'Accept in:',
     'card_add': 'Add a card',
     'no_saved_cards': 'No saved cards',
-    'payment_unavailable': 'Payments are not configured yet. Please retry later.',
+    'payment_unavailable':
+        'Payments are not configured yet. Please retry later.',
     'card_expires': 'Expires {n}',
-    'card_setup_info': 'Your card is stored securely by Stripe. No payment will be charged.',
+    'card_setup_info':
+        'Your card is stored securely by Stripe. No payment will be charged.',
     'address_add': 'Add an address',
     'address_label': 'Address label',
     'address_default': 'Default address',
-    'email_verification_unavailable': 'Email verification is not available yet. You can edit your email in your personal information.',
+    'email_verification_unavailable':
+        'Email verification is not available yet. You can edit your email in your personal information.',
     'welcome': 'Welcome to FAST',
     'choose_profile': 'Choose your profile to continue',
     'iam_client': 'I am a Customer',
@@ -913,8 +934,7 @@ class AppStrings {
     'rush_deactivate_cta': 'Turn off Rush mode',
     'rush_off_title': 'Turn off Rush mode?',
     'rush_off_desc': 'Back to normal preparation times.',
-    'rush_off_desc_timed':
-        '{m} min left — turn off to restore normal times.',
+    'rush_off_desc_timed': '{m} min left — turn off to restore normal times.',
     'rush_remaining': '{m} min left',
     'orders_realtime_hint': 'New orders will appear here in real time.',
     'welcome_sub': 'You are two seconds away from saving time.',
@@ -1242,6 +1262,12 @@ class AppStrings {
     'get_started': 'Get started!',
     'view_cart': 'View cart',
     'at_restaurant': 'At:',
+    'cart_of': '{n} CART',
+    'choose_meal': 'CHOOSE YOUR MEAL',
+    'order_error': 'Order error',
+    'send_review': 'Send review',
+    'email_hint': 'address@example.com',
+    'fast_pro_account': 'FAST Pro account',
     'cat_all': 'All',
     'cat_burger': 'Burgers',
     'cat_tacos': 'Tacos',
