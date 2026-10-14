@@ -10,6 +10,8 @@ function requireEnv(key: string): string {
   return val;
 }
 
+const publicBaseUrl = (process.env.PUBLIC_BASE_URL || 'https://backend-six-iota-69.vercel.app').replace(/\/$/, '');
+
 export const env = {
   port: parseInt(process.env.PORT || '3000', 10),
   nodeEnv: process.env.NODE_ENV || 'development',
@@ -26,8 +28,11 @@ export const env = {
   geminiApiKey: process.env.GEMINI_API_KEY || '',
   stripeSecretKey: process.env.STRIPE_SECRET_KEY || '',
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
+  // Optional second secret for a "connected accounts" webhook destination —
+  // Stripe signs account.* events of connected accounts with a different key.
+  stripeConnectWebhookSecret: process.env.STRIPE_CONNECT_WEBHOOK_SECRET || '',
   stripeCurrency: process.env.STRIPE_CURRENCY || 'eur',
-  publicBaseUrl: (process.env.PUBLIC_BASE_URL || 'https://backend-six-iota-69.vercel.app').replace(/\/$/, ''),
-  stripeSuccessUrl: process.env.STRIPE_SUCCESS_URL || 'https://backend-lovat-xi-0axv990rct.vercel.app/api/payments/checkout/success?session_id={CHECKOUT_SESSION_ID}',
-  stripeCancelUrl: process.env.STRIPE_CANCEL_URL || 'https://backend-lovat-xi-0axv990rct.vercel.app/api/payments/checkout/cancel',
+  publicBaseUrl,
+  stripeSuccessUrl: process.env.STRIPE_SUCCESS_URL || `${publicBaseUrl}/api/payments/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+  stripeCancelUrl: process.env.STRIPE_CANCEL_URL || `${publicBaseUrl}/api/payments/checkout/cancel`,
 };
