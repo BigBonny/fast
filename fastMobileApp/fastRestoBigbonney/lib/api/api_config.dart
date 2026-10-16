@@ -26,6 +26,7 @@ class ApiConfig {
   // Menu
   static String menuByRestaurant(String id) => '/menu/restaurant/$id';
   static String menuItem(String id) => '/menu/$id';
+  static String enhanceMenuItem(String id) => '/menu/$id/enhance';
   static String managedMenuByRestaurant(String id) => '/menu/restaurant/$id/manage';
   static String scanMenu(String restaurantId) =>
       '/menu/restaurant/$restaurantId/scan';
@@ -59,6 +60,19 @@ class ApiConfig {
 
   // Reviews
   static String reviewsByRestaurant(String id) => '/reviews/restaurant/$id';
+  static String reportReview(String id) => '/reviews/$id/report';
+
+  // Reservations
+  static const String myReservations = '/reservations/mine';
+  static String restaurantReservations(String restaurantId) =>
+      '/reservations/restaurant/$restaurantId';
+  static String reservationStatus(String id) => '/reservations/$id/status';
+  static String cancelReservation(String id) => '/reservations/$id/cancel';
+
+  // Phone verification (SMS OTP)
+  static const String phoneStatus = '/auth/phone/status';
+  static const String phoneRequestCode = '/auth/phone/request-code';
+  static const String phoneVerifyCode = '/auth/phone/verify';
 
   // Notifications
   static const String notifications = '/notifications';
@@ -69,6 +83,9 @@ class ApiConfig {
   // Staff / cook accounts (restaurant owner only)
   static const String staff = '/staff';
   static String staffMember(String id) => '/staff/$id';
+  static const String staffInviteCode = '/staff/invite-code';
+  static const String staffJoin = '/staff/join';
+  static const String staffGuestLogin = '/staff/guest-login';
 
   // Stats
   static const String stats = '/stats';
@@ -90,6 +107,7 @@ class ApiConfig {
   static const String activeDelivery = '/deliveries/active';
   static String acceptDelivery(String id) => '/deliveries/$id/accept';
   static String updateDeliveryStatus(String id) => '/deliveries/$id/status';
+  static String reportDelivery(String id) => '/deliveries/$id/report';
 
   // Driver profile
   static const String driverProfile = '/drivers/me';

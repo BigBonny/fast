@@ -29,6 +29,13 @@ class MenuService {
     return MenuItem.fromApiJson(data as Map<String, dynamic>);
   }
 
+  /// F06 — AI-proposed description (reviewed by the owner, never
+  /// auto-saved; allergens are never invented server-side).
+  Future<String> enhanceDescription(String id) async {
+    final data = await _api.post(ApiConfig.enhanceMenuItem(id));
+    return (data as Map<String, dynamic>)['description'] as String? ?? '';
+  }
+
   Future<void> deleteItem(String id) async {
     await _api.delete(ApiConfig.menuItem(id));
   }

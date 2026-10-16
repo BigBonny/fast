@@ -3,7 +3,8 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../services/prisma';
 import { env } from '../config/env';
-import { registerSchema, loginSchema, updateProfileSchema, changePasswordSchema } from '../utils/validation';
+import { registerSchema, loginSchema, updateProfileSchema, changePasswordSchema, phoneRequestSchema, phoneVerifySchema } from '../utils/validation';
+import crypto from 'crypto';
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   const data = registerSchema.parse(req.body);
@@ -295,4 +296,115 @@ export const changePassword = async (req: Request, res: Response): Promise<void>
   });
 
   res.json({ message: 'Mot de passe mis à jour' });
+};
+
+// ─── Phone verification (SMS OTP, F11) ──────────────────────
+
+const smsConfigured = () =>
+  Boolean(env.twilioAccountSid && env.twilioAuthToken && env.twilioFromNumber);
+
+/** Whether the app must require SMS verification at signup. */
+export const phoneVerificationStatus = async (_req: Request, res: Response): Promise<void> => {
+  res.json({ enabled: smsConfigured() });
+};
+
+async function sendSms(to: string, body: string): Promise<void> {
+  const creds = Buffer.from(`${env.twilioAccountSid}:${env.twilioAuthToken}`).toString('base64');
+  const resp = await fetch(
+    `https://api.twilio.com/2010-04-01/Accounts/${env.twilioAccountSid}/Messages.json`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Basic ${creds}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({ To: to, From: env.twilioFromNumber, Body: body }),
+      signal: AbortSignal.timeout(10000),
+    },
+  );
+  if (!resp.ok) {
+    const text = await resp.text();
+    throw new Error(`SMS provider error: ${resp.status} ${text.slice(0, 200)}`);
+  }
+}
+
+/** Request a one-time SMS code. Rate-limited: 60 s between resends, 3/hour. */
+export const requestPhoneCode = async (req: Request, res: Response): Promise<void> => {
+  const data = phoneRequestSchema.parse(req.body);
+  const phone = data.phone.trim();
+
+  const recent = await prisma.phoneVerification.findFirst({
+    where: { phone },
+    orderBy: { createdAt: 'desc' },
+  });
+  if (recent && Date.now() - recent.createdAt.getTime() < 60_000) {
+    res.status(429).json({ error: 'Un code vient d\'être envoyé. Patientez 60 secondes.' });
+    return;
+  }
+  const hourlyCount = await prisma.phoneVerification.count({
+    where: { phone, createdAt: { gte: new Date(Date.now() - 3600_000) } },
+  });
+  if (hourlyCount >= 3) {
+    res.status(429).json({ error: 'Trop de codes demandés. Réessayez dans une heure.' });
+    return;
+  }
+
+  const code = crypto.randomInt(100000, 999999).toString();
+  await prisma.phoneVerification.create({
+    data: { phone, code, expiresAt: new Date(Date.now() + 10 * 60_000) },
+  });
+
+  if (smsConfigured()) {
+    try {
+      await sendSms(phone, `Votre code FAST : ${code} (valide 10 min)`);
+    } catch (err) {
+      console.error('[requestPhoneCode] SMS send failed:', (err as Error).message);
+      res.status(502).json({ code: 'SMS_SEND_FAILED', error: 'Impossible d\'envoyer le SMS. Réessayez.' });
+      return;
+    }
+    res.json({ message: 'Code envoyé' });
+    return;
+  }
+
+  // No SMS provider: fail safe in production, expose the code in dev/test.
+  if (env.nodeEnv === 'production') {
+    res.status(503).json({ code: 'SMS_UNAVAILABLE', error: 'Vérification SMS non configurée' });
+    return;
+  }
+  res.json({ message: 'Code généré (mode développement)', devCode: code });
+};
+
+/** Verify the code — expires after 10 min, 5 attempts max. */
+export const verifyPhoneCode = async (req: Request, res: Response): Promise<void> => {
+  const data = phoneVerifySchema.parse(req.body);
+  const phone = data.phone.trim();
+
+  const record = await prisma.phoneVerification.findFirst({
+    where: { phone, consumedAt: null, expiresAt: { gt: new Date() } },
+    orderBy: { createdAt: 'desc' },
+  });
+  if (!record) {
+    res.status(400).json({ code: 'CODE_EXPIRED', error: 'Code expiré. Demandez-en un nouveau.' });
+    return;
+  }
+  if (record.attempts >= 5) {
+    res.status(429).json({ error: 'Trop de tentatives. Demandez un nouveau code.' });
+    return;
+  }
+  if (record.code !== data.code.trim()) {
+    await prisma.phoneVerification.update({
+      where: { id: record.id },
+      data: { attempts: { increment: 1 } },
+    });
+    res.status(400).json({ code: 'INVALID_CODE', error: 'Code incorrect' });
+    return;
+  }
+
+  await prisma.phoneVerification.update({
+    where: { id: record.id },
+    data: { consumedAt: new Date() },
+  });
+  await prisma.user.updateMany({ where: { phone }, data: { phoneVerified: true } });
+
+  res.json({ verified: true });
 };

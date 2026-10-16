@@ -26,6 +26,9 @@ export const env = {
   lockoutMinutes: parseInt(process.env.LOCKOUT_MINUTES || '15', 10),
   mistralApiKey: process.env.MISTRAL_API_KEY || '',
   geminiApiKey: process.env.GEMINI_API_KEY || '',
+  twilioAccountSid: process.env.TWILIO_ACCOUNT_SID || '',
+  twilioAuthToken: process.env.TWILIO_AUTH_TOKEN || '',
+  twilioFromNumber: process.env.TWILIO_FROM_NUMBER || '',
   stripeSecretKey: process.env.STRIPE_SECRET_KEY || '',
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
   // Optional second secret for a "connected accounts" webhook destination —

@@ -5,6 +5,7 @@
 // no payments, no settings.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../api/api_client.dart';
 import '../../api/api_config.dart';
 import '../../api/api_exceptions.dart';
@@ -23,6 +24,7 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
   List<dynamic> _staff = [];
   bool _loading = true;
   String? _error;
+  String? _inviteCode;
 
   @override
   void initState() {
@@ -38,6 +40,10 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
     try {
       final data = await _api.get(ApiConfig.staff);
       _staff = data as List<dynamic>;
+      try {
+        final invite = await _api.get(ApiConfig.staffInviteCode);
+        _inviteCode = (invite as Map<String, dynamic>)['code'] as String?;
+      } catch (_) {}
     } catch (e) {
       if (mounted) {
         _error = e is ApiException ? e.message : tr(context, 'load_err');
@@ -317,10 +323,15 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
         ),
       ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator(color: FASTPro.teal))
-          : _error != null
-          ? Center(
+      body: Column(
+        children: [
+          if (_inviteCode != null) _buildInviteCard(),
+          Expanded(
+            child: _loading
+                ? const Center(
+                    child: CircularProgressIndicator(color: FASTPro.teal))
+                : _error != null
+                ? Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -451,6 +462,78 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
                 },
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// F13 — the owner's shareable invite code: staff/guests join with
+  /// first+last name and this code on the role-selection screen.
+  Widget _buildInviteCard() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: FASTPro.teal.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: FASTPro.teal.withValues(alpha: 0.35)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.vpn_key_outlined, color: FASTPro.teal, size: 18),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  tr(context, 'invite_code'),
+                  style: TextStyle(color: context.fast.t3, fontSize: 10),
+                ),
+                Text(
+                  _inviteCode!,
+                  style: TextStyle(
+                    color: context.fast.t1,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 16,
+                    letterSpacing: 2,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            tooltip: 'Copy',
+            icon: const Icon(Icons.copy, size: 18, color: FASTPro.teal),
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: _inviteCode!));
+              _toast(tr(context, 'invite_code'));
+            },
+          ),
+          IconButton(
+            tooltip: 'Rotate',
+            icon: const Icon(Icons.refresh, size: 18, color: FASTPro.teal),
+            onPressed: () async {
+              try {
+                final data = await _api.post(
+                  '${ApiConfig.staffInviteCode}/rotate',
+                );
+                setState(() {
+                  _inviteCode =
+                      (data as Map<String, dynamic>)['code'] as String?;
+                });
+              } catch (e) {
+                if (mounted) {
+                  _toast(
+                    e is ApiException ? e.message : tr(context, 'load_err'),
+                  );
+                }
+              }
+            },
+          ),
+        ],
+      ),
     );
   }
 }

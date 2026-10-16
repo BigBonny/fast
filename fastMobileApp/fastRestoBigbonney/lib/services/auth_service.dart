@@ -23,6 +23,25 @@ class AuthService {
     return AuthResponse.fromJson(data as Map<String, dynamic>);
   }
 
+  /// F13 — self-serve guest join via the restaurant's invite code.
+  /// Creates the account on the fly and returns a ready session;
+  /// repeated calls with the same name act as a re-login.
+  Future<AuthResponse> joinWithInviteCode({
+    required String inviteCode,
+    required String firstName,
+    required String lastName,
+  }) async {
+    final data = await _api.post(
+      ApiConfig.staffJoin,
+      body: {
+        'code': inviteCode.trim().toUpperCase(),
+        'firstName': firstName.trim(),
+        'lastName': lastName.trim(),
+      },
+    );
+    return AuthResponse.fromJson(data as Map<String, dynamic>);
+  }
+
   Future<UserData> getMe() async {
     final data = await _api.get(ApiConfig.me);
     // Backend returns user data at root level
@@ -47,6 +66,32 @@ class AuthService {
       return UserData.fromJson(data);
     }
     return UserData.fromJson(data['user'] as Map<String, dynamic>);
+  }
+
+  /// F11 — whether SMS verification is required at signup.
+  Future<bool> phoneVerificationEnabled() async {
+    try {
+      final data = await _api.get(ApiConfig.phoneStatus);
+      return (data as Map<String, dynamic>)['enabled'] as bool? ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> requestPhoneCode(String phone) async {
+    await _api.post(ApiConfig.phoneRequestCode, body: {'phone': phone});
+  }
+
+  Future<bool> verifyPhoneCode(String phone, String code) async {
+    try {
+      final data = await _api.post(
+        ApiConfig.phoneVerifyCode,
+        body: {'phone': phone, 'code': code},
+      );
+      return (data as Map<String, dynamic>)['verified'] as bool? ?? false;
+    } catch (_) {
+      return false;
+    }
   }
 
   Future<void> changePassword({

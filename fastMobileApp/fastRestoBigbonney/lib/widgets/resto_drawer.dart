@@ -5,6 +5,7 @@ import '../l10n/app_strings.dart';
 import '../resto_provider.dart';
 import '../providers/auth_provider.dart';
 import '../screens/resto/menu_ai_scanner_screen.dart';
+import '../screens/resto/resto_reservations_screen.dart';
 import '../screens/resto/resto_staff_screen.dart';
 import '../theme.dart';
 import '../l10n/tr.dart';
@@ -242,6 +243,13 @@ class RestoDrawer extends StatelessWidget {
                     label: provider.tr('my_team'),
                     subtitle: provider.tr('my_team_sub'),
                     onTap: () => _push(context, const RestoStaffScreen()),
+                  ),
+                  _row(
+                    context,
+                    emoji: '📅',
+                    label: provider.tr('reservations'),
+                    onTap: () =>
+                        _push(context, const RestoReservationsScreen()),
                   ),
 
                   const SizedBox(height: 14),

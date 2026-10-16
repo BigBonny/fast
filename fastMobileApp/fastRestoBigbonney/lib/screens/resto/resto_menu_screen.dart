@@ -599,10 +599,24 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
                     ],
                   ),
                   SizedBox(height: 2),
-                  Text(
-                    item.category,
-                    style: TextStyle(color: context.fast.t3, fontSize: 12),
-                  ),
+                  // F05 — an empty category means the AI couldn't classify
+                  // the dish: flag it amber so the owner knows to pick one.
+                  item.category.isEmpty
+                      ? Text(
+                          '⚠ ${tr(context, 'uncategorized')}',
+                          style: const TextStyle(
+                            color: Color(0xFFF59E0B),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        )
+                      : Text(
+                          item.category,
+                          style: TextStyle(
+                            color: context.fast.t3,
+                            fontSize: 12,
+                          ),
+                        ),
                   const SizedBox(height: 4),
                   Text(
                     '€${item.price.toStringAsFixed(2)}',

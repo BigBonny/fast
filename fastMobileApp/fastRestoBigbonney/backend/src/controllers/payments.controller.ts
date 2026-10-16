@@ -205,6 +205,13 @@ export const createCheckoutSession = async (req: Request, res: Response): Promis
       res.status(404).json({ error: 'Restaurant introuvable ou inactif' });
       return;
     }
+    if (restaurant.reservationOnly) {
+      res.status(409).json({
+        code: 'RESERVATION_ONLY',
+        error: 'Ce restaurant fonctionne uniquement sur réservation',
+      });
+      return;
+    }
 
     // Payments must go to the restaurant's own Connect account — refuse
     // checkout while it's incomplete instead of collecting on the platform.
@@ -301,6 +308,15 @@ export const createCheckoutSession = async (req: Request, res: Response): Promis
     const serviceFee = env.serviceFee;
     const fulfillmentType = data.fulfillmentType ?? 'PICKUP';
     let deliveryFee = 0;
+    let dineInFee = 0;
+
+    if (fulfillmentType === 'DINE_IN') {
+      if (!restaurant.allowDineIn) {
+        res.status(400).json({ error: 'Ce restaurant ne propose pas le service sur place' });
+        return;
+      }
+      dineInFee = restaurant.dineInFee;
+    }
 
     if (fulfillmentType === 'DELIVERY') {
       if (!restaurant.deliveryEnabled) {
@@ -327,7 +343,7 @@ export const createCheckoutSession = async (req: Request, res: Response): Promis
       deliveryFee = restaurant.deliveryFee;
     }
 
-    const total = Math.round((pricing.subtotal + serviceFee + deliveryFee) * 100) / 100;
+    const total = Math.round((pricing.subtotal + serviceFee + deliveryFee + dineInFee) * 100) / 100;
 
     const checkout = await prisma.paymentCheckout.create({
       data: {

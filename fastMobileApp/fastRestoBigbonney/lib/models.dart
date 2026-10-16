@@ -22,6 +22,26 @@ enum DietaryPreference {
   }
 }
 
+/// FAST markup grid (F03) — mirror of backend `fastPricing.ts` so the
+/// owner sees the live final price while typing the base price.
+double computeFastPrice(double basePrice) {
+  if (!basePrice.isFinite || basePrice <= 0) return basePrice;
+  final rate = basePrice < 10
+      ? 0.125
+      : basePrice < 15
+          ? 0.10
+          : basePrice <= 25
+              ? 0.07
+              : basePrice <= 100
+                  ? 0.05
+                  : basePrice <= 500
+                      ? 0.02
+                      : basePrice <= 1000
+                          ? 0.01
+                          : 0.005;
+  return (basePrice * (1 + rate) * 100).roundToDouble() / 100;
+}
+
 class MenuItem {
   final String id;
   final String name;
@@ -36,6 +56,9 @@ class MenuItem {
   final int prepTime; // minutes, 0 = restaurant default
   final int prepTimeRush; // minutes during rush, 0 = fall back to prepTime
   final String videoUrl; // optional story/preview video (mp4…)
+  /// The restaurateur's own price — `price` is the FAST-marked-up customer
+  /// price. Falls back to `price` for items saved before markup existed.
+  final double? basePrice;
 
   MenuItem({
     required this.id,
@@ -51,6 +74,7 @@ class MenuItem {
     this.prepTime = 0,
     this.prepTimeRush = 0,
     this.videoUrl = '',
+    this.basePrice,
   });
 
   MenuItem copyWith({
@@ -90,6 +114,7 @@ class MenuItem {
     'prepTime': prepTime,
     'prepTimeRush': prepTimeRush,
     'videoUrl': videoUrl,
+    if (basePrice != null) 'basePrice': basePrice,
   };
 
   factory MenuItem.fromJson(Map<String, dynamic> json) => MenuItem(
@@ -109,6 +134,7 @@ class MenuItem {
     prepTime: json['prepTime'] as int? ?? 0,
     prepTimeRush: json['prepTimeRush'] as int? ?? 0,
     videoUrl: json['videoUrl'] as String? ?? '',
+    basePrice: (json['basePrice'] as num?)?.toDouble(),
   );
 
   /// Parse from backend API JSON format
@@ -132,6 +158,7 @@ class MenuItem {
     prepTime: json['prepTime'] as int? ?? 0,
     prepTimeRush: json['prepTimeRush'] as int? ?? 0,
     videoUrl: json['videoUrl'] as String? ?? '',
+    basePrice: (json['basePrice'] as num?)?.toDouble(),
   );
 
   static List<DietaryPreference> _parseDietaryTags(dynamic tags) {
@@ -219,19 +246,28 @@ class Review {
 
 enum FulfillmentType {
   pickup('Retrait'),
+  dineIn('Sur place'),
   delivery('Livraison');
 
   final String label;
   const FulfillmentType(this.label);
 
   static FulfillmentType fromApi(String value) {
-    return value.toUpperCase() == 'DELIVERY'
-        ? FulfillmentType.delivery
-        : FulfillmentType.pickup;
+    switch (value.toUpperCase()) {
+      case 'DELIVERY':
+        return FulfillmentType.delivery;
+      case 'DINE_IN':
+        return FulfillmentType.dineIn;
+      default:
+        return FulfillmentType.pickup;
+    }
   }
 
-  String get apiValue =>
-      this == FulfillmentType.delivery ? 'DELIVERY' : 'PICKUP';
+  String get apiValue => switch (this) {
+    FulfillmentType.delivery => 'DELIVERY',
+    FulfillmentType.dineIn => 'DINE_IN',
+    _ => 'PICKUP',
+  };
 }
 
 class Restaurant {
@@ -254,6 +290,9 @@ class Restaurant {
   final double deliveryFee;
   final double deliveryRadiusKm;
   final bool paymentsReady;
+  final bool allowDineIn;
+  final bool reservationsEnabled;
+  final bool reservationOnly;
 
   Restaurant({
     required this.id,
@@ -275,6 +314,9 @@ class Restaurant {
     this.deliveryFee = 2.99,
     this.deliveryRadiusKm = 5.0,
     this.paymentsReady = true,
+    this.allowDineIn = false,
+    this.reservationsEnabled = false,
+    this.reservationOnly = false,
   });
 
   Map<String, dynamic> toJson() => {
@@ -294,6 +336,9 @@ class Restaurant {
     'menu': menu.map((m) => m.toJson()).toList(),
     'address': address,
     'paymentsReady': paymentsReady,
+    'allowDineIn': allowDineIn,
+    'reservationsEnabled': reservationsEnabled,
+    'reservationOnly': reservationOnly,
   };
 
   factory Restaurant.fromJson(Map<String, dynamic> json) => Restaurant(
@@ -329,6 +374,9 @@ class Restaurant {
     deliveryRadiusKm: (json['deliveryRadiusKm'] as num?)?.toDouble() ?? 5.0,
     // Cached entries predate the flag — don't block ordering on stale data.
     paymentsReady: json['paymentsReady'] as bool? ?? true,
+    allowDineIn: json['allowDineIn'] as bool? ?? false,
+    reservationsEnabled: json['reservationsEnabled'] as bool? ?? false,
+    reservationOnly: json['reservationOnly'] as bool? ?? false,
   );
 
   /// Parse from backend API JSON format
@@ -364,6 +412,9 @@ class Restaurant {
     deliveryFee: (json['deliveryFee'] as num?)?.toDouble() ?? 2.99,
     deliveryRadiusKm: (json['deliveryRadiusKm'] as num?)?.toDouble() ?? 5.0,
     paymentsReady: json['paymentsReady'] as bool? ?? false,
+    allowDineIn: json['allowDineIn'] as bool? ?? false,
+    reservationsEnabled: json['reservationsEnabled'] as bool? ?? false,
+    reservationOnly: json['reservationOnly'] as bool? ?? false,
   );
 
   static List<DietaryPreference> _parseDietaryOptions(dynamic options) {
@@ -792,4 +843,44 @@ class RestaurantSettings {
     }
     return [];
   }
+}
+
+/// Table reservation (F10) — customer requests a slot, the restaurant
+/// confirms or declines.
+class Reservation {
+  final String id;
+  final String restaurantId;
+  final String customerName;
+  final int partySize;
+  final DateTime dateTime;
+  final String status; // PENDING | CONFIRMED | DECLINED | CANCELLED | COMPLETED
+  final String? note;
+  final String? tableNumber;
+
+  const Reservation({
+    required this.id,
+    required this.restaurantId,
+    required this.customerName,
+    required this.partySize,
+    required this.dateTime,
+    required this.status,
+    this.note,
+    this.tableNumber,
+  });
+
+  bool get isPending => status == 'PENDING';
+
+  factory Reservation.fromApiJson(Map<String, dynamic> json) => Reservation(
+    id: json['id'] as String,
+    restaurantId: json['restaurantId'] as String,
+    customerName:
+        (json['customer'] as Map<String, dynamic>?)?['name'] as String? ??
+            (json['customerName'] as String? ?? ''),
+    partySize: json['partySize'] as int? ?? 2,
+    dateTime: DateTime.tryParse(json['dateTime'] as String? ?? '') ??
+        DateTime.now(),
+    status: json['status'] as String? ?? 'PENDING',
+    note: json['note'] as String?,
+    tableNumber: json['tableNumber'] as String?,
+  );
 }

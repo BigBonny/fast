@@ -67,6 +67,10 @@ export const updateRestaurantSchema = createRestaurantSchema.partial().extend({
   deliveryEnabled: z.boolean().optional(),
   deliveryFee: z.number().min(0).max(50).optional(),
   deliveryRadiusKm: z.number().min(0.5).max(50).optional(),
+  reservationsEnabled: z.boolean().optional(),
+  reservationOnly: z.boolean().optional(),
+  allowDineIn: z.boolean().optional(),
+  dineInFee: z.number().min(0).max(50).optional(),
 });
 
 // ─── Order tracking / pickup ─────────────────────────────────
@@ -87,7 +91,10 @@ export const verifyPickupSchema = z.object({
 export const createMenuItemSchema = z.object({
   name: z.string().min(1, 'Nom requis').max(200, 'Nom trop long'),
   description: z.string().max(2000).optional(),
+  // `price` is the restaurateur's BASE price — the FAST markup is applied
+  // server-side; `basePrice` may be sent explicitly (same semantics).
   price: z.number().positive('Prix doit être positif').max(9999.99, 'Prix trop élevé'),
+  basePrice: z.number().positive().max(9999.99).optional(),
   originalPrice: z.number().positive().max(9999.99).optional(),
   // Accepts https URL or data:image/*;base64 uploads (≈4 MB max)
   image: z.string().max(4_000_000).optional(),
@@ -120,7 +127,7 @@ export const placeOrderSchema = z.object({
   items: z.array(cartItemSchema).min(1, 'Au moins un article').max(50, 'Maximum 50 articles'),
   userWalkTimeMin: z.number().int().min(1).max(120).default(10),
   groupId: z.string().optional(),
-  fulfillmentType: z.enum(['PICKUP', 'DELIVERY']).default('PICKUP'),
+  fulfillmentType: z.enum(['PICKUP', 'DELIVERY', 'DINE_IN']).default('PICKUP'),
   deliveryAddress: z.string().max(500).optional(),
   deliveryLatitude: z.number().min(-90).max(90).optional(),
   deliveryLongitude: z.number().min(-180).max(180).optional(),
@@ -210,5 +217,38 @@ export const replaceDriverSchedulesSchema = z.object({
   }).refine((slot) => slot.endMinute > slot.startMinute, {
     message: 'La fin du créneau doit être après le début',
   })).max(21),
+});
+
+// ─── Reservations ───────────────────────────────────────────
+
+export const createReservationSchema = z.object({
+  dateTime: z.string().datetime({ offset: true }),
+  partySize: z.number().int().min(1, 'Au moins 1 personne').max(30),
+  note: z.string().max(500).optional(),
+});
+
+export const updateReservationStatusSchema = z.object({
+  status: z.enum(['CONFIRMED', 'DECLINED', 'CANCELLED']),
+});
+
+// ─── Staff invite codes ─────────────────────────────────────
+
+export const joinStaffSchema = z.object({
+  code: z.string().min(4).max(20),
+  firstName: z.string().min(1).max(100),
+  lastName: z.string().min(1).max(100),
+});
+
+export const guestLoginSchema = joinStaffSchema;
+
+// ─── Phone verification (SMS OTP) ───────────────────────────
+
+export const phoneRequestSchema = z.object({
+  phone: z.string().min(6, 'Numéro requis').max(20),
+});
+
+export const phoneVerifySchema = z.object({
+  phone: z.string().min(6).max(20),
+  code: z.string().min(4).max(8),
 });
 

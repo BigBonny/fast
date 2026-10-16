@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../provider.dart';
 import '../resto_provider.dart';
+import '../services/auth_service.dart';
 import 'role_selection_screen.dart';
 import '../theme.dart';
 
@@ -42,11 +43,22 @@ class _AuthScreenState extends State<AuthScreen>
   bool _showRestoFields = false;
   String _driverType = 'OCCASIONAL';
 
+  // F11 — SMS verification at signup (required only when the backend
+  // has an SMS provider configured).
+  final _smsCode = TextEditingController();
+  bool _smsRequired = false;
+  bool _smsSent = false;
+  bool _smsBusy = false;
+  bool _phoneVerified = false;
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _showRestoFields = widget.initialRole == 'RESTAURANT';
+    AuthService().phoneVerificationEnabled().then((enabled) {
+      if (mounted) setState(() => _smsRequired = enabled);
+    });
   }
 
   @override
@@ -62,6 +74,7 @@ class _AuthScreenState extends State<AuthScreen>
     _restoAddress.dispose();
     _restoCity.dispose();
     _restoCuisine.dispose();
+    _smsCode.dispose();
     super.dispose();
   }
 
@@ -79,8 +92,44 @@ class _AuthScreenState extends State<AuthScreen>
     }
   }
 
+  Future<void> _requestSmsCode() async {
+    final phone = _registerPhone.text.trim();
+    if (phone.length < 6) return;
+    setState(() => _smsBusy = true);
+    try {
+      await AuthService().requestPhoneCode(phone);
+      if (mounted) setState(() => _smsSent = true);
+    } catch (_) {
+      // Error is surfaced via the disabled UI; keep it simple.
+    } finally {
+      if (mounted) setState(() => _smsBusy = false);
+    }
+  }
+
+  Future<void> _verifySmsCode() async {
+    setState(() => _smsBusy = true);
+    final ok = await AuthService().verifyPhoneCode(
+      _registerPhone.text.trim(),
+      _smsCode.text.trim(),
+    );
+    if (mounted) {
+      setState(() {
+        _smsBusy = false;
+        _phoneVerified = ok;
+      });
+      if (!ok) _smsCode.clear();
+    }
+  }
+
   Future<void> _handleRegister() async {
     if (!_registerFormKey.currentState!.validate()) return;
+    if (_smsRequired && !_phoneVerified) {
+      // The spec requires verified phone before account creation.
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.read<FASTProvider>().tr('verify_phone_first'))),
+      );
+      return;
+    }
 
     final auth = context.read<AuthProvider>();
     final success = await auth.register(
@@ -235,6 +284,7 @@ class _AuthScreenState extends State<AuthScreen>
               hint: fast.tr('email_hint'),
               icon: Icons.email_outlined,
               keyboardType: TextInputType.emailAddress,
+              autofillHints: const [AutofillHints.email],
               validator: (v) {
                 if (v == null || v.trim().isEmpty) {
                   return fast.tr('err_email_required');
@@ -250,6 +300,7 @@ class _AuthScreenState extends State<AuthScreen>
               hint: '••••••••',
               icon: Icons.lock_outlined,
               obscureText: _obscureLoginPwd,
+              autofillHints: const [AutofillHints.password],
               suffix: IconButton(
                 icon: Icon(
                   _obscureLoginPwd ? Icons.visibility_off : Icons.visibility,
@@ -428,6 +479,7 @@ class _AuthScreenState extends State<AuthScreen>
               hint: fast.tr('email_hint'),
               icon: Icons.email_outlined,
               keyboardType: TextInputType.emailAddress,
+              autofillHints: const [AutofillHints.email],
               validator: (v) {
                 if (v == null || v.trim().isEmpty) {
                   return fast.tr('err_email_required');
@@ -443,6 +495,9 @@ class _AuthScreenState extends State<AuthScreen>
               hint: '06 12 34 56 78',
               icon: Icons.phone_outlined,
               keyboardType: TextInputType.phone,
+              onChanged: (_) {
+                if (_phoneVerified) setState(() => _phoneVerified = false);
+              },
               validator: (v) {
                 if (v == null || v.trim().isEmpty) {
                   return fast.tr('err_phone_required');
@@ -450,6 +505,87 @@ class _AuthScreenState extends State<AuthScreen>
                 return null;
               },
             ),
+            if (_smsRequired) ...[
+              const SizedBox(height: 10),
+              if (_phoneVerified)
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.check_circle,
+                      color: Color(0xFF10B981),
+                      size: 16,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      fast.tr('phone_verified'),
+                      style: const TextStyle(
+                        color: Color(0xFF10B981),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                )
+              else ...[
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: _smsBusy ? null : _requestSmsCode,
+                    icon: const Icon(Icons.sms_outlined, size: 16),
+                    label: Text(
+                      _smsSent
+                          ? fast.tr('resend_code')
+                          : fast.tr('send_code'),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFF59E0B),
+                      side: const BorderSide(color: Color(0xFFF59E0B)),
+                    ),
+                  ),
+                ),
+                if (_smsSent) ...[
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _smsCode,
+                          keyboardType: TextInputType.number,
+                          maxLength: 6,
+                          style: TextStyle(
+                            color: context.fast.t1,
+                            fontSize: 14,
+                            letterSpacing: 4,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: '••••••',
+                            counterText: '',
+                            hintStyle: TextStyle(color: context.fast.faint),
+                            filled: true,
+                            fillColor: context.fast.card,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(
+                                color: context.fast.line,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      ElevatedButton(
+                        onPressed: _smsBusy ? null : _verifySmsCode,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFF59E0B),
+                          foregroundColor: FASTBrand.onAmber,
+                        ),
+                        child: Text(fast.tr('verify')),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ],
             SizedBox(height: 20),
             if (widget.initialRole == 'LIVREUR') ...[
               Text(
@@ -513,6 +649,7 @@ class _AuthScreenState extends State<AuthScreen>
               hint: '••••••••',
               icon: Icons.lock_outlined,
               obscureText: _obscureRegisterPwd,
+              autofillHints: const [AutofillHints.newPassword],
               suffix: IconButton(
                 icon: Icon(
                   _obscureRegisterPwd ? Icons.visibility_off : Icons.visibility,
@@ -667,6 +804,8 @@ class _AuthScreenState extends State<AuthScreen>
     bool obscureText = false,
     Widget? suffix,
     String? Function(String?)? validator,
+    Iterable<String>? autofillHints,
+    void Function(String)? onChanged,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -685,6 +824,8 @@ class _AuthScreenState extends State<AuthScreen>
           obscureText: obscureText,
           keyboardType: keyboardType,
           validator: validator,
+          autofillHints: autofillHints,
+          onChanged: onChanged,
           style: TextStyle(color: context.fast.t1, fontSize: 14),
           decoration: InputDecoration(
             hintText: hint,

@@ -19,6 +19,7 @@ import driversRoutes from './routes/drivers.routes';
 import staffRoutes from './routes/staff.routes';
 import refundRoutes from './routes/refunds.routes';
 import addressesRoutes from './routes/addresses.routes';
+import reservationsRoutes from './routes/reservations.routes';
 import { stripeWebhook } from './controllers/payments.controller';
 
 const app = express();
@@ -127,6 +128,7 @@ app.use('/api/payments', paymentsRoutes);
 app.use('/api/drivers', driversRoutes);
 app.use('/api/staff', staffRoutes);
 app.use('/api/addresses', addressesRoutes);
+app.use('/api/reservations', reservationsRoutes);
 
 // ─── Error Handler ──────────────────────────────────────────
 
