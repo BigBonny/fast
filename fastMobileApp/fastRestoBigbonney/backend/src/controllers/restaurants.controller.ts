@@ -24,6 +24,21 @@ function publicRestaurant(restaurant: Record<string, unknown>): Record<string, u
   for (const key of ['ownerId', 'managerIban', 'stripeAccountId', 'stripeChargesEnabled', 'stripePayoutsEnabled', 'payoutFrequency', 'staffInviteCode']) {
     delete result[key];
   }
+
+  // Food truck: la position affichée est l'arrêt programmé du jour,
+  // pour que la distance et la carte pointent au bon endroit.
+  const stops = (restaurant.truckStops as Array<Record<string, unknown>> | undefined) ?? [];
+  if (restaurant.isFoodTruck && stops.length > 0) {
+    const today = new Date().getDay() === 0 ? 7 : new Date().getDay(); // ISO 1-7
+    const todayStop = stops.find((s) => s.dayOfWeek === today) ?? null;
+    result.todayStop = todayStop;
+    if (todayStop) {
+      result.latitude = todayStop.latitude;
+      result.longitude = todayStop.longitude;
+      result.address = todayStop.address;
+      result.city = todayStop.city;
+    }
+  }
   return result;
 }
 
@@ -32,13 +47,18 @@ export const listRestaurants = async (req: Request, res: Response): Promise<void
 
   const where: Record<string, unknown> = { isActive: true };
 
-  if (category && category !== 'all') where.category = category as string;
+  // `category` is a comma-separated list on the restaurant (incl. custom
+  // entries like "Congolais") — match as a substring, not exact equality.
+  if (category && category !== 'all') {
+    where.category = { contains: category as string, mode: 'insensitive' };
+  }
   if (search) {
     const kw = (search as string).toLowerCase();
     where.OR = [
       { name: { contains: kw, mode: 'insensitive' } },
       { description: { contains: kw, mode: 'insensitive' } },
       { cuisineType: { contains: kw, mode: 'insensitive' } },
+      { category: { contains: kw, mode: 'insensitive' } },
     ];
   }
   if (dietary) {
@@ -52,6 +72,7 @@ export const listRestaurants = async (req: Request, res: Response): Promise<void
     where,
     include: {
       dietaryOptions: true,
+      truckStops: true,
       menuItems: { where: { isAvailable: true }, include: { dietaryTags: true } },
       reviews: { orderBy: { createdAt: 'desc' }, take: 5 },
       _count: { select: { reviews: true } },
@@ -69,6 +90,7 @@ export const getRestaurant = async (req: Request, res: Response): Promise<void> 
     where: { id },
     include: {
       dietaryOptions: true,
+      truckStops: true,
       menuItems: { where: { isAvailable: true }, include: { dietaryTags: true } },
       reviews: { orderBy: { createdAt: 'desc' }, take: 20, include: { user: { select: { name: true } } } },
       _count: { select: { reviews: true } },
@@ -131,7 +153,20 @@ export const updateRestaurant = async (req: Request, res: Response): Promise<voi
     })
     : {};
 
-  const { dietaryOptions, ...restData } = data;
+  const { dietaryOptions, truckStops, ...restData } = data;
+
+  // Geocode each declared truck stop (address + city → lat/lng).
+  let geocodedStops: Array<Record<string, unknown>> | undefined;
+  if (truckStops !== undefined) {
+    geocodedStops = [];
+    for (const stop of truckStops) {
+      const coords = (await geocodeAddress(stop.address, stop.city ?? '')) ?? {
+        latitude: restaurant.latitude,
+        longitude: restaurant.longitude,
+      };
+      geocodedStops.push({ ...stop, ...coords });
+    }
+  }
 
   const updated = await prisma.restaurant.update({
     where: { id: req.params.id as string },
@@ -144,8 +179,14 @@ export const updateRestaurant = async (req: Request, res: Response): Promise<voi
             create: dietaryOptions.map((opt) => ({ option: opt as any })),
           }
         : undefined,
+      truckStops: geocodedStops
+        ? {
+            deleteMany: {},
+            create: geocodedStops as any,
+          }
+        : undefined,
     },
-    include: { dietaryOptions: true },
+    include: { dietaryOptions: true, truckStops: true },
   });
 
   res.json(updated);
@@ -162,6 +203,7 @@ export const getMyRestaurant = async (req: Request, res: Response): Promise<void
     where: { id: restaurantId },
     include: {
       dietaryOptions: true,
+      truckStops: true,
       menuItems: { include: { dietaryTags: true } },
       _count: { select: { reviews: true, orders: true } },
     },

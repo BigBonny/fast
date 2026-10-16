@@ -764,12 +764,45 @@ class FASTProvider extends ChangeNotifier {
   }
 
   // Autocomplete Category Suggestion Chip Logic
+  // Suggests the built-in categories AND custom categories restaurateurs
+  // saved via "Autre…" (e.g. "Congolais") — matched against what's typed.
   List<CategoryItem> getAutocompleteCategories() {
     if (_searchKeyword.isEmpty) return [];
     final kw = _searchKeyword.toLowerCase();
-    return categories
+    final results = categories
         .where((c) => c.id != 'all' && c.name.toLowerCase().contains(kw))
         .toList();
+    final seen = results.map((c) => c.id).toSet();
+    for (final r in _restaurants) {
+      for (final raw in r.category.split(',')) {
+        final label = raw.trim();
+        if (label.isEmpty) continue;
+        final id = normalizeCategoryId(label);
+        if (seen.contains(id) || !label.toLowerCase().contains(kw)) continue;
+        seen.add(id);
+        results.add(CategoryItem(id: 'custom:$label', name: label, icon: '🏷️'));
+      }
+    }
+    return results;
+  }
+
+  /// Custom (non-canonical) categories currently in use by restaurants —
+  /// surfaced in the strip so community cuisines are browsable directly.
+  List<CategoryItem> get customCategoriesInUse {
+    final known = categories.map((c) => c.id).toSet();
+    final seen = <String>{};
+    final out = <CategoryItem>[];
+    for (final r in _restaurants) {
+      for (final raw in r.category.split(',')) {
+        final label = raw.trim();
+        if (label.isEmpty) continue;
+        final id = normalizeCategoryId(label);
+        if (known.contains(id) || seen.contains(id)) continue;
+        seen.add(id);
+        out.add(CategoryItem(id: 'custom:$label', name: label, icon: '🏷️'));
+      }
+    }
+    return out;
   }
 
   // Cached filtered restaurants (recomputed only when filters/data change)
@@ -784,19 +817,27 @@ class FASTProvider extends ChangeNotifier {
       return _cachedFiltered!;
     }
     _cachedFilterKey = filterKey;
+    // "custom:<label>" = a restaurateur's own category (e.g. "Congolais").
+    final customFilter = _selectedCategory.startsWith('custom:')
+        ? _selectedCategory.substring(7).toLowerCase()
+        : null;
     final list = _restaurants.where((rest) {
       // A restaurant can carry several categories ("Burger, Tacos") —
       // match if ANY of them equals the selected filter.
       final matchesCategory =
           _selectedCategory == 'all' ||
-          rest.category
-              .split(',')
-              .any((c) => normalizeCategoryId(c) == _selectedCategory);
+          (customFilter != null
+              ? rest.category.toLowerCase().contains(customFilter)
+              : rest.category
+                    .split(',')
+                    .any((c) => normalizeCategoryId(c) == _selectedCategory));
 
       final kw = _searchKeyword.toLowerCase();
       final matchesSearch =
           rest.name.toLowerCase().contains(kw) ||
           rest.description.toLowerCase().contains(kw) ||
+          rest.category.toLowerCase().contains(kw) ||
+          rest.cuisineType.toLowerCase().contains(kw) ||
           rest.menu.any(
             (item) =>
                 item.name.toLowerCase().contains(kw) ||

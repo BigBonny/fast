@@ -477,7 +477,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       side: BorderSide(color: context.fast.line),
                       avatar: Text(cat.icon),
                       label: Text(
-                        catLabel(context, cat.id),
+                        cat.id.startsWith('custom:')
+                            ? cat.name
+                            : catLabel(context, cat.id),
                         style: TextStyle(
                           color: context.fast.t1,
                           fontSize: 12,
@@ -1044,17 +1046,19 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Categories horizontal scrolling band
+  // Categories horizontal scrolling band — fixed list + any custom
+  // categories saved by restaurateurs (community cuisines, food trucks…).
   Widget _buildCategoryStrip(BuildContext context, FASTProvider provider) {
+    final cats = [...provider.categories, ...provider.customCategoriesInUse];
     return SizedBox(
       height: 84,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.symmetric(horizontal: 16),
-        itemCount: provider.categories.length,
+        itemCount: cats.length,
         separatorBuilder: (context, index) => SizedBox(width: 10),
         itemBuilder: (context, index) {
-          final cat = provider.categories[index];
+          final cat = cats[index];
           final isActive = provider.selectedCategory == cat.id;
           return GestureDetector(
             onTap: () => provider.setCategory(cat.id),
@@ -1092,7 +1096,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   Text(cat.icon, style: const TextStyle(fontSize: 22)),
                   SizedBox(height: 4),
                   Text(
-                    catLabel(context, cat.id),
+                    cat.id.startsWith('custom:')
+                        ? cat.name
+                        : catLabel(context, cat.id),
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: isActive ? FontWeight.bold : FontWeight.w500,

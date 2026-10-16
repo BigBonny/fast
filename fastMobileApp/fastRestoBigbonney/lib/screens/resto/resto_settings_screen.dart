@@ -40,6 +40,14 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
   bool _reservationOnly = false;
   final _dineInFeeCtrl = TextEditingController(text: '0');
 
+  // Catégories personnalisées ("Autre…") + mode food truck
+  final _customCategoryCtrl = TextEditingController();
+  bool _isFoodTruck = false;
+  // Une adresse par jour de semaine (1 = lundi … 7 = dimanche).
+  final Map<int, TextEditingController> _truckDayCtrls = {
+    for (var d = 1; d <= 7; d++) d: TextEditingController(),
+  };
+
   bool _loading = true;
   bool _saving = false;
   String? _error;
@@ -179,6 +187,20 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
         _reservationOnly = data['reservationOnly'] as bool? ?? false;
         _dineInFeeCtrl.text =
             ((data['dineInFee'] as num?)?.toDouble() ?? 0).toStringAsFixed(2);
+        _isFoodTruck = data['isFoodTruck'] as bool? ?? false;
+        final stops = data['truckStops'] as List<dynamic>? ?? [];
+        for (final s in stops) {
+          final m = s as Map<String, dynamic>;
+          final day = (m['dayOfWeek'] as num?)?.toInt() ?? 0;
+          if (day >= 1 && day <= 7) {
+            final parts = [
+              m['label'] as String? ?? '',
+              m['address'] as String? ?? '',
+              m['city'] as String? ?? '',
+            ].where((p) => p.isNotEmpty);
+            _truckDayCtrls[day]!.text = parts.join(', ');
+          }
+        }
         _loading = false;
       });
     } catch (e) {
@@ -238,6 +260,14 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
       'reservationsEnabled': _reservationsEnabled,
       'reservationOnly': _reservationOnly,
       'dineInFee': double.tryParse(_dineInFeeCtrl.text.trim()) ?? 0,
+      'isFoodTruck': _isFoodTruck,
+      'truckStops': _isFoodTruck
+          ? [
+              for (var d = 1; d <= 7; d++)
+                if (_truckDayCtrls[d]!.text.trim().isNotEmpty)
+                  {'dayOfWeek': d, 'address': _truckDayCtrls[d]!.text.trim()},
+            ]
+          : <Map<String, dynamic>>[],
     };
 
     try {
@@ -291,6 +321,16 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
     }
   }
 
+  void _addCustomCategory() {
+    final v = _customCategoryCtrl.text.trim();
+    if (v.isEmpty) return;
+    final label = v[0].toUpperCase() + v.substring(1);
+    setState(() {
+      _selectedCategories.add(label);
+      _customCategoryCtrl.clear();
+    });
+  }
+
   @override
   void dispose() {
     _nameCtrl.dispose();
@@ -301,6 +341,10 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
     _addressCtrl.dispose();
     _ibanCtrl.dispose();
     _dineInFeeCtrl.dispose();
+    _customCategoryCtrl.dispose();
+    for (final c in _truckDayCtrls.values) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -410,37 +454,107 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: _categories.map((c) {
-            final sel = _selectedCategories.contains(c);
-            return FilterChip(
-              label: Text(
-                catLabel(context, c),
-                style: TextStyle(
-                  fontSize: 12,
-                  color: sel ? Colors.white : context.fast.t2,
-                  fontWeight: sel ? FontWeight.w700 : FontWeight.normal,
+          children: [
+            ..._categories.map((c) {
+              final sel = _selectedCategories.contains(c);
+              return FilterChip(
+                label: Text(
+                  catLabel(context, c),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: sel ? Colors.white : context.fast.t2,
+                    fontWeight: sel ? FontWeight.w700 : FontWeight.normal,
+                  ),
+                ),
+                selected: sel,
+                onSelected: (v) => setState(() {
+                  if (v) {
+                    _selectedCategories.add(c);
+                  } else {
+                    _selectedCategories.remove(c);
+                  }
+                }),
+                selectedColor: const Color(0xFF00C8B3),
+                backgroundColor: context.fast.card,
+                checkmarkColor: Colors.white,
+                side: BorderSide(
+                  color: sel ? const Color(0xFF00C8B3) : context.fast.faint,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              );
+            }),
+            // Custom categories saved via the "Autres" bar below.
+            ..._selectedCategories
+                .where((c) => !_categories.contains(c))
+                .map(
+                  (c) => InputChip(
+                    label: Text(
+                      c,
+                      style: const TextStyle(fontSize: 12, color: Colors.white),
+                    ),
+                    selected: true,
+                    selectedColor: const Color(0xFF00C8B3),
+                    backgroundColor: context.fast.card,
+                    deleteIconColor: Colors.white,
+                    side: const BorderSide(color: Color(0xFF00C8B3)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    onDeleted: () =>
+                        setState(() => _selectedCategories.remove(c)),
+                  ),
+                ),
+          ],
+        ),
+        // La petite barre apparaît quand "Autres" est sélectionné.
+        if (_selectedCategories.contains('Autres')) ...[
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _customCategoryCtrl,
+                  style: TextStyle(color: context.fast.t1, fontSize: 13),
+                  textCapitalization: TextCapitalization.words,
+                  decoration: InputDecoration(
+                    hintText: tr(context, 'custom_category_hint'),
+                    hintStyle: TextStyle(color: context.fast.t3, fontSize: 12),
+                    isDense: true,
+                    filled: true,
+                    fillColor: context.fast.card,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: context.fast.line),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: context.fast.line),
+                    ),
+                  ),
+                  onSubmitted: (_) => _addCustomCategory(),
                 ),
               ),
-              selected: sel,
-              onSelected: (v) => setState(() {
-                if (v) {
-                  _selectedCategories.add(c);
-                } else {
-                  _selectedCategories.remove(c);
-                }
-              }),
-              selectedColor: const Color(0xFF00C8B3),
-              backgroundColor: context.fast.card,
-              checkmarkColor: Colors.white,
-              side: BorderSide(
-                color: sel ? const Color(0xFF00C8B3) : context.fast.faint,
+              const SizedBox(width: 8),
+              ElevatedButton(
+                onPressed: _addCustomCategory,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF00C8B3),
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: Text(tr(context, 'add')),
               ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            );
-          }).toList(),
-        ),
+            ],
+          ),
+        ],
 
         SizedBox(height: 24),
         _section(tr(context, 'dietary_options')),
@@ -506,6 +620,72 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
 
         SizedBox(height: 24),
         _section(tr(context, 'service_modes')),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(
+            tr(context, 'food_truck'),
+            style: TextStyle(color: context.fast.t1, fontSize: 13),
+          ),
+          subtitle: Text(
+            tr(context, 'food_truck_sub'),
+            style: TextStyle(color: context.fast.t3, fontSize: 11),
+          ),
+          value: _isFoodTruck,
+          activeThumbColor: const Color(0xFF00C8B3),
+          onChanged: (v) => setState(() => _isFoodTruck = v),
+        ),
+        if (_isFoodTruck) ...[
+          const SizedBox(height: 8),
+          Text(
+            tr(context, 'truck_schedule_hint'),
+            style: TextStyle(color: context.fast.t3, fontSize: 11),
+          ),
+          const SizedBox(height: 8),
+          for (var d = 1; d <= 7; d++)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 34,
+                    child: Text(
+                      tr(context, 'day_$d'),
+                      style: TextStyle(
+                        color: context.fast.t2,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextField(
+                      controller: _truckDayCtrls[d],
+                      style: TextStyle(color: context.fast.t1, fontSize: 13),
+                      decoration: InputDecoration(
+                        hintText: tr(context, 'truck_stop_hint'),
+                        hintStyle: TextStyle(
+                          color: context.fast.t3,
+                          fontSize: 12,
+                        ),
+                        isDense: true,
+                        filled: true,
+                        fillColor: context.fast.card,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: context.fast.line),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: context.fast.line),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           title: Text(

@@ -49,7 +49,7 @@ export const changePasswordSchema = z.object({
 export const createRestaurantSchema = z.object({
   name: z.string().min(1, 'Nom requis').max(200, 'Nom trop long'),
   description: z.string().max(2000, 'Description trop longue').optional(),
-  category: z.string().max(50).optional(),
+  category: z.string().max(300).optional(),
   address: z.string().max(500).optional(),
   city: z.string().max(100).optional(),
   cuisineType: z.string().max(100).optional(),
@@ -59,6 +59,13 @@ export const createRestaurantSchema = z.object({
   rushPrepTime: z.number().int().min(10).max(90).default(25),
   seatingCapacity: z.number().int().min(0).max(1000).optional(),
   dietaryOptions: z.array(z.nativeEnum({ VEGAN: 'VEGAN', VEGETARIAN: 'VEGETARIAN', GLUTEN_FREE: 'GLUTEN_FREE', HALAL: 'HALAL', KETO: 'KETO', DAIRY_FREE: 'DAIRY_FREE' })).optional(),
+});
+
+export const truckStopSchema = z.object({
+  dayOfWeek: z.number().int().min(1).max(7),
+  label: z.string().max(100).optional(),
+  address: z.string().min(1).max(500),
+  city: z.string().max(100).optional(),
 });
 
 export const updateRestaurantSchema = createRestaurantSchema.partial().extend({
@@ -71,6 +78,8 @@ export const updateRestaurantSchema = createRestaurantSchema.partial().extend({
   reservationOnly: z.boolean().optional(),
   allowDineIn: z.boolean().optional(),
   dineInFee: z.number().min(0).max(50).optional(),
+  isFoodTruck: z.boolean().optional(),
+  truckStops: z.array(truckStopSchema).max(7).optional(),
 });
 
 // ─── Order tracking / pickup ─────────────────────────────────
