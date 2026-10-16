@@ -486,6 +486,31 @@ class _CartScreenState extends State<CartScreen> {
                     provider.setFulfillmentType(FulfillmentType.pickup),
               ),
             ),
+            if (provider.selectedRestaurant?.allowDineIn ?? false) ...[
+              SizedBox(width: 8),
+              Expanded(
+                child: ChoiceChip(
+                  label: Text(
+                    provider.tr('dine_in'),
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  selected:
+                      provider.fulfillmentType == FulfillmentType.dineIn,
+                  selectedColor: Color(0xFF00C8B3),
+                  backgroundColor: context.fast.card,
+                  labelStyle: TextStyle(
+                    color: provider.fulfillmentType == FulfillmentType.dineIn
+                        ? Colors.white
+                        : context.fast.t1,
+                  ),
+                  onSelected: (_) =>
+                      provider.setFulfillmentType(FulfillmentType.dineIn),
+                ),
+              ),
+            ],
             SizedBox(width: 8),
             Expanded(
               child: ChoiceChip(

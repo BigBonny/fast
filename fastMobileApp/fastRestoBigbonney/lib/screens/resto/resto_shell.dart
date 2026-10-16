@@ -159,6 +159,7 @@ class _RestoMainShellState extends State<RestoMainShell> {
             systemOverlayStyle: SystemUiOverlayStyle.light,
             surfaceTintColor: Colors.transparent,
             elevation: 0,
+            toolbarHeight: 52,
             titleSpacing: 16,
             iconTheme: const IconThemeData(color: Color(0xFFF1F5F9)),
             title: Column(
@@ -173,7 +174,7 @@ class _RestoMainShellState extends State<RestoMainShell> {
                         '⚡ FAST',
                         style: TextStyle(
                           fontWeight: FontWeight.w900,
-                          fontSize: 20,
+                          fontSize: 17,
                           letterSpacing: 3,
                           color: Colors.white,
                         ),
@@ -217,7 +218,7 @@ class _RestoMainShellState extends State<RestoMainShell> {
                   'RESTAURATEUR PRO',
                   style: TextStyle(
                     color: Color(0xFF94A3B8),
-                    fontSize: 9,
+                    fontSize: 8,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 2,
                   ),
@@ -382,10 +383,10 @@ class _RestoMainShellState extends State<RestoMainShell> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Transform.translate(
-                offset: const Offset(0, -8),
+                offset: const Offset(0, -5),
                 child: Container(
-                  width: 52,
-                  height: 52,
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: const RadialGradient(
@@ -422,10 +423,10 @@ class _RestoMainShellState extends State<RestoMainShell> {
                     children: [
                       // Specular highlight — glossy dome look
                       Positioned(
-                        top: 6,
+                        top: 5,
                         child: Container(
-                          width: 26,
-                          height: 10,
+                          width: 22,
+                          height: 8,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(10),
                             gradient: LinearGradient(
@@ -442,7 +443,7 @@ class _RestoMainShellState extends State<RestoMainShell> {
                       const Icon(
                         Icons.warning_rounded,
                         color: Colors.white,
-                        size: 26,
+                        size: 22,
                       ),
                     ],
                   ),

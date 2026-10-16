@@ -41,7 +41,12 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
     _name = TextEditingController(text: item?.name ?? '');
     _description = TextEditingController(text: item?.description ?? '');
     _price = TextEditingController(
-      text: item != null ? item.price.toStringAsFixed(2) : '',
+      // The field holds the restaurateur's BASE price — the backend stores
+      // the FAST-marked-up price for customers. Prefill basePrice so
+      // re-saving doesn't double-apply the markup.
+      text: item != null
+          ? (item.basePrice ?? item.price).toStringAsFixed(2)
+          : '',
     );
     _image = TextEditingController(text: item?.image ?? '');
     _category = TextEditingController(text: item?.category ?? '');
@@ -70,6 +75,26 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
     super.dispose();
   }
 
+  bool _enhancing = false;
+
+  Future<void> _enhanceDescription() async {
+    setState(() => _enhancing = true);
+    try {
+      final desc = await MenuService().enhanceDescription(widget.item!.id);
+      if (mounted && desc.isNotEmpty) {
+        setState(() => _description.text = desc);
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(tr(context, 'error_save'))),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _enhancing = false);
+    }
+  }
+
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
@@ -77,7 +102,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
     final body = {
       'name': _name.text.trim(),
       'description': _description.text.trim(),
-      'price': double.parse(_price.text.trim()),
+      'basePrice': double.parse(_price.text.trim()),
       'image': _image.text.trim(),
       'category': _category.text.trim(),
       'prepTime': int.tryParse(_prepTime.text.trim()) ?? 0,
@@ -321,6 +346,33 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
               icon: Icons.notes,
               maxLines: 3,
             ),
+            // F06 — AI proposes a description the owner reviews before
+            // saving; nothing is applied automatically.
+            if (_isEdit)
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  onPressed: _enhancing ? null : _enhanceDescription,
+                  icon: _enhancing
+                      ? const SizedBox(
+                          width: 12,
+                          height: 12,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(
+                          Icons.auto_awesome,
+                          size: 14,
+                          color: Color(0xFF00C8B3),
+                        ),
+                  label: Text(
+                    tr(context, 'ai_suggest_desc'),
+                    style: const TextStyle(
+                      color: Color(0xFF00C8B3),
+                      fontSize: 11,
+                    ),
+                  ),
+                ),
+              ),
             SizedBox(height: 16),
             Row(
               children: [
@@ -353,6 +405,29 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                   ),
                 ),
               ],
+            ),
+            // F03 — live preview of the FAST final price from the base
+            // price the restaurateur just typed.
+            ValueListenableBuilder<TextEditingValue>(
+              valueListenable: _price,
+              builder: (context, value, _) {
+                final base = double.tryParse(value.text.trim());
+                if (base == null || base <= 0) {
+                  return const SizedBox.shrink();
+                }
+                return Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: Text(
+                    '${tr(context, 'fast_price_hint')} '
+                    '${computeFastPrice(base).toStringAsFixed(2)} €',
+                    style: TextStyle(
+                      color: context.fast.t3,
+                      fontSize: 11,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                );
+              },
             ),
             SizedBox(height: 16),
             _field(

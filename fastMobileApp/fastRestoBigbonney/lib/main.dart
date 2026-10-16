@@ -551,8 +551,12 @@ class _MainShellState extends State<MainShell>
               ),
             ),
 
-          // Persistent Floating Basket summary (when on home screen and cart count > 0)
-          if (provider.currentScreen == 'home' &&
+          // Persistent Floating Basket summary — fixed bar with item count,
+          // total and a "Commander" shortcut (F07). Visible on home and on the
+          // restaurant page while browsing the menu; hidden inside the cart
+          // itself and the orders list.
+          if ((provider.currentScreen == 'home' ||
+                  provider.currentScreen == 'restaurant') &&
               provider.cartCount > 0 &&
               provider.selectedRestaurant != null)
             Positioned(

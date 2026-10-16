@@ -11,6 +11,8 @@ import '../theme.dart';
 import 'story_viewer_screen.dart';
 import '../widgets/fast_image.dart';
 import '../l10n/tr.dart';
+import '../services/reservation_service.dart';
+import '../services/review_service.dart';
 
 class RestaurantScreen extends StatelessWidget {
   const RestaurantScreen({super.key});
@@ -231,6 +233,29 @@ class RestaurantScreen extends StatelessWidget {
                   ),
                 ],
               ),
+              if (rest.reservationsEnabled) ...[
+                const SizedBox(height: 10),
+                SizedBox(
+                  width: double.infinity,
+                  height: 44,
+                  child: OutlinedButton.icon(
+                    onPressed: () => _showReservationSheet(context, rest),
+                    icon: const Icon(Icons.event_seat, size: 18),
+                    label: Text(provider.tr('reserve_table')),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF00C8B3),
+                      side: const BorderSide(color: Color(0xFF00C8B3)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      textStyle: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
               if (!rest.paymentsReady) ...[
                 const SizedBox(height: 10),
                 Container(
@@ -390,17 +415,43 @@ class RestaurantScreen extends StatelessWidget {
             ),
           )
         else
-          ListView.separated(
+          GridView.builder(
             shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              childAspectRatio: 0.68,
+            ),
             itemCount: rest.menu.length,
-            separatorBuilder: (context, index) =>
-                Divider(color: context.fast.line, height: 1),
-            itemBuilder: (context, index) {
-              final item = rest.menu[index];
-              return _buildMenuItemTile(context, provider, item);
-            },
+            itemBuilder: (context, index) =>
+                _buildMenuItemCard(context, provider, rest.menu[index]),
           ),
+
+        // Reviews — each comment is reportable (F09 moderation)
+        if (rest.reviews.isNotEmpty) ...[
+          Divider(color: context.fast.line, height: 32),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: Text(
+              provider.tr('reviews').replaceAll('{n}', '${rest.reviewsCount}'),
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.0,
+                color: context.fast.t3,
+              ),
+            ),
+          ),
+          ...rest.reviews.map(
+            (r) => Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+              child: _buildReviewCard(context, provider, r),
+            ),
+          ),
+        ],
         const SizedBox(height: 120),
       ],
     );
@@ -460,121 +511,249 @@ class RestaurantScreen extends StatelessWidget {
       );
   }
 
-  Widget _buildMenuItemTile(
+  /// F09 — a single review with its report (moderation) action.
+  Widget _buildReviewCard(
+    BuildContext context,
+    FASTProvider provider,
+    Review r,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: context.fast.card,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: context.fast.line),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  r.userName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: context.fast.t1,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+              ...List.generate(
+                5,
+                (i) => Icon(
+                  i < r.rating.round() ? Icons.star : Icons.star_border,
+                  size: 12,
+                  color: const Color(0xFFF59E0B),
+                ),
+              ),
+              const SizedBox(width: 6),
+              InkWell(
+                onTap: () => _reportReview(context, provider, r),
+                child: Icon(
+                  Icons.flag_outlined,
+                  size: 15,
+                  color: context.fast.t3,
+                ),
+              ),
+            ],
+          ),
+          if (r.comment.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(
+              r.comment,
+              style: TextStyle(
+                color: context.fast.t2,
+                fontSize: 11,
+                height: 1.35,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Future<void> _reportReview(
+    BuildContext context,
+    FASTProvider provider,
+    Review r,
+  ) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(provider.tr('report_review')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(provider.tr('cancel')),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(provider.tr('report_review')),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true || !context.mounted) return;
+    try {
+      await ReviewService().reportReview(r.id);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(provider.tr('report_sent'))),
+        );
+      }
+    } catch (_) {
+      // Duplicate reports return 409 — treat as already sent.
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(provider.tr('report_sent'))),
+        );
+      }
+    }
+  }
+
+  void _showReservationSheet(BuildContext context, Restaurant rest) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _ReservationSheet(restaurant: rest),
+    );
+  }
+
+  /// F04 — menu card: photo on top, name, short description, final price
+  /// and a "+" add button. Two cards per row.
+  Widget _buildMenuItemCard(
     BuildContext context,
     FASTProvider provider,
     MenuItem item,
   ) {
-    return InkWell(
-      onTap: () => _showAddToCartDialog(context, provider, item),
-      child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item.name,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                      color: context.fast.t1,
+    final unavailable = !item.available;
+    return Opacity(
+      opacity: unavailable ? 0.45 : 1,
+      child: Material(
+        color: context.fast.card,
+        borderRadius: BorderRadius.circular(14),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          // Reservation-only restaurants don't sell à-la-carte — the tap
+          // opens the booking sheet instead of the cart dialog.
+          onTap: () {
+            final rest = provider.selectedRestaurant;
+            if (rest != null && rest.reservationOnly) {
+              _showReservationSheet(context, rest);
+            } else {
+              _showAddToCartDialog(context, provider, item);
+            }
+          },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                flex: 5,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    FastImage(
+                      item.image,
+                      fit: BoxFit.cover,
+                      cacheWidth: 300,
+                      placeholder: Container(color: context.fast.cardHigh),
                     ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    item.description,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: context.fast.t2,
-                      height: 1.4,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Text(
-                        '€${item.price.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w900,
-                          fontSize: 13,
-                          color: Color(0xFFF59E0B),
+                    if (!unavailable)
+                      Positioned(
+                        right: 8,
+                        bottom: 8,
+                        child: Container(
+                          width: 30,
+                          height: 30,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFF59E0B),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.add,
+                            color: FASTBrand.onAmber,
+                            size: 20,
+                          ),
                         ),
                       ),
-                      if (item.prepTime > 0) ...[
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: context.fast.cardHigh,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.schedule,
-                                size: 10,
-                                color: context.fast.t3,
-                              ),
-                              const SizedBox(width: 3),
-                              Text(
-                                '~${item.prepTime} min',
-                                style: TextStyle(
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.bold,
-                                  color: context.fast.t3,
-                                ),
-                              ),
-                            ],
+                  ],
+                ),
+              ),
+              Expanded(
+                flex: 4,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          color: context.fast.t1,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Expanded(
+                        child: Text(
+                          item.description,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: context.fast.t2,
+                            height: 1.3,
                           ),
                         ),
-                      ],
+                      ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              '€${item.price.toStringAsFixed(2)}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w900,
+                                fontSize: 13,
+                                color: Color(0xFFF59E0B),
+                              ),
+                            ),
+                          ),
+                          if (item.prepTime > 0)
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.schedule,
+                                  size: 10,
+                                  color: context.fast.t3,
+                                ),
+                                const SizedBox(width: 2),
+                                Text(
+                                  '~${item.prepTime} min',
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.bold,
+                                    color: context.fast.t3,
+                                  ),
+                                ),
+                              ],
+                            ),
+                        ],
+                      ),
                     ],
                   ),
-                ],
+                ),
               ),
-            ),
-            SizedBox(width: 16),
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: FastImage(
-                    item.image,
-                    width: 72,
-                    height: 72,
-                    cacheWidth: 72,
-                    placeholder: Container(
-                      width: 72,
-                      height: 72,
-                      color: context.fast.line,
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: -6,
-                  right: -6,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: Color(0xFFF59E0B),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(Icons.add, color: FASTBrand.onAmber, size: 20),
-                  ),
-                ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -920,6 +1099,210 @@ class RestaurantScreen extends StatelessWidget {
           },
         );
       },
+    );
+  }
+}
+
+/// F10 — reservation request sheet: date, time, party size, note.
+class _ReservationSheet extends StatefulWidget {
+  final Restaurant restaurant;
+  const _ReservationSheet({required this.restaurant});
+
+  @override
+  State<_ReservationSheet> createState() => _ReservationSheetState();
+}
+
+class _ReservationSheetState extends State<_ReservationSheet> {
+  final _service = ReservationService();
+  final _noteCtrl = TextEditingController();
+  DateTime _date = DateTime.now();
+  TimeOfDay _time = TimeOfDay.now();
+  int _partySize = 2;
+  bool _sending = false;
+
+  @override
+  void dispose() {
+    _noteCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _date,
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 60)),
+    );
+    if (picked != null) setState(() => _date = picked);
+  }
+
+  Future<void> _pickTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _time,
+    );
+    if (picked != null) setState(() => _time = picked);
+  }
+
+  Future<void> _submit() async {
+    final dateTime = DateTime(
+      _date.year,
+      _date.month,
+      _date.day,
+      _time.hour,
+      _time.minute,
+    );
+    setState(() => _sending = true);
+    try {
+      await _service.createReservation(
+        restaurantId: widget.restaurant.id,
+        partySize: _partySize,
+        dateTime: dateTime,
+        note: _noteCtrl.text,
+      );
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(tr(context, 'reservation_sent'))),
+        );
+      }
+    } catch (_) {
+      if (mounted) setState(() => _sending = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final dateLabel =
+        '${_date.day.toString().padLeft(2, '0')}/${_date.month.toString().padLeft(2, '0')}/${_date.year}';
+    final timeLabel =
+        '${_time.hour.toString().padLeft(2, '0')}:${_time.minute.toString().padLeft(2, '0')}';
+    return Container(
+      decoration: BoxDecoration(
+        color: context.fast.bg,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        20,
+        20,
+        20 + MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            tr(context, 'reserve_table'),
+            style: TextStyle(
+              color: context.fast.t1,
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _pickDate,
+                  icon: const Icon(Icons.calendar_today, size: 16),
+                  label: Text(dateLabel),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: context.fast.t1,
+                    side: BorderSide(color: context.fast.line),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _pickTime,
+                  icon: const Icon(Icons.schedule, size: 16),
+                  label: Text(timeLabel),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: context.fast.t1,
+                    side: BorderSide(color: context.fast.line),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Text(
+            tr(context, 'party_size'),
+            style: TextStyle(color: context.fast.t3, fontSize: 11),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              IconButton(
+                onPressed: _partySize > 1
+                    ? () => setState(() => _partySize--)
+                    : null,
+                icon: const Icon(Icons.remove_circle_outline),
+                color: context.fast.t2,
+              ),
+              Text(
+                '$_partySize',
+                style: TextStyle(
+                  color: context.fast.t1,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              IconButton(
+                onPressed: _partySize < 20
+                    ? () => setState(() => _partySize++)
+                    : null,
+                icon: const Icon(Icons.add_circle_outline),
+                color: context.fast.t2,
+              ),
+            ],
+          ),
+          TextField(
+            controller: _noteCtrl,
+            maxLines: 2,
+            style: TextStyle(color: context.fast.t1, fontSize: 13),
+            decoration: InputDecoration(
+              hintText: tr(context, 'allergy_note'),
+              hintStyle: TextStyle(color: context.fast.t3),
+              filled: true,
+              fillColor: context.fast.card,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: context.fast.line),
+              ),
+            ),
+          ),
+          const SizedBox(height: 18),
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton(
+              onPressed: _sending ? null : _submit,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF00C8B3),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                textStyle: const TextStyle(fontWeight: FontWeight.w900),
+              ),
+              child: _sending
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Text(tr(context, 'reserve_table')),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -3,7 +3,68 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'auth_screen.dart';
 import '../provider.dart';
+import '../providers/auth_provider.dart';
 import '../widgets/fast_glow_background.dart';
+
+void _showInviteCodeDialog(BuildContext context, FASTProvider fast) {
+  final codeCtrl = TextEditingController();
+  final firstNameCtrl = TextEditingController();
+  final lastNameCtrl = TextEditingController();
+  showDialog(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(fast.tr('join_with_code')),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: codeCtrl,
+            textCapitalization: TextCapitalization.characters,
+            decoration: InputDecoration(
+              labelText: fast.tr('invite_code'),
+              hintText: 'ABC123',
+            ),
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            controller: firstNameCtrl,
+            textCapitalization: TextCapitalization.words,
+            autofillHints: const [AutofillHints.givenName],
+            decoration: InputDecoration(labelText: fast.tr('first_name')),
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            controller: lastNameCtrl,
+            textCapitalization: TextCapitalization.words,
+            autofillHints: const [AutofillHints.familyName],
+            decoration: InputDecoration(labelText: fast.tr('last_name')),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx),
+          child: Text(fast.tr('cancel')),
+        ),
+        Consumer<AuthProvider>(
+          builder: (ctx2, auth, _) => FilledButton(
+            onPressed: auth.isBusy
+                ? null
+                : () async {
+                    final ok = await auth.joinWithInviteCode(
+                      inviteCode: codeCtrl.text,
+                      firstName: firstNameCtrl.text,
+                      lastName: lastNameCtrl.text,
+                    );
+                    if (ok && ctx.mounted) Navigator.pop(ctx);
+                  },
+            child: Text(fast.tr('join_with_code')),
+          ),
+        ),
+      ],
+    ),
+  );
+}
 
 class RoleSelectionScreen extends StatelessWidget {
   const RoleSelectionScreen({super.key});
@@ -142,6 +203,27 @@ class RoleSelectionScreen extends StatelessWidget {
                     chevronIconColor: Colors.white,
                   ),
                   const SizedBox(height: 24),
+
+                  // F13 — staff/guest self-serve join via the owner's
+                  // invite code (no pre-created account needed).
+                  Center(
+                    child: TextButton.icon(
+                      onPressed: () => _showInviteCodeDialog(context, fast),
+                      icon: const Icon(
+                        Icons.vpn_key_outlined,
+                        size: 15,
+                        color: Color(0xFFB8AECF),
+                      ),
+                      label: Text(
+                        fast.tr('join_with_code'),
+                        style: const TextStyle(
+                          color: Color(0xFFB8AECF),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),

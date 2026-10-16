@@ -70,7 +70,7 @@ export const createReview = async (req: Request, res: Response): Promise<void> =
   });
 
   const aggregations = await prisma.review.aggregate({
-    where: { restaurantId },
+    where: { restaurantId, isReported: false },
     _avg: { rating: true },
     _count: true,
   });
@@ -97,11 +97,44 @@ export const listReviews = async (req: Request, res: Response): Promise<void> =>
   const restaurantId = req.params.restaurantId as string;
 
   const reviews = await prisma.review.findMany({
-    where: { restaurantId },
+    where: { restaurantId, isReported: false },
     include: { user: { select: { name: true } } },
     orderBy: { createdAt: 'desc' },
     take: 50,
   });
 
   res.json(reviews);
+};
+
+/** F09 — signalement d'un avis : flag pour modération, masqué des listes
+ *  publiques et exclu de la moyenne recalculée. */
+export const reportReview = async (req: Request, res: Response): Promise<void> => {
+  const id = req.params.id as string;
+
+  const review = await prisma.review.findUnique({ where: { id } });
+  if (!review) {
+    res.status(404).json({ error: 'Avis introuvable' });
+    return;
+  }
+  if (review.userId === req.user!.userId) {
+    res.status(400).json({ error: 'Vous ne pouvez pas signaler votre propre avis' });
+    return;
+  }
+
+  await prisma.review.update({ where: { id }, data: { isReported: true } });
+
+  const aggregations = await prisma.review.aggregate({
+    where: { restaurantId: review.restaurantId, isReported: false },
+    _avg: { rating: true },
+    _count: true,
+  });
+  await prisma.restaurant.update({
+    where: { id: review.restaurantId },
+    data: {
+      rating: Math.round((aggregations._avg.rating || 0) * 10) / 10,
+      reviewsCount: aggregations._count,
+    },
+  });
+
+  res.json({ message: 'Avis signalé pour modération' });
 };

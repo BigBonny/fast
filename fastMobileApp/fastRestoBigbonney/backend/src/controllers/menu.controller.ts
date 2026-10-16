@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../services/prisma';
 import { createMenuItemSchema, updateMenuItemSchema } from '../utils/validation';
+import { resolveFastPricing } from '../utils/fastPricing';
 import { env } from '../config/env';
 import { getRestaurantIdForUser } from '../middleware/auth';
 import { parseOcrResponse } from '../utils/menuOcr';
@@ -42,9 +43,15 @@ export const createMenuItem = async (req: Request, res: Response): Promise<void>
     return;
   }
 
+  // The restaurateur's price is the BASE price — the stored `price` is the
+  // FAST-marked-up customer price. Computed deterministically, never by AI.
+  const { price, basePrice } = resolveFastPricing(data);
+
   const item = await prisma.menuItem.create({
     data: {
       ...data,
+      price,
+      basePrice,
       restaurantId,
       dietaryTags: data.dietaryTags
         ? { create: data.dietaryTags.map((opt) => ({ option: opt as any })) }
@@ -78,6 +85,12 @@ export const updateMenuItem = async (req: Request, res: Response): Promise<void>
   // field is stripped so nothing else can be modified.
   const isGuest = req.user!.role === 'GUEST' || req.user!.staffRole === 'GUEST';
   const patchData: any = isGuest ? { isAvailable: data.isAvailable } : { ...data };
+  // Recompute the FAST price only when the base price itself changes.
+  if (!isGuest && (data.basePrice != null || data.price != null)) {
+    const { price, basePrice } = resolveFastPricing(data);
+    patchData.price = price;
+    patchData.basePrice = basePrice;
+  }
   if (isGuest && typeof data.isAvailable !== 'boolean') {
     res.status(403).json({ error: 'Accès invité : disponibilité uniquement' });
     return;
@@ -455,7 +468,10 @@ export const scanMenu = async (req: Request, res: Response): Promise<void> => {
       created.push(await prisma.menuItem.create({
         data: {
           name: item.name,
-          price: item.price,
+          // OCR reads the restaurateur's printed (base) price — FAST markup
+          // is applied deterministically, never decided by the model.
+          price: resolveFastPricing({ price: item.price }).price,
+          basePrice: item.price,
           category: item.category || '',
           description: item.description || '',
           restaurantId,
@@ -478,6 +494,74 @@ export const scanMenu = async (req: Request, res: Response): Promise<void> => {
   console.log('[scanMenu] created:', created.length, 'failed:', failed);
 
   res.status(201).json(created);
+};
+
+/**
+ * F06 — propose a customer-facing description for a dish. Strictly
+ * forbidden from inventing allergens, ingredients or dietary claims.
+ * The owner reviews and edits before saving — nothing is auto-applied.
+ */
+export const enhanceMenuItem = async (req: Request, res: Response): Promise<void> => {
+  const item = await prisma.menuItem.findUnique({ where: { id: req.params.id as string } });
+  if (!item) {
+    res.status(404).json({ error: 'Plat introuvable' });
+    return;
+  }
+  const restaurantId = await getRestaurantIdForUser(req.user!);
+  if (restaurantId !== item.restaurantId || req.user!.staffRole === 'GUEST') {
+    res.status(403).json({ error: 'Accès interdit' });
+    return;
+  }
+
+  if (!env.geminiApiKey && !env.mistralApiKey) {
+    res.status(500).json({ error: 'IA non configurée' });
+    return;
+  }
+
+  const prompt = `You are writing a short, appetizing menu description for a restaurant dish.
+Dish name: "${item.name}"
+Category: "${item.category || 'Non spécifié'}"
+Current description: "${item.description || ''}"
+
+Rules:
+- Write in French, one sentence, max 20 words.
+- Make it appetizing and generic (style of cuisine, texture, presentation).
+- NEVER mention allergens (gluten, nuts, lactose, etc.), specific ingredients not in the name, nutritional or dietary claims (vegan, halal, healthy…).
+- If the current description is already good, return it unchanged.
+
+Return ONLY a JSON object: {"description": "<text>"}`;
+
+  try {
+    let content: string;
+    if (env.geminiApiKey) {
+      content = await geminiGenerate(prompt);
+    } else {
+      const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${env.mistralApiKey}`,
+        },
+        body: JSON.stringify({
+          model: 'mistral-small-latest',
+          messages: [{ role: 'user', content: prompt }],
+          response_format: { type: 'json_object' },
+          temperature: 0.5,
+          max_tokens: 120,
+        }),
+      });
+      if (!response.ok) {
+        throw new Error(`Mistral API error: ${response.statusText}`);
+      }
+      const data = await response.json() as any;
+      content = data.choices[0].message.content;
+    }
+    const parsed = JSON.parse(content);
+    res.json({ description: String(parsed.description || '').slice(0, 300) });
+  } catch (err) {
+    console.error('[enhanceMenuItem] Error:', (err as Error).message);
+    res.status(500).json({ error: 'Erreur lors de la suggestion IA' });
+  }
 };
 
 export const suggestPrepTime = async (req: Request, res: Response): Promise<void> => {

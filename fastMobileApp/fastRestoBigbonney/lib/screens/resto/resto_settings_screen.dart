@@ -35,6 +35,10 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
   double _normalPrepTime = 15;
   double _rushPrepTime = 25;
   List<String> _selectedDietary = [];
+  bool _allowDineIn = false;
+  bool _reservationsEnabled = false;
+  bool _reservationOnly = false;
+  final _dineInFeeCtrl = TextEditingController(text: '0');
 
   bool _loading = true;
   bool _saving = false;
@@ -170,6 +174,11 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
             })
             .where((s) => s.isNotEmpty)
             .toList();
+        _allowDineIn = data['allowDineIn'] as bool? ?? false;
+        _reservationsEnabled = data['reservationsEnabled'] as bool? ?? false;
+        _reservationOnly = data['reservationOnly'] as bool? ?? false;
+        _dineInFeeCtrl.text =
+            ((data['dineInFee'] as num?)?.toDouble() ?? 0).toStringAsFixed(2);
         _loading = false;
       });
     } catch (e) {
@@ -225,6 +234,10 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
       'normalPrepTime': _normalPrepTime.round(),
       'rushPrepTime': _rushPrepTime.round(),
       'dietaryOptions': _selectedDietary,
+      'allowDineIn': _allowDineIn,
+      'reservationsEnabled': _reservationsEnabled,
+      'reservationOnly': _reservationOnly,
+      'dineInFee': double.tryParse(_dineInFeeCtrl.text.trim()) ?? 0,
     };
 
     try {
@@ -287,6 +300,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
     _cityCtrl.dispose();
     _addressCtrl.dispose();
     _ibanCtrl.dispose();
+    _dineInFeeCtrl.dispose();
     super.dispose();
   }
 
@@ -489,6 +503,53 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
           const Color(0xFFEF4444),
           (v) => setState(() => _rushPrepTime = v),
         ),
+
+        SizedBox(height: 24),
+        _section(tr(context, 'service_modes')),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(
+            tr(context, 'dine_in'),
+            style: TextStyle(color: context.fast.t1, fontSize: 13),
+          ),
+          value: _allowDineIn,
+          activeThumbColor: const Color(0xFF00C8B3),
+          onChanged: (v) => setState(() => _allowDineIn = v),
+        ),
+        if (_allowDineIn)
+          _field(
+            'Frais sur place (€)',
+            _dineInFeeCtrl,
+            hint: '0.00',
+          ),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(
+            tr(context, 'reservations'),
+            style: TextStyle(color: context.fast.t1, fontSize: 13),
+          ),
+          value: _reservationsEnabled,
+          activeThumbColor: const Color(0xFF00C8B3),
+          onChanged: (v) => setState(() {
+            _reservationsEnabled = v;
+            if (!v) _reservationOnly = false;
+          }),
+        ),
+        if (_reservationsEnabled)
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(
+              tr(context, 'reservation_only'),
+              style: TextStyle(color: context.fast.t1, fontSize: 13),
+            ),
+            subtitle: Text(
+              tr(context, 'reservation_only_sub'),
+              style: TextStyle(color: context.fast.t3, fontSize: 11),
+            ),
+            value: _reservationOnly,
+            activeThumbColor: const Color(0xFF00C8B3),
+            onChanged: (v) => setState(() => _reservationOnly = v),
+          ),
 
         SizedBox(height: 32),
         ElevatedButton(

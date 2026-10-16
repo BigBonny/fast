@@ -25,4 +25,12 @@ class ReviewService {
     );
     return Review.fromApiJson(data as Map<String, dynamic>);
   }
+
+  /// F09 — flag a review for moderation.
+  Future<void> reportReview(String reviewId, {String? reason}) async {
+    await _api.post(
+      ApiConfig.reportReview(reviewId),
+      body: {if (reason != null && reason.isNotEmpty) 'reason': reason},
+    );
+  }
 }

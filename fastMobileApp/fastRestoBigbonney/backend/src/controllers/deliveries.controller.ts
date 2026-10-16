@@ -19,7 +19,8 @@ async function getEligibleDriver(userId: string) {
     where: { userId },
     include: { schedules: { where: { isEnabled: true } } },
   });
-  if (!profile || !profile.isOnline || profile.isPaused) return null;
+  // Suspended drivers can never take missions (F12 — suspension process).
+  if (!profile || profile.isSuspended || !profile.isOnline || profile.isPaused) return null;
   if (profile.type === 'OCCASIONAL') return profile;
 
   const parts = new Intl.DateTimeFormat('en-GB', {
@@ -39,6 +40,33 @@ async function getEligibleDriver(userId: string) {
     slot.dayOfWeek === dayOfWeek && minute >= slot.startMinute && minute < slot.endMinute);
   return inSchedule ? profile : null;
 }
+
+/** F12 — signalement d'un problème de livraison par le client ou le restaurant. */
+export const reportDelivery = async (req: Request, res: Response): Promise<void> => {
+  const id = req.params.id as string;
+  const reason = typeof req.body?.reason === 'string' ? req.body.reason.trim().slice(0, 500) : '';
+
+  const delivery = await prisma.delivery.findUnique({
+    where: { id },
+    include: { order: { select: { userId: true, restaurant: { select: { ownerId: true } } } } },
+  });
+  if (!delivery) {
+    res.status(404).json({ error: 'Livraison introuvable' });
+    return;
+  }
+  const isClient = delivery.order?.userId === req.user!.userId;
+  const isRestaurant = delivery.order?.restaurant.ownerId === req.user!.userId;
+  if (!isClient && !isRestaurant) {
+    res.status(403).json({ error: 'Accès refusé' });
+    return;
+  }
+
+  const updated = await prisma.delivery.update({
+    where: { id },
+    data: { reportReason: reason || 'Problème signalé', reportedAt: new Date() },
+  });
+  res.json(updated);
+};
 
 export const getAvailableDeliveries = async (req: Request, res: Response): Promise<void> => {
   if (!await getEligibleDriver(req.user!.userId)) {

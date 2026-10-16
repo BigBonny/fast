@@ -21,6 +21,7 @@ enum DietaryOption {
 enum FulfillmentType {
   PICKUP
   DELIVERY
+  DINE_IN
 }
 
 enum OrderStatus {
@@ -89,6 +90,13 @@ enum DeliveryStatus {
   CANCELLED
 }
 
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  DECLINED
+  CANCELLED
+}
+
 // ─── Auth / Users ───────────────────────────────────────────
 
 model User {
@@ -103,6 +111,7 @@ model User {
   failedLoginAttempts Int       @default(0)
   lockedUntil         DateTime?
   stripeCustomerId    String?   @unique
+  phoneVerified       Boolean   @default(false)
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 
@@ -116,6 +125,19 @@ model User {
   driverProfile    DriverProfile?
   staffAssignments RestaurantStaff[]
   addresses        SavedAddress[]
+  reservations     Reservation[]
+}
+
+model PhoneVerification {
+  id         String    @id @default(cuid())
+  phone      String
+  code       String
+  attempts   Int       @default(0)
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([phone, createdAt])
 }
 
 model SavedAddress {
@@ -164,6 +186,11 @@ model Restaurant {
   deliveryEnabled      Boolean  @default(true)
   deliveryFee          Float    @default(2.99)
   deliveryRadiusKm     Float    @default(5.0)
+  reservationsEnabled  Boolean  @default(false)
+  reservationOnly      Boolean  @default(false) // mode "réservation uniquement" — no food orders
+  allowDineIn          Boolean  @default(false)
+  dineInFee            Float    @default(0)
+  staffInviteCode      String?
   payoutFrequency      String   @default("daily") // daily | weekly | monthly
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
@@ -175,6 +202,7 @@ model Restaurant {
   dietaryOptions RestaurantDietaryOption[]
   groupOrders    GroupOrder[]
   staff          RestaurantStaff[]
+  reservations   Reservation[]
 }
 
 model RestaurantStaff {
@@ -211,7 +239,8 @@ model MenuItem {
   restaurantId     String
   name             String
   description      String   @default("")
-  price            Float
+  price            Float    // prix final FAST affiché au client (majoration incluse)
+  basePrice        Float?   // prix de base saisi par le restaurateur, avant majoration FAST
   originalPrice    Float?   
   image            String   @default("")
   videoUrl         String   @default("")
@@ -344,6 +373,7 @@ model Review {
   userName     String
   rating       Float
   comment      String   @default("")
+  isReported   Boolean  @default(false)
   createdAt    DateTime @default(now())
 
   restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
@@ -417,6 +447,9 @@ model DriverProfile {
   type      DriverType
   isOnline  Boolean    @default(false)
   isPaused  Boolean    @default(false)
+  isSuspended Boolean  @default(false)
+  verificationStatus String @default("PENDING") // PENDING | VERIFIED | REJECTED
+  verificationNotes  String @default("")
   timezone  String     @default("Europe/Paris")
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
@@ -451,7 +484,28 @@ model Delivery {
   createdAt      DateTime       @default(now())
   acceptedAt     DateTime?
   completedAt    DateTime?
+  reportReason   String         @default("")
+  reportedAt     DateTime?
 
   order  Order? @relation(fields: [orderId], references: [id])
   driver User?  @relation(fields: [driverId], references: [id])
+}
+
+model Reservation {
+  id           String            @id @default(cuid())
+  restaurantId String
+  userId       String
+  userName     String
+  dateTime     DateTime
+  partySize    Int
+  note         String            @default("")
+  status       ReservationStatus @default(PENDING)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([restaurantId, status])
+  @@index([userId])
 }
