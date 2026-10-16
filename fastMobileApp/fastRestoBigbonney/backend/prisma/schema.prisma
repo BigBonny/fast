@@ -192,6 +192,7 @@ model Restaurant {
   dineInFee            Float    @default(0)
   staffInviteCode      String?
   payoutFrequency      String   @default("daily") // daily | weekly | monthly
+  isFoodTruck          Boolean  @default(false)
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
@@ -203,6 +204,27 @@ model Restaurant {
   groupOrders    GroupOrder[]
   staff          RestaurantStaff[]
   reservations   Reservation[]
+  truckStops     TruckStop[]
+}
+
+// Emplacements programmés d'un food truck (ex. lundi → Champigny).
+// Le client voit l'arrêt du jour comme position du restaurant.
+model TruckStop {
+  id           String  @id @default(cuid())
+  restaurantId String
+  dayOfWeek    Int     // 1 = lundi … 7 = dimanche (ISO weekday)
+  label        String  @default("") // ex. "Marché de Champigny"
+  address      String  @default("")
+  city         String  @default("")
+  latitude     Float   @default(0)
+  longitude    Float   @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@unique([restaurantId, dayOfWeek])
+  @@index([restaurantId])
 }
 
 model RestaurantStaff {

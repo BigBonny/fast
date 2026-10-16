@@ -270,12 +270,55 @@ enum FulfillmentType {
   };
 }
 
+/// Emplacement programmé d'un food truck (ex. lundi → Champigny).
+/// `weekday` suit la convention Dart : 1 = lundi … 7 = dimanche.
+class TruckStop {
+  final int weekday;
+  final String label;
+  final String address;
+  final String city;
+  final double latitude;
+  final double longitude;
+
+  const TruckStop({
+    required this.weekday,
+    this.label = '',
+    this.address = '',
+    this.city = '',
+    this.latitude = 0,
+    this.longitude = 0,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'weekday': weekday,
+    'label': label,
+    'address': address,
+    'city': city,
+    'latitude': latitude,
+    'longitude': longitude,
+  };
+
+  /// `dayOfWeek` est stocké au format ISO (1 = lundi … 7 = dimanche),
+  /// identique à `DateTime.weekday`.
+  factory TruckStop.fromJson(Map<String, dynamic> json) {
+    return TruckStop(
+      weekday: (json['dayOfWeek'] as num?)?.toInt() ?? 1,
+      label: json['label'] as String? ?? '',
+      address: json['address'] as String? ?? '',
+      city: json['city'] as String? ?? '',
+      latitude: (json['latitude'] as num?)?.toDouble() ?? 0,
+      longitude: (json['longitude'] as num?)?.toDouble() ?? 0,
+    );
+  }
+}
+
 class Restaurant {
   final String id;
   final String name;
   final String description;
   final String image;
   final String category;
+  final String cuisineType;
   final double rating;
   final int reviewsCount;
   final List<Review> reviews;
@@ -293,6 +336,9 @@ class Restaurant {
   final bool allowDineIn;
   final bool reservationsEnabled;
   final bool reservationOnly;
+  final bool isFoodTruck;
+  final List<TruckStop> truckStops;
+  final TruckStop? todayStop;
 
   Restaurant({
     required this.id,
@@ -300,6 +346,7 @@ class Restaurant {
     required this.description,
     required this.image,
     required this.category,
+    this.cuisineType = '',
     required this.rating,
     required this.reviewsCount,
     required this.reviews,
@@ -317,6 +364,9 @@ class Restaurant {
     this.allowDineIn = false,
     this.reservationsEnabled = false,
     this.reservationOnly = false,
+    this.isFoodTruck = false,
+    this.truckStops = const [],
+    this.todayStop,
   });
 
   Map<String, dynamic> toJson() => {
@@ -325,6 +375,7 @@ class Restaurant {
     'description': description,
     'image': image,
     'category': category,
+    'cuisineType': cuisineType,
     'rating': rating,
     'reviewsCount': reviewsCount,
     'reviews': reviews.map((r) => r.toJson()).toList(),
@@ -339,7 +390,15 @@ class Restaurant {
     'allowDineIn': allowDineIn,
     'reservationsEnabled': reservationsEnabled,
     'reservationOnly': reservationOnly,
+    'isFoodTruck': isFoodTruck,
+    'truckStops': truckStops.map((s) => s.toJson()).toList(),
   };
+
+  static List<TruckStop> _parseTruckStops(dynamic list) =>
+      (list as List<dynamic>?)
+          ?.map((e) => TruckStop.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      [];
 
   factory Restaurant.fromJson(Map<String, dynamic> json) => Restaurant(
     id: json['id'] as String,
@@ -347,6 +406,7 @@ class Restaurant {
     description: json['description'] as String,
     image: json['image'] as String,
     category: json['category'] as String,
+    cuisineType: json['cuisineType'] as String? ?? '',
     rating: (json['rating'] as num).toDouble(),
     reviewsCount: json['reviewsCount'] as int? ?? 0,
     reviews:
@@ -377,6 +437,11 @@ class Restaurant {
     allowDineIn: json['allowDineIn'] as bool? ?? false,
     reservationsEnabled: json['reservationsEnabled'] as bool? ?? false,
     reservationOnly: json['reservationOnly'] as bool? ?? false,
+    isFoodTruck: json['isFoodTruck'] as bool? ?? false,
+    truckStops: _parseTruckStops(json['truckStops']),
+    todayStop: json['todayStop'] != null
+        ? TruckStop.fromJson(json['todayStop'] as Map<String, dynamic>)
+        : null,
   );
 
   /// Parse from backend API JSON format
@@ -387,6 +452,7 @@ class Restaurant {
     description: json['description'] as String,
     image: json['image'] as String? ?? '',
     category: json['category'] as String,
+    cuisineType: json['cuisineType'] as String? ?? '',
     rating: (json['rating'] as num).toDouble(),
     reviewsCount: json['reviewsCount'] as int? ?? 0,
     reviews:
@@ -415,6 +481,11 @@ class Restaurant {
     allowDineIn: json['allowDineIn'] as bool? ?? false,
     reservationsEnabled: json['reservationsEnabled'] as bool? ?? false,
     reservationOnly: json['reservationOnly'] as bool? ?? false,
+    isFoodTruck: json['isFoodTruck'] as bool? ?? false,
+    truckStops: _parseTruckStops(json['truckStops']),
+    todayStop: json['todayStop'] != null
+        ? TruckStop.fromJson(json['todayStop'] as Map<String, dynamic>)
+        : null,
   );
 
   static List<DietaryPreference> _parseDietaryOptions(dynamic options) {

@@ -322,6 +322,11 @@ class RestaurantScreen extends StatelessWidget {
                   ),
                 ],
               ),
+              // Food truck — weekly stops so customers can follow the truck
+              if (rest.isFoodTruck) ...[
+                SizedBox(height: 10),
+                _buildTruckSchedule(context, rest),
+              ],
               SizedBox(height: 12),
 
               // Mini Map (MapLibre GL + OpenFreeMap)
@@ -1099,6 +1104,114 @@ class RestaurantScreen extends StatelessWidget {
           },
         );
       },
+    );
+  }
+
+  // Food truck — emplacements programmés par jour pour suivre le camion.
+  Widget _buildTruckSchedule(BuildContext context, Restaurant rest) {
+    final today = DateTime.now().weekday; // 1 = lundi … 7 = dimanche
+    final byDay = {for (final s in rest.truckStops) s.weekday: s};
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: context.fast.card,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: context.fast.line),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text('🚚', style: TextStyle(fontSize: 16)),
+              const SizedBox(width: 8),
+              Text(
+                tr(context, 'food_truck'),
+                style: TextStyle(
+                  color: context.fast.t1,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const Spacer(),
+              if (rest.todayStop == null)
+                Text(
+                  tr(context, 'truck_not_today'),
+                  style: TextStyle(
+                    color: context.fast.t3,
+                    fontSize: 10,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+            ],
+          ),
+          if (rest.todayStop != null) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(
+                  Icons.location_on,
+                  size: 14,
+                  color: Color(0xFF00C8B3),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    '${tr(context, 'truck_today')} ${[
+                      rest.todayStop!.label,
+                      rest.todayStop!.address,
+                      rest.todayStop!.city,
+                    ].where((p) => p.isNotEmpty).join(', ')}',
+                    style: const TextStyle(
+                      color: Color(0xFF00C8B3),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              for (var d = 1; d <= 7; d++)
+                if (byDay.containsKey(d))
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: d == today
+                          ? const Color(0xFF00C8B3).withValues(alpha: 0.15)
+                          : context.fast.bg,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: d == today
+                            ? const Color(0xFF00C8B3)
+                            : context.fast.line,
+                      ),
+                    ),
+                    child: Text(
+                      '${tr(context, 'day_$d')} • ${byDay[d]!.label.isNotEmpty ? byDay[d]!.label : (byDay[d]!.city.isNotEmpty ? byDay[d]!.city : byDay[d]!.address)}',
+                      style: TextStyle(
+                        color: d == today
+                            ? const Color(0xFF00C8B3)
+                            : context.fast.t2,
+                        fontSize: 10,
+                        fontWeight: d == today
+                            ? FontWeight.w800
+                            : FontWeight.w500,
+                      ),
+                    ),
+                  ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
