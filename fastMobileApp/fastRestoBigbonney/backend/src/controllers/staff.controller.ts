@@ -213,11 +213,30 @@ export const redeemInviteCode = async (req: Request, res: Response): Promise<voi
     return;
   }
 
-  await prisma.restaurantStaff.upsert({
-    where: { userId: req.user!.userId },
-    update: { restaurantId: restaurant.id, staffRole: 'GUEST' },
-    create: { userId: req.user!.userId, restaurantId: restaurant.id, staffRole: 'GUEST' },
+  // An account that already owns a restaurant can't become a guest
+  // elsewhere — the two roles are mutually exclusive in the data model.
+  const owned = await prisma.restaurant.findUnique({
+    where: { ownerId: req.user!.userId },
+    select: { id: true },
   });
+  if (owned) {
+    res.status(409).json({ error: 'Vous possédez déjà un restaurant — ce compte ne peut pas rejoindre un autre établissement' });
+    return;
+  }
+
+  await prisma.$transaction([
+    prisma.restaurantStaff.upsert({
+      where: { userId: req.user!.userId },
+      update: { restaurantId: restaurant.id, staffRole: 'GUEST' },
+      create: { userId: req.user!.userId, restaurantId: restaurant.id, staffRole: 'GUEST' },
+    }),
+    // The account role must follow the assignment — otherwise login/getMe
+    // never resolve the assignment and the app boots into owner onboarding.
+    prisma.user.update({
+      where: { id: req.user!.userId },
+      data: { role: 'GUEST' },
+    }),
+  ]);
 
   const user = await prisma.user.findUnique({ where: { id: req.user!.userId } });
   if (!user) {
@@ -229,7 +248,7 @@ export const redeemInviteCode = async (req: Request, res: Response): Promise<voi
   // guest workspace immediately — no logout/login needed.
   const token = signStaffToken({
     userId: user.id,
-    role: user.role,
+    role: 'GUEST',
     tokenVersion: user.tokenVersion,
     restaurantId: restaurant.id,
     staffRole: 'GUEST',
@@ -237,6 +256,6 @@ export const redeemInviteCode = async (req: Request, res: Response): Promise<voi
 
   res.json({
     token,
-    user: { id: user.id, name: user.name, email: user.email, role: user.role, restaurantId: restaurant.id, staffRole: 'GUEST' },
+    user: { id: user.id, name: user.name, email: user.email, role: 'GUEST', restaurantId: restaurant.id, staffRole: 'GUEST' },
   });
 };

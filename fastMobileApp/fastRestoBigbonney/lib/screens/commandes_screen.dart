@@ -17,6 +17,8 @@ import 'qr_screen.dart';
 import '../theme.dart';
 import '../widgets/fast_image.dart';
 import '../l10n/tr.dart';
+import '../services/reservation_service.dart';
+import '../api/api_exceptions.dart';
 
 class CommandesScreen extends StatefulWidget {
   const CommandesScreen({super.key});
@@ -77,7 +79,7 @@ class _CommandesScreenState extends State<CommandesScreen>
           o.status != OrderStatus.cancelled,
     );
     _tabController = TabController(
-      length: 2,
+      length: 3,
       vsync: this,
       initialIndex: hasActiveOrder ? 0 : 1,
     );
@@ -140,12 +142,17 @@ class _CommandesScreenState extends State<CommandesScreen>
           tabs: [
             Tab(text: provider.tr('tracking_tab')),
             Tab(text: provider.tr('history_tab')),
+            Tab(text: provider.tr('reservations_tab')),
           ],
         ),
       ),
       body: TabBarView(
         controller: _tabController,
-        children: [_buildSuiviTab(provider), _buildHistoriqueTab(provider)],
+        children: [
+          _buildSuiviTab(provider),
+          _buildHistoriqueTab(provider),
+          const _MyReservationsTab(),
+        ],
       ),
     );
   }
@@ -1751,7 +1758,7 @@ class _CommandesScreenState extends State<CommandesScreen>
                               final text = _getHistoryController(
                                 order.id,
                               ).text.trim();
-                              if (text.isEmpty) return;
+                              // Comment is optional — stars alone count.
                               final rating = _orderRatings[order.id] ?? 5.0;
                               provider.submitRestaurantRating(
                                 order.id,
@@ -1818,6 +1825,267 @@ class _CommandesScreenState extends State<CommandesScreen>
     } catch (e) {
       return isoString.split('T')[0];
     }
+  }
+}
+
+// ─── RESERVATIONS TAB (customer side) ────────────────────────────────────────
+/// Lists the customer's table reservations — pending ones can be cancelled.
+class _MyReservationsTab extends StatefulWidget {
+  const _MyReservationsTab();
+
+  @override
+  State<_MyReservationsTab> createState() => _MyReservationsTabState();
+}
+
+class _MyReservationsTabState extends State<_MyReservationsTab> {
+  final _service = ReservationService();
+  List<Reservation>? _items;
+  String? _error;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final items = await _service.myReservations();
+      if (mounted) setState(() => _items = items);
+    } catch (e) {
+      if (mounted) {
+        setState(
+          () => _error = e is ApiException ? e.message : tr(context, 'load_err'),
+        );
+      }
+    }
+    if (mounted) setState(() => _loading = false);
+  }
+
+  Future<void> _cancel(Reservation r) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(tr(context, 'cancel_reservation_q')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(tr(context, 'close')),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              tr(context, 'cancel'),
+              style: const TextStyle(color: Color(0xFFEF4444)),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    try {
+      await _service.cancel(r.id);
+      _load();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e is ApiException ? e.message : tr(context, 'load_err')),
+          ),
+        );
+      }
+    }
+  }
+
+  Color _statusColor(String status) => switch (status) {
+    'CONFIRMED' => const Color(0xFF10B981),
+    'DECLINED' || 'CANCELLED' => const Color(0xFFEF4444),
+    _ => const Color(0xFFF59E0B),
+  };
+
+  String _statusLabel(String status) => switch (status) {
+    'CONFIRMED' => tr(context, 'reservation_confirmed'),
+    'DECLINED' => tr(context, 'reservation_declined'),
+    'CANCELLED' => tr(context, 'reservation_cancelled'),
+    _ => tr(context, 'reservation_pending'),
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) {
+      return const Center(
+        child: CircularProgressIndicator(color: Color(0xFFF59E0B)),
+      );
+    }
+    if (_error != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(_error!, style: TextStyle(color: context.fast.t2)),
+              const SizedBox(height: 12),
+              TextButton(onPressed: _load, child: Text(tr(context, 'retry'))),
+            ],
+          ),
+        ),
+      );
+    }
+    final items = _items ?? [];
+    if (items.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('🪑', style: TextStyle(fontSize: 48)),
+              const SizedBox(height: 12),
+              Text(
+                tr(context, 'no_reservations'),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: context.fast.t1,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                tr(context, 'no_reservations_hint'),
+                style: TextStyle(fontSize: 11, color: context.fast.t2),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    return RefreshIndicator(
+      onRefresh: _load,
+      child: ListView.separated(
+        padding: const EdgeInsets.all(16),
+        itemCount: items.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 10),
+        itemBuilder: (context, i) => _buildCard(items[i]),
+      ),
+    );
+  }
+
+  Widget _buildCard(Reservation r) {
+    final color = _statusColor(r.status);
+    final dt = r.dateTime;
+    final dateLabel =
+        '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year} '
+        '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: context.fast.card,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: context.fast.line),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: FastImage(
+                  r.restaurantImage,
+                  width: 40,
+                  height: 40,
+                  placeholder: Container(
+                    width: 40,
+                    height: 40,
+                    color: context.fast.cardHigh,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  r.restaurantName.isEmpty ? r.customerName : r.restaurantName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: context.fast.t1,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 3,
+                ),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  _statusLabel(r.status),
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Icon(Icons.schedule, size: 14, color: context.fast.t3),
+              const SizedBox(width: 4),
+              Text(
+                dateLabel,
+                style: TextStyle(color: context.fast.t2, fontSize: 12),
+              ),
+              const SizedBox(width: 14),
+              Icon(Icons.people, size: 14, color: context.fast.t3),
+              const SizedBox(width: 4),
+              Text(
+                '${r.partySize}',
+                style: TextStyle(color: context.fast.t2, fontSize: 12),
+              ),
+            ],
+          ),
+          if (r.isPending) ...[
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () => _cancel(r),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFFEF4444),
+                  side: const BorderSide(color: Color(0xFFEF4444)),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: Text(
+                  tr(context, 'cancel_reservation'),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 }
 

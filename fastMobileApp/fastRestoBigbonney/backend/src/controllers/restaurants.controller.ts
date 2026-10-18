@@ -114,6 +114,17 @@ export const createRestaurant = async (req: Request, res: Response): Promise<voi
     return;
   }
 
+  // A staff-assigned account can't also own a restaurant — their token may
+  // still carry the legacy RESTAURANT role until the next login.
+  const staffAssignment = await prisma.restaurantStaff.findUnique({
+    where: { userId: req.user!.userId },
+    select: { id: true },
+  });
+  if (staffAssignment) {
+    res.status(409).json({ error: 'Ce compte est déjà rattaché à un restaurant en tant que membre du personnel' });
+    return;
+  }
+
   const coords = await applyGeocoding(data);
 
   const restaurant = await prisma.restaurant.create({

@@ -39,6 +39,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
   bool _reservationsEnabled = false;
   bool _reservationOnly = false;
   final _dineInFeeCtrl = TextEditingController(text: '0');
+  final _seatingCtrl = TextEditingController(text: '0');
 
   // Catégories personnalisées ("Autre…") + mode food truck
   final _customCategoryCtrl = TextEditingController();
@@ -187,6 +188,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
         _reservationOnly = data['reservationOnly'] as bool? ?? false;
         _dineInFeeCtrl.text =
             ((data['dineInFee'] as num?)?.toDouble() ?? 0).toStringAsFixed(2);
+        _seatingCtrl.text = '${(data['seatingCapacity'] as num?)?.toInt() ?? 0}';
         _isFoodTruck = data['isFoodTruck'] as bool? ?? false;
         final stops = data['truckStops'] as List<dynamic>? ?? [];
         for (final s in stops) {
@@ -260,6 +262,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
       'reservationsEnabled': _reservationsEnabled,
       'reservationOnly': _reservationOnly,
       'dineInFee': double.tryParse(_dineInFeeCtrl.text.trim()) ?? 0,
+      'seatingCapacity': int.tryParse(_seatingCtrl.text.trim()) ?? 0,
       'isFoodTruck': _isFoodTruck,
       'truckStops': _isFoodTruck
           ? [
@@ -341,6 +344,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
     _addressCtrl.dispose();
     _ibanCtrl.dispose();
     _dineInFeeCtrl.dispose();
+    _seatingCtrl.dispose();
     _customCategoryCtrl.dispose();
     for (final c in _truckDayCtrls.values) {
       c.dispose();
@@ -715,7 +719,12 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
             if (!v) _reservationOnly = false;
           }),
         ),
-        if (_reservationsEnabled)
+        if (_reservationsEnabled) ...[
+          _field(
+            tr(context, 'seating_capacity'),
+            _seatingCtrl,
+            hint: '40',
+          ),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
             title: Text(
@@ -730,6 +739,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
             activeThumbColor: const Color(0xFF00C8B3),
             onChanged: (v) => setState(() => _reservationOnly = v),
           ),
+        ],
 
         SizedBox(height: 32),
         ElevatedButton(

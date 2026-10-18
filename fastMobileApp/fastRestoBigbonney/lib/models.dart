@@ -337,6 +337,7 @@ class Restaurant {
   final bool reservationsEnabled;
   final bool reservationOnly;
   final bool isFoodTruck;
+  final int seatingCapacity;
   final List<TruckStop> truckStops;
   final TruckStop? todayStop;
 
@@ -365,6 +366,7 @@ class Restaurant {
     this.reservationsEnabled = false,
     this.reservationOnly = false,
     this.isFoodTruck = false,
+    this.seatingCapacity = 0,
     this.truckStops = const [],
     this.todayStop,
   });
@@ -391,6 +393,7 @@ class Restaurant {
     'reservationsEnabled': reservationsEnabled,
     'reservationOnly': reservationOnly,
     'isFoodTruck': isFoodTruck,
+    'seatingCapacity': seatingCapacity,
     'truckStops': truckStops.map((s) => s.toJson()).toList(),
   };
 
@@ -438,6 +441,7 @@ class Restaurant {
     reservationsEnabled: json['reservationsEnabled'] as bool? ?? false,
     reservationOnly: json['reservationOnly'] as bool? ?? false,
     isFoodTruck: json['isFoodTruck'] as bool? ?? false,
+    seatingCapacity: json['seatingCapacity'] as int? ?? 0,
     truckStops: _parseTruckStops(json['truckStops']),
     todayStop: json['todayStop'] != null
         ? TruckStop.fromJson(json['todayStop'] as Map<String, dynamic>)
@@ -482,6 +486,7 @@ class Restaurant {
     reservationsEnabled: json['reservationsEnabled'] as bool? ?? false,
     reservationOnly: json['reservationOnly'] as bool? ?? false,
     isFoodTruck: json['isFoodTruck'] as bool? ?? false,
+    seatingCapacity: json['seatingCapacity'] as int? ?? 0,
     truckStops: _parseTruckStops(json['truckStops']),
     todayStop: json['todayStop'] != null
         ? TruckStop.fromJson(json['todayStop'] as Map<String, dynamic>)
@@ -927,6 +932,8 @@ class Reservation {
   final String status; // PENDING | CONFIRMED | DECLINED | CANCELLED | COMPLETED
   final String? note;
   final String? tableNumber;
+  final String restaurantName;
+  final String restaurantImage;
 
   const Reservation({
     required this.id,
@@ -937,15 +944,23 @@ class Reservation {
     required this.status,
     this.note,
     this.tableNumber,
+    this.restaurantName = '',
+    this.restaurantImage = '',
   });
 
   bool get isPending => status == 'PENDING';
+  bool get isUpcoming => dateTime.isAfter(DateTime.now());
 
   factory Reservation.fromApiJson(Map<String, dynamic> json) => Reservation(
     id: json['id'] as String,
     restaurantId: json['restaurantId'] as String,
+    restaurantName:
+        (json['restaurant'] as Map<String, dynamic>?)?['name'] as String? ?? '',
+    restaurantImage:
+        (json['restaurant'] as Map<String, dynamic>?)?['image'] as String? ?? '',
     customerName:
-        (json['customer'] as Map<String, dynamic>?)?['name'] as String? ??
+        json['userName'] as String? ??
+            (json['customer'] as Map<String, dynamic>?)?['name'] as String? ??
             (json['customerName'] as String? ?? ''),
     partySize: json['partySize'] as int? ?? 2,
     dateTime: DateTime.tryParse(json['dateTime'] as String? ?? '') ??
