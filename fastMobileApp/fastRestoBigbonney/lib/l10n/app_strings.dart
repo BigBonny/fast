@@ -498,6 +498,7 @@ class AppStrings {
     'stats_unavail': 'Statistiques indisponibles',
     'no_data': 'Pas encore de données',
     'skip_tuto': 'Passer',
+    'dont_show_again': 'Ne plus afficher',
     'tuto1_t': 'Pilotez vos commandes',
     'tuto1_d':
         'Les nouvelles commandes payées arrivent ici. Faites-les passer de reçue à en préparation, puis prête et récupérée.',
@@ -1344,6 +1345,7 @@ class AppStrings {
     'stats_unavail': 'Statistics unavailable',
     'no_data': 'No data yet',
     'skip_tuto': 'Skip',
+    'dont_show_again': 'Don\'t show again',
     'tuto1_t': 'Manage your orders',
     'tuto1_d':
         'New paid orders land here. Move them from received to preparing, then ready and picked up.',
@@ -2134,6 +2136,7 @@ class AppStrings {
     'stats_unavail': 'İstatistikler kullanılamıyor',
     'no_data': 'Henüz veri yok',
     'skip_tuto': 'Atla',
+    'dont_show_again': 'Bir daha gösterme',
     'tuto1_t': 'Siparişlerinizi yönetin',
     'tuto1_d':
         'Yeni ödenen siparişler buraya gelir. Alındı → hazırlanıyor → hazır → teslim edildi olarak ilerletin.',
@@ -2915,6 +2918,7 @@ class AppStrings {
     'stats_unavail': 'الإحصائيات غير متوفرة',
     'no_data': 'لا توجد بيانات بعد',
     'skip_tuto': 'تخطي',
+    'dont_show_again': 'لا تظهر مرة أخرى',
     'tuto1_t': 'أدر طلباتك',
     'tuto1_d':
         'الطلبات الجديدة المدفوعة تصل هنا. انقلها من مستلمة إلى قيد التحضير ثم جاهزة ومستلمة.',
@@ -3687,6 +3691,7 @@ class AppStrings {
     'stats_unavail': 'Estadísticas no disponibles',
     'no_data': 'Aún no hay datos',
     'skip_tuto': 'Saltar',
+    'dont_show_again': 'No volver a mostrar',
     'tuto1_t': 'Gestiona tus pedidos',
     'tuto1_d':
         'Los nuevos pedidos pagados llegan aquí. Pásalos de recibido a en preparación, listo y recogido.',
@@ -4478,6 +4483,7 @@ class AppStrings {
     'stats_unavail': 'Estatísticas indisponíveis',
     'no_data': 'Ainda sem dados',
     'skip_tuto': 'Saltar',
+    'dont_show_again': 'Não mostrar novamente',
     'tuto1_t': 'Gira os teus pedidos',
     'tuto1_d':
         'Os novos pedidos pagos chegam aqui. Passa-os de recebido a em preparação, pronto e levantado.',
@@ -5271,6 +5277,7 @@ class AppStrings {
     'stats_unavail': 'Statistiche non disponibili',
     'no_data': 'Ancora nessun dato',
     'skip_tuto': 'Salta',
+    'dont_show_again': 'Non mostrare più',
     'tuto1_t': 'Gestisci i tuoi ordini',
     'tuto1_d':
         'I nuovi ordini pagati arrivano qui. Falli passare da ricevuto a in preparazione, pronto e ritirato.',
@@ -6052,6 +6059,7 @@ class AppStrings {
     'stats_unavail': '统计不可用',
     'no_data': '暂无数据',
     'skip_tuto': '跳过',
+    'dont_show_again': '不再显示',
     'tuto1_t': '管理您的订单',
     'tuto1_d': '新的已付款订单会出现在这里。将其从已收到→准备中→已就绪→已取走。',
     'tuto2_t': '打开厨房模式',

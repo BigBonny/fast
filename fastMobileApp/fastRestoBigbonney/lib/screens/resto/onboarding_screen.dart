@@ -98,11 +98,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     if (!mounted) return;
 
     if (hasRestaurantOnBackend) {
-      // Already set up — play the intro slides, then the dashboard.
-      setState(() {
-        _checkingBackend = false;
-        _showIntro = true;
-      });
+      // Already set up — play the intro slides unless the user ticked
+      // "don't show again", then the dashboard.
+      final dismissed = await ProIntroSlides.isDismissed();
+      if (!mounted) return;
+      if (dismissed) {
+        _finishOnboarding();
+      } else {
+        setState(() {
+          _checkingBackend = false;
+          _showIntro = true;
+        });
+      }
       return;
     }
 
