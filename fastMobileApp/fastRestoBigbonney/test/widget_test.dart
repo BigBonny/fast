@@ -178,7 +178,7 @@ void main() {
     addTearDown(tester.view.reset);
 
     var done = 0, back = 0;
-    final controllerOf = (WidgetTester t) =>
+    PageController controllerOf(WidgetTester t) =>
         t.widget<PageView>(find.byType(PageView)).controller!;
     await tester.pumpWidget(
       ChangeNotifierProvider(
