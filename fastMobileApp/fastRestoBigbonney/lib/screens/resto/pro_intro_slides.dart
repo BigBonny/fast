@@ -28,18 +28,44 @@ class ProIntroSlides extends StatefulWidget {
   /// ticks "don't show again".
   final String dismissedPrefKey;
 
-  /// Where the baked Suivant / Commencer pill sits, as fractions of the
-  /// artwork (0..1 in both axes). The Pro and client sets were drawn
-  /// with the pill at different heights.
-  final Rect nextButtonRect;
+  /// Where the baked Suivant / Commencer pill sits on each slide, as
+  /// fractions of the artwork (0..1 in both axes). The pill was drawn
+  /// at a slightly different height on every slide, so one rect per
+  /// image; a shorter list falls back to its last entry.
+  final List<Rect> nextButtonRects;
 
   static const String proDismissedKey = 'fast_pro_intro_dismissed';
   static const String clientDismissedKey = 'fast_client_intro_dismissed';
 
   /// All artwork is 576x1024 — the hit zones below are measured on it.
   static const double artAspect = 576 / 1024;
-  static const Rect proNextRect = Rect.fromLTRB(0.06, 0.862, 0.94, 0.948);
-  static const Rect clientNextRect = Rect.fromLTRB(0.08, 0.812, 0.92, 0.93);
+
+  /// Ordered by the page dots baked into the artwork: slide 3's art
+  /// lights dot 4 and slide 4's lights dot 3, hence the swap.
+  static const List<String> proImages = [
+    'assets/images/pro_tuto_1.jpg',
+    'assets/images/pro_tuto_2.jpg',
+    'assets/images/pro_tuto_4.jpg',
+    'assets/images/pro_tuto_3.jpg',
+  ];
+  static const List<Rect> proNextRects = [
+    Rect.fromLTRB(0.06, 0.858, 0.94, 0.950), // géolocalisation
+    Rect.fromLTRB(0.04, 0.830, 0.96, 0.924), // IA menus
+    Rect.fromLTRB(0.04, 0.856, 0.96, 0.948), // visibilité
+    Rect.fromLTRB(0.04, 0.858, 0.96, 0.950), // main-d'œuvre
+  ];
+  static const List<String> clientImages = [
+    'assets/images/client_tuto_1.jpg',
+    'assets/images/client_tuto_2.jpg',
+    'assets/images/client_tuto_3.jpg',
+    'assets/images/client_tuto_4.jpg',
+  ];
+  static const List<Rect> clientNextRects = [
+    Rect.fromLTRB(0.08, 0.836, 0.92, 0.936), // Commencer
+    Rect.fromLTRB(0.08, 0.816, 0.92, 0.916), // GPS
+    Rect.fromLTRB(0.08, 0.816, 0.92, 0.916), // proximité
+    Rect.fromLTRB(0.06, 0.860, 0.94, 0.952), // C'est parti
+  ];
   static const Rect _retourRect = Rect.fromLTRB(0.0, 0.0, 0.28, 0.075);
   static const Rect _passerRect = Rect.fromLTRB(0.76, 0.0, 1.0, 0.075);
 
@@ -47,15 +73,13 @@ class ProIntroSlides extends StatefulWidget {
     super.key,
     required this.onDone,
     this.onBack,
-    this.images = const [
-      'assets/images/pro_tuto_1.jpg',
-      'assets/images/pro_tuto_2.jpg',
-      'assets/images/pro_tuto_3.jpg',
-      'assets/images/pro_tuto_4.jpg',
-    ],
+    this.images = proImages,
     this.dismissedPrefKey = proDismissedKey,
-    this.nextButtonRect = proNextRect,
+    this.nextButtonRects = proNextRects,
   });
+
+  Rect nextRectFor(int index) =>
+      nextButtonRects[index.clamp(0, nextButtonRects.length - 1)];
 
   /// True when the user previously ticked "don't show again".
   static Future<bool> isDismissed([
@@ -175,7 +199,7 @@ class _ProIntroSlidesState extends State<ProIntroSlides> {
               // Passer — baked top-right
               _zone(art, ProIntroSlides._passerRect, widget.onDone),
               // Suivant / Commencer — baked bottom pill (last slide completes)
-              _zone(art, widget.nextButtonRect, _suivant),
+              _zone(art, widget.nextRectFor(_index), _suivant),
               // "Ne plus afficher" — the artwork has no such control, so
               // this one is rendered live. It sits in the letterbox band
               // under the artwork when there is one, otherwise in the
