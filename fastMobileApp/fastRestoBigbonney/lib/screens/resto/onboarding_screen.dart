@@ -7,6 +7,7 @@ import '../../api/api_client.dart';
 import '../../api/api_config.dart';
 import '../../api/api_exceptions.dart';
 import 'resto_shell.dart';
+import 'pro_intro_slides.dart';
 import '../../theme.dart';
 import '../../l10n/tr.dart';
 
@@ -251,13 +252,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       );
     }
 
+    // The intro slides manage their own full-bleed layout — skip the
+    // SafeArea/Center chrome for that step.
+    if (_currentStep == 1) return _buildTutorial();
+
     Widget content;
     switch (_currentStep) {
       case 0:
         content = _buildRgpd();
-        break;
-      case 1:
-        content = _buildTutorial();
         break;
       case 2:
         content = _buildSplash();
@@ -311,39 +313,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
+  /// Branded FAST Pro intro — the four marketing slides carry their own
+  /// Retour / Passer / Suivant visuals; ProIntroSlides overlays working
+  /// hit zones. Finishing or skipping counts the tutorial as done.
   Widget _buildTutorial() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(Icons.swipe, size: 64, color: Color(0xFF10B981)),
-        SizedBox(height: 24),
-        Text(
-          tr(context, 'tutorial_fast'),
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: context.fast.t1,
-          ),
-        ),
-        SizedBox(height: 16),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 32.0),
-          child: Text(
-            tr(context, 'manage_intro'),
-            textAlign: TextAlign.center,
-            style: TextStyle(color: context.fast.t2),
-          ),
-        ),
-        const SizedBox(height: 48),
-        ElevatedButton(
-          onPressed: _nextStep,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF00C8B3),
-            foregroundColor: Colors.black,
-          ),
-          child: Text(tr(context, 'understood')),
-        ),
-      ],
+    return ProIntroSlides(
+      onDone: _nextStep,
+      onBack: () => setState(() => _currentStep = 0),
     );
   }
 
