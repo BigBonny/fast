@@ -84,8 +84,6 @@ class ApiConfig {
   static const String staff = '/staff';
   static String staffMember(String id) => '/staff/$id';
   static const String staffInviteCode = '/staff/invite-code';
-  static const String staffJoin = '/staff/join';
-  static const String staffGuestLogin = '/staff/guest-login';
   static const String staffRedeem = '/staff/redeem';
 
   // Stats
