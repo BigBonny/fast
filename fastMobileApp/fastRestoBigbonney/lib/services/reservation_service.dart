@@ -34,9 +34,9 @@ class ReservationService {
   Future<List<Reservation>> restaurantReservations(
     String restaurantId,
   ) async {
-    final data = await _api.get(
-      ApiConfig.restaurantReservations(restaurantId),
-    );
+    // Backend resolves the restaurant from the caller's own account —
+    // owner or non-guest staff. The id arg is kept for call-site clarity.
+    final data = await _api.get(ApiConfig.restaurantReservationsManage);
     return (data as List<dynamic>)
         .map((e) => Reservation.fromApiJson(e as Map<String, dynamic>))
         .toList();
@@ -59,7 +59,7 @@ class ReservationService {
   }
 
   Future<Reservation> cancel(String reservationId) async {
-    final data = await _api.post(ApiConfig.cancelReservation(reservationId));
+    final data = await _api.patch(ApiConfig.cancelReservation(reservationId));
     return Reservation.fromApiJson(data as Map<String, dynamic>);
   }
 }

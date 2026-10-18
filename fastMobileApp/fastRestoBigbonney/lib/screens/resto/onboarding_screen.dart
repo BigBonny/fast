@@ -207,15 +207,27 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       }
     } catch (e) {
       if (!mounted) return;
+      // 409 "déjà un restaurant" — the account already owns one (e.g.
+      // account/mine wasn't reachable earlier). Load it and move on
+      // instead of trapping the user on this form.
+      if (e is ApiException && e.message.contains('déjà')) {
+        final ok = await _checkBackendRestaurant(
+          context.read<AuthProvider>(),
+          context.read<RestoProvider>(),
+        );
+        if (ok && mounted) {
+          _finishOnboarding();
+          return;
+        }
+      }
+      if (!mounted) return;
       String msg = tr(context, 'create_resto_err');
       if (e is ApiException) msg = e.message;
       if (e is ValidationException) msg = e.message;
-      if (mounted) {
-        setState(() {
-          _formError = msg;
-          _formLoading = false;
-        });
-      }
+      setState(() {
+        _formError = msg;
+        _formLoading = false;
+      });
     }
   }
 
@@ -382,6 +394,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       child: ListView(
         padding: EdgeInsets.all(24.0),
         children: [
+          // Escape hatch — without it a failed creation traps the user
+          // on this form with no way back to login/role selection.
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: () async {
+                await context.read<AuthProvider>().logout();
+                // AuthProvider rebuild sends the app back to role selection.
+              },
+              icon: Icon(Icons.logout, size: 16, color: context.fast.t3),
+              label: Text(
+                tr(context, 'logout'),
+                style: TextStyle(color: context.fast.t3, fontSize: 13),
+              ),
+            ),
+          ),
           Text(
             tr(context, 'configuration'),
             style: TextStyle(

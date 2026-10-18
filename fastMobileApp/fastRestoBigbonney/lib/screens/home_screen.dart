@@ -191,7 +191,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           Positioned(
                             left: 20,
                             right: 0,
-                            top: statusBar + 58,
+                            top: statusBar + 50,
                             child: FractionallySizedBox(
                               alignment: Alignment.centerLeft,
                               widthFactor: 0.66,
@@ -236,15 +236,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                         style: _heroHeadline,
                                       ),
                                     ),
-                                    const SizedBox(height: 8),
+                                    const SizedBox(height: 6),
                                     // Fixed width so the sub wraps before the
                                     // bowl's edge instead of riding over it
                                     SizedBox(
-                                      width: 185,
+                                      width: 215,
                                       child: Text(
                                         tr(context, 'hero_sub'),
                                         style: const TextStyle(
-                                          fontSize: 14,
+                                          fontSize: 13,
                                           fontWeight: FontWeight.w800,
                                           color: Color(0xFFFBBF24),
                                           height: 1.2,
@@ -258,12 +258,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(height: 2),
+                                    const SizedBox(height: 4),
                                     // Curved orange swoosh under the last
                                     // line, like the reference's hand-drawn
                                     // highlight beneath "votre arrivée."
                                     SizedBox(
-                                      width: 150,
+                                      width: 170,
                                       height: 10,
                                       child: CustomPaint(
                                         painter: _HeroUnderlinePainter(),
