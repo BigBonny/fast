@@ -187,60 +187,82 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                           // Headline block — left of the photo, tilted a touch
-                          // so the sentence feels like it lifts as it goes
+                          // so the sentence feels like it lifts as it goes.
+                          // The column's right edge is capped just inside the
+                          // photo's faded left margin so no line can ever
+                          // overlap the bowl, whatever the screen width.
                           Positioned(
                             left: 20,
                             right: 0,
                             top: statusBar + 50,
                             child: FractionallySizedBox(
                               alignment: Alignment.centerLeft,
-                              widthFactor: 0.66,
+                              widthFactor:
+                                  (((photoLeft + photoW * 0.10) - 20) /
+                                          box.maxWidth)
+                                      .clamp(0.38, 0.62),
                               child: Transform.rotate(
                                 angle: -0.028,
                                 alignment: Alignment.centerLeft,
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    // Three stacked lines, each stepping a
-                                    // bit further right — the cascade that
-                                    // makes the sentence feel like it's
-                                    // moving away, like the reference.
-                                    Text(
-                                      tr(context, 'hero_order'),
-                                      style: _heroHeadline,
-                                    ),
-                                    const Padding(
-                                      padding: EdgeInsets.only(left: 12),
+                                    // scaleDown keeps every locale on one
+                                    // line instead of wrapping into the photo
+                                    FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      alignment: Alignment.centerLeft,
                                       child: Text(
-                                        'Fast.',
-                                        style: TextStyle(
-                                          fontSize: 32,
-                                          fontWeight: FontWeight.w900,
-                                          letterSpacing: -0.8,
-                                          color: Color(0xFFF59E0B),
-                                          height: 1.05,
-                                          shadows: [
-                                            Shadow(
-                                              color: Colors.black54,
-                                              blurRadius: 12,
-                                              offset: Offset(0, 2),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(left: 24),
-                                      child: Text(
-                                        tr(context, 'hero_now').trim(),
+                                        tr(context, 'hero_order'),
                                         style: _heroHeadline,
                                       ),
                                     ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 12),
+                                      // Amber→ember gradient "Fast." — the
+                                      // brand accent line, on its own row.
+                                      child: FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        alignment: Alignment.centerLeft,
+                                        child: ShaderMask(
+                                          blendMode: BlendMode.srcIn,
+                                          shaderCallback: (rect) =>
+                                              const LinearGradient(
+                                                begin: Alignment.topLeft,
+                                                end: Alignment.bottomRight,
+                                                colors: [
+                                                  Color(0xFFFBBF24),
+                                                  Color(0xFFF59E0B),
+                                                  Color(0xFFD97706),
+                                                ],
+                                              ).createShader(rect),
+                                          child: const Text(
+                                            'Fast.',
+                                            style: TextStyle(
+                                              fontSize: 32,
+                                              fontWeight: FontWeight.w900,
+                                              fontStyle: FontStyle.italic,
+                                              letterSpacing: -0.8,
+                                              color: Colors.white,
+                                              height: 1.05,
+                                              shadows: [
+                                                Shadow(
+                                                  color: Colors.black54,
+                                                  blurRadius: 12,
+                                                  offset: Offset(0, 2),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
                                     const SizedBox(height: 6),
-                                    // Fixed width so the sub wraps before the
-                                    // bowl's edge instead of riding over it
-                                    SizedBox(
-                                      width: 215,
+                                    // The sub wraps inside the safe column —
+                                    // no fixed width, so it never rides over
+                                    // the photo edge.
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 6),
                                       child: Text(
                                         tr(context, 'hero_sub'),
                                         style: const TextStyle(
@@ -259,14 +281,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ),
                                     ),
                                     const SizedBox(height: 4),
-                                    // Curved orange swoosh under the last
-                                    // line, like the reference's hand-drawn
-                                    // highlight beneath "votre arrivée."
-                                    SizedBox(
-                                      width: 170,
-                                      height: 10,
-                                      child: CustomPaint(
-                                        painter: _HeroUnderlinePainter(),
+                                    // Curved orange swoosh — the reference's
+                                    // hand-drawn highlight under the accent.
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 6),
+                                      child: SizedBox(
+                                        width: 150,
+                                        height: 10,
+                                        child: CustomPaint(
+                                          painter: _HeroUnderlinePainter(),
+                                        ),
                                       ),
                                     ),
                                   ],

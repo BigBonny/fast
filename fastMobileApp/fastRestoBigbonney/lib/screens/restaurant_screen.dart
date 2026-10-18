@@ -256,6 +256,34 @@ class RestaurantScreen extends StatelessWidget {
                   ),
                 ),
               ],
+              const SizedBox(height: 10),
+              // F08 — anyone can tap; the backend only accepts the review
+              // once the user has a completed order here. The sheet surfaces
+              // that message instead of failing silently.
+              SizedBox(
+                width: double.infinity,
+                height: 44,
+                child: OutlinedButton.icon(
+                  onPressed: () => _showReviewSheet(context, provider, rest),
+                  icon: const Icon(
+                    Icons.star_outline_rounded,
+                    size: 18,
+                    color: Color(0xFFF59E0B),
+                  ),
+                  label: Text(provider.tr('leave_review')),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFFF59E0B),
+                    side: const BorderSide(color: Color(0xFFF59E0B)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    textStyle: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ),
               if (!rest.paymentsReady) ...[
                 const SizedBox(height: 10),
                 Container(
@@ -721,6 +749,19 @@ class RestaurantScreen extends StatelessWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => _ReservationSheet(restaurant: rest),
+    );
+  }
+
+  void _showReviewSheet(
+    BuildContext context,
+    FASTProvider provider,
+    Restaurant rest,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _ReviewSheet(restaurant: rest),
     );
   }
 
@@ -1327,6 +1368,12 @@ class _ReservationSheetState extends State<_ReservationSheet> {
   TimeOfDay _time = TimeOfDay.now();
   int _partySize = 2;
   bool _sending = false;
+  String? _error;
+
+  int get _maxParty {
+    final cap = widget.restaurant.seatingCapacity;
+    return cap > 0 ? cap.clamp(1, 60) : 20;
+  }
 
   @override
   void dispose() {
@@ -1360,7 +1407,16 @@ class _ReservationSheetState extends State<_ReservationSheet> {
       _time.hour,
       _time.minute,
     );
-    setState(() => _sending = true);
+    // The backend requires >= 30 min notice — check locally so the user
+    // gets an immediate, readable message instead of a silent failure.
+    if (dateTime.isBefore(DateTime.now().add(const Duration(minutes: 30)))) {
+      setState(() => _error = tr(context, 'reservation_too_soon'));
+      return;
+    }
+    setState(() {
+      _sending = true;
+      _error = null;
+    });
     try {
       await _service.createReservation(
         restaurantId: widget.restaurant.id,
@@ -1374,8 +1430,13 @@ class _ReservationSheetState extends State<_ReservationSheet> {
           SnackBar(content: Text(tr(context, 'reservation_sent'))),
         );
       }
-    } catch (_) {
-      if (mounted) setState(() => _sending = false);
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _sending = false;
+          _error = e.toString().replaceFirst(RegExp(r'^\w*Exception:?\s*'), '');
+        });
+      }
     }
   }
 
@@ -1437,9 +1498,23 @@ class _ReservationSheetState extends State<_ReservationSheet> {
             ],
           ),
           const SizedBox(height: 14),
-          Text(
-            tr(context, 'party_size'),
-            style: TextStyle(color: context.fast.t3, fontSize: 11),
+          Row(
+            children: [
+              Text(
+                tr(context, 'party_size'),
+                style: TextStyle(color: context.fast.t3, fontSize: 11),
+              ),
+              if (widget.restaurant.seatingCapacity > 0) ...[
+                const SizedBox(width: 8),
+                Text(
+                  tr(context, 'seating_cap_hint').replaceAll(
+                    '{n}',
+                    '${widget.restaurant.seatingCapacity}',
+                  ),
+                  style: TextStyle(color: context.fast.t3, fontSize: 10),
+                ),
+              ],
+            ],
           ),
           const SizedBox(height: 6),
           Row(
@@ -1460,7 +1535,7 @@ class _ReservationSheetState extends State<_ReservationSheet> {
                 ),
               ),
               IconButton(
-                onPressed: _partySize < 20
+                onPressed: _partySize < _maxParty
                     ? () => setState(() => _partySize++)
                     : null,
                 icon: const Icon(Icons.add_circle_outline),
@@ -1468,6 +1543,25 @@ class _ReservationSheetState extends State<_ReservationSheet> {
               ),
             ],
           ),
+          if (_error != null) ...[
+            const SizedBox(height: 4),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: const Color(0xFFEF4444).withValues(alpha: 0.4),
+                ),
+              ),
+              child: Text(
+                _error!,
+                style: const TextStyle(color: Color(0xFFEF4444), fontSize: 11),
+              ),
+            ),
+            const SizedBox(height: 6),
+          ],
           TextField(
             controller: _noteCtrl,
             maxLines: 2,
@@ -1507,6 +1601,175 @@ class _ReservationSheetState extends State<_ReservationSheet> {
                       ),
                     )
                   : Text(tr(context, 'reserve_table')),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// F08 — star + comment sheet. The backend requires a completed order at
+/// this restaurant; its 403 message is shown to the user verbatim.
+class _ReviewSheet extends StatefulWidget {
+  final Restaurant restaurant;
+  const _ReviewSheet({required this.restaurant});
+
+  @override
+  State<_ReviewSheet> createState() => _ReviewSheetState();
+}
+
+class _ReviewSheetState extends State<_ReviewSheet> {
+  final _commentCtrl = TextEditingController();
+  double _rating = 0;
+  bool _sending = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _commentCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (_rating == 0) {
+      setState(() => _error = tr(context, 'pick_stars'));
+      return;
+    }
+    setState(() {
+      _sending = true;
+      _error = null;
+    });
+    try {
+      await ReviewService().createReview(
+        restaurantId: widget.restaurant.id,
+        rating: _rating,
+        comment: _commentCtrl.text.trim(),
+      );
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(tr(context, 'review_sent_ok'))),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _sending = false;
+          _error = e.toString().replaceFirst(RegExp(r'^\w*Exception:?\s*'), '');
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: context.fast.bg,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        20,
+        20,
+        20 + MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            tr(context, 'leave_review'),
+            style: TextStyle(
+              color: context.fast.t1,
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            widget.restaurant.name,
+            style: TextStyle(color: context.fast.t3, fontSize: 12),
+          ),
+          const SizedBox(height: 14),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(5, (i) {
+              final lit = i < _rating;
+              return IconButton(
+                onPressed: () => setState(() => _rating = i + 1.0),
+                icon: Icon(
+                  lit ? Icons.star_rounded : Icons.star_outline_rounded,
+                  color: lit ? const Color(0xFFF59E0B) : context.fast.faint,
+                  size: 36,
+                ),
+              );
+            }),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _commentCtrl,
+            maxLines: 3,
+            style: TextStyle(color: context.fast.t1, fontSize: 13),
+            decoration: InputDecoration(
+              hintText: tr(context, 'review_ph'),
+              hintStyle: TextStyle(color: context.fast.t3, fontSize: 12),
+              filled: true,
+              fillColor: context.fast.card,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: context.fast.line),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: context.fast.line),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFF59E0B)),
+              ),
+            ),
+          ),
+          if (_error != null) ...[
+            const SizedBox(height: 10),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: const Color(0xFFEF4444).withValues(alpha: 0.4),
+                ),
+              ),
+              child: Text(
+                _error!,
+                style: const TextStyle(color: Color(0xFFEF4444), fontSize: 11),
+              ),
+            ),
+          ],
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton(
+              onPressed: _sending ? null : _submit,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFF59E0B),
+                foregroundColor: FASTBrand.onAmber,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                textStyle: const TextStyle(fontWeight: FontWeight.w900),
+              ),
+              child: _sending
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text(tr(context, 'submit_review')),
             ),
           ),
         ],

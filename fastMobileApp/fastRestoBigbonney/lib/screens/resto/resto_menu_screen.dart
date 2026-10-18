@@ -618,13 +618,28 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
                           ),
                         ),
                   const SizedBox(height: 4),
-                  Text(
-                    '€${item.price.toStringAsFixed(2)}',
-                    style: const TextStyle(
-                      color: Color(0xFF00C8B3),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        '€${item.price.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          color: Color(0xFF00C8B3),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                      // The FAST markup is inside the client price — show
+                      // the owner's base so the split stays transparent.
+                      if (item.basePrice != null &&
+                          item.basePrice != item.price)
+                        Text(
+                          '  ·  base €${item.basePrice!.toStringAsFixed(2)}',
+                          style: TextStyle(
+                            color: context.fast.t3,
+                            fontSize: 10,
+                          ),
+                        ),
+                    ],
                   ),
                 ],
               ),

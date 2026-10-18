@@ -55,6 +55,46 @@ export const register = async (req: Request, res: Response): Promise<void> => {
   });
 };
 
+/**
+ * Resolves the staff/guest assignment for a user. Accounts that redeemed an
+ * invite code before the role-sync fix keep role RESTAURANT in the DB — if
+ * they have an assignment but own no restaurant, heal the role so the app
+ * boots into the staff workspace instead of owner onboarding.
+ */
+async function resolveStaffContext(user: { id: string; role: string }): Promise<{
+  role: string;
+  restaurantId?: string;
+  staffRole?: 'STAFF' | 'GUEST';
+}> {
+  if (user.role === 'STAFF' || user.role === 'GUEST') {
+    const assignment = await prisma.restaurantStaff.findUnique({
+      where: { userId: user.id },
+      select: { restaurantId: true, staffRole: true },
+    });
+    return { role: user.role, restaurantId: assignment?.restaurantId, staffRole: assignment?.staffRole };
+  }
+  if (user.role === 'RESTAURANT') {
+    const assignment = await prisma.restaurantStaff.findUnique({
+      where: { userId: user.id },
+      select: { restaurantId: true, staffRole: true },
+    });
+    if (assignment) {
+      const owned = await prisma.restaurant.findUnique({
+        where: { ownerId: user.id },
+        select: { id: true },
+      });
+      if (!owned) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { role: assignment.staffRole as 'STAFF' | 'GUEST' },
+        });
+        return { role: assignment.staffRole, restaurantId: assignment.restaurantId, staffRole: assignment.staffRole };
+      }
+    }
+  }
+  return { role: user.role };
+}
+
 export const login = async (req: Request, res: Response): Promise<void> => {
   const data = loginSchema.parse(req.body);
 
@@ -97,27 +137,21 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     });
   }
 
-  // For STAFF/GUEST roles, resolve restaurant assignment
-  let restaurantId: string | undefined;
-  let staffRole: 'STAFF' | 'GUEST' | undefined;
-  if (user.role === 'STAFF' || user.role === 'GUEST') {
-    const assignment = await prisma.restaurantStaff.findUnique({
-      where: { userId: user.id },
-      select: { restaurantId: true, staffRole: true },
-    });
-    restaurantId = assignment?.restaurantId;
-    staffRole = assignment?.staffRole;
-  }
+  // Resolve staff assignment (also heals legacy redeemed accounts whose
+  // role was never switched from RESTAURANT).
+  const ctx = await resolveStaffContext(user);
+  const restaurantId = ctx.restaurantId;
+  const staffRole = ctx.staffRole;
 
   const token = jwt.sign(
-    { userId: user.id, role: user.role, tokenVersion: user.tokenVersion, restaurantId, staffRole },
+    { userId: user.id, role: ctx.role, tokenVersion: user.tokenVersion, restaurantId, staffRole },
     env.jwtSecret,
     { expiresIn: env.jwtExpiresIn as string } as jwt.SignOptions,
   );
 
   res.json({
     token,
-    user: { id: user.id, name: user.name, email: user.email, phone: user.phone, role: user.role, points: user.points, driverProfile: user.driverProfile, restaurantId, staffRole },
+    user: { id: user.id, name: user.name, email: user.email, phone: user.phone, role: ctx.role, points: user.points, driverProfile: user.driverProfile, restaurantId, staffRole },
   });
 };
 
@@ -162,27 +196,20 @@ export const googleLogin = async (req: Request, res: Response): Promise<void> =>
     });
   }
 
-  // For STAFF/GUEST roles, resolve restaurant assignment (same as login)
-  let restaurantId: string | undefined;
-  let staffRole: 'STAFF' | 'GUEST' | undefined;
-  if (user.role === 'STAFF' || user.role === 'GUEST') {
-    const assignment = await prisma.restaurantStaff.findUnique({
-      where: { userId: user.id },
-      select: { restaurantId: true, staffRole: true },
-    });
-    restaurantId = assignment?.restaurantId;
-    staffRole = assignment?.staffRole;
-  }
+  // Resolve staff assignment (same as login — also heals legacy accounts)
+  const ctx = await resolveStaffContext(user);
+  const restaurantId = ctx.restaurantId;
+  const staffRole = ctx.staffRole;
 
   const token = jwt.sign(
-    { userId: user.id, role: user.role, tokenVersion: user.tokenVersion, restaurantId, staffRole },
+    { userId: user.id, role: ctx.role, tokenVersion: user.tokenVersion, restaurantId, staffRole },
     env.jwtSecret,
     { expiresIn: env.jwtExpiresIn as string } as jwt.SignOptions,
   );
 
   res.json({
     token,
-    user: { id: user.id, name: user.name, email: user.email, phone: user.phone, role: user.role, points: user.points, driverProfile: user.driverProfile, restaurantId, staffRole },
+    user: { id: user.id, name: user.name, email: user.email, phone: user.phone, role: ctx.role, points: user.points, driverProfile: user.driverProfile, restaurantId, staffRole },
   });
 };
 
@@ -197,21 +224,19 @@ export const getMe = async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  // Include staff assignment if applicable
-  let staffAssignment: { restaurantId: string; staffRole: string } | null = null;
-  if (user.role === 'STAFF' || user.role === 'GUEST') {
-    staffAssignment = await prisma.restaurantStaff.findUnique({
-      where: { userId: user.id },
-      select: { restaurantId: true, staffRole: true },
-    });
-  }
+  // Include staff assignment if applicable — heals legacy redeemed
+  // accounts whose role was never switched from RESTAURANT.
+  const ctx = await resolveStaffContext(user);
+  const staffAssignment = ctx.restaurantId != null
+    ? { restaurantId: ctx.restaurantId, staffRole: ctx.staffRole ?? 'GUEST' }
+    : null;
 
   res.json({
     id: user.id,
     name: user.name,
     email: user.email,
     phone: user.phone,
-    role: user.role,
+    role: ctx.role,
     points: user.points,
     restaurant: user.restaurant,
     driverProfile: user.driverProfile,
