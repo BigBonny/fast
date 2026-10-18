@@ -66,6 +66,7 @@ class ApiConfig {
   static const String myReservations = '/reservations/mine';
   static String restaurantReservations(String restaurantId) =>
       '/reservations/restaurant/$restaurantId';
+  static const String restaurantReservationsManage = '/reservations/manage';
   static String reservationStatus(String id) => '/reservations/$id/status';
   static String cancelReservation(String id) => '/reservations/$id/cancel';
 

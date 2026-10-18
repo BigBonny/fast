@@ -486,9 +486,15 @@ class _CartScreenState extends State<CartScreen> {
                     provider.setFulfillmentType(FulfillmentType.pickup),
               ),
             ),
-            if (provider.selectedRestaurant?.allowDineIn ?? false) ...[
-              SizedBox(width: 8),
-              Expanded(
+            SizedBox(width: 8),
+            Expanded(
+              // Spec: unavailable choices are disabled, not hidden, so
+              // the customer sees the option exists but can't pick it.
+              child: Opacity(
+                opacity:
+                    (provider.selectedRestaurant?.allowDineIn ?? false)
+                        ? 1.0
+                        : 0.4,
                 child: ChoiceChip(
                   label: Text(
                     provider.tr('dine_in'),
@@ -506,11 +512,14 @@ class _CartScreenState extends State<CartScreen> {
                         ? Colors.white
                         : context.fast.t1,
                   ),
-                  onSelected: (_) =>
-                      provider.setFulfillmentType(FulfillmentType.dineIn),
+                  onSelected:
+                      (provider.selectedRestaurant?.allowDineIn ?? false)
+                          ? (_) =>
+                              provider.setFulfillmentType(FulfillmentType.dineIn)
+                          : null,
                 ),
               ),
-            ],
+            ),
             SizedBox(width: 8),
             Expanded(
               child: ChoiceChip(
