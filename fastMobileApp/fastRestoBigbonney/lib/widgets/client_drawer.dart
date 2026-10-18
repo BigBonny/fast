@@ -220,8 +220,9 @@ class ClientDrawer extends StatelessWidget {
                       );
                     },
                   ),
-                  // Owners who switched to client mode get a way back
-                  if (context.watch<AuthProvider>().isRestaurant)
+                  // Owners/staff who switched to client mode get a way back
+                  if (context.watch<AuthProvider>().isRestaurant ||
+                      (context.watch<AuthProvider>().user?.isStaff ?? false))
                     _proBanner(context, provider),
                   _item(
                     context,
