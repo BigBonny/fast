@@ -728,7 +728,7 @@ class Order {
           '',
       items: itemsData,
       subtotal: (json['subtotal'] as num).toDouble(),
-      serviceFee: (json['serviceFee'] as num?)?.toDouble() ?? 1.50,
+      serviceFee: (json['serviceFee'] as num?)?.toDouble() ?? 0.0,
       total: (json['total'] as num).toDouble(),
       status: OrderStatus.fromApiJson(json['status'] as String? ?? 'PLACED'),
       createdAt: json['createdAt'] as String,

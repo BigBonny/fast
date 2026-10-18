@@ -5,7 +5,7 @@ import crypto from 'crypto';
 import { prisma } from '../services/prisma';
 import { env } from '../config/env';
 import { getRestaurantIdForUser } from '../middleware/auth';
-import { joinStaffSchema, guestLoginSchema } from '../utils/validation';
+import { joinStaffSchema, guestLoginSchema, redeemCodeSchema } from '../utils/validation';
 
 function generateInviteCode(): string {
   return `FAST-${crypto.randomInt(1000, 9999)}`;
@@ -289,4 +289,52 @@ export const guestLogin = async (req: Request, res: Response): Promise<void> => 
   });
 
   res.json({ token, user: { id: user.id, name: user.name, role: 'GUEST', restaurantId: restaurant.id, staffRole: 'GUEST' } });
+};
+
+/**
+ * Authenticated — "redeem the code inside FAST Pro". A user who already
+ * created a professional account attaches it to a restaurant as a GUEST
+ * (limited rights: orders + availability only) using the owner's code.
+ */
+export const redeemInviteCode = async (req: Request, res: Response): Promise<void> => {
+  const { code } = redeemCodeSchema.parse(req.body);
+
+  const restaurant = await prisma.restaurant.findFirst({
+    where: { staffInviteCode: code.trim().toUpperCase() },
+  });
+  if (!restaurant) {
+    res.status(403).json({ code: 'INVALID_INVITE_CODE', error: 'Code invalide ou révoqué' });
+    return;
+  }
+  if (restaurant.ownerId === req.user!.userId) {
+    res.status(409).json({ error: 'Ce restaurant vous appartient déjà' });
+    return;
+  }
+
+  await prisma.restaurantStaff.upsert({
+    where: { userId: req.user!.userId },
+    update: { restaurantId: restaurant.id, staffRole: 'GUEST' },
+    create: { userId: req.user!.userId, restaurantId: restaurant.id, staffRole: 'GUEST' },
+  });
+
+  const user = await prisma.user.findUnique({ where: { id: req.user!.userId } });
+  if (!user) {
+    res.status(404).json({ error: 'Compte introuvable' });
+    return;
+  }
+
+  // Re-issue the token with the new assignment so the app lands in the
+  // guest workspace immediately — no logout/login needed.
+  const token = signStaffToken({
+    userId: user.id,
+    role: user.role,
+    tokenVersion: user.tokenVersion,
+    restaurantId: restaurant.id,
+    staffRole: 'GUEST',
+  });
+
+  res.json({
+    token,
+    user: { id: user.id, name: user.name, email: user.email, role: user.role, restaurantId: restaurant.id, staffRole: 'GUEST' },
+  });
 };

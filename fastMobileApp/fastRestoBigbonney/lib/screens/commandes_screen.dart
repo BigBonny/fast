@@ -1610,25 +1610,6 @@ class _CommandesScreenState extends State<CommandesScreen>
 
                 Divider(color: context.fast.line, height: 20),
 
-                // commission flat fee
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      tr(context, 'service_fee_fast'),
-                      style: TextStyle(fontSize: 11, color: context.fast.t3),
-                    ),
-                    Text(
-                      '€${order.serviceFee.toStringAsFixed(2)}',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: context.fast.t3,
-                        fontFamily: 'monospace',
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 6),
                 // total paid
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

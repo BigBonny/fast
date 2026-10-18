@@ -1017,14 +1017,15 @@ class FASTProvider extends ChangeNotifier {
     0.0,
     (sum, item) => sum + (item.menuItem.price * item.quantity),
   );
-  double get flatServiceFee => 1.50; // Constant flat fee
+  // FAST's fee is the markup already embedded in menu prices — no
+  // separate service fee is shown or added to the customer total.
   double get cartDeliveryFee {
     if (_fulfillmentType != FulfillmentType.delivery || _cart.isEmpty) return 0;
     return _selectedRestaurant?.deliveryFee ?? 2.99;
   }
 
   double get cartTotal =>
-      _cart.isEmpty ? 0.0 : cartSubtotal + flatServiceFee + cartDeliveryFee;
+      _cart.isEmpty ? 0.0 : cartSubtotal + cartDeliveryFee;
 
   void setFulfillmentType(FulfillmentType type) {
     _fulfillmentType = type;

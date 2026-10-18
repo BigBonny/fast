@@ -97,7 +97,7 @@ async function createPaidOrderFromCheckout(
             stripePaymentIntentId: stripePaymentIntentId ?? null,
             pickupToken: checkout.fulfillmentType === 'PICKUP' ? generatePickupToken() : null,
             stripeApplicationFeeAmount: cents(checkout.serviceFee),
-            stripeRestaurantAmount: cents(checkout.subtotal),
+            stripeRestaurantAmount: cents(checkout.total - checkout.serviceFee),
             paidAt: new Date(),
             groupOrderId: checkout.groupOrderId,
             items: {
@@ -305,7 +305,6 @@ export const createCheckoutSession = async (req: Request, res: Response): Promis
       throw err;
     }
 
-    const serviceFee = env.serviceFee;
     const fulfillmentType = data.fulfillmentType ?? 'PICKUP';
     let deliveryFee = 0;
     let dineInFee = 0;
@@ -343,7 +342,12 @@ export const createCheckoutSession = async (req: Request, res: Response): Promis
       deliveryFee = restaurant.deliveryFee;
     }
 
-    const total = Math.round((pricing.subtotal + serviceFee + deliveryFee + dineInFee) * 100) / 100;
+    // FAST's take is the markup already embedded in the item prices —
+    // hidden from the customer (cahier des charges: no second commission
+    // at payment). The restaurant receives its BASE prices + the
+    // delivery/dine-in fees it configured; FAST retains the markup.
+    const fastFee = Math.round((pricing.subtotal - pricing.baseSubtotal) * 100) / 100;
+    const total = Math.round((pricing.subtotal + deliveryFee + dineInFee) * 100) / 100;
 
     const checkout = await prisma.paymentCheckout.create({
       data: {
@@ -357,7 +361,8 @@ export const createCheckoutSession = async (req: Request, res: Response): Promis
         deliveryLongitude: data.deliveryLongitude,
         deliveryFee,
         subtotal: pricing.subtotal,
-        serviceFee,
+        // Column keeps its name but now records the markup FAST retains.
+        serviceFee: fastFee,
         total,
         groupOrderId: data.groupId,
       },
@@ -367,8 +372,10 @@ export const createCheckoutSession = async (req: Request, res: Response): Promis
       // Keep the card on file so returning customers can pay with one tap.
       setup_future_usage: 'off_session',
     };
-    if (restaurant.stripeAccountId && restaurant.stripeChargesEnabled) {
-      paymentIntentData.application_fee_amount = cents(serviceFee);
+    if (restaurant.stripeAccountId && restaurant.stripeChargesEnabled && fastFee > 0) {
+      paymentIntentData.application_fee_amount = cents(fastFee);
+      paymentIntentData.transfer_data = { destination: restaurant.stripeAccountId };
+    } else if (restaurant.stripeAccountId && restaurant.stripeChargesEnabled) {
       paymentIntentData.transfer_data = { destination: restaurant.stripeAccountId };
     }
 
@@ -399,14 +406,8 @@ export const createCheckoutSession = async (req: Request, res: Response): Promis
             product_data: { name: item.menuItemName },
           },
         })),
-        {
-          quantity: 1,
-          price_data: {
-            currency: env.stripeCurrency,
-            unit_amount: cents(serviceFee),
-            product_data: { name: 'Frais de service FAST' },
-          },
-        },
+        // No separate "service fee" line — the FAST markup stays inside
+        // the item prices, invisible to the customer.
         ...(deliveryFee > 0
           ? [{
               quantity: 1,

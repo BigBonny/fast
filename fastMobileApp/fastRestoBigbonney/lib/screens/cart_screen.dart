@@ -760,24 +760,6 @@ class _CartScreenState extends State<CartScreen> {
                       ),
                   ],
                 ),
-                SizedBox(height: 6),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      provider.tr('service_fee'),
-                      style: TextStyle(fontSize: 12, color: context.fast.t2),
-                    ),
-                    Text(
-                      '${provider.flatServiceFee.toStringAsFixed(2)} €',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: context.fast.t1,
-                        fontFamily: 'monospace',
-                      ),
-                    ),
-                  ],
-                ),
                 Divider(color: context.fast.line, height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

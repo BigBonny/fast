@@ -408,7 +408,7 @@ class RestaurantScreen extends StatelessWidget {
           ),
         ),
 
-        // Menu list items
+        // Menu — grouped under clean category sections
         if (rest.menu.isEmpty)
           Padding(
             padding: EdgeInsets.all(32),
@@ -420,20 +420,7 @@ class RestaurantScreen extends StatelessWidget {
             ),
           )
         else
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisSpacing: 10,
-              crossAxisSpacing: 10,
-              childAspectRatio: 0.68,
-            ),
-            itemCount: rest.menu.length,
-            itemBuilder: (context, index) =>
-                _buildMenuItemCard(context, provider, rest.menu[index]),
-          ),
+          ..._buildMenuSections(context, provider, rest),
 
         // Reviews — each comment is reportable (F09 moderation)
         if (rest.reviews.isNotEmpty) ...[
@@ -460,6 +447,114 @@ class RestaurantScreen extends StatelessWidget {
         const SizedBox(height: 120),
       ],
     );
+  }
+
+  /// Group menu items under category headers, ordered by meal flow:
+  /// starters → mains → desserts → drinks, custom labels alphabetically,
+  /// uncategorized last.
+  List<Widget> _buildMenuSections(
+    BuildContext context,
+    FASTProvider provider,
+    Restaurant rest,
+  ) {
+    final groups = <String, List<MenuItem>>{};
+    for (final item in rest.menu) {
+      final key = _normalizedCategory(item.category);
+      groups.putIfAbsent(key, () => []).add(item);
+    }
+
+    final keys = groups.keys.toList()
+      ..sort((a, b) {
+        final ia = _categoryOrder(a);
+        final ib = _categoryOrder(b);
+        if (ia != ib) return ia.compareTo(ib);
+        return a.compareTo(b);
+      });
+
+    return [
+      for (final key in keys) ...[
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
+          child: Row(
+            children: [
+              Icon(
+                _categoryIcon(key),
+                size: 15,
+                color: const Color(0xFFF59E0B),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  key.isEmpty ? provider.tr('menu_other') : key,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                    color: context.fast.t1,
+                  ),
+                ),
+              ),
+              Text(
+                '${groups[key]!.length}',
+                style: TextStyle(fontSize: 11, color: context.fast.t3),
+              ),
+            ],
+          ),
+        ),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            mainAxisSpacing: 10,
+            crossAxisSpacing: 10,
+            childAspectRatio: 0.68,
+          ),
+          itemCount: groups[key]!.length,
+          itemBuilder: (context, index) =>
+              _buildMenuItemCard(context, provider, groups[key]![index]),
+        ),
+      ],
+    ];
+  }
+
+  /// Display label for grouping — trim, drop plural 's', Title-case.
+  String _normalizedCategory(String raw) {
+    final t = raw.trim();
+    if (t.isEmpty) return '';
+    return t[0].toUpperCase() + t.substring(1);
+  }
+
+  int _categoryOrder(String cat) {
+    final c = cat.toLowerCase();
+    if (c.contains('entr') || c.contains('starter') || c.contains('apero')) {
+      return 0;
+    }
+    if (c.contains('plat') ||
+        c.contains('main') ||
+        c.contains('burger') ||
+        c.contains('pizza')) {
+      return 1;
+    }
+    if (c.contains('dessert') || c.contains('sucr')) return 2;
+    if (c.contains('boisson') || c.contains('drink') || c.contains('beverage')) {
+      return 3;
+    }
+    if (c.isEmpty) return 99;
+    return 50; // custom categories — alphabetical between mains and leftovers
+  }
+
+  IconData _categoryIcon(String cat) {
+    final c = cat.toLowerCase();
+    if (c.contains('dessert') || c.contains('sucr')) return Icons.cake_outlined;
+    if (c.contains('boisson') || c.contains('drink')) {
+      return Icons.local_drink_outlined;
+    }
+    if (c.contains('entr') || c.contains('apero')) {
+      return Icons.tapas_outlined;
+    }
+    if (c.isEmpty) return Icons.fastfood_outlined;
+    return Icons.restaurant_outlined;
   }
 
   Future<void> _openGoogleMapsDirections(

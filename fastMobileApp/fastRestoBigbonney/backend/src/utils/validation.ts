@@ -250,6 +250,10 @@ export const joinStaffSchema = z.object({
 
 export const guestLoginSchema = joinStaffSchema;
 
+export const redeemCodeSchema = z.object({
+  code: z.string().min(4).max(20),
+});
+
 // ─── Phone verification (SMS OTP) ───────────────────────────
 
 export const phoneRequestSchema = z.object({
