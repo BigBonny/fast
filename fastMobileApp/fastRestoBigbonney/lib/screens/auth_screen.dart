@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/auth_provider.dart';
 import '../provider.dart';
 import '../resto_provider.dart';
@@ -51,6 +52,12 @@ class _AuthScreenState extends State<AuthScreen>
   bool _smsBusy = false;
   bool _phoneVerified = false;
 
+  // F14 — emails previously used on THIS device (max 5, most recent
+  // first). Stored locally without passwords so a first typed letter
+  // can re-suggest them; never fetched from or tied to other users.
+  static const _emailHistoryKey = 'fast_email_history';
+  List<String> _emailHistory = [];
+
   @override
   void initState() {
     super.initState();
@@ -59,6 +66,27 @@ class _AuthScreenState extends State<AuthScreen>
     AuthService().phoneVerificationEnabled().then((enabled) {
       if (mounted) setState(() => _smsRequired = enabled);
     });
+    _loginEmail.addListener(() {
+      // Rebuild so the prefix-filtered suggestions refresh as the user
+      // types — cheap, only fires on local text changes.
+      setState(() {});
+    });
+    SharedPreferences.getInstance().then((prefs) {
+      if (mounted) {
+        setState(() {
+          _emailHistory = prefs.getStringList(_emailHistoryKey) ?? [];
+        });
+      }
+    });
+  }
+
+  Future<void> _rememberEmail(String email) async {
+    final e = email.trim().toLowerCase();
+    if (e.isEmpty) return;
+    final prefs = await SharedPreferences.getInstance();
+    final list = [e, ..._emailHistory.where((x) => x != e)];
+    _emailHistory = list.take(5).toList();
+    await prefs.setStringList(_emailHistoryKey, _emailHistory);
   }
 
   @override
@@ -88,6 +116,7 @@ class _AuthScreenState extends State<AuthScreen>
     );
 
     if (success && mounted) {
+      _rememberEmail(_loginEmail.text);
       _navigateToShell();
     }
   }
@@ -142,6 +171,7 @@ class _AuthScreenState extends State<AuthScreen>
     );
 
     if (success && mounted) {
+      _rememberEmail(_registerEmail.text);
       _navigateToShell();
     }
   }
@@ -293,6 +323,7 @@ class _AuthScreenState extends State<AuthScreen>
                 return null;
               },
             ),
+            _buildEmailSuggestions(fast),
             SizedBox(height: 20),
             _buildTextField(
               controller: _loginPassword,
@@ -369,6 +400,36 @@ class _AuthScreenState extends State<AuthScreen>
             _buildGoogleButton(),
           ],
         ),
+      ),
+    );
+  }
+
+  /// F14 — emails used on this device that still match the typed prefix.
+  /// Appears from the first letter; one tap fills the field. Only the
+  /// address is stored — never the password.
+  Widget _buildEmailSuggestions(FASTProvider fast) {
+    final typed = _loginEmail.text.trim().toLowerCase();
+    if (typed.isEmpty || _emailHistory.isEmpty) return const SizedBox.shrink();
+    final matches = _emailHistory
+        .where((e) => e.startsWith(typed) && e != typed)
+        .toList();
+    if (matches.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          for (final email in matches)
+            ActionChip(
+              avatar: const Icon(Icons.history, size: 14),
+              label: Text(email, style: const TextStyle(fontSize: 12)),
+              backgroundColor: context.fast.card,
+              side: BorderSide(color: context.fast.line),
+              labelStyle: TextStyle(color: context.fast.t2),
+              onPressed: () => _loginEmail.text = email,
+            ),
+        ],
       ),
     );
   }

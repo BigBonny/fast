@@ -16,7 +16,7 @@ export type PricedCartItem = CartItemInput & {
 export async function computeCartPricing(
   restaurantId: string,
   items: CartItemInput[],
-): Promise<{ items: PricedCartItem[]; subtotal: number; itemsCount: number }> {
+): Promise<{ items: PricedCartItem[]; subtotal: number; baseSubtotal: number; itemsCount: number }> {
   const menuItemIds = [...new Set(items.map((i) => i.menuItemId))];
   const menuItems = await prisma.menuItem.findMany({
     where: { id: { in: menuItemIds }, restaurantId },
@@ -34,6 +34,7 @@ export async function computeCartPricing(
 
   const menuItemMap = new Map(menuItems.map((m) => [m.id, m]));
   let subtotal = 0;
+  let baseSubtotal = 0;
   let itemsCount = 0;
 
   const pricedItems: PricedCartItem[] = items.map((item) => {
@@ -53,6 +54,10 @@ export async function computeCartPricing(
     const unitPrice = menuItem.price + supplementTotal;
     const lineTotal = unitPrice * item.quantity;
     subtotal += lineTotal;
+    // `basePrice` may be null on items created before the FAST grid —
+    // treat the stored price as base so those orders keep zero markup.
+    const baseUnit = (menuItem.basePrice ?? menuItem.price) + supplementTotal;
+    baseSubtotal += baseUnit * item.quantity;
     itemsCount += item.quantity;
 
     return {
@@ -66,6 +71,7 @@ export async function computeCartPricing(
   return {
     items: pricedItems,
     subtotal: Math.round(subtotal * 100) / 100,
+    baseSubtotal: Math.round(baseSubtotal * 100) / 100,
     itemsCount,
   };
 }

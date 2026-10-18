@@ -86,6 +86,7 @@ class ApiConfig {
   static const String staffInviteCode = '/staff/invite-code';
   static const String staffJoin = '/staff/join';
   static const String staffGuestLogin = '/staff/guest-login';
+  static const String staffRedeem = '/staff/redeem';
 
   // Stats
   static const String stats = '/stats';

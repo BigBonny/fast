@@ -513,6 +513,67 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
           ),
+          const SizedBox(height: 20),
+          // Assistant path — a staff member redeems the owner's code here
+          // instead of creating their own restaurant.
+          Center(
+            child: TextButton.icon(
+              onPressed: _formLoading ? null : _showInviteCodeSheet,
+              icon: Icon(
+                Icons.vpn_key_outlined,
+                size: 15,
+                color: context.fast.t3,
+              ),
+              label: Text(
+                tr(context, 'have_invite_code'),
+                style: TextStyle(
+                  color: context.fast.t3,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showInviteCodeSheet() {
+    final codeCtrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(tr(context, 'join_with_code')),
+        content: TextField(
+          controller: codeCtrl,
+          autofocus: true,
+          textCapitalization: TextCapitalization.characters,
+          decoration: InputDecoration(
+            labelText: tr(context, 'invite_code'),
+            hintText: 'ABC123',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(tr(context, 'cancel')),
+          ),
+          Consumer<AuthProvider>(
+            builder: (ctx2, auth, _) => FilledButton(
+              onPressed: auth.isBusy
+                  ? null
+                  : () async {
+                      final ok =
+                          await auth.redeemInviteCode(codeCtrl.text.trim());
+                      if (ok && ctx.mounted) {
+                        Navigator.pop(ctx);
+                        _finishOnboarding();
+                      }
+                    },
+              child: Text(tr(context, 'join_with_code')),
+            ),
+          ),
         ],
       ),
     );

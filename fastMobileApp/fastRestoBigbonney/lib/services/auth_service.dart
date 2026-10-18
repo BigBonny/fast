@@ -42,6 +42,17 @@ class AuthService {
     return AuthResponse.fromJson(data as Map<String, dynamic>);
   }
 
+  /// Redeem an invite code inside an existing authenticated account —
+  /// the user attaches to the restaurant as a limited GUEST without
+  /// creating a separate account.
+  Future<AuthResponse> redeemInviteCode(String code) async {
+    final data = await _api.post(
+      ApiConfig.staffRedeem,
+      body: {'code': code.trim().toUpperCase()},
+    );
+    return AuthResponse.fromJson(data as Map<String, dynamic>);
+  }
+
   Future<UserData> getMe() async {
     final data = await _api.get(ApiConfig.me);
     // Backend returns user data at root level
