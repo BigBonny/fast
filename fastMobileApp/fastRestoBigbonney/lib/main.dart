@@ -23,6 +23,7 @@ import 'screens/onboarding_screen.dart';
 import 'screens/resto/onboarding_screen.dart' as resto_onboarding;
 import 'screens/resto/kitchen_screen.dart';
 import 'screens/resto/guest_menu_shell.dart';
+import 'screens/client_intro_gate.dart';
 import 'screens/group_screen.dart';
 import 'screens/livreur_screen.dart';
 import 'screens/driver_account_screen.dart';
@@ -290,7 +291,7 @@ class _FASTAppState extends State<FASTApp> with WidgetsBindingObserver {
       if (auth.isLivreur) {
         return const DriverShell();
       }
-      return const MainShell();
+      return const ClientIntroGate(child: MainShell());
     }
 
     return const RoleSelectionScreen();
