@@ -11,6 +11,7 @@ import 'package:fast_resto_bigbonney/resto_provider.dart';
 import 'package:fast_resto_bigbonney/models/auth_models.dart';
 import 'package:fast_resto_bigbonney/l10n/tr.dart';
 import 'package:fast_resto_bigbonney/screens/home_screen.dart';
+import 'package:fast_resto_bigbonney/screens/resto/pro_intro_slides.dart';
 import 'package:latlong2/latlong.dart';
 
 void main() {
@@ -166,6 +167,75 @@ void main() {
     await tester.tap(find.text('Translate'));
     expect(tester.takeException(), isNull);
     expect(label, isNotEmpty);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('Intro slides: baked buttons hit on a tall phone', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    // 9:19.5 phone — the 9:16 artwork must letterbox, not crop.
+    tester.view.physicalSize = const Size(1080, 2340);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    var done = 0, back = 0;
+    final controllerOf = (WidgetTester t) =>
+        t.widget<PageView>(find.byType(PageView)).controller!;
+    await tester.pumpWidget(
+      ChangeNotifierProvider(
+        create: (_) => FASTProvider(),
+        child: MaterialApp(
+          home: ProIntroSlides(
+            nextButtonRect: ProIntroSlides.clientNextRect,
+            onDone: () => done++,
+            onBack: () => back++,
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    final fitted = applyBoxFit(
+      BoxFit.contain,
+      const Size(576, 1024),
+      const Size(1080, 2340),
+    ).destination;
+    expect(fitted.width, 1080);
+    expect(fitted.height, lessThan(2340));
+    final top = (2340 - fitted.height) / 2;
+    Offset at(double fx, double fy) =>
+        Offset(fx * fitted.width, top + fy * fitted.height);
+
+    // Centre of the client "Suivant" pill → next page.
+    await tester.tapAt(at(0.5, 0.87));
+    await tester.pumpAndSettle();
+    expect(controllerOf(tester).page!.round(), 1);
+    // Retour → back to page 0.
+    await tester.tapAt(at(0.12, 0.03));
+    await tester.pumpAndSettle();
+    expect(controllerOf(tester).page!.round(), 0);
+    // Retour on first slide → onBack.
+    await tester.tapAt(at(0.12, 0.03));
+    await tester.pump();
+    expect(back, 1);
+    // Passer → onDone from anywhere.
+    await tester.tapAt(at(0.9, 0.03));
+    await tester.pump();
+    expect(done, 1);
+    // Suivant through to the last slide, then it completes.
+    for (var i = 0; i < 4; i++) {
+      await tester.tapAt(at(0.5, 0.87));
+      await tester.pumpAndSettle();
+    }
+    expect(done, 2);
+    // Page dots / counter row (y≈0.95) must not be covered by the chip.
+    final chip = find.byIcon(Icons.check_box_outline_blank);
+    expect(chip, findsOneWidget);
+    expect(tester.getTopLeft(chip).dy, greaterThan(top + 0.975 * fitted.height));
+    await tester.tap(chip);
+    await tester.pump();
+    expect((await SharedPreferences.getInstance())
+        .getBool(ProIntroSlides.proDismissedKey), isTrue);
+    expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
   });
 }

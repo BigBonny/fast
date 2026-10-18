@@ -28,8 +28,20 @@ class ProIntroSlides extends StatefulWidget {
   /// ticks "don't show again".
   final String dismissedPrefKey;
 
+  /// Where the baked Suivant / Commencer pill sits, as fractions of the
+  /// artwork (0..1 in both axes). The Pro and client sets were drawn
+  /// with the pill at different heights.
+  final Rect nextButtonRect;
+
   static const String proDismissedKey = 'fast_pro_intro_dismissed';
   static const String clientDismissedKey = 'fast_client_intro_dismissed';
+
+  /// All artwork is 576x1024 — the hit zones below are measured on it.
+  static const double artAspect = 576 / 1024;
+  static const Rect proNextRect = Rect.fromLTRB(0.06, 0.862, 0.94, 0.948);
+  static const Rect clientNextRect = Rect.fromLTRB(0.08, 0.812, 0.92, 0.93);
+  static const Rect _retourRect = Rect.fromLTRB(0.0, 0.0, 0.28, 0.075);
+  static const Rect _passerRect = Rect.fromLTRB(0.76, 0.0, 1.0, 0.075);
 
   const ProIntroSlides({
     super.key,
@@ -42,6 +54,7 @@ class ProIntroSlides extends StatefulWidget {
       'assets/images/pro_tuto_4.jpg',
     ],
     this.dismissedPrefKey = proDismissedKey,
+    this.nextButtonRect = proNextRect,
   });
 
   /// True when the user previously ticked "don't show again".
@@ -105,6 +118,17 @@ class _ProIntroSlidesState extends State<ProIntroSlides> {
     }
   }
 
+  /// Maps an artwork-fraction rect onto the on-screen fitted image.
+  Positioned _zone(Rect art, Rect frac, VoidCallback onTap) {
+    return Positioned(
+      left: art.left + frac.left * art.width,
+      top: art.top + frac.top * art.height,
+      width: frac.width * art.width,
+      height: frac.height * art.height,
+      child: GestureDetector(behavior: HitTestBehavior.opaque, onTap: onTap),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -113,6 +137,25 @@ class _ProIntroSlidesState extends State<ProIntroSlides> {
         builder: (context, box) {
           final w = box.maxWidth;
           final h = box.maxHeight;
+          // Letterbox the 9:16 artwork instead of cropping it — the baked
+          // buttons must stay visible and sit exactly under the hit zones
+          // on every screen ratio.
+          final fitted = applyBoxFit(
+            BoxFit.contain,
+            const Size(576, 1024),
+            Size(w, h),
+          ).destination;
+          final art = Rect.fromLTWH(
+            (w - fitted.width) / 2,
+            (h - fitted.height) / 2,
+            fitted.width,
+            fitted.height,
+          );
+          final padding = MediaQuery.paddingOf(context);
+          final spareBottom = h - art.bottom;
+          final chipBottom = spareBottom >= 44
+              ? (spareBottom - 32) / 2
+              : padding.bottom + 6;
           return Stack(
             children: [
               PageView.builder(
@@ -121,51 +164,26 @@ class _ProIntroSlidesState extends State<ProIntroSlides> {
                 itemCount: widget.images.length,
                 itemBuilder: (_, i) => Image.asset(
                   widget.images[i],
-                  fit: BoxFit.cover,
+                  fit: BoxFit.contain,
+                  alignment: Alignment.center,
                   gaplessPlayback: true,
                   errorBuilder: (_, __, ___) => const SizedBox.shrink(),
                 ),
               ),
               // Retour — baked top-left in the artwork
-              Positioned(
-                left: 0,
-                top: 0,
-                width: w * 0.36,
-                height: h * 0.085,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: _retour,
-                ),
-              ),
+              _zone(art, ProIntroSlides._retourRect, _retour),
               // Passer — baked top-right
-              Positioned(
-                right: 0,
-                top: 0,
-                width: w * 0.32,
-                height: h * 0.085,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: widget.onDone,
-                ),
-              ),
-              // Suivant — baked bottom pill (last slide completes)
-              Positioned(
-                left: w * 0.055,
-                right: w * 0.055,
-                top: h * 0.888,
-                height: h * 0.068,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: _suivant,
-                ),
-              ),
+              _zone(art, ProIntroSlides._passerRect, widget.onDone),
+              // Suivant / Commencer — baked bottom pill (last slide completes)
+              _zone(art, widget.nextButtonRect, _suivant),
               // "Ne plus afficher" — the artwork has no such control, so
-              // this one is rendered live, tucked into the bottom-left
-              // corner where every slide has empty space.
+              // this one is rendered live. It sits in the letterbox band
+              // under the artwork when there is one, otherwise in the
+              // bottom-right corner, clear of the page dots and counter.
               Positioned(
-                left: w * 0.04,
-                top: h * 0.948,
-                height: h * 0.045,
+                right: 12,
+                bottom: chipBottom,
+                height: 32,
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: _toggleDontShowAgain,
