@@ -100,7 +100,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
   const user = await prisma.user.findUnique({
     where: { email: data.email },
-    include: { driverProfile: true },
+    include: { driverProfile: true, restaurant: true },
   });
   if (!user) {
     res.status(401).json({ error: 'Email ou mot de passe incorrect' });
@@ -151,7 +151,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
   res.json({
     token,
-    user: { id: user.id, name: user.name, email: user.email, phone: user.phone, role: ctx.role, points: user.points, driverProfile: user.driverProfile, restaurantId, staffRole },
+    user: { id: user.id, name: user.name, email: user.email, phone: user.phone, role: ctx.role, points: user.points, driverProfile: user.driverProfile, restaurant: user.restaurant, restaurantId, staffRole },
   });
 };
 
@@ -182,7 +182,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<void> =>
 
   let user = await prisma.user.findUnique({
     where: { email: payload.email },
-    include: { driverProfile: true },
+    include: { driverProfile: true, restaurant: true },
   });
   if (!user) {
     user = await prisma.user.create({
@@ -192,7 +192,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<void> =>
         password: await bcrypt.hash(`google-${payload.sub}-${Date.now()}`, env.bcryptRounds),
         role: (role as never) || 'CLIENT',
       },
-      include: { driverProfile: true },
+      include: { driverProfile: true, restaurant: true },
     });
   }
 
@@ -209,7 +209,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<void> =>
 
   res.json({
     token,
-    user: { id: user.id, name: user.name, email: user.email, phone: user.phone, role: ctx.role, points: user.points, driverProfile: user.driverProfile, restaurantId, staffRole },
+    user: { id: user.id, name: user.name, email: user.email, phone: user.phone, role: ctx.role, points: user.points, driverProfile: user.driverProfile, restaurant: user.restaurant, restaurantId, staffRole },
   });
 };
 

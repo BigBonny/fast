@@ -17,7 +17,9 @@ class ReservationService {
       ApiConfig.restaurantReservations(restaurantId),
       body: {
         'partySize': partySize,
-        'dateTime': dateTime.toIso8601String(),
+        // UTC + 'Z' suffix — zod datetime({offset:true}) rejects the
+        // offset-less string that a local DateTime produces.
+        'dateTime': dateTime.toUtc().toIso8601String(),
         if (note != null && note.trim().isNotEmpty) 'note': note.trim(),
       },
     );

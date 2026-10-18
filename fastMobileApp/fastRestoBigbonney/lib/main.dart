@@ -199,8 +199,11 @@ class _FASTAppState extends State<FASTApp> with WidgetsBindingObserver {
           points: user.points,
         );
       }
-      // Load restaurants, orders, notifications from API
-      if (!(user?.isStaff ?? false)) fastProv.loadFromApi();
+      // Load restaurants, orders, notifications from API — also for
+      // staff/guests who left client mode enabled across a restart.
+      if (!(user?.isStaff ?? false) || fastProv.viewAsClient) {
+        fastProv.loadFromApi();
+      }
     }
 
     if (mounted) {
@@ -272,11 +275,13 @@ class _FASTAppState extends State<FASTApp> with WidgetsBindingObserver {
     if (auth.isLoggedIn) {
       // Staff accounts land on the kitchen board — no stats, no
       // payments, no settings. Guest accounts land on the menu screen
-      // where they can only mark dishes sold out / available.
-      if (auth.user?.isGuest ?? false) {
+      // where they can only mark dishes sold out / available — unless
+      // they enabled client mode to browse and order like a customer.
+      if ((auth.user?.isGuest ?? false) && !fast.viewAsClient) {
         return const GuestMenuShell();
       }
-      if (auth.user?.isStaff ?? false) {
+      if ((auth.user?.isStaff ?? false) &&
+          !(fast.viewAsClient && (auth.user?.isGuest ?? false))) {
         return const KitchenScreen();
       }
       if (auth.isRestaurant && !fast.viewAsClient) {

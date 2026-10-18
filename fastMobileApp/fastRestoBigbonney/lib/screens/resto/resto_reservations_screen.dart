@@ -33,14 +33,9 @@ class _RestoReservationsScreenState extends State<RestoReservationsScreen> {
   }
 
   Future<void> _load() async {
-    final restaurantId = context.read<RestoProvider>().restaurantId;
-    if (restaurantId == null) {
-      setState(() {
-        _loading = false;
-        _error = tr(context, 'load_err');
-      });
-      return;
-    }
+    // The backend resolves the restaurant from the caller's account —
+    // no need to gate on RestoProvider.restaurantId here.
+    final restaurantId = context.read<RestoProvider>().restaurantId ?? '';
     setState(() {
       _loading = true;
       _error = null;
