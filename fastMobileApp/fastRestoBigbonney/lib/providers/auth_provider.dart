@@ -143,35 +143,6 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  /// F13 — join a restaurant team with the owner's invite code.
-  Future<bool> joinWithInviteCode({
-    required String inviteCode,
-    required String firstName,
-    required String lastName,
-  }) async {
-    _state = AuthState.loading;
-    _error = null;
-    notifyListeners();
-
-    try {
-      final response = await AuthService().joinWithInviteCode(
-        inviteCode: inviteCode,
-        firstName: firstName,
-        lastName: lastName,
-      );
-      await ApiClient().setToken(response.token);
-      _user = response.user;
-      _state = AuthState.authenticated;
-      notifyListeners();
-      return true;
-    } catch (e) {
-      _state = AuthState.error;
-      _error = _extractError(e);
-      notifyListeners();
-      return false;
-    }
-  }
-
   /// Redeem an owner's invite code inside an existing account — the
   /// assistant keeps their professional login and joins as a GUEST.
   Future<bool> redeemInviteCode(String code) async {

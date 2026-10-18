@@ -242,14 +242,6 @@ export const updateReservationStatusSchema = z.object({
 
 // ─── Staff invite codes ─────────────────────────────────────
 
-export const joinStaffSchema = z.object({
-  code: z.string().min(4).max(20),
-  firstName: z.string().min(1).max(100),
-  lastName: z.string().min(1).max(100),
-});
-
-export const guestLoginSchema = joinStaffSchema;
-
 export const redeemCodeSchema = z.object({
   code: z.string().min(4).max(20),
 });
