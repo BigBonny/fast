@@ -46,6 +46,7 @@ class _ClientIntroGateState extends State<ClientIntroGate> {
     return ProIntroSlides(
       images: _images,
       dismissedPrefKey: ProIntroSlides.clientDismissedKey,
+      nextButtonRect: ProIntroSlides.clientNextRect,
       onDone: () => setState(() => _done = true),
     );
   }
