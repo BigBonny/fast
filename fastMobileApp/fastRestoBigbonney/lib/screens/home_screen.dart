@@ -39,11 +39,18 @@ class _HomeScreenState extends State<HomeScreen> {
     final suggCategories = provider.getAutocompleteCategories();
     final isSearching = provider.searchKeyword.isNotEmpty;
 
-    return Stack(
+    return GestureDetector(
+      // Tap anywhere outside the search field dismisses the keyboard —
+      // the only dismissal route on iOS, which has no back button.
+      behavior: HitTestBehavior.translucent,
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      child: Stack(
       children: [
         Container(color: context.fast.bg),
         LayoutBuilder(
           builder: (context, viewport) => ListView(
+            // Dragging the list dismisses the keyboard too.
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             padding: EdgeInsets.zero,
             children: [
               // Branded hero — dark glow background, headline + search pill
@@ -143,44 +150,60 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                           // Brand mark + tagline — centered, slightly above
-                          // the nav icon row like the reference
+                          // the nav icon row like the reference. The
+                          // wordmark burns amber→ember with a soft halo so
+                          // it reads as lit, not flat.
                           Positioned(
                             top: statusBar * 0.4,
                             left: 0,
                             right: 0,
                             child: Column(
                               children: [
-                                const Row(
+                                Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(
-                                      Icons.bolt,
-                                      color: FASTBrand.amber,
-                                      size: 34,
-                                    ),
-                                    Text(
-                                      'FAST',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w900,
-                                        fontStyle: FontStyle.italic,
-                                        fontSize: 34,
-                                        letterSpacing: -1,
-                                        color: Colors.white,
+                                    _boltIcon(),
+                                    ShaderMask(
+                                      blendMode: BlendMode.srcIn,
+                                      shaderCallback: (rect) =>
+                                          const LinearGradient(
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                            colors: [
+                                              Color(0xFFFCD34D),
+                                              Color(0xFFF59E0B),
+                                              Color(0xFFD97706),
+                                            ],
+                                          ).createShader(rect),
+                                      child: const Text(
+                                        'FAST',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w900,
+                                          fontStyle: FontStyle.italic,
+                                          fontSize: 34,
+                                          letterSpacing: 0.5,
+                                          color: Colors.white,
+                                          shadows: [
+                                            Shadow(
+                                              color: Color(0x66F59E0B),
+                                              blurRadius: 18,
+                                              offset: Offset(0, 3),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
-                                    Icon(
-                                      Icons.bolt,
-                                      color: FASTBrand.amber,
-                                      size: 34,
-                                    ),
+                                    _boltIcon(),
                                   ],
                                 ),
+                                const SizedBox(height: 2),
                                 const Text(
-                                  'Chaque minute compte',
+                                  'CHAQUE MINUTE COMPTE',
                                   style: TextStyle(
-                                    fontSize: 13,
-                                    color: Colors.white,
-                                    fontStyle: FontStyle.italic,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 3.2,
+                                    color: Color(0xB3FBBF24),
                                   ),
                                 ),
                               ],
@@ -322,6 +345,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                     },
                                     child: TextField(
                                       controller: _searchController,
+                                      // Shows a "Search" key on the
+                                      // keyboard — submitting dismisses
+                                      // it (vital on iOS).
+                                      textInputAction:
+                                          TextInputAction.search,
+                                      onSubmitted: (_) => FocusManager
+                                          .instance
+                                          .primaryFocus
+                                          ?.unfocus(),
                                       onChanged: (val) =>
                                           provider.setKeyword(val),
                                       style: const TextStyle(
@@ -344,6 +376,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 onPressed: () {
                                                   provider.setKeyword('');
                                                   _searchController.clear();
+                                                  FocusManager
+                                                      .instance
+                                                      .primaryFocus
+                                                      ?.unfocus();
                                                 },
                                                 icon: const Icon(
                                                   Icons.close,
@@ -437,10 +473,19 @@ class _HomeScreenState extends State<HomeScreen> {
         // Slot Machine Selection Overlay
         if (provider.isSurpriseMeRolling) _buildSlotsOverlay(context, provider),
       ],
+      ),
     );
   }
 
   bool _isFocusingSearch = false;
+
+  /// Amber lightning bolt with a warm halo — flanks the FAST wordmark.
+  Widget _boltIcon() => const Icon(
+    Icons.bolt,
+    color: Color(0xFFFBBF24),
+    size: 30,
+    shadows: [Shadow(color: Color(0x99F59E0B), blurRadius: 16)],
+  );
 
   // Split suggestion layout
   Widget _buildSuggestionsPanel(
