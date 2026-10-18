@@ -16,11 +16,19 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
+
+  /// Slow light sweep running across the FAST hero wordmark.
+  late final AnimationController _brandShine = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 3200),
+  )..repeat();
 
   @override
   void dispose() {
+    _brandShine.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -163,36 +171,55 @@ class _HomeScreenState extends State<HomeScreen> {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     _boltIcon(),
-                                    ShaderMask(
-                                      blendMode: BlendMode.srcIn,
-                                      shaderCallback: (rect) =>
-                                          const LinearGradient(
-                                            begin: Alignment.topLeft,
-                                            end: Alignment.bottomRight,
-                                            colors: [
-                                              Color(0xFFFCD34D),
-                                              Color(0xFFF59E0B),
-                                              Color(0xFFD97706),
-                                            ],
-                                          ).createShader(rect),
-                                      child: const Text(
-                                        'FAST',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w900,
-                                          fontStyle: FontStyle.italic,
-                                          fontSize: 34,
-                                          letterSpacing: 0.5,
-                                          color: Colors.white,
-                                          shadows: [
-                                            Shadow(
-                                              color: Color(0x66F59E0B),
-                                              blurRadius: 18,
-                                              offset: Offset(0, 3),
+                                    const SizedBox(width: 2),
+                                    AnimatedBuilder(
+                                      animation: _brandShine,
+                                      builder: (context, _) {
+                                        // A bright band sweeping
+                                        // left→right across the gradient.
+                                        final t = _brandShine.value * 2 - 0.5;
+                                        return ShaderMask(
+                                          blendMode: BlendMode.srcIn,
+                                          shaderCallback: (rect) =>
+                                              LinearGradient(
+                                                begin: Alignment.centerLeft,
+                                                end: Alignment.centerRight,
+                                                colors: const [
+                                                  Color(0xFFF59E0B),
+                                                  Color(0xFFFBBF24),
+                                                  Color(0xFFFFFBEB),
+                                                  Color(0xFFFBBF24),
+                                                  Color(0xFFD97706),
+                                                ],
+                                                stops: [
+                                                  (t - 0.5).clamp(0.0, 1.0),
+                                                  (t - 0.22).clamp(0.0, 1.0),
+                                                  t.clamp(0.0, 1.0),
+                                                  (t + 0.22).clamp(0.0, 1.0),
+                                                  (t + 0.5).clamp(0.0, 1.0),
+                                                ],
+                                              ).createShader(rect),
+                                          child: const Text(
+                                            'FAST',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w900,
+                                              fontStyle: FontStyle.italic,
+                                              fontSize: 38,
+                                              letterSpacing: 1.2,
+                                              color: Colors.white,
+                                              shadows: [
+                                                Shadow(
+                                                  color: Color(0x80F59E0B),
+                                                  blurRadius: 26,
+                                                  offset: Offset(0, 4),
+                                                ),
+                                              ],
                                             ),
-                                          ],
-                                        ),
-                                      ),
+                                          ),
+                                        );
+                                      },
                                     ),
+                                    const SizedBox(width: 2),
                                     _boltIcon(),
                                   ],
                                 ),
