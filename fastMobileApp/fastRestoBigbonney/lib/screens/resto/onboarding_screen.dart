@@ -23,6 +23,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   int _currentStep = -1; // -1 = checking
   bool _checkingBackend = true;
   bool _ready = false;
+  // Branded intro carousel shown every time the Pro workspace is
+  // entered — after setup, on login, on cold start, and when coming
+  // back from client mode.
+  bool _showIntro = false;
   String? _formError;
   bool _formLoading = false;
 
@@ -94,8 +98,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     if (!mounted) return;
 
     if (hasRestaurantOnBackend) {
-      // Already set up — go straight to dashboard
-      _finishOnboarding();
+      // Already set up — play the intro slides, then the dashboard.
+      setState(() {
+        _checkingBackend = false;
+        _showIntro = true;
+      });
       return;
     }
 
@@ -204,7 +211,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         final prov = context.read<RestoProvider>();
         await prov.updateSettings(settings);
         prov.loadFromApi(restaurantId: restoId);
-        _finishOnboarding();
+        setState(() => _showIntro = true);
       }
     } catch (e) {
       if (!mounted) return;
@@ -217,7 +224,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           context.read<RestoProvider>(),
         );
         if (ok && mounted) {
-          _finishOnboarding();
+          setState(() => _showIntro = true);
           return;
         }
       }
@@ -237,11 +244,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     setState(() {
       _ready = true;
       _checkingBackend = false;
+      _showIntro = false;
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_showIntro) return ProIntroSlides(onDone: _finishOnboarding);
     if (_ready) return const RestoMainShell();
     if (_checkingBackend) {
       return Scaffold(
