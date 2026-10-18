@@ -170,72 +170,93 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  testWidgets('Intro slides: baked buttons hit on a tall phone', (tester) async {
-    SharedPreferences.setMockInitialValues({});
-    // 9:19.5 phone — the 9:16 artwork must letterbox, not crop.
-    tester.view.physicalSize = const Size(1080, 2340);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
+  // Measured centre of the baked Suivant / Commencer / C'est parti pill on
+  // each slide (fractions of the 576x1024 artwork). The test taps these
+  // exact pixels, so a hit-zone regression on any slide fails it.
+  const proPillY = [0.905, 0.877, 0.902, 0.904];
+  const clientPillY = [0.886, 0.866, 0.866, 0.906];
 
-    var done = 0, back = 0;
-    PageController controllerOf(WidgetTester t) =>
-        t.widget<PageView>(find.byType(PageView)).controller!;
-    await tester.pumpWidget(
-      ChangeNotifierProvider(
-        create: (_) => FASTProvider(),
-        child: MaterialApp(
-          home: ProIntroSlides(
-            nextButtonRect: ProIntroSlides.clientNextRect,
-            onDone: () => done++,
-            onBack: () => back++,
+  for (final set in [
+    (name: 'Pro', images: ProIntroSlides.proImages,
+     rects: ProIntroSlides.proNextRects, pills: proPillY,
+     key: ProIntroSlides.proDismissedKey),
+    (name: 'client', images: ProIntroSlides.clientImages,
+     rects: ProIntroSlides.clientNextRects, pills: clientPillY,
+     key: ProIntroSlides.clientDismissedKey),
+  ]) {
+    testWidgets('${set.name} intro slides: baked buttons hit on a tall phone',
+        (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      // 9:19.5 phone — the 9:16 artwork must letterbox, not crop.
+      tester.view.physicalSize = const Size(1080, 2340);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      var done = 0, back = 0;
+      PageController controllerOf(WidgetTester t) =>
+          t.widget<PageView>(find.byType(PageView)).controller!;
+      await tester.pumpWidget(
+        ChangeNotifierProvider(
+          create: (_) => FASTProvider(),
+          child: MaterialApp(
+            home: ProIntroSlides(
+              images: set.images,
+              nextButtonRects: set.rects,
+              dismissedPrefKey: set.key,
+              onDone: () => done++,
+              onBack: () => back++,
+            ),
           ),
         ),
-      ),
-    );
-    await tester.pump();
+      );
+      await tester.pump();
 
-    final fitted = applyBoxFit(
-      BoxFit.contain,
-      const Size(576, 1024),
-      const Size(1080, 2340),
-    ).destination;
-    expect(fitted.width, 1080);
-    expect(fitted.height, lessThan(2340));
-    final top = (2340 - fitted.height) / 2;
-    Offset at(double fx, double fy) =>
-        Offset(fx * fitted.width, top + fy * fitted.height);
+      final fitted = applyBoxFit(
+        BoxFit.contain,
+        const Size(576, 1024),
+        const Size(1080, 2340),
+      ).destination;
+      expect(fitted.width, 1080);
+      expect(fitted.height, lessThan(2340));
+      final top = (2340 - fitted.height) / 2;
+      Offset at(double fx, double fy) =>
+          Offset(fx * fitted.width, top + fy * fitted.height);
 
-    // Centre of the client "Suivant" pill → next page.
-    await tester.tapAt(at(0.5, 0.87));
-    await tester.pumpAndSettle();
-    expect(controllerOf(tester).page!.round(), 1);
-    // Retour → back to page 0.
-    await tester.tapAt(at(0.12, 0.03));
-    await tester.pumpAndSettle();
-    expect(controllerOf(tester).page!.round(), 0);
-    // Retour on first slide → onBack.
-    await tester.tapAt(at(0.12, 0.03));
-    await tester.pump();
-    expect(back, 1);
-    // Passer → onDone from anywhere.
-    await tester.tapAt(at(0.9, 0.03));
-    await tester.pump();
-    expect(done, 1);
-    // Suivant through to the last slide, then it completes.
-    for (var i = 0; i < 4; i++) {
-      await tester.tapAt(at(0.5, 0.87));
+      // Pill on slide 1 → page 2.
+      await tester.tapAt(at(0.5, set.pills[0]));
       await tester.pumpAndSettle();
-    }
-    expect(done, 2);
-    // Page dots / counter row (y≈0.95) must not be covered by the chip.
-    final chip = find.byIcon(Icons.check_box_outline_blank);
-    expect(chip, findsOneWidget);
-    expect(tester.getTopLeft(chip).dy, greaterThan(top + 0.975 * fitted.height));
-    await tester.tap(chip);
-    await tester.pump();
-    expect((await SharedPreferences.getInstance())
-        .getBool(ProIntroSlides.proDismissedKey), isTrue);
-    expect(tester.takeException(), isNull);
-    await tester.pumpWidget(const SizedBox.shrink());
-  });
+      expect(controllerOf(tester).page!.round(), 1);
+      // Retour → back to page 1.
+      await tester.tapAt(at(0.12, 0.03));
+      await tester.pumpAndSettle();
+      expect(controllerOf(tester).page!.round(), 0);
+      // Retour on first slide → onBack.
+      await tester.tapAt(at(0.12, 0.03));
+      await tester.pump();
+      expect(back, 1);
+      // Passer → onDone from anywhere.
+      await tester.tapAt(at(0.9, 0.03));
+      await tester.pump();
+      expect(done, 1);
+      // Each slide's own pill advances; the last one completes.
+      for (var i = 0; i < set.images.length; i++) {
+        await tester.tapAt(at(0.5, set.pills[i]));
+        await tester.pumpAndSettle();
+        expect(controllerOf(tester).page!.round(),
+            (i + 1).clamp(0, set.images.length - 1),
+            reason: 'pill on slide ${i + 1} should advance');
+      }
+      expect(done, 2);
+      // Page dots / counter row (y≈0.95) must not be covered by the chip.
+      final chip = find.byIcon(Icons.check_box_outline_blank);
+      expect(chip, findsOneWidget);
+      expect(tester.getTopLeft(chip).dy,
+          greaterThan(top + 0.975 * fitted.height));
+      await tester.tap(chip);
+      await tester.pump();
+      expect((await SharedPreferences.getInstance()).getBool(set.key), isTrue);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+  }
 }

@@ -14,13 +14,6 @@ class ClientIntroGate extends StatefulWidget {
 }
 
 class _ClientIntroGateState extends State<ClientIntroGate> {
-  static const _images = [
-    'assets/images/client_tuto_1.jpg',
-    'assets/images/client_tuto_2.jpg',
-    'assets/images/client_tuto_3.jpg',
-    'assets/images/client_tuto_4.jpg',
-  ];
-
   bool? _dismissed; // null = still reading prefs
   bool _done = false;
 
@@ -44,9 +37,9 @@ class _ClientIntroGateState extends State<ClientIntroGate> {
       );
     }
     return ProIntroSlides(
-      images: _images,
+      images: ProIntroSlides.clientImages,
       dismissedPrefKey: ProIntroSlides.clientDismissedKey,
-      nextButtonRect: ProIntroSlides.clientNextRect,
+      nextButtonRects: ProIntroSlides.clientNextRects,
       onDone: () => setState(() => _done = true),
     );
   }
