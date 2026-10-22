@@ -7,6 +7,7 @@ import '../models.dart';
 import '../theme.dart';
 import '../widgets/fast_image.dart';
 import '../widgets/fast_glow_background.dart';
+import '../widgets/fast_ui.dart';
 import '../l10n/tr.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -830,7 +831,7 @@ class _HomeScreenState extends State<HomeScreen>
               itemCount: provider.favorites.length,
               itemBuilder: (context, index) {
                 final rest = provider.favorites[index];
-                return GestureDetector(
+                return FastTap(
                   onTap: () {
                     provider.selectRestaurant(rest.id);
                     provider.navigateToScreen('restaurant');
@@ -939,21 +940,33 @@ class _HomeScreenState extends State<HomeScreen>
         _buildRadiusFilter(context, provider),
         const SizedBox(height: 12),
 
-        // List of Restaurants
-        filteredRest.isEmpty
-            ? _buildNoKitchens(context, provider)
-            : Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: filteredRest.length,
-                  itemBuilder: (context, index) {
-                    final rest = filteredRest[index];
-                    return _buildRestaurantCard(context, provider, rest);
-                  },
-                ),
+        // List of Restaurants — skeletons while fetching, staggered
+        // cascade when the cards land.
+        if (provider.isLoading && filteredRest.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              children: List.generate(
+                3,
+                (_) => FastSkeleton.restaurantCard(context),
               ),
+            ),
+          )
+        else if (filteredRest.isEmpty)
+          _buildNoKitchens(context, provider)
+        else
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: filteredRest.length,
+              itemBuilder: (context, index) {
+                final rest = filteredRest[index];
+                return _buildRestaurantCard(context, provider, rest, index);
+              },
+            ),
+          ),
 
         const SizedBox(height: 80), // bottom offset for basket
       ],
@@ -1035,7 +1048,7 @@ class _HomeScreenState extends State<HomeScreen>
     required String cta,
     IconData ctaIcon = Icons.chevron_right,
   }) {
-    return GestureDetector(
+    return FastTap(
       onTap: onTap,
       child: Container(
         width: 280,
@@ -1217,13 +1230,16 @@ class _HomeScreenState extends State<HomeScreen>
     BuildContext context,
     FASTProvider provider,
     Restaurant rest,
+    int index,
   ) {
-    return GestureDetector(
-      onTap: () {
-        provider.selectRestaurant(rest.id);
-        provider.navigateToScreen('restaurant');
-      },
-      child: Container(
+    return FastStagger(
+      index: index,
+      child: FastTap(
+        onTap: () {
+          provider.selectRestaurant(rest.id);
+          provider.navigateToScreen('restaurant');
+        },
+        child: Container(
         margin: EdgeInsets.only(bottom: 16),
         decoration: BoxDecoration(
           color: context.fast.card,
@@ -1444,6 +1460,7 @@ class _HomeScreenState extends State<HomeScreen>
             ),
           ],
         ),
+        ),
       ),
     );
   }
@@ -1506,44 +1523,15 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Widget _buildNoKitchens(BuildContext context, FASTProvider provider) {
-    return Padding(
-      padding: EdgeInsets.all(32),
-      child: Center(
-        child: Column(
-          children: [
-            Text('🥙', style: TextStyle(fontSize: 48)),
-            SizedBox(height: 12),
-            Text(
-              tr(context, 'no_cuisine'),
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-                color: context.fast.t1,
-              ),
-            ),
-            SizedBox(height: 6),
-            Text(
-              tr(context, 'widen_radius'),
-              style: TextStyle(fontSize: 11, color: context.fast.t3),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => provider.resetFilters(),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFFF59E0B),
-                foregroundColor: FASTBrand.onAmber,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: Text(
-                tr(context, 'reset_filters'),
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-        ),
+    return FastEmpty(
+      icon: Icons.restaurant_outlined,
+      title: tr(context, 'no_cuisine'),
+      subtitle: tr(context, 'widen_radius'),
+      action: FastButton(
+        label: tr(context, 'reset_filters'),
+        onPressed: () => provider.resetFilters(),
+        expand: false,
+        height: 44,
       ),
     );
   }

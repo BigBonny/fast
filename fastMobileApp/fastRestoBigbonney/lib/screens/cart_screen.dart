@@ -10,6 +10,7 @@ import '../services/payment_service.dart';
 import '../services/group_service.dart';
 import '../theme.dart';
 import '../l10n/tr.dart';
+import '../widgets/fast_ui.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -76,19 +77,11 @@ class _CartScreenState extends State<CartScreen> {
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: 16),
-              ElevatedButton(
+              FastButton(
+                label: provider.tr('browse'),
                 onPressed: () => provider.navigateToScreen('home'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFFF59E0B),
-                  foregroundColor: FASTBrand.onAmber,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: Text(
-                  provider.tr('browse'),
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
+                expand: false,
+                height: 46,
               ),
             ],
           ),
@@ -819,39 +812,13 @@ class _CartScreenState extends State<CartScreen> {
           SizedBox(height: 20),
 
           // Place Order Button
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () => _startStripeCheckout(provider),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFFF59E0B),
-                foregroundColor: FASTBrand.onAmber,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 0,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.shield, size: 16),
-                  const SizedBox(width: 8),
-                  Text(
-                    provider
-                        .tr('pay_stripe')
-                        .replaceAll(
-                          '{n}',
-                          provider.cartTotal.toStringAsFixed(2),
-                        ),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w900,
-                      fontSize: 13,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          FastButton(
+            label: provider
+                .tr('pay_stripe')
+                .replaceAll('{n}', provider.cartTotal.toStringAsFixed(2)),
+            onPressed: () => _startStripeCheckout(provider),
+            icon: Icons.shield,
+            fontSize: 13,
           ),
           if (_pendingStripeSessionId != null) ...[
             SizedBox(height: 8),

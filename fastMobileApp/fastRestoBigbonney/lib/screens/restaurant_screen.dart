@@ -10,6 +10,7 @@ import '../services/map_helper.dart';
 import '../theme.dart';
 import 'story_viewer_screen.dart';
 import '../widgets/fast_image.dart';
+import '../widgets/fast_ui.dart';
 import '../l10n/tr.dart';
 import '../services/reservation_service.dart';
 import '../services/review_service.dart';
@@ -1750,27 +1751,11 @@ class _ReviewSheetState extends State<_ReviewSheet> {
             ),
           ],
           const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
+          FastButton(
+            label: tr(context, 'submit_review'),
+            onPressed: _submit,
+            loading: _sending,
             height: 48,
-            child: ElevatedButton(
-              onPressed: _sending ? null : _submit,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFF59E0B),
-                foregroundColor: FASTBrand.onAmber,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                textStyle: const TextStyle(fontWeight: FontWeight.w900),
-              ),
-              child: _sending
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Text(tr(context, 'submit_review')),
-            ),
           ),
         ],
       ),
