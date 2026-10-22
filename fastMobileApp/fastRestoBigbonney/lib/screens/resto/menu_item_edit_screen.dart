@@ -5,6 +5,7 @@ import '../../resto_provider.dart';
 import '../../services/menu_service.dart';
 import '../../theme.dart';
 import '../../l10n/tr.dart';
+import '../../widgets/fast_ui.dart';
 
 class MenuItemEditScreen extends StatefulWidget {
   final MenuItem? item; // null = create mode
@@ -499,10 +500,10 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                       style: TextStyle(color: context.fast.t1, fontSize: 15),
                     ),
                   ),
-                  Switch(
+                  FastSwitch(
                     value: _available,
                     onChanged: (v) => setState(() => _available = v),
-                    activeThumbColor: const Color(0xFF10B981),
+                    accent: const Color(0xFF10B981),
                   ),
                 ],
               ),

@@ -11,6 +11,7 @@ import '../../services/restaurant_service.dart';
 import '../../services/payment_service.dart';
 import '../../theme.dart';
 import '../../l10n/tr.dart';
+import '../../widgets/fast_ui.dart';
 
 class RestoSettingsScreen extends StatefulWidget {
   const RestoSettingsScreen({super.key});
@@ -624,8 +625,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
 
         SizedBox(height: 24),
         _section(tr(context, 'service_modes')),
-        SwitchListTile(
-          contentPadding: EdgeInsets.zero,
+        FastSwitchTile(
           title: Text(
             tr(context, 'food_truck'),
             style: TextStyle(color: context.fast.t1, fontSize: 13),
@@ -635,7 +635,6 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
             style: TextStyle(color: context.fast.t3, fontSize: 11),
           ),
           value: _isFoodTruck,
-          activeThumbColor: const Color(0xFF00C8B3),
           onChanged: (v) => setState(() => _isFoodTruck = v),
         ),
         if (_isFoodTruck) ...[
@@ -690,14 +689,12 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
               ),
             ),
         ],
-        SwitchListTile(
-          contentPadding: EdgeInsets.zero,
+        FastSwitchTile(
           title: Text(
             tr(context, 'dine_in'),
             style: TextStyle(color: context.fast.t1, fontSize: 13),
           ),
           value: _allowDineIn,
-          activeThumbColor: const Color(0xFF00C8B3),
           onChanged: (v) => setState(() => _allowDineIn = v),
         ),
         if (_allowDineIn)
@@ -706,14 +703,12 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
             _dineInFeeCtrl,
             hint: '0.00',
           ),
-        SwitchListTile(
-          contentPadding: EdgeInsets.zero,
+        FastSwitchTile(
           title: Text(
             tr(context, 'reservations'),
             style: TextStyle(color: context.fast.t1, fontSize: 13),
           ),
           value: _reservationsEnabled,
-          activeThumbColor: const Color(0xFF00C8B3),
           onChanged: (v) => setState(() {
             _reservationsEnabled = v;
             if (!v) _reservationOnly = false;
@@ -725,8 +720,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
             _seatingCtrl,
             hint: '40',
           ),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
+          FastSwitchTile(
             title: Text(
               tr(context, 'reservation_only'),
               style: TextStyle(color: context.fast.t1, fontSize: 13),
@@ -736,7 +730,6 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
               style: TextStyle(color: context.fast.t3, fontSize: 11),
             ),
             value: _reservationOnly,
-            activeThumbColor: const Color(0xFF00C8B3),
             onChanged: (v) => setState(() => _reservationOnly = v),
           ),
         ],

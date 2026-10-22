@@ -848,17 +848,19 @@ class _HomeScreenState extends State<HomeScreen>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        FastImage(
-                          rest.image,
-                          height: 84,
-                          width: double.infinity,
-                          placeholder: Container(
+                        FastParallax(
+                          child: FastImage(
+                            rest.image,
                             height: 84,
-                            color: context.fast.cardHigh,
-                            child: Icon(
-                              Icons.restaurant,
-                              color: context.fast.faint,
-                              size: 28,
+                            width: double.infinity,
+                            placeholder: Container(
+                              height: 84,
+                              color: context.fast.cardHigh,
+                              child: Icon(
+                                Icons.restaurant,
+                                color: context.fast.faint,
+                                size: 28,
+                              ),
                             ),
                           ),
                         ),
@@ -1260,18 +1262,21 @@ class _HomeScreenState extends State<HomeScreen>
             // Restaurant Image
             Stack(
               children: [
-                FastImage(
-                  rest.image,
-                  height: 140,
-                  width: double.infinity,
-                  cacheWidth: 800,
-                  placeholder: Container(
+                FastParallax(
+                  maxShift: 14,
+                  child: FastImage(
+                    rest.image,
                     height: 140,
-                    color: context.fast.cardHigh,
-                    child: Icon(
-                      Icons.restaurant,
-                      color: context.fast.faint,
-                      size: 40,
+                    width: double.infinity,
+                    cacheWidth: 800,
+                    placeholder: Container(
+                      height: 140,
+                      color: context.fast.cardHigh,
+                      child: Icon(
+                        Icons.restaurant,
+                        color: context.fast.faint,
+                        size: 40,
+                      ),
                     ),
                   ),
                 ),
