@@ -7,6 +7,7 @@ import '../../providers/auth_provider.dart';
 import '../../services/payment_service.dart';
 import '../../widgets/resto_drawer.dart';
 import '../../widgets/resto_spotlight_tutorial.dart';
+import '../../widgets/fast_ui.dart';
 import 'kitchen_screen.dart';
 import 'resto_orders_screen.dart';
 import 'resto_menu_screen.dart';
@@ -43,6 +44,12 @@ class _RestoMainShellState extends State<RestoMainShell> {
     const RestoSettingsScreen(),
     const RestoProfileScreen(),
   ];
+
+  // Nav shows 4 tabs (orders, menu, settings, profile); the RUSH button
+  // floats raised between menu and settings like the old 5-slot bar.
+  static const _navMap = [0, 1, 3, 4];
+  int get _navIndex =>
+      _currentIndex <= 1 ? _currentIndex : _currentIndex - 1;
 
   List<_TutorialStep> get _tutorialSteps => [
     _TutorialStep(
@@ -154,6 +161,8 @@ class _RestoMainShellState extends State<RestoMainShell> {
         Scaffold(
           key: _scaffoldKey,
           backgroundColor: context.fast.bg,
+          // Pages scroll behind the floating FastNavBar pill.
+          extendBody: true,
           appBar: AppBar(
             backgroundColor: FASTPro.header,
             systemOverlayStyle: SystemUiOverlayStyle.light,
@@ -279,48 +288,59 @@ class _RestoMainShellState extends State<RestoMainShell> {
               Expanded(child: _pages[_currentIndex]),
             ],
           ),
-          bottomNavigationBar: Container(
-            decoration: const BoxDecoration(
-              color: FASTPro.header,
-              border: Border(
-                top: BorderSide(color: Color(0xFF1E293B), width: 1),
+          bottomNavigationBar: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              FastNavBar(
+                accent: FASTPro.teal,
+                surface: FASTPro.header,
+                line: const Color(0xFF1E293B),
+                inactive: const Color(0xFF94A3B8),
+                currentIndex: _navIndex,
+                onTap: (i) =>
+                    setState(() => _currentIndex = _navMap[i]),
+                itemKeys: [
+                  _ordersKey,
+                  _menuKey,
+                  _settingsKey,
+                  _profileKey,
+                ],
+                items: [
+                  FastNavItem(
+                    icon: Icons.receipt_long_outlined,
+                    activeIcon: Icons.receipt_long,
+                    label: tr(context, 'nav_orders'),
+                  ),
+                  FastNavItem(
+                    icon: Icons.restaurant_menu_outlined,
+                    activeIcon: Icons.restaurant_menu,
+                    label: tr(context, 'menu'),
+                  ),
+                  FastNavItem(
+                    icon: Icons.settings_outlined,
+                    activeIcon: Icons.settings,
+                    label: tr(context, 'nav_settings'),
+                  ),
+                  FastNavItem(
+                    icon: Icons.storefront_outlined,
+                    activeIcon: Icons.storefront,
+                    label: tr(context, 'nav_profile'),
+                  ),
+                ],
               ),
-            ),
-            child: SafeArea(
-              top: false,
-              child: SizedBox(
-                height: 64,
-                child: Row(
-                  children: [
-                    _navItem(
-                      0,
-                      Icons.receipt_long,
-                      tr(context, 'nav_orders'),
-                      key: _ordersKey,
+              Positioned.fill(
+                child: Align(
+                  alignment: const Alignment(0, -0.55),
+                  child: KeyedSubtree(
+                    key: _statsKey,
+                    child: GestureDetector(
+                      onTap: () => _showRushSheet(provider),
+                      child: _rushButton(provider),
                     ),
-                    _navItem(
-                      1,
-                      Icons.restaurant_menu,
-                      tr(context, 'menu'),
-                      key: _menuKey,
-                    ),
-                    _rushItem(provider),
-                    _navItem(
-                      3,
-                      Icons.settings,
-                      tr(context, 'nav_settings'),
-                      key: _settingsKey,
-                    ),
-                    _navItem(
-                      4,
-                      Icons.storefront,
-                      tr(context, 'nav_profile'),
-                      key: _profileKey,
-                    ),
-                  ],
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
         ),
         if (_showTutorial)
@@ -337,132 +357,65 @@ class _RestoMainShellState extends State<RestoMainShell> {
     );
   }
 
-  Widget _navItem(int index, IconData icon, String label, {Key? key}) {
-    final active = _currentIndex == index;
-    return Expanded(
-      child: KeyedSubtree(
-        key: key,
-        child: InkWell(
-          onTap: () => setState(() => _currentIndex = index),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                size: 22,
-                color: active ? FASTPro.teal : const Color(0xFF94A3B8),
-              ),
-              const SizedBox(height: 3),
-              Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: active ? FontWeight.w800 : FontWeight.w500,
-                  color: active ? FASTPro.teal : const Color(0xFF94A3B8),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// Big glossy red circle raised slightly above the nav bar — opens a
-  /// confirmation sheet so Rush Mode can't be toggled accidentally.
-  Widget _rushItem(RestoProvider provider) {
+  /// Big glossy red circle floating at the centre of the nav pill —
+  /// opens a confirmation sheet so Rush Mode can't be toggled accidentally.
+  Widget _rushButton(RestoProvider provider) {
     final active = provider.isRushMode;
-    return Expanded(
-      child: KeyedSubtree(
-        key: _statsKey,
-        child: InkWell(
-          onTap: () => _showRushSheet(provider),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Transform.translate(
-                offset: const Offset(0, -5),
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: const RadialGradient(
-                      center: Alignment(0, -0.35),
-                      radius: 0.9,
-                      colors: [
-                        Color(0xFFF87171),
-                        Color(0xFFEF4444),
-                        Color(0xFFB91C1C),
-                      ],
-                      stops: [0.0, 0.55, 1.0],
-                    ),
-                    border: Border.all(
-                      color: const Color(0xFFFCA5A5),
-                      width: 1.5,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(
-                          0xFFEF4444,
-                        ).withValues(alpha: active ? 0.65 : 0.35),
-                        blurRadius: active ? 18 : 10,
-                        spreadRadius: active ? 2 : 0,
-                      ),
-                      const BoxShadow(
-                        color: Color(0xFF7F1D1D),
-                        blurRadius: 0,
-                        offset: Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // Specular highlight — glossy dome look
-                      Positioned(
-                        top: 5,
-                        child: Container(
-                          width: 22,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.white.withValues(alpha: 0.55),
-                                Colors.white.withValues(alpha: 0),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      const Icon(
-                        Icons.warning_rounded,
-                        color: Colors.white,
-                        size: 22,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Text(
-                'RUSH',
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 1,
-                  color: active
-                      ? const Color(0xFFEF4444)
-                      : const Color(0xFF94A3B8),
-                ),
-              ),
-            ],
-          ),
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: const RadialGradient(
+          center: Alignment(0, -0.35),
+          radius: 0.9,
+          colors: [
+            Color(0xFFF87171),
+            Color(0xFFEF4444),
+            Color(0xFFB91C1C),
+          ],
+          stops: [0.0, 0.55, 1.0],
         ),
+        border: Border.all(color: const Color(0xFFFCA5A5), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(
+              0xFFEF4444,
+            ).withValues(alpha: active ? 0.65 : 0.35),
+            blurRadius: active ? 18 : 10,
+            spreadRadius: active ? 2 : 0,
+          ),
+          const BoxShadow(
+            color: Color(0xFF7F1D1D),
+            blurRadius: 0,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Specular highlight — glossy dome look
+          Positioned(
+            top: 6,
+            child: Container(
+              width: 24,
+              height: 9,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.white.withValues(alpha: 0.55),
+                    Colors.white.withValues(alpha: 0),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const Icon(Icons.warning_rounded, color: Colors.white, size: 24),
+        ],
       ),
     );
   }
