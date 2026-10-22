@@ -9,6 +9,7 @@ import '../screens/resto/resto_reservations_screen.dart';
 import '../screens/resto/resto_staff_screen.dart';
 import '../theme.dart';
 import '../l10n/tr.dart';
+import 'fast_ui.dart';
 
 /// Base44-style slide-in menu for Fast Pro: compact gradient wordmark,
 /// flat sectioned rows (Mon Service / Commandes / Menu / Réglages),
@@ -403,9 +404,7 @@ class RestoDrawer extends StatelessWidget {
           childrenPadding: const EdgeInsets.only(left: 16, right: 8, bottom: 8),
           children: [
             // Rush mode toggle
-            SwitchListTile(
-              dense: true,
-              contentPadding: EdgeInsets.zero,
+            FastSwitchTile(
               title: Text(
                 provider.tr('rush_mode'),
                 style: TextStyle(
@@ -418,12 +417,12 @@ class RestoDrawer extends StatelessWidget {
                 provider.tr('rush_desc'),
                 style: TextStyle(color: _subtext(context), fontSize: 11),
               ),
-              secondary: const Icon(
+              leading: const Icon(
                 Icons.local_fire_department,
                 color: FASTPro.magenta,
                 size: 20,
               ),
-              activeThumbColor: FASTPro.magenta,
+              accent: FASTPro.magenta,
               value: resto.isRushMode,
               onChanged: (_) => resto.toggleRushMode(),
             ),

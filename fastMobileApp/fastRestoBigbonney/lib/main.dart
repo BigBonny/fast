@@ -28,6 +28,7 @@ import 'screens/group_screen.dart';
 import 'screens/livreur_screen.dart';
 import 'screens/driver_account_screen.dart';
 import 'widgets/client_drawer.dart';
+import 'widgets/fast_ui.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -402,6 +403,8 @@ class _MainShellState extends State<MainShell>
       // On home the hero fills the top edge — body extends under the
       // transparent AppBar so there's no light band above the dark hero.
       extendBodyBehindAppBar: onHome,
+      // Content scrolls behind the floating FastNavBar pill.
+      extendBody: true,
       drawer: const ClientDrawer(),
       appBar: AppBar(
         // Transparent on home so the hero fills the top edge; solid on
@@ -568,7 +571,7 @@ class _MainShellState extends State<MainShell>
             Positioned(
               left: 16,
               right: 16,
-              bottom: 84,
+              bottom: 104,
               child: GestureDetector(
                 onTap: () => provider.navigateToScreen('cart'),
                 child: Container(
@@ -659,117 +662,38 @@ class _MainShellState extends State<MainShell>
             ),
         ],
       ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: context.fast.card,
-          border: Border(top: BorderSide(color: context.fast.line, width: 1)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 8,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: BottomNavigationBar(
-          currentIndex: _getBottomNavIndex(provider.currentScreen),
-          onTap: (index) {
-            final screen = _getScreenFromIndex(index);
-            provider.navigateToScreen(screen);
-          },
-          backgroundColor: context.fast.card,
-          selectedItemColor: Color(0xFFF59E0B),
-          unselectedItemColor: context.fast.t3,
-          type: BottomNavigationBarType.fixed,
-          selectedLabelStyle: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 10,
+      bottomNavigationBar: FastNavBar(
+        currentIndex: _getBottomNavIndex(provider.currentScreen),
+        onTap: (index) =>
+            provider.navigateToScreen(_getScreenFromIndex(index)),
+        items: [
+          FastNavItem(
+            icon: Icons.restaurant_outlined,
+            activeIcon: Icons.restaurant,
+            label: provider.tr('nav_restaurants'),
           ),
-          unselectedLabelStyle: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 10,
+          FastNavItem(
+            icon: Icons.shopping_bag_outlined,
+            activeIcon: Icons.shopping_bag,
+            label: provider.tr('nav_cart'),
+            badge: provider.cartCount,
           ),
-          items: [
-            BottomNavigationBarItem(
-              icon: Padding(
-                padding: EdgeInsets.only(bottom: 4),
-                child: Icon(Icons.restaurant),
-              ),
-              label: provider.tr('nav_restaurants'),
+          FastNavItem(
+            icon: Icons.assignment_outlined,
+            activeIcon: Icons.assignment,
+            label: provider.tr('nav_orders'),
+            dot: provider.orders.any(
+              (o) =>
+                  o.status != OrderStatus.completed &&
+                  o.status != OrderStatus.cancelled,
             ),
-            BottomNavigationBarItem(
-              icon: Padding(
-                padding: EdgeInsets.only(bottom: 4),
-                child: Stack(
-                  children: [
-                    Icon(Icons.shopping_bag_outlined),
-                    if (provider.cartCount > 0)
-                      Positioned(
-                        right: 0,
-                        top: 0,
-                        child: Container(
-                          padding: EdgeInsets.all(2),
-                          decoration: BoxDecoration(
-                            color: Color(0xFFEF4444),
-                            shape: BoxShape.circle,
-                          ),
-                          constraints: BoxConstraints(
-                            minWidth: 14,
-                            minHeight: 14,
-                          ),
-                          child: Text(
-                            '${provider.cartCount}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 8,
-                              fontWeight: FontWeight.w900,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              label: provider.tr('nav_cart'),
-            ),
-            BottomNavigationBarItem(
-              icon: Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Stack(
-                  children: [
-                    const Icon(Icons.assignment_outlined),
-                    if (provider.orders.any(
-                      (o) =>
-                          o.status != OrderStatus.completed &&
-                          o.status != OrderStatus.cancelled,
-                    ))
-                      Positioned(
-                        right: 0,
-                        top: 0,
-                        child: Container(
-                          width: 8,
-                          height: 8,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFEF4444),
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              label: provider.tr('nav_orders'),
-            ),
-            BottomNavigationBarItem(
-              icon: Padding(
-                padding: EdgeInsets.only(bottom: 4),
-                child: Icon(Icons.group_outlined),
-              ),
-              label: provider.tr('nav_group'),
-            ),
-          ],
-        ),
+          ),
+          FastNavItem(
+            icon: Icons.group_outlined,
+            activeIcon: Icons.group,
+            label: provider.tr('nav_group'),
+          ),
+        ],
       ),
     );
   }

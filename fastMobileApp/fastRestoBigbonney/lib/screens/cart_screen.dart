@@ -196,7 +196,9 @@ class _CartScreenState extends State<CartScreen> {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: context.fast.line),
       ),
-      child: ListView.separated(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: ListView.separated(
         shrinkWrap: true,
         physics: NeverScrollableScrollPhysics(),
         itemCount: cart.length,
@@ -204,7 +206,11 @@ class _CartScreenState extends State<CartScreen> {
             Divider(color: context.fast.line, height: 1),
         itemBuilder: (context, index) {
           final item = cart[index];
-          return Padding(
+          return FastSwipeDelete(
+            onDelete: () => provider.removeFromCart(item.menuItem.id),
+            child: Container(
+            color: context.fast.card,
+            child: Padding(
             padding: EdgeInsets.all(16),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -353,8 +359,11 @@ class _CartScreenState extends State<CartScreen> {
                 ),
               ],
             ),
+            ),
+            ),
           );
         },
+      ),
       ),
     );
   }

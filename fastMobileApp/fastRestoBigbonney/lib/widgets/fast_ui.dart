@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -498,6 +499,547 @@ class FastEmpty extends StatelessWidget {
           if (action != null) ...[const SizedBox(height: 20), action!],
         ],
       ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// SynapsisUI ports — their signature interactions rebuilt in Flutter and
+// tuned to FAST tokens: floating glass nav, oversize-thumb switch,
+// swipe-to-delete rows, scroll parallax and error shake.
+// ---------------------------------------------------------------------------
+
+/// One destination in a [FastNavBar].
+class FastNavItem {
+  final IconData icon;
+  final IconData? activeIcon;
+  final String label;
+
+  /// Count badge (0 hides it) — cart items.
+  final int badge;
+
+  /// Small activity dot — pending orders.
+  final bool dot;
+
+  const FastNavItem({
+    required this.icon,
+    required this.label,
+    this.activeIcon,
+    this.badge = 0,
+    this.dot = false,
+  });
+}
+
+/// Frosted floating bottom bar — a springing amber indicator pill slides
+/// between tabs while icons scale up and brighten the closer the indicator
+/// gets (Flutter port of SynapsisUI's BottomTab).
+class FastNavBar extends StatefulWidget {
+  final int currentIndex;
+  final List<FastNavItem> items;
+  final ValueChanged<int> onTap;
+
+  const FastNavBar({
+    super.key,
+    required this.currentIndex,
+    required this.items,
+    required this.onTap,
+  });
+
+  @override
+  State<FastNavBar> createState() => _FastNavBarState();
+}
+
+class _FastNavBarState extends State<FastNavBar>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pos = AnimationController(
+    vsync: this,
+    value: widget.currentIndex.toDouble(),
+    lowerBound: -0.35,
+    upperBound: widget.items.length - 0.65,
+  );
+
+  @override
+  void didUpdateWidget(covariant FastNavBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.currentIndex != widget.currentIndex) {
+      _pos.animateTo(
+        widget.currentIndex.toDouble(),
+        duration: const Duration(milliseconds: 380),
+        curve: Curves.easeOutBack,
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _pos.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final fast = context.fast;
+    const amber = Color(0xFFF59E0B);
+    final bottom = MediaQuery.paddingOf(context).bottom;
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(14, 0, 14, bottom + 10),
+      child: Container(
+        height: 64,
+        decoration: BoxDecoration(
+          color: fast.card.withValues(alpha: 0.94),
+          borderRadius: BorderRadius.circular(32),
+          border: Border.all(color: fast.line),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.25),
+              blurRadius: 24,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: LayoutBuilder(
+          builder: (context, c) {
+            final tabW = c.maxWidth / widget.items.length;
+            return Stack(
+              children: [
+                AnimatedBuilder(
+                  animation: _pos,
+                  builder: (ctx, _) => Positioned(
+                    left: _pos.value * tabW + 7,
+                    top: 8,
+                    width: tabW - 14,
+                    height: 48,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: amber.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: amber.withValues(alpha: 0.4),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Row(
+                  children: [
+                    for (var i = 0; i < widget.items.length; i++)
+                      Expanded(child: _tab(i, widget.items[i], fast, amber)),
+                  ],
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _tab(int i, FastNavItem item, FASTShades fast, Color amber) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => widget.onTap(i),
+      child: AnimatedBuilder(
+        animation: _pos,
+        builder: (ctx, _) {
+          final t = 1 - (_pos.value - i).abs().clamp(0.0, 1.0);
+          final color = Color.lerp(fast.t3, amber, t)!;
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Transform.scale(
+                scale: 1 + 0.18 * t,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Icon(
+                      t > 0.5 ? (item.activeIcon ?? item.icon) : item.icon,
+                      color: color,
+                      size: 22,
+                    ),
+                    if (item.badge > 0)
+                      Positioned(
+                        right: -11,
+                        top: -6,
+                        child: Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFEF4444),
+                            shape: BoxShape.circle,
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 15,
+                            minHeight: 15,
+                          ),
+                          child: Text(
+                            '${item.badge}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 8,
+                              fontWeight: FontWeight.w900,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    if (item.dot)
+                      const Positioned(
+                        right: -6,
+                        top: -4,
+                        child: SizedBox(
+                          width: 8,
+                          height: 8,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: Color(0xFFEF4444),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                item.label,
+                style: TextStyle(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w800,
+                  color: color,
+                  letterSpacing: 0.2,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Oversize-thumb toggle — the white knob pokes out of the track and its
+/// inner accent ring collapses into a filled dot when on (Flutter port of
+/// SynapsisUI's Switch2).
+class FastSwitch extends StatelessWidget {
+  final bool value;
+  final ValueChanged<bool>? onChanged;
+  final Color accent;
+  final double size;
+
+  const FastSwitch({
+    super.key,
+    required this.value,
+    this.onChanged,
+    this.accent = const Color(0xFF00C8B3),
+    this.size = 30,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final fast = context.fast;
+    const dur = Duration(milliseconds: 300);
+    return GestureDetector(
+      onTap: () => onChanged?.call(!value),
+      child: AnimatedContainer(
+        duration: dur,
+        curve: Curves.easeInOut,
+        width: size * 2.2,
+        height: size,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(size / 2),
+          color: value ? accent : fast.faint,
+          boxShadow: [
+            BoxShadow(
+              color: (value ? accent : Colors.black).withValues(alpha: 0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: AnimatedAlign(
+          duration: dur,
+          curve: Curves.easeInOut,
+          alignment: Alignment(value ? 0.68 : -0.68, 0),
+          child: Container(
+            width: size * 1.24,
+            height: size * 1.24,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Center(
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Ring — visible while off.
+                  AnimatedScale(
+                    scale: value ? 0 : 1,
+                    duration: dur,
+                    curve: Curves.easeInOut,
+                    child: Container(
+                      width: size * 0.72,
+                      height: size * 0.72,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: fast.t3,
+                          width: size * 0.14,
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Filled dot — pops in while on.
+                  AnimatedScale(
+                    scale: value ? 1 : 0,
+                    duration: dur,
+                    curve: Curves.easeOutBack,
+                    child: Container(
+                      width: size * 0.45,
+                      height: size * 0.45,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: accent,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Drop-in [SwitchListTile] replacement that pairs a title/subtitle with a
+/// [FastSwitch] on the trailing edge.
+class FastSwitchTile extends StatelessWidget {
+  final Widget title;
+  final Widget? subtitle;
+  final Widget? leading;
+  final bool value;
+  final ValueChanged<bool>? onChanged;
+  final Color accent;
+
+  const FastSwitchTile({
+    super.key,
+    required this.title,
+    required this.value,
+    this.onChanged,
+    this.subtitle,
+    this.leading,
+    this.accent = const Color(0xFF00C8B3),
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          if (leading != null) ...[leading!, const SizedBox(width: 12)],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                title,
+                if (subtitle != null) ...[
+                  const SizedBox(height: 2),
+                  subtitle!,
+                ],
+              ],
+            ),
+          ),
+          FastSwitch(value: value, onChanged: onChanged, accent: accent),
+        ],
+      ),
+    );
+  }
+}
+
+/// Swipe-to-delete row — dragging left slides the child aside and reveals
+/// a red zone whose trash icon pops bigger once the commit threshold is
+/// crossed; releasing past it fires [onDelete], otherwise the row springs
+/// back (Flutter port of SynapsisUI's SwipeAnimation).
+class FastSwipeDelete extends StatefulWidget {
+  final Widget child;
+  final VoidCallback onDelete;
+  final Color color;
+  final IconData icon;
+
+  const FastSwipeDelete({
+    super.key,
+    required this.child,
+    required this.onDelete,
+    this.color = const Color(0xFFEF4444),
+    this.icon = Icons.delete_outline,
+  });
+
+  @override
+  State<FastSwipeDelete> createState() => _FastSwipeDeleteState();
+}
+
+class _FastSwipeDeleteState extends State<FastSwipeDelete>
+    with SingleTickerProviderStateMixin {
+  static const _reveal = 110.0;
+  static const _commit = -80.0;
+
+  late final AnimationController _dx =
+      AnimationController.unbounded(vsync: this, value: 0);
+
+  @override
+  void dispose() {
+    _dx.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onHorizontalDragUpdate: (d) =>
+          _dx.value = (_dx.value + d.delta.dx).clamp(-_reveal, 0.0),
+      onHorizontalDragEnd: (_) {
+        if (_dx.value <= _commit) widget.onDelete();
+        _dx.animateTo(
+          0,
+          duration: const Duration(milliseconds: 380),
+          curve: Curves.elasticOut,
+        );
+      },
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: AnimatedBuilder(
+              animation: _dx,
+              builder: (ctx, _) {
+                final hot = _dx.value <= _commit;
+                return Container(
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.only(right: 22),
+                  color: widget.color.withValues(alpha: 0.92),
+                  child: AnimatedScale(
+                    scale: hot ? 1.5 : 1.0,
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeOutBack,
+                    child: Icon(widget.icon, color: Colors.white, size: 22),
+                  ),
+                );
+              },
+            ),
+          ),
+          AnimatedBuilder(
+            animation: _dx,
+            builder: (ctx, child) => Transform.translate(
+              offset: Offset(_dx.value, 0),
+              child: child,
+            ),
+            child: widget.child,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Scroll-driven parallax — the child drifts against the scroll direction
+/// as it crosses the viewport centre and is slightly oversized so the
+/// motion never reveals edges (Flutter port of SynapsisUI's
+/// ParallaxCarousel). Works on both axes; drop around a `FastImage`
+/// inside any scrolling list.
+class FastParallax extends StatelessWidget {
+  final Widget child;
+  final double maxShift;
+  final double scale;
+
+  const FastParallax({
+    super.key,
+    required this.child,
+    this.maxShift = 18,
+    this.scale = 1.15,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scaled = Transform.scale(scale: scale, child: child);
+    final position = Scrollable.maybeOf(context)?.position;
+    if (position == null) return scaled;
+    return AnimatedBuilder(
+      animation: position,
+      builder: (ctx, _) {
+        final box = ctx.findRenderObject() as RenderBox?;
+        if (box == null || !box.hasSize || !position.hasPixels) return scaled;
+        final screen = MediaQuery.sizeOf(ctx);
+        final vertical = position.axis == Axis.vertical;
+        final extent = vertical ? screen.height : screen.width;
+        final o = box.localToGlobal(Offset.zero);
+        final itemCenter = vertical
+            ? o.dy + box.size.height / 2
+            : o.dx + box.size.width / 2;
+        final progress =
+            ((itemCenter - extent / 2) / extent).clamp(-1.0, 1.0);
+        final shift = -progress * maxShift;
+        return Transform.translate(
+          offset: vertical ? Offset(0, shift) : Offset(shift, 0),
+          child: scaled,
+        );
+      },
+    );
+  }
+}
+
+/// Error shake — brief decaying horizontal wobble (Flutter port of the
+/// OtpBoxes invalid-code shake). Bump [trigger] to replay it.
+class FastShake extends StatefulWidget {
+  final Widget child;
+  final int trigger;
+
+  const FastShake({super.key, required this.child, this.trigger = 0});
+
+  @override
+  State<FastShake> createState() => _FastShakeState();
+}
+
+class _FastShakeState extends State<FastShake>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 420),
+  );
+
+  @override
+  void didUpdateWidget(covariant FastShake oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.trigger != widget.trigger) _ctrl.forward(from: 0);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _ctrl,
+      builder: (ctx, child) {
+        final dx =
+            math.sin(_ctrl.value * math.pi * 6) * (1 - _ctrl.value) * 10;
+        return Transform.translate(offset: Offset(dx, 0), child: child);
+      },
+      child: widget.child,
     );
   }
 }

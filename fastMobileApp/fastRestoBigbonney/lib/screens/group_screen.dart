@@ -9,6 +9,7 @@ import '../providers/auth_provider.dart';
 import '../services/group_service.dart';
 import '../theme.dart';
 import '../l10n/tr.dart';
+import '../widgets/fast_ui.dart';
 
 class GroupScreen extends StatefulWidget {
   const GroupScreen({super.key});
@@ -20,6 +21,7 @@ class GroupScreen extends StatefulWidget {
 class _GroupScreenState extends State<GroupScreen> {
   final _service = GroupService();
   final _codeController = TextEditingController();
+  int _shakeTick = 0;
   Map<String, dynamic>? _group;
   Timer? _refreshTimer;
   bool _loading = true;
@@ -193,6 +195,7 @@ class _GroupScreenState extends State<GroupScreen> {
         setState(() {
           _loading = false;
           _error = _message(e);
+          _shakeTick++;
         });
       }
     }
@@ -374,20 +377,23 @@ class _GroupScreenState extends State<GroupScreen> {
         ),
       ),
       const SizedBox(height: 8),
-      TextField(
-        controller: _codeController,
-        textCapitalization: TextCapitalization.characters,
-        decoration: InputDecoration(
-          hintText: 'FAST-XXXXXXXX',
-          prefixIcon: const Icon(Icons.key_outlined),
-          suffixIcon: IconButton(
-            tooltip: context.read<FASTProvider>().tr('join'),
-            onPressed: _join,
-            icon: const Icon(Icons.arrow_forward),
+      FastShake(
+        trigger: _shakeTick,
+        child: TextField(
+          controller: _codeController,
+          textCapitalization: TextCapitalization.characters,
+          decoration: InputDecoration(
+            hintText: 'FAST-XXXXXXXX',
+            prefixIcon: const Icon(Icons.key_outlined),
+            suffixIcon: IconButton(
+              tooltip: context.read<FASTProvider>().tr('join'),
+              onPressed: _join,
+              icon: const Icon(Icons.arrow_forward),
+            ),
+            border: const OutlineInputBorder(),
           ),
-          border: const OutlineInputBorder(),
+          onSubmitted: (_) => _join(),
         ),
-        onSubmitted: (_) => _join(),
       ),
     ],
   );
