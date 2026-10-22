@@ -28,6 +28,10 @@ class FastIntroSlide {
   /// Secondary gradient/glow color (CTA right, halo, satellite dot).
   final Color glow;
 
+  /// Optional localized banner shown under the CTA on this slide
+  /// (e.g. "Bienvenue sur FAST !" on the finale).
+  final String? bannerText;
+
   const FastIntroSlide({
     required this.icon,
     required this.title,
@@ -35,6 +39,7 @@ class FastIntroSlide {
     required this.accent,
     required this.glow,
     this.accentPart,
+    this.bannerText,
   });
 }
 
@@ -302,6 +307,10 @@ class _FastIntroCarouselState extends State<FastIntroCarousel>
                         ),
                       ),
                     ),
+                    if (slide.bannerText != null) ...[
+                      const SizedBox(height: 14),
+                      _BannerPill(text: slide.bannerText!, accent: slide.accent),
+                    ],
                   ],
                 ),
               ),
@@ -528,6 +537,67 @@ class _FastIntroCarouselState extends State<FastIntroCarousel>
           TextSpan(
             text: slide.title.substring(split + part.length),
             style: white,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Frosted pill shown under the CTA on the finale slide — celebration
+/// icons and the word "FAST" highlighted in amber inside the text.
+class _BannerPill extends StatelessWidget {
+  const _BannerPill({required this.text, required this.accent});
+
+  final String text;
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    const white = TextStyle(
+      color: Colors.white,
+      fontWeight: FontWeight.w800,
+      fontSize: 13.5,
+    );
+    final split = text.indexOf('FAST');
+    final spans = <InlineSpan>[
+      if (split >= 0) ...[
+        TextSpan(text: text.substring(0, split), style: white),
+        const TextSpan(
+          text: 'FAST',
+          style: TextStyle(
+            color: Color(0xFFFBBF24),
+            fontWeight: FontWeight.w900,
+            fontStyle: FontStyle.italic,
+            fontSize: 13.5,
+          ),
+        ),
+        TextSpan(text: text.substring(split + 4), style: white),
+      ] else
+        TextSpan(text: text, style: white),
+    ];
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: accent.withValues(alpha: 0.45)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.celebration, color: Color(0xFFFBBF24), size: 16),
+          const SizedBox(width: 8),
+          Flexible(child: Text.rich(TextSpan(children: spans))),
+          const SizedBox(width: 8),
+          Transform.flip(
+            flipX: true,
+            child: const Icon(
+              Icons.celebration,
+              color: Color(0xFFFBBF24),
+              size: 16,
+            ),
           ),
         ],
       ),
