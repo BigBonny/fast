@@ -12,6 +12,7 @@ import 'package:fast_resto_bigbonney/models/auth_models.dart';
 import 'package:fast_resto_bigbonney/l10n/tr.dart';
 import 'package:fast_resto_bigbonney/screens/home_screen.dart';
 import 'package:fast_resto_bigbonney/screens/resto/pro_intro_slides.dart';
+import 'package:fast_resto_bigbonney/widgets/intro_carousel.dart';
 import 'package:latlong2/latlong.dart';
 
 void main() {
@@ -170,93 +171,209 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  // Measured centre of the baked Suivant / Commencer / C'est parti pill on
-  // each slide (fractions of the 576x1024 artwork). The test taps these
-  // exact pixels, so a hit-zone regression on any slide fails it.
+  // Measured centre of the baked Suivant / Commencer pill on each Pro slide
+  // (fractions of the 576x1024 artwork). The test taps these exact pixels,
+  // so a hit-zone regression on any slide fails it.
   const proPillY = [0.905, 0.877, 0.902, 0.904];
-  const clientPillY = [0.886, 0.866, 0.866, 0.906];
 
-  for (final set in [
-    (name: 'Pro', images: ProIntroSlides.proImages,
-     rects: ProIntroSlides.proNextRects, pills: proPillY,
-     key: ProIntroSlides.proDismissedKey),
-    (name: 'client', images: ProIntroSlides.clientImages,
-     rects: ProIntroSlides.clientNextRects, pills: clientPillY,
-     key: ProIntroSlides.clientDismissedKey),
-  ]) {
-    testWidgets('${set.name} intro slides: baked buttons hit on a tall phone',
-        (tester) async {
-      SharedPreferences.setMockInitialValues({});
-      // 9:19.5 phone — the 9:16 artwork must letterbox, not crop.
-      tester.view.physicalSize = const Size(1080, 2340);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.reset);
+  testWidgets('Pro intro slides: baked buttons hit on a tall phone',
+      (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    // 9:19.5 phone — the 9:16 artwork must letterbox, not crop.
+    tester.view.physicalSize = const Size(1080, 2340);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
 
-      var done = 0, back = 0;
-      PageController controllerOf(WidgetTester t) =>
-          t.widget<PageView>(find.byType(PageView)).controller!;
-      await tester.pumpWidget(
-        ChangeNotifierProvider(
-          create: (_) => FASTProvider(),
-          child: MaterialApp(
-            home: ProIntroSlides(
-              images: set.images,
-              nextButtonRects: set.rects,
-              dismissedPrefKey: set.key,
+    var done = 0, back = 0;
+    PageController controllerOf(WidgetTester t) =>
+        t.widget<PageView>(find.byType(PageView)).controller!;
+    await tester.pumpWidget(
+      ChangeNotifierProvider(
+        create: (_) => FASTProvider(),
+        child: MaterialApp(
+          home: ProIntroSlides(
+            images: ProIntroSlides.proImages,
+            nextButtonRects: ProIntroSlides.proNextRects,
+            dismissedPrefKey: ProIntroSlides.proDismissedKey,
+            onDone: () => done++,
+            onBack: () => back++,
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    final fitted = applyBoxFit(
+      BoxFit.contain,
+      const Size(576, 1024),
+      const Size(1080, 2340),
+    ).destination;
+    expect(fitted.width, 1080);
+    expect(fitted.height, lessThan(2340));
+    final top = (2340 - fitted.height) / 2;
+    Offset at(double fx, double fy) =>
+        Offset(fx * fitted.width, top + fy * fitted.height);
+
+    // Pill on slide 1 → page 2.
+    await tester.tapAt(at(0.5, proPillY[0]));
+    await tester.pumpAndSettle();
+    expect(controllerOf(tester).page!.round(), 1);
+    // Retour → back to page 1.
+    await tester.tapAt(at(0.12, 0.03));
+    await tester.pumpAndSettle();
+    expect(controllerOf(tester).page!.round(), 0);
+    // Retour on first slide → onBack.
+    await tester.tapAt(at(0.12, 0.03));
+    await tester.pump();
+    expect(back, 1);
+    // Passer → onDone from anywhere.
+    await tester.tapAt(at(0.9, 0.03));
+    await tester.pump();
+    expect(done, 1);
+    // Each slide's own pill advances; the last one completes.
+    for (var i = 0; i < ProIntroSlides.proImages.length; i++) {
+      await tester.tapAt(at(0.5, proPillY[i]));
+      await tester.pumpAndSettle();
+      expect(controllerOf(tester).page!.round(),
+          (i + 1).clamp(0, ProIntroSlides.proImages.length - 1),
+          reason: 'pill on slide ${i + 1} should advance');
+    }
+    expect(done, 2);
+    // Page dots / counter row (y≈0.95) must not be covered by the chip.
+    final chip = find.byIcon(Icons.check_box_outline_blank);
+    expect(chip, findsOneWidget);
+    expect(tester.getTopLeft(chip).dy,
+        greaterThan(top + 0.975 * fitted.height));
+    await tester.tap(chip);
+    await tester.pump();
+    expect(
+      (await SharedPreferences.getInstance())
+          .getBool(ProIntroSlides.proDismissedKey),
+      isTrue,
+    );
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  // The client intro is a live-rendered FastIntroCarousel (orange → violet
+  // → pink) — real buttons, not baked artwork zones.
+  testWidgets('Client intro carousel: buttons navigate, dismissal persists',
+      (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    tester.view.physicalSize = const Size(1080, 2340);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    var done = 0, back = 0;
+    PageController controllerOf(WidgetTester t) =>
+        t.widget<PageView>(find.byType(PageView)).controller!;
+    await tester.pumpWidget(
+      ChangeNotifierProvider(
+        create: (_) => FASTProvider(),
+        child: MaterialApp(
+          home: Builder(
+            builder: (context) => FastIntroCarousel(
+              slides: [
+                FastIntroSlide(
+                  icon: Icons.restaurant,
+                  title: tr(context, 'ci1_t'),
+                  accentPart: tr(context, 'ci1_ta'),
+                  description: tr(context, 'ci1_d'),
+                  accent: const Color(0xFFF59E0B),
+                  glow: const Color(0xFFF97316),
+                ),
+                FastIntroSlide(
+                  icon: Icons.location_on_outlined,
+                  title: tr(context, 'ci2_t'),
+                  accentPart: tr(context, 'ci2_ta'),
+                  description: tr(context, 'ci2_d'),
+                  accent: const Color(0xFFA855F7),
+                  glow: const Color(0xFF7C3AED),
+                ),
+                FastIntroSlide(
+                  icon: Icons.bolt,
+                  title: tr(context, 'ci3_t'),
+                  accentPart: tr(context, 'ci3_ta'),
+                  description: tr(context, 'ci3_d'),
+                  accent: const Color(0xFFFF0066),
+                  glow: const Color(0xFFEC4899),
+                ),
+              ],
+              dismissedPrefKey: ProIntroSlides.clientDismissedKey,
               onDone: () => done++,
               onBack: () => back++,
             ),
           ),
         ),
-      );
-      await tester.pump();
+      ),
+    );
+    await tester.pump();
+    // The medallion breathe/orbit animations repeat forever — timed pumps
+    // instead of pumpAndSettle (which would never finish).
+    const pageAnim = Duration(milliseconds: 500);
 
-      final fitted = applyBoxFit(
-        BoxFit.contain,
-        const Size(576, 1024),
-        const Size(1080, 2340),
-      ).destination;
-      expect(fitted.width, 1080);
-      expect(fitted.height, lessThan(2340));
-      final top = (2340 - fitted.height) / 2;
-      Offset at(double fx, double fy) =>
-          Offset(fx * fitted.width, top + fy * fitted.height);
+    // Page turns need a starting frame, then a clock jump.
+    Future<void> turn() async {
+      await tester.pump();
+      await tester.pump(pageAnim);
+      await tester.pump();
+    }
 
-      // Pill on slide 1 → page 2.
-      await tester.tapAt(at(0.5, set.pills[0]));
-      await tester.pumpAndSettle();
-      expect(controllerOf(tester).page!.round(), 1);
-      // Retour → back to page 1.
-      await tester.tapAt(at(0.12, 0.03));
-      await tester.pumpAndSettle();
-      expect(controllerOf(tester).page!.round(), 0);
-      // Retour on first slide → onBack.
-      await tester.tapAt(at(0.12, 0.03));
-      await tester.pump();
-      expect(back, 1);
-      // Passer → onDone from anywhere.
-      await tester.tapAt(at(0.9, 0.03));
-      await tester.pump();
-      expect(done, 1);
-      // Each slide's own pill advances; the last one completes.
-      for (var i = 0; i < set.images.length; i++) {
-        await tester.tapAt(at(0.5, set.pills[i]));
-        await tester.pumpAndSettle();
-        expect(controllerOf(tester).page!.round(),
-            (i + 1).clamp(0, set.images.length - 1),
-            reason: 'pill on slide ${i + 1} should advance');
-      }
-      expect(done, 2);
-      // Page dots / counter row (y≈0.95) must not be covered by the chip.
-      final chip = find.byIcon(Icons.check_box_outline_blank);
-      expect(chip, findsOneWidget);
-      expect(tester.getTopLeft(chip).dy,
-          greaterThan(top + 0.975 * fitted.height));
-      await tester.tap(chip);
-      await tester.pump();
-      expect((await SharedPreferences.getInstance()).getBool(set.key), isTrue);
-      expect(tester.takeException(), isNull);
-      await tester.pumpWidget(const SizedBox.shrink());
-    });
-  }
+    // Suivant → page 2.
+    await tester.tap(find.text('Suivant'));
+    await turn();
+    expect(controllerOf(tester).page!.round(), 1);
+    // Retour pill → page 1.
+    await tester.tap(find.text('Retour'));
+    await turn();
+    expect(controllerOf(tester).page!.round(), 0);
+    // Retour on the first slide → onBack.
+    await tester.tap(find.text('Retour'));
+    await tester.pump();
+    expect(back, 1);
+    // Suivant twice more → last slide shows Commencer, tap → onDone.
+    await tester.tap(find.text('Suivant'));
+    await turn();
+    await tester.tap(find.text('Suivant'));
+    await turn();
+    expect(controllerOf(tester).page!.round(), 2);
+    await tester.tap(find.text('Commencer !'));
+    await tester.pump();
+    expect(done, 1);
+    // Passer also completes (rebuild with a fresh carousel).
+    await tester.pumpWidget(
+      ChangeNotifierProvider(
+        create: (_) => FASTProvider(),
+        child: MaterialApp(
+          home: FastIntroCarousel(
+            slides: const [
+              FastIntroSlide(
+                icon: Icons.restaurant,
+                title: 'a',
+                description: 'd',
+                accent: Color(0xFFF59E0B),
+                glow: Color(0xFFF97316),
+              ),
+            ],
+            dismissedPrefKey: ProIntroSlides.clientDismissedKey,
+            onDone: () => done++,
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.tap(find.text('Passer'));
+    await tester.pump();
+    expect(done, 2);
+    // The don't-show-again chip persists its choice.
+    await tester.tap(find.byIcon(Icons.check_box_outline_blank));
+    await tester.pump();
+    expect(
+      (await SharedPreferences.getInstance())
+          .getBool(ProIntroSlides.clientDismissedKey),
+      isTrue,
+    );
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
 }
