@@ -7,6 +7,7 @@ import '../resto_provider.dart';
 import '../services/auth_service.dart';
 import 'role_selection_screen.dart';
 import '../theme.dart';
+import '../widgets/fast_ui.dart';
 
 class AuthScreen extends StatefulWidget {
   final String? initialRole; // 'CLIENT', 'RESTAURANT' or 'LIVREUR'
@@ -367,33 +368,11 @@ class _AuthScreenState extends State<AuthScreen>
             ),
             Consumer<AuthProvider>(
               builder: (context, auth, _) {
-                return ElevatedButton(
-                  onPressed: auth.isBusy ? null : _handleLogin,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFFF59E0B),
-                    foregroundColor: FASTBrand.onAmber,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: auth.isBusy
-                      ? SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: FASTBrand.onAmber,
-                          ),
-                        )
-                      : Text(
-                          fast.tr('login_btn'),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
+                return FastButton(
+                  label: fast.tr('login_btn'),
+                  onPressed: _handleLogin,
+                  loading: auth.isBusy,
+                  fontSize: 16,
                 );
               },
             ),
@@ -753,33 +732,11 @@ class _AuthScreenState extends State<AuthScreen>
             ),
             Consumer<AuthProvider>(
               builder: (context, auth, _) {
-                return ElevatedButton(
-                  onPressed: auth.isBusy ? null : _handleRegister,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFFF59E0B),
-                    foregroundColor: FASTBrand.onAmber,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: auth.isBusy
-                      ? SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: FASTBrand.onAmber,
-                          ),
-                        )
-                      : Text(
-                          fast.tr('register_btn'),
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
+                return FastButton(
+                  label: fast.tr('register_btn'),
+                  onPressed: _handleRegister,
+                  loading: auth.isBusy,
+                  fontSize: 16,
                 );
               },
             ),
