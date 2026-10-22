@@ -538,11 +538,31 @@ class FastNavBar extends StatefulWidget {
   final List<FastNavItem> items;
   final ValueChanged<int> onTap;
 
+  /// Indicator/active color — amber on the client side, teal for Pro.
+  final Color accent;
+
+  /// Pill surface — defaults to the theme card color.
+  final Color? surface;
+
+  /// Pill border — defaults to the theme line color.
+  final Color? line;
+
+  /// Inactive icon/label color — defaults to the theme t3 color.
+  final Color? inactive;
+
+  /// Optional keys per tab — the Pro spotlight tutorial targets nav items.
+  final List<Key?>? itemKeys;
+
   const FastNavBar({
     super.key,
     required this.currentIndex,
     required this.items,
     required this.onTap,
+    this.accent = const Color(0xFFF59E0B),
+    this.surface,
+    this.line,
+    this.inactive,
+    this.itemKeys,
   });
 
   @override
@@ -579,7 +599,8 @@ class _FastNavBarState extends State<FastNavBar>
   @override
   Widget build(BuildContext context) {
     final fast = context.fast;
-    const amber = Color(0xFFF59E0B);
+    final accent = widget.accent;
+    final inactive = widget.inactive ?? fast.t3;
     final bottom = MediaQuery.paddingOf(context).bottom;
 
     return Padding(
@@ -587,9 +608,9 @@ class _FastNavBarState extends State<FastNavBar>
       child: Container(
         height: 64,
         decoration: BoxDecoration(
-          color: fast.card.withValues(alpha: 0.94),
+          color: (widget.surface ?? fast.card).withValues(alpha: 0.94),
           borderRadius: BorderRadius.circular(32),
-          border: Border.all(color: fast.line),
+          border: Border.all(color: widget.line ?? fast.line),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.25),
@@ -613,10 +634,10 @@ class _FastNavBarState extends State<FastNavBar>
                     height: 48,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: amber.withValues(alpha: 0.15),
+                        color: accent.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(
-                          color: amber.withValues(alpha: 0.4),
+                          color: accent.withValues(alpha: 0.4),
                         ),
                       ),
                     ),
@@ -625,7 +646,15 @@ class _FastNavBarState extends State<FastNavBar>
                 Row(
                   children: [
                     for (var i = 0; i < widget.items.length; i++)
-                      Expanded(child: _tab(i, widget.items[i], fast, amber)),
+                      Expanded(
+                        child: KeyedSubtree(
+                          key: widget.itemKeys != null &&
+                                  i < widget.itemKeys!.length
+                              ? widget.itemKeys![i]
+                              : null,
+                          child: _tab(i, widget.items[i], inactive, accent),
+                        ),
+                      ),
                   ],
                 ),
               ],
@@ -636,7 +665,7 @@ class _FastNavBarState extends State<FastNavBar>
     );
   }
 
-  Widget _tab(int i, FastNavItem item, FASTShades fast, Color amber) {
+  Widget _tab(int i, FastNavItem item, Color inactive, Color accent) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () => widget.onTap(i),
@@ -644,7 +673,7 @@ class _FastNavBarState extends State<FastNavBar>
         animation: _pos,
         builder: (ctx, _) {
           final t = 1 - (_pos.value - i).abs().clamp(0.0, 1.0);
-          final color = Color.lerp(fast.t3, amber, t)!;
+          final color = Color.lerp(inactive, accent, t)!;
           return Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
