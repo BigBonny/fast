@@ -418,6 +418,16 @@ export const createCheckoutSession = async (req: Request, res: Response): Promis
               },
             }]
           : []),
+        ...(dineInFee > 0
+          ? [{
+              quantity: 1,
+              price_data: {
+                currency: env.stripeCurrency,
+                unit_amount: cents(dineInFee),
+                product_data: { name: 'Frais de service sur place' },
+              },
+            }]
+          : []),
       ],
       payment_intent_data: Object.keys(paymentIntentData).length > 0 ? paymentIntentData : undefined,
       success_url: env.stripeSuccessUrl,

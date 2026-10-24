@@ -15,8 +15,178 @@ import '../l10n/tr.dart';
 import '../services/reservation_service.dart';
 import '../services/review_service.dart';
 
-class RestaurantScreen extends StatelessWidget {
+class RestaurantScreen extends StatefulWidget {
   const RestaurantScreen({super.key});
+
+  @override
+  State<RestaurantScreen> createState() => _RestaurantScreenState();
+}
+
+class _RestaurantScreenState extends State<RestaurantScreen> {
+  // Sticky category bar — a horizontal chip row pinned to the top
+  // once the menu scrolls under it; tapping a chip jumps straight
+  // to that section (cahier des charges: barre transversale).
+  final ScrollController _scroll = ScrollController();
+  final Map<String, GlobalKey> _catKeys = {};
+  List<String> _catOrder = [];
+  String? _activeCat;
+  bool _showCatBar = false;
+
+  static const double _barHeight = 46;
+
+  @override
+  void initState() {
+    super.initState();
+    _scroll.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  double get _barTopInset => MediaQuery.of(context).padding.top + 6;
+
+  double _docOffsetOf(GlobalKey key) {
+    final ctx = key.currentContext;
+    if (ctx == null) return double.nan;
+    final ro = ctx.findRenderObject();
+    if (ro is! RenderBox || !ro.attached) return double.nan;
+    return ro.localToGlobal(Offset.zero).dy + _scroll.offset;
+  }
+
+  void _onScroll() {
+    if (!_scroll.hasClients) return;
+    if (_catOrder.isEmpty) {
+      if (_showCatBar || _activeCat != null) {
+        setState(() {
+          _showCatBar = false;
+          _activeCat = null;
+        });
+      }
+      return;
+    }
+    final threshold = _scroll.offset + _barTopInset + _barHeight + 12;
+    String? active;
+    double firstDoc = double.nan;
+    for (final cat in _catOrder) {
+      final doc = _docOffsetOf(_catKeys[cat]!);
+      if (doc.isNaN) continue;
+      if (firstDoc.isNaN) firstDoc = doc;
+      if (doc <= threshold) active = cat;
+    }
+    final show =
+        !firstDoc.isNaN &&
+        _scroll.offset >= firstDoc - _barTopInset - _barHeight;
+    final next = active ?? (_catOrder.isNotEmpty ? _catOrder.first : null);
+    if (show != _showCatBar || next != _activeCat) {
+      setState(() {
+        _showCatBar = show;
+        _activeCat = next;
+      });
+    }
+  }
+
+  void _scrollToCategory(String cat) {
+    final key = _catKeys[cat];
+    if (key == null || !_scroll.hasClients) return;
+    final doc = _docOffsetOf(key);
+    if (doc.isNaN) return;
+    final target = (doc - _barTopInset - _barHeight - 6).clamp(
+      0.0,
+      _scroll.position.maxScrollExtent,
+    );
+    _scroll.animateTo(
+      target,
+      duration: const Duration(milliseconds: 380),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  Widget _categoryChip(BuildContext context, String cat, bool active) {
+    const amber = Color(0xFFF59E0B);
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: FastTap(
+        onTap: () => _scrollToCategory(cat),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: active ? amber : context.fast.card,
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(
+              color: active ? amber : context.fast.line,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                _categoryIcon(cat),
+                size: 13,
+                color: active ? FASTBrand.onAmber : context.fast.t3,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                cat.isEmpty
+                    ? Provider.of<FASTProvider>(
+                        context,
+                        listen: false,
+                      ).tr('menu_other')
+                    : cat,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: active ? FASTBrand.onAmber : context.fast.t2,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _categoryBar(BuildContext context) {
+    final pad = MediaQuery.of(context).padding.top;
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      child: IgnorePointer(
+        ignoring: !_showCatBar,
+        child: AnimatedSlide(
+          offset: _showCatBar ? Offset.zero : const Offset(0, -1.1),
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOutCubic,
+          child: AnimatedOpacity(
+            opacity: _showCatBar ? 1 : 0,
+            duration: const Duration(milliseconds: 160),
+            child: Container(
+              padding: EdgeInsets.fromLTRB(12, pad + 6, 12, 8),
+              decoration: BoxDecoration(
+                color: context.fast.bg.withValues(alpha: 0.94),
+                border: Border(
+                  bottom: BorderSide(color: context.fast.line),
+                ),
+              ),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    for (final cat in _catOrder)
+                      _categoryChip(context, cat, cat == _activeCat),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +197,10 @@ class RestaurantScreen extends StatelessWidget {
       return Center(child: Text(provider.tr('no_resto')));
     }
 
-    return ListView(
+    return Stack(
+      children: [
+        ListView(
+          controller: _scroll,
       children: [
         // Restaurant Banner Header
         Stack(
@@ -474,6 +647,9 @@ class RestaurantScreen extends StatelessWidget {
           ),
         ],
         const SizedBox(height: 120),
+          ],
+        ),
+        _categoryBar(context),
       ],
     );
   }
@@ -500,9 +676,17 @@ class RestaurantScreen extends StatelessWidget {
         return a.compareTo(b);
       });
 
+    // Register section keys + order for the sticky category bar.
+    _catOrder = keys;
+    for (final k in keys) {
+      _catKeys.putIfAbsent(k, () => GlobalKey());
+    }
+    _catKeys.removeWhere((k, _) => !keys.contains(k));
+
     return [
       for (final key in keys) ...[
         Padding(
+          key: _catKeys[key],
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
           child: Row(
             children: [

@@ -19,7 +19,6 @@ import 'screens/cart_screen.dart';
 import 'screens/commandes_screen.dart';
 import 'screens/account_screen.dart';
 import 'screens/role_selection_screen.dart';
-import 'screens/onboarding_screen.dart';
 import 'screens/resto/onboarding_screen.dart' as resto_onboarding;
 import 'screens/resto/kitchen_screen.dart';
 import 'screens/resto/guest_menu_shell.dart';
@@ -67,7 +66,6 @@ class FASTApp extends StatefulWidget {
 
 class _FASTAppState extends State<FASTApp> with WidgetsBindingObserver {
   bool _initialized = false;
-  bool _onboardingDone = false;
   final _appLinks = AppLinks();
   StreamSubscription<Uri>? _linkSub;
   late AuthProvider _authProvider;
@@ -169,7 +167,6 @@ class _FASTAppState extends State<FASTApp> with WidgetsBindingObserver {
   Future<void> _initApp() async {
     final auth = context.read<AuthProvider>();
     final prefs = await SharedPreferences.getInstance();
-    _onboardingDone = prefs.getBool('fast_onboarding_done') ?? false;
 
     if (!mounted) return;
 
@@ -261,17 +258,9 @@ class _FASTAppState extends State<FASTApp> with WidgetsBindingObserver {
       return const _SplashScreen();
     }
 
-    // Show onboarding on first install
-    if (!_onboardingDone) {
-      return OnboardingScreen(
-        onDone: () {
-          setState(() {
-            _onboardingDone = true;
-          });
-        },
-      );
-    }
-
+    // First screen = Client / Pro role choice. Each role's own
+    // onboarding appears only after the choice (client intro via
+    // ClientIntroGate, restaurant onboarding via resto_onboarding).
     final auth = context.watch<AuthProvider>();
     final fast = context.watch<FASTProvider>();
     if (auth.isLoggedIn) {

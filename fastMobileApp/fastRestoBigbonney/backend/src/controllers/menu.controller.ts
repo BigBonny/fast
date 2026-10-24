@@ -1,10 +1,14 @@
 import { Request, Response } from 'express';
+import fs from 'fs';
+import path from 'path';
+import crypto from 'crypto';
 import { prisma } from '../services/prisma';
 import { createMenuItemSchema, updateMenuItemSchema } from '../utils/validation';
 import { resolveFastPricing } from '../utils/fastPricing';
 import { env } from '../config/env';
 import { getRestaurantIdForUser } from '../middleware/auth';
 import { parseOcrResponse } from '../utils/menuOcr';
+import { uploadDir } from './uploads.controller';
 
 export const listMenuItems = async (req: Request, res: Response): Promise<void> => {
   const restaurantId = req.params.restaurantId as string;
@@ -562,6 +566,118 @@ Return ONLY a JSON object: {"description": "<text>"}`;
     console.error('[enhanceMenuItem] Error:', (err as Error).message);
     res.status(500).json({ error: 'Erreur lors de la suggestion IA' });
   }
+};
+
+// ─── AI dish photo ─────────────────────────────────────────
+// Realistic "approximate" photo for dishes the owner has not
+// photographed. Prefers Gemini's image model when GEMINI_API_KEY
+// is configured (the image is written into UPLOAD_DIR so it lives
+// under our control). Otherwise falls back to pollinations.ai —
+// free, keyless, deterministic per dish name — so every menu item
+// can always end up with a plausible photo.
+
+const GEMINI_IMAGE_MODELS = [
+  'gemini-2.5-flash-image',
+  'gemini-2.0-flash-preview-image-generation',
+];
+
+async function geminiGenerateImage(prompt: string): Promise<string | null> {
+  const apiKey = env.geminiApiKey;
+  if (!apiKey) return null;
+  for (const model of GEMINI_IMAGE_MODELS) {
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          signal: AbortSignal.timeout(45000),
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { responseModalities: ['IMAGE'] },
+          }),
+        },
+      );
+      if (!response.ok) continue;
+      const data = (await response.json()) as {
+        candidates?: { content?: { parts?: Record<string, any>[] } }[];
+      };
+      const parts = data.candidates?.[0]?.content?.parts ?? [];
+      const inline = parts.find(
+        (p) => p.inlineData?.data || p.inline_data?.data,
+      );
+      const b64 = (inline?.inlineData?.data ?? inline?.inline_data?.data) as
+        | string
+        | undefined;
+      const mime = (inline?.inlineData?.mimeType ??
+        inline?.inline_data?.mime_type ??
+        'image/png') as string;
+      if (!b64) continue;
+      const ext = mime.includes('png') ? '.png' : '.jpg';
+      const filename = `ai-${Date.now()}-${crypto
+        .randomBytes(4)
+        .toString('hex')}${ext}`;
+      fs.writeFileSync(
+        path.join(uploadDir, filename),
+        Buffer.from(b64, 'base64'),
+      );
+      return `/uploads/${filename}`;
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
+
+function pollinationsDishPhoto(prompt: string, seedSource: string): string {
+  let seed = 7;
+  for (const ch of seedSource) {
+    seed = (seed * 31 + ch.charCodeAt(0)) % 2147483647;
+  }
+  const q = new URLSearchParams({
+    width: '800',
+    height: '600',
+    seed: String(Math.abs(seed)),
+    nologo: 'true',
+    model: 'flux',
+  });
+  return `https://image.pollinations.ai/prompt/${encodeURIComponent(
+    prompt,
+  )}?${q.toString()}`;
+}
+
+export const generateDishPhoto = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  const { name, description, category } = (req.body ?? {}) as {
+    name?: string;
+    description?: string;
+    category?: string;
+  };
+  if (typeof name !== 'string' || name.trim().length < 2) {
+    res.status(400).json({ error: 'Le nom du plat est requis' });
+    return;
+  }
+  const safeName = name.trim().slice(0, 120);
+  const safeDesc = (description ?? '').trim().slice(0, 200);
+  const safeCat = (category ?? '').trim().slice(0, 60);
+  const prompt =
+    `Appetizing professional food photography of "${safeName}"` +
+    (safeDesc ? ` (${safeDesc})` : '') +
+    (safeCat ? `, category ${safeCat}` : '') +
+    ', served on a plate on a restaurant table, soft natural lighting,' +
+    ' shallow depth of field, photorealistic, high detail, no text,' +
+    ' no watermark, no people';
+
+  if (env.geminiApiKey) {
+    const url = await geminiGenerateImage(prompt);
+    if (url) {
+      res.json({ imageUrl: url, source: 'gemini' });
+      return;
+    }
+  }
+  res.json({ imageUrl: pollinationsDishPhoto(prompt, safeName), source: 'pollinations' });
 };
 
 export const suggestPrepTime = async (req: Request, res: Response): Promise<void> => {

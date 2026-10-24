@@ -1,6 +1,7 @@
 import '../api/api_client.dart';
 import '../api/api_config.dart';
 import '../models.dart';
+import 'upload_service.dart';
 
 class MenuService {
   final _api = ApiClient();
@@ -34,6 +35,27 @@ class MenuService {
   Future<String> enhanceDescription(String id) async {
     final data = await _api.post(ApiConfig.enhanceMenuItem(id));
     return (data as Map<String, dynamic>)['description'] as String? ?? '';
+  }
+
+  /// AI-generated realistic photo for a dish — used when the owner
+  /// hasn't uploaded their own. Returns an absolute URL.
+  Future<String> generateDishPhoto({
+    required String name,
+    String? description,
+    String? category,
+  }) async {
+    final data = await _api.post(
+      ApiConfig.menuAiPhoto,
+      body: {
+        'name': name,
+        if (description != null && description.isNotEmpty)
+          'description': description,
+        if (category != null && category.isNotEmpty) 'category': category,
+      },
+    );
+    return UploadService.absoluteUrl(
+      (data as Map<String, dynamic>)['imageUrl'] as String? ?? '',
+    );
   }
 
   Future<void> deleteItem(String id) async {
