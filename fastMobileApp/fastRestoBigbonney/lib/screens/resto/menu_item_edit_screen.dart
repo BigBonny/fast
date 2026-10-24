@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../models.dart';
 import '../../resto_provider.dart';
 import '../../services/menu_service.dart';
+import '../../services/upload_service.dart';
 import '../../theme.dart';
 import '../../l10n/tr.dart';
+import '../../widgets/fast_image.dart';
 import '../../widgets/fast_ui.dart';
 
 class MenuItemEditScreen extends StatefulWidget {
@@ -29,6 +32,10 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
   late bool _available;
   final Set<DietaryPreference> _dietary = {};
   bool _loading = false;
+  final ImagePicker _picker = ImagePicker();
+  bool _uploadingPhoto = false;
+  bool _uploadingVideo = false;
+  bool _generatingPhoto = false;
 
   // Supplements state – loaded from item, synced live to backend on save
   late List<MenuItemSupplement> _supplements;
@@ -96,9 +103,352 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
     }
   }
 
+  // ─── Dish media (photo + story video) ───────────────────
+
+  Future<void> _pickPhoto(ImageSource source) async {
+    final file = await _picker.pickImage(
+      source: source,
+      maxWidth: 1600,
+      imageQuality: 85,
+    );
+    if (file == null || !mounted) return;
+    setState(() => _uploadingPhoto = true);
+    try {
+      final url = await UploadService().uploadFile(file.path);
+      if (mounted) setState(() => _image.text = url);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(tr(context, 'error_save'))),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _uploadingPhoto = false);
+    }
+  }
+
+  Future<void> _pickVideo(ImageSource source) async {
+    final file = await _picker.pickVideo(
+      source: source,
+      maxDuration: const Duration(seconds: 60),
+    );
+    if (file == null || !mounted) return;
+    setState(() => _uploadingVideo = true);
+    try {
+      final url = await UploadService().uploadFile(file.path);
+      if (mounted) setState(() => _videoUrl.text = url);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(tr(context, 'error_save'))),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _uploadingVideo = false);
+    }
+  }
+
+  /// AI dish photo — cahier des charges: a realistic, approximate
+  /// photo is generated whenever the owner hasn't added their own.
+  /// Explicit ("Photo IA" button) and automatic on save when the
+  /// field is still empty.
+  Future<void> _generateAiPhoto({bool silent = false}) async {
+    if (_generatingPhoto) return;
+    setState(() => _generatingPhoto = true);
+    try {
+      final url = await MenuService().generateDishPhoto(
+        name: _name.text.trim().isNotEmpty
+            ? _name.text.trim()
+            : (widget.item?.name ?? ''),
+        description: _description.text.trim(),
+        category: _category.text.trim(),
+      );
+      if (mounted && url.isNotEmpty) {
+        setState(() => _image.text = url);
+      }
+    } catch (_) {
+      if (mounted && !silent) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(tr(context, 'error_save'))),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _generatingPhoto = false);
+    }
+  }
+
+  Widget _mediaBtn({
+    required IconData icon,
+    required String label,
+    required VoidCallback? onTap,
+    Color? accent,
+    bool loading = false,
+  }) {
+    final color = accent ?? const Color(0xFF00C8B3);
+    return FastTap(
+      onTap: loading ? null : onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: color.withValues(alpha: 0.4)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (loading)
+              SizedBox(
+                width: 15,
+                height: 15,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: color,
+                ),
+              )
+            else
+              Icon(icon, size: 15, color: color),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPhotoSection(BuildContext context) {
+    return ValueListenableBuilder<TextEditingValue>(
+      valueListenable: _image,
+      builder: (context, value, _) {
+        final url = value.text.trim();
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.image_outlined,
+                  size: 16,
+                  color: context.fast.t3,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  tr(context, 'media_photo'),
+                  style: TextStyle(
+                    color: context.fast.t2,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (url.isNotEmpty)
+              Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: FastImage(
+                      url,
+                      width: double.infinity,
+                      height: 150,
+                      fit: BoxFit.cover,
+                      placeholder: Container(
+                        height: 150,
+                        color: context.fast.cardHigh,
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 6,
+                    right: 6,
+                    child: FastTap(
+                      onTap: () => setState(() => _image.text = ''),
+                      child: Container(
+                        padding: const EdgeInsets.all(5),
+                        decoration: const BoxDecoration(
+                          color: Colors.black54,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.close,
+                          size: 14,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            else
+              Container(
+                height: 90,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: context.fast.cardHigh,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: context.fast.line),
+                ),
+                child: Icon(
+                  Icons.add_photo_alternate_outlined,
+                  color: context.fast.faint,
+                  size: 28,
+                ),
+              ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _mediaBtn(
+                  icon: Icons.photo_camera_outlined,
+                  label: tr(context, 'media_take'),
+                  loading: _uploadingPhoto,
+                  onTap: () => _pickPhoto(ImageSource.camera),
+                ),
+                _mediaBtn(
+                  icon: Icons.photo_library_outlined,
+                  label: tr(context, 'media_gallery'),
+                  loading: _uploadingPhoto,
+                  onTap: () => _pickPhoto(ImageSource.gallery),
+                ),
+                _mediaBtn(
+                  icon: Icons.auto_awesome,
+                  label: tr(context, 'media_ai'),
+                  accent: const Color(0xFF8B5CF6),
+                  loading: _generatingPhoto,
+                  onTap: _generateAiPhoto,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            _field(
+              controller: _image,
+              label: 'URL image (optionnel)',
+              icon: Icons.link,
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildVideoSection(BuildContext context) {
+    return ValueListenableBuilder<TextEditingValue>(
+      valueListenable: _videoUrl,
+      builder: (context, value, _) {
+        final url = value.text.trim();
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.play_circle_outline,
+                  size: 16,
+                  color: context.fast.t3,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  tr(context, 'media_video_lbl'),
+                  style: TextStyle(
+                    color: context.fast.t2,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (url.isNotEmpty)
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 8,
+                ),
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  color: context.fast.cardHigh,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: context.fast.line),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.play_circle_fill,
+                      size: 18,
+                      color: Color(0xFF00C8B3),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        url,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: context.fast.t3,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ),
+                    FastTap(
+                      onTap: () => setState(() => _videoUrl.text = ''),
+                      child: Icon(
+                        Icons.close,
+                        size: 16,
+                        color: context.fast.t3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _mediaBtn(
+                  icon: Icons.videocam_outlined,
+                  label: tr(context, 'media_take'),
+                  loading: _uploadingVideo,
+                  onTap: () => _pickVideo(ImageSource.camera),
+                ),
+                _mediaBtn(
+                  icon: Icons.video_library_outlined,
+                  label: tr(context, 'media_gallery'),
+                  loading: _uploadingVideo,
+                  onTap: () => _pickVideo(ImageSource.gallery),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            _field(
+              controller: _videoUrl,
+              label: tr(context, 'video_url_lbl'),
+              icon: Icons.link,
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
+
+    // No owner photo → generate the realistic AI photo now so the
+    // dish never displays without an image.
+    final provider = context.read<RestoProvider>();
+    if (_image.text.trim().isEmpty) {
+      await _generateAiPhoto(silent: true);
+    }
 
     final body = {
       'name': _name.text.trim(),
@@ -113,7 +463,6 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
       'dietaryTags': _dietary.map((d) => d.name.toUpperCase()).toList(),
     };
 
-    final provider = context.read<RestoProvider>();
     bool ok;
     if (_isEdit) {
       ok = await provider.updateMenuItem(widget.item!.id, body);
@@ -431,17 +780,9 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
               },
             ),
             SizedBox(height: 16),
-            _field(
-              controller: _image,
-              label: 'URL image (optionnel)',
-              icon: Icons.image_outlined,
-            ),
+            _buildPhotoSection(context),
             SizedBox(height: 16),
-            _field(
-              controller: _videoUrl,
-              label: tr(context, 'video_url_lbl'),
-              icon: Icons.play_circle_outline,
-            ),
+            _buildVideoSection(context),
             SizedBox(height: 16),
             // Per-dish prep times (minutes, 0/vide = délai restaurant par défaut)
             Row(

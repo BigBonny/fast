@@ -1,10 +1,13 @@
 import express from 'express';
+import path from 'path';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import { env } from './config/env';
 import { errorHandler } from './middleware/errorHandler';
+import uploadRoutes from './routes/uploads.routes';
+import { uploadDir } from './controllers/uploads.controller';
 import authRoutes from './routes/auth.routes';
 import restaurantRoutes from './routes/restaurants.routes';
 import menuRoutes from './routes/menu.routes';
@@ -106,6 +109,16 @@ app.post('/api/payments/webhook', express.raw({ type: 'application/json' }), str
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+// ─── Uploaded media (dish photos & videos) ─────────────────
+
+app.use(
+  '/uploads',
+  express.static(path.resolve(uploadDir), {
+    maxAge: '30d',
+    immutable: true,
+  }),
+);
+
 // ─── Health Check ──────────────────────────────────────────
 
 app.get('/api/health', (_req, res) => {
@@ -129,6 +142,7 @@ app.use('/api/drivers', driversRoutes);
 app.use('/api/staff', staffRoutes);
 app.use('/api/addresses', addressesRoutes);
 app.use('/api/reservations', reservationsRoutes);
+app.use('/api/uploads', uploadRoutes);
 
 // ─── Error Handler ──────────────────────────────────────────
 

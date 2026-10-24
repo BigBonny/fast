@@ -107,6 +107,30 @@ class ApiClient {
     return _handleResponse(response);
   }
 
+  Future<dynamic> postMultipart(
+    String endpoint, {
+    required String field,
+    required String filePath,
+    required String filename,
+  }) async {
+    final uri = Uri.parse('${ApiConfig.baseUrl}$endpoint');
+    final request = http.MultipartRequest('POST', uri)
+      ..headers['Accept'] = 'application/json'
+      ..files.add(
+        await http.MultipartFile.fromPath(
+          field,
+          filePath,
+          filename: filename,
+        ),
+      );
+    if (_token != null) {
+      request.headers['Authorization'] = 'Bearer $_token';
+    }
+    final streamed = await request.send().timeout(ApiConfig.timeout);
+    final response = await http.Response.fromStream(streamed);
+    return _handleResponse(response);
+  }
+
   dynamic _handleResponse(http.Response response) {
     dynamic body;
     if (response.body.isNotEmpty) {

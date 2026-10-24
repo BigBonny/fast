@@ -52,6 +52,8 @@ class ApiConfig {
   static const String stripeConnectAccountLink =
       '/payments/connect/account-link';
   static const String stripeConnectStatus = '/payments/connect/status';
+  static const String uploads = '/uploads';
+  static const String menuAiPhoto = '/menu/ai-photo';
   static const String paymentMethods = '/payments/methods';
   static const String setupPaymentMethod = '/payments/methods/setup';
   static String paymentMethod(String id) => '/payments/methods/$id';

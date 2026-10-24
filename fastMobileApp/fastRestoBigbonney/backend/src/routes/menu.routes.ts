@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { listMenuItems, listManagedMenuItems, createMenuItem, updateMenuItem, deleteMenuItem, scanMenu, addSupplement, updateSupplement, deleteSupplement, suggestPrepTime, enhanceMenuItem } from '../controllers/menu.controller';
+import { listMenuItems, listManagedMenuItems, createMenuItem, updateMenuItem, deleteMenuItem, scanMenu, addSupplement, updateSupplement, deleteSupplement, suggestPrepTime, enhanceMenuItem, generateDishPhoto } from '../controllers/menu.controller';
 import { authenticate, requireRole, requireRestaurantAccess } from '../middleware/auth';
 import { asyncHandler } from '../utils/asyncHandler';
 
@@ -11,6 +11,7 @@ router.get('/restaurant/:restaurantId/manage', authenticate, requireRestaurantAc
 
 // AI
 router.post('/suggest-prep-time', authenticate, requireRestaurantAccess('STAFF'), asyncHandler(suggestPrepTime));
+router.post('/ai-photo', authenticate, requireRestaurantAccess('STAFF'), asyncHandler(generateDishPhoto));
 router.post('/:id/enhance', authenticate, requireRestaurantAccess('STAFF'), asyncHandler(enhanceMenuItem));
 
 // Restaurant owner
