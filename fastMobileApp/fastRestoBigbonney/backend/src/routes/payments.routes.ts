@@ -3,6 +3,8 @@ import {
   checkoutCancelPage,
   checkoutSuccessPage,
   confirmCheckoutSession,
+  connectRefreshPage,
+  connectReturnPage,
   createCheckoutSession,
   createConnectAccountLink,
   getConnectStatus,
@@ -24,5 +26,9 @@ router.post('/checkout-session/:sessionId/confirm', authenticate, asyncHandler(c
 
 router.post('/connect/account-link', authenticate, requireRole('RESTAURANT'), asyncHandler(createConnectAccountLink));
 router.get('/connect/status', authenticate, requireRole('RESTAURANT'), asyncHandler(getConnectStatus));
+// Stripe redirects the owner here after onboarding — the pages bounce them
+// back into the app via the fast:// deep link.
+router.get('/connect/return', connectReturnPage);
+router.get('/connect/refresh', connectRefreshPage);
 
 export default router;

@@ -549,6 +549,28 @@ export const checkoutCancelPage = (_req: Request, res: Response): void => {
   res.type('html').send('<h1>Paiement annulé</h1><p>Vous pouvez retourner dans FAST et réessayer.</p>');
 };
 
+// Stripe Connect onboarding return/refresh targets — bounce the owner back
+// into the app instead of leaving them on a web page.
+const connectLandingPage = (res: Response, done: boolean): void => {
+  const deepLink = `fast://connect?status=${done ? 'done' : 'refresh'}`;
+  const title = done ? 'Configuration Stripe terminée' : 'Configuration Stripe interrompue';
+  const body = done
+    ? 'Votre compte est en cours de vérification. Retour dans FAST…'
+    : 'Vous pouvez reprendre la configuration à tout moment depuis FAST Pro.';
+  res.type('html').send(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title>
+<meta http-equiv="refresh" content="0;url=${deepLink}">
+<script>window.location.href=${JSON.stringify(deepLink)};</script></head>
+<body><h1>${title}</h1><p>${body} <a href="${deepLink}">Ouvrir l'app</a></p></body></html>`);
+};
+
+export const connectReturnPage = (_req: Request, res: Response): void => {
+  connectLandingPage(res, true);
+};
+
+export const connectRefreshPage = (_req: Request, res: Response): void => {
+  connectLandingPage(res, false);
+};
+
 export const createConnectAccountLink = async (req: Request, res: Response): Promise<void> => {
   try {
     const stripe = stripeClient();
@@ -581,13 +603,23 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
       type: 'account_onboarding',
-      refresh_url: env.stripeCancelUrl,
-      return_url: env.stripeSuccessUrl.replace('{CHECKOUT_SESSION_ID}', ''),
+      refresh_url: env.stripeConnectRefreshUrl,
+      return_url: env.stripeConnectReturnUrl,
     });
 
     res.json({ url: accountLink.url, accountId });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    const message = (err as Error).message;
+    // The FAST platform account itself hasn't finished Stripe activation —
+    // restaurant owners can't fix this, so say so instead of relaying the
+    // raw Stripe platform error.
+    if (/must be activated/i.test(message)) {
+      res.status(503).json({
+        error: 'Le service de paiement FAST est en cours d\'activation. Réessayez plus tard ou contactez le support.',
+      });
+      return;
+    }
+    res.status(500).json({ error: message });
   }
 };
 

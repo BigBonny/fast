@@ -38,4 +38,6 @@ export const env = {
   publicBaseUrl,
   stripeSuccessUrl: process.env.STRIPE_SUCCESS_URL || `${publicBaseUrl}/api/payments/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
   stripeCancelUrl: process.env.STRIPE_CANCEL_URL || `${publicBaseUrl}/api/payments/checkout/cancel`,
+  stripeConnectReturnUrl: process.env.STRIPE_CONNECT_RETURN_URL || `${publicBaseUrl}/api/payments/connect/return`,
+  stripeConnectRefreshUrl: process.env.STRIPE_CONNECT_REFRESH_URL || `${publicBaseUrl}/api/payments/connect/refresh`,
 };

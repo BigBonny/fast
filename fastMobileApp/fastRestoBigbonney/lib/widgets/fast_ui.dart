@@ -521,12 +521,17 @@ class FastNavItem {
   /// Small activity dot — pending orders.
   final bool dot;
 
+  /// Replaces the [icon] entirely — used by Pro's RUSH action tab so the
+  /// glossy dome can live inside the bar at tab level.
+  final Widget? customIcon;
+
   const FastNavItem({
     required this.icon,
     required this.label,
     this.activeIcon,
     this.badge = 0,
     this.dot = false,
+    this.customIcon,
   });
 }
 
@@ -682,11 +687,14 @@ class _FastNavBarState extends State<FastNavBar>
                 child: Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    Icon(
-                      t > 0.5 ? (item.activeIcon ?? item.icon) : item.icon,
-                      color: color,
-                      size: 22,
-                    ),
+                    item.customIcon ??
+                        Icon(
+                          t > 0.5
+                              ? (item.activeIcon ?? item.icon)
+                              : item.icon,
+                          color: color,
+                          size: 22,
+                        ),
                     if (item.badge > 0)
                       Positioned(
                         right: -11,
