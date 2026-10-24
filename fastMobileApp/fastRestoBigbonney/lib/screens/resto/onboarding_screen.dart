@@ -8,6 +8,7 @@ import '../../api/api_config.dart';
 import '../../api/api_exceptions.dart';
 import 'resto_shell.dart';
 import 'pro_intro_slides.dart';
+import '../../widgets/intro_carousel.dart';
 import '../../theme.dart';
 import '../../l10n/tr.dart';
 
@@ -257,7 +258,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_showIntro) return ProIntroSlides(onDone: _finishOnboarding);
+    if (_showIntro) return _proIntro(onDone: _finishOnboarding);
     if (_ready) return const RestoMainShell();
     if (_checkingBackend) {
       return Scaffold(
@@ -329,13 +330,49 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  /// Branded FAST Pro intro — the four marketing slides carry their own
-  /// Retour / Passer / Suivant visuals; ProIntroSlides overlays working
-  /// hit zones. Finishing or skipping counts the tutorial as done.
+  /// Branded FAST Pro intro — same native carousel as the client side
+  /// (icon medallions, per-slide accent, localized titles). The copy is
+  /// lifted from the previous baked artwork: visibilité → menu IA →
+  /// gain de temps. Finishing or skipping counts the tutorial as done.
   Widget _buildTutorial() {
-    return ProIntroSlides(
+    return _proIntro(
       onDone: _nextStep,
       onBack: () => setState(() => _currentStep = 0),
+    );
+  }
+
+  Widget _proIntro({required VoidCallback onDone, VoidCallback? onBack}) {
+    return FastIntroCarousel(
+      onDone: onDone,
+      onBack: onBack,
+      dismissedPrefKey: ProIntroSlides.proDismissedKey,
+      slides: [
+        FastIntroSlide(
+          icon: Icons.visibility_rounded,
+          title: tr(context, 'pi1_t'),
+          accentPart: tr(context, 'pi1_ta'),
+          description: tr(context, 'pi1_d'),
+          accent: const Color(0xFFF59E0B),
+          glow: const Color(0xFFF97316),
+        ),
+        FastIntroSlide(
+          icon: Icons.auto_awesome,
+          title: tr(context, 'pi2_t'),
+          accentPart: tr(context, 'pi2_ta'),
+          description: tr(context, 'pi2_d'),
+          accent: const Color(0xFFA855F7),
+          glow: const Color(0xFF7C3AED),
+        ),
+        FastIntroSlide(
+          icon: Icons.bolt_rounded,
+          title: tr(context, 'pi3_t'),
+          accentPart: tr(context, 'pi3_ta'),
+          description: tr(context, 'pi3_d'),
+          accent: const Color(0xFF00C8B3),
+          glow: const Color(0xFF10B981),
+          bannerText: tr(context, 'pi3_w'),
+        ),
+      ],
     );
   }
 
