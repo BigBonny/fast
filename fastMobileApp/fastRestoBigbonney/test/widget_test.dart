@@ -174,7 +174,7 @@ void main() {
   // Measured centre of the baked Suivant / Commencer pill on each Pro slide
   // (fractions of the 576x1024 artwork). The test taps these exact pixels,
   // so a hit-zone regression on any slide fails it.
-  const proPillY = [0.905, 0.877, 0.902, 0.904];
+  const proPillY = [0.865, 0.89, 0.8825];
 
   testWidgets('Pro intro slides: baked buttons hit on a tall phone',
       (tester) async {

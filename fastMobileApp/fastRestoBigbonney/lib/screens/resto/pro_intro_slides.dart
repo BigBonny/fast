@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../l10n/tr.dart';
 
-/// FAST Pro intro carousel — four full-screen branded slides. The
+/// FAST Pro intro carousel — three full-screen branded slides. The
 /// artwork already contains the Retour / Passer / Suivant buttons and
 /// the page dots, so transparent hit zones are laid exactly over the
 /// baked controls: the visuals stay pixel-perfect while the buttons
@@ -40,19 +40,17 @@ class ProIntroSlides extends StatefulWidget {
   /// All artwork is 576x1024 — the hit zones below are measured on it.
   static const double artAspect = 576 / 1024;
 
-  /// Ordered by the page dots baked into the artwork: slide 3's art
-  /// lights dot 4 and slide 4's lights dot 3, hence the swap.
+  /// Three slides, in the baked dot order: visibilité → menu IA →
+  /// gain de temps.
   static const List<String> proImages = [
-    'assets/images/pro_tuto_1.jpg',
-    'assets/images/pro_tuto_2.jpg',
-    'assets/images/pro_tuto_4.jpg',
-    'assets/images/pro_tuto_3.jpg',
+    'assets/images/pro_intro_1.jpg',
+    'assets/images/pro_intro_2.jpg',
+    'assets/images/pro_intro_3.jpg',
   ];
   static const List<Rect> proNextRects = [
-    Rect.fromLTRB(0.06, 0.858, 0.94, 0.950), // géolocalisation
-    Rect.fromLTRB(0.04, 0.830, 0.96, 0.924), // IA menus
-    Rect.fromLTRB(0.04, 0.856, 0.96, 0.948), // visibilité
-    Rect.fromLTRB(0.04, 0.858, 0.96, 0.950), // main-d'œuvre
+    Rect.fromLTRB(0.06, 0.82, 0.94, 0.91), // visibilité / clients
+    Rect.fromLTRB(0.05, 0.845, 0.95, 0.935), // menu en quelques secondes
+    Rect.fromLTRB(0.05, 0.84, 0.95, 0.925), // gagnez du temps
   ];
   static const List<String> clientImages = [
     'assets/images/client_tuto_1.jpg',

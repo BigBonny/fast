@@ -290,8 +290,13 @@ class _RestoMainShellState extends State<RestoMainShell> {
           ),
           bottomNavigationBar: Stack(
             clipBehavior: Clip.none,
+            alignment: Alignment.topCenter,
             children: [
-              FastNavBar(
+              Padding(
+                // Room above the pill so the Rush dome can straddle its
+                // top edge instead of covering the tab hit zones.
+                padding: const EdgeInsets.only(top: 24),
+                child: FastNavBar(
                 accent: FASTPro.teal,
                 surface: FASTPro.header,
                 line: const Color(0xFF1E293B),
@@ -328,15 +333,14 @@ class _RestoMainShellState extends State<RestoMainShell> {
                   ),
                 ],
               ),
-              Positioned.fill(
-                child: Align(
-                  alignment: const Alignment(0, -0.55),
-                  child: KeyedSubtree(
-                    key: _statsKey,
-                    child: GestureDetector(
-                      onTap: () => _showRushSheet(provider),
-                      child: _rushButton(provider),
-                    ),
+              ),
+              Positioned(
+                top: 0,
+                child: KeyedSubtree(
+                  key: _statsKey,
+                  child: GestureDetector(
+                    onTap: () => _showRushSheet(provider),
+                    child: _rushButton(provider),
                   ),
                 ),
               ),
