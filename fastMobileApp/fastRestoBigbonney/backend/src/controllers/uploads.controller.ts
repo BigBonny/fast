@@ -2,11 +2,30 @@ import { Request, Response } from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import os from 'os';
 import crypto from 'crypto';
 import { env } from '../config/env';
 
-export const uploadDir = path.resolve(env.uploadDir);
-fs.mkdirSync(uploadDir, { recursive: true });
+// On read-only filesystems (Vercel functions), fall back to the only
+// writable location — /tmp. Note: /tmp is ephemeral, so durable media
+// storage still needs an external bucket (S3/Cloudinary) later.
+function ensureUploadDir(): string {
+  const candidates = [
+    path.resolve(env.uploadDir),
+    path.join(os.tmpdir(), 'fast-uploads'),
+  ];
+  for (const dir of candidates) {
+    try {
+      fs.mkdirSync(dir, { recursive: true });
+      return dir;
+    } catch {
+      // EROFS / EACCES — try the next candidate
+    }
+  }
+  return candidates[candidates.length - 1];
+}
+
+export const uploadDir = ensureUploadDir();
 
 const ALLOWED_MIME = new Set([
   'image/jpeg',
