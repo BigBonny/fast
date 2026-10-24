@@ -28,6 +28,9 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
   // to that section (cahier des charges: barre transversale).
   final ScrollController _scroll = ScrollController();
   final Map<String, GlobalKey> _catKeys = {};
+  // Per-chip keys let the horizontal bar auto-scroll so the active
+  // category always stays on screen while the menu scrolls.
+  final Map<String, GlobalKey> _chipKeys = {};
   List<String> _catOrder = [];
   String? _activeCat;
   bool _showCatBar = false;
@@ -80,12 +83,29 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
         !firstDoc.isNaN &&
         _scroll.offset >= firstDoc - _barTopInset - _barHeight;
     final next = active ?? (_catOrder.isNotEmpty ? _catOrder.first : null);
-    if (show != _showCatBar || next != _activeCat) {
+    final catChanged = next != _activeCat;
+    if (show != _showCatBar || catChanged) {
       setState(() {
         _showCatBar = show;
         _activeCat = next;
       });
+      if (catChanged && next != null) _revealChip(next);
     }
+  }
+
+  /// Slides the active chip into view inside the horizontal bar —
+  /// centred when possible so the user sees the neighbours too.
+  void _revealChip(String cat) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ctx = _chipKeys[cat]?.currentContext;
+      if (ctx == null || !mounted) return;
+      Scrollable.ensureVisible(
+        ctx,
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
+        alignment: 0.5,
+      );
+    });
   }
 
   void _scrollToCategory(String cat) {
@@ -107,6 +127,7 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
   Widget _categoryChip(BuildContext context, String cat, bool active) {
     const amber = Color(0xFFF59E0B);
     return Padding(
+      key: _chipKeys[cat],
       padding: const EdgeInsets.only(right: 8),
       child: FastTap(
         onTap: () => _scrollToCategory(cat),
@@ -680,8 +701,10 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
     _catOrder = keys;
     for (final k in keys) {
       _catKeys.putIfAbsent(k, () => GlobalKey());
+      _chipKeys.putIfAbsent(k, () => GlobalKey());
     }
     _catKeys.removeWhere((k, _) => !keys.contains(k));
+    _chipKeys.removeWhere((k, _) => !keys.contains(k));
 
     return [
       for (final key in keys) ...[
