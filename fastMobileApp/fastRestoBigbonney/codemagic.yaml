@@ -42,7 +42,6 @@ workflows:
             NEXT=$((LATEST + 1))
             echo "Build number: $NEXT"
             flutter build ipa --release \
-              --build-name=1.0.0 \
               --build-number=$NEXT \
               --export-options-plist=ios/ExportOptions.plist
           else
