@@ -1,6 +1,25 @@
 // lib/models.dart
 import 'dart:convert';
 
+/// Tolerant scalar coercion for API payloads. Some backend responses
+/// deliver related entities as objects (`{"id": …}` / `{"code": …}`)
+/// instead of plain strings — extract a usable scalar instead of
+/// throwing `'_Map<String, dynamic>' is not a subtype of 'String?'`.
+String? strOrNull(dynamic v) {
+  if (v == null) return null;
+  if (v is String) return v;
+  if (v is num || v is bool) return v.toString();
+  if (v is Map<String, dynamic>) {
+    return strOrNull(v['id']) ??
+        strOrNull(v['code']) ??
+        strOrNull(v['name']) ??
+        strOrNull(v['status']) ??
+        strOrNull(v['message']) ??
+        strOrNull(v['url']);
+  }
+  return null;
+}
+
 enum DietaryPreference {
   vegan('Végétalien'),
   vegetarian('Végétarien'),
@@ -140,12 +159,12 @@ class MenuItem {
   /// Parse from backend API JSON format
   /// Handles dietaryTags as [{"option": "HALAL"}] and camelCase fields
   factory MenuItem.fromApiJson(Map<String, dynamic> json) => MenuItem(
-    id: json['id'] as String,
-    name: json['name'] as String,
-    description: json['description'] as String,
+    id: strOrNull(json['id']) ?? '',
+    name: strOrNull(json['name']) ?? '',
+    description: strOrNull(json['description']) ?? '',
     price: (json['price'] as num).toDouble(),
-    image: json['image'] as String? ?? '',
-    category: json['category'] as String,
+    image: strOrNull(json['image']) ?? '',
+    category: strOrNull(json['category']) ?? '',
     dietaryTags: _parseDietaryTags(json['dietaryTags']),
     rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
     available:
@@ -157,7 +176,7 @@ class MenuItem {
         [],
     prepTime: json['prepTime'] as int? ?? 0,
     prepTimeRush: json['prepTimeRush'] as int? ?? 0,
-    videoUrl: json['videoUrl'] as String? ?? '',
+    videoUrl: strOrNull(json['videoUrl']) ?? '',
     basePrice: (json['basePrice'] as num?)?.toDouble(),
   );
 
@@ -235,12 +254,15 @@ class Review {
   /// Parse from backend API JSON format
   /// Backend uses "createdAt" instead of "date", no "userEmail"
   factory Review.fromApiJson(Map<String, dynamic> json) => Review(
-    id: json['id'] as String,
-    userName: json['userName'] as String,
-    userEmail: json['userEmail'] as String? ?? '',
-    rating: (json['rating'] as num).toDouble(),
-    comment: json['comment'] as String? ?? '',
-    date: (json['createdAt'] as String?) ?? (json['date'] as String? ?? ''),
+    id: strOrNull(json['id']) ?? '',
+    userName:
+        strOrNull(json['userName']) ??
+        strOrNull((json['user'] as Map<String, dynamic>?)?['name']) ??
+        '',
+    userEmail: strOrNull(json['userEmail']) ?? '',
+    rating: (json['rating'] as num?)?.toDouble() ?? 0,
+    comment: strOrNull(json['comment']) ?? '',
+    date: strOrNull(json['createdAt']) ?? strOrNull(json['date']) ?? '',
   );
 }
 
@@ -303,9 +325,9 @@ class TruckStop {
   factory TruckStop.fromJson(Map<String, dynamic> json) {
     return TruckStop(
       weekday: (json['dayOfWeek'] as num?)?.toInt() ?? 1,
-      label: json['label'] as String? ?? '',
-      address: json['address'] as String? ?? '',
-      city: json['city'] as String? ?? '',
+      label: strOrNull(json['label']) ?? '',
+      address: strOrNull(json['address']) ?? '',
+      city: strOrNull(json['city']) ?? '',
       latitude: (json['latitude'] as num?)?.toDouble() ?? 0,
       longitude: (json['longitude'] as num?)?.toDouble() ?? 0,
     );
@@ -431,7 +453,7 @@ class Restaurant {
             ?.map((e) => MenuItem.fromJson(e as Map<String, dynamic>))
             .toList() ??
         [],
-    address: json['address'] as String? ?? '',
+    address: strOrNull(json['address']) ?? '',
     deliveryEnabled: json['deliveryEnabled'] as bool? ?? true,
     deliveryFee: (json['deliveryFee'] as num?)?.toDouble() ?? 2.99,
     deliveryRadiusKm: (json['deliveryRadiusKm'] as num?)?.toDouble() ?? 5.0,
@@ -451,12 +473,12 @@ class Restaurant {
   /// Parse from backend API JSON format
   /// Backend uses "menuItems" key, dietaryOptions as [{"option": "HALAL"}], no reviews in list
   factory Restaurant.fromApiJson(Map<String, dynamic> json) => Restaurant(
-    id: json['id'] as String,
-    name: json['name'] as String,
-    description: json['description'] as String,
-    image: json['image'] as String? ?? '',
-    category: json['category'] as String,
-    cuisineType: json['cuisineType'] as String? ?? '',
+    id: strOrNull(json['id']) ?? '',
+    name: strOrNull(json['name']) ?? '',
+    description: strOrNull(json['description']) ?? '',
+    image: strOrNull(json['image']) ?? '',
+    category: strOrNull(json['category']) ?? '',
+    cuisineType: strOrNull(json['cuisineType']) ?? '',
     rating: (json['rating'] as num).toDouble(),
     reviewsCount: json['reviewsCount'] as int? ?? 0,
     reviews:
@@ -477,7 +499,7 @@ class Restaurant {
             ?.map((e) => MenuItem.fromApiJson(e as Map<String, dynamic>))
             .toList() ??
         [],
-    address: json['address'] as String? ?? '',
+    address: strOrNull(json['address']) ?? '',
     deliveryEnabled: json['deliveryEnabled'] as bool? ?? true,
     deliveryFee: (json['deliveryFee'] as num?)?.toDouble() ?? 2.99,
     deliveryRadiusKm: (json['deliveryRadiusKm'] as num?)?.toDouble() ?? 5.0,
@@ -693,20 +715,21 @@ class Order {
     userWalkTimeMinutes: json['userWalkTimeMinutes'] as int,
     isReadyAtEntrance: json['isReadyAtEntrance'] as bool? ?? false,
     userRatingSubmitted: json['userRatingSubmitted'] as bool? ?? false,
-    prepStartedAt: json['prepStartedAt'] as String?,
+    prepStartedAt: strOrNull(json['prepStartedAt']),
     prepTimerSeconds: json['prepTimerSeconds'] as int? ?? 0,
     gpsProgress: (json['gpsProgress'] as num?)?.toDouble() ?? 0.0,
     isBilledAnyway: json['isBilledAnyway'] as bool? ?? false,
     isUrgent: json['isUrgent'] as bool? ?? false,
-    groupCode: json['groupCode'] as String?,
-    pickupToken: json['pickupToken'] as String?,
+    groupCode: strOrNull(json['groupCode']),
+    pickupToken: strOrNull(json['pickupToken']),
     fulfillmentType: FulfillmentType.fromApi(
-      json['fulfillmentType'] as String? ?? 'PICKUP',
+      strOrNull(json['fulfillmentType']) ?? 'PICKUP',
     ),
-    deliveryAddress: json['deliveryAddress'] as String? ?? '',
+    deliveryAddress: strOrNull(json['deliveryAddress']) ?? '',
     deliveryFee: (json['deliveryFee'] as num?)?.toDouble() ?? 0,
-    deliveryStatus:
-        (json['delivery'] as Map<String, dynamic>?)?['status'] as String?,
+    deliveryStatus: strOrNull(
+      (json['delivery'] as Map<String, dynamic>?)?['status'],
+    ),
   );
 
   /// Parse from backend API JSON format
@@ -721,44 +744,45 @@ class Order {
         [];
 
     return Order(
-      id: json['id'] as String,
-      restaurantId: json['restaurantId'] as String,
+      id: strOrNull(json['id']) ?? '',
+      restaurantId: strOrNull(json['restaurantId']) ?? '',
       restaurantName:
-          restaurantData?['name'] as String? ??
-          json['restaurantName'] as String? ??
+          strOrNull(restaurantData?['name']) ??
+          strOrNull(json['restaurantName']) ??
           '',
       restaurantImage:
-          restaurantData?['image'] as String? ??
-          json['restaurantImage'] as String? ??
+          strOrNull(restaurantData?['image']) ??
+          strOrNull(json['restaurantImage']) ??
           '',
       items: itemsData,
       subtotal: (json['subtotal'] as num).toDouble(),
       serviceFee: (json['serviceFee'] as num?)?.toDouble() ?? 0.0,
       total: (json['total'] as num).toDouble(),
-      status: OrderStatus.fromApiJson(json['status'] as String? ?? 'PLACED'),
-      createdAt: json['createdAt'] as String,
+      status: OrderStatus.fromApiJson(strOrNull(json['status']) ?? 'PLACED'),
+      createdAt: strOrNull(json['createdAt']) ?? '',
       userWalkTimeMinutes:
           json['userWalkTimeMin'] as int? ??
           json['userWalkTimeMinutes'] as int? ??
           10,
       isReadyAtEntrance: json['isReadyAtEntrance'] as bool? ?? false,
       userRatingSubmitted: json['ratingSubmitted'] as bool? ?? false,
-      prepStartedAt: json['prepStartedAt'] as String?,
+      prepStartedAt: strOrNull(json['prepStartedAt']),
       prepTimerSeconds: json['prepTimerSeconds'] as int? ?? 0,
       gpsProgress: (json['gpsProgress'] as num?)?.toDouble() ?? 0.0,
       isBilledAnyway: json['isBilledAnyway'] as bool? ?? false,
       isUrgent: json['isUrgent'] as bool? ?? false,
       groupCode:
-          (json['groupOrder'] as Map<String, dynamic>?)?['code'] as String? ??
-          json['groupCode'] as String?,
-      pickupToken: json['pickupToken'] as String?,
+          strOrNull((json['groupOrder'] as Map<String, dynamic>?)?['code']) ??
+          strOrNull(json['groupCode']),
+      pickupToken: strOrNull(json['pickupToken']),
       fulfillmentType: FulfillmentType.fromApi(
-        json['fulfillmentType'] as String? ?? 'PICKUP',
+        strOrNull(json['fulfillmentType']) ?? 'PICKUP',
       ),
-      deliveryAddress: json['deliveryAddress'] as String? ?? '',
+      deliveryAddress: strOrNull(json['deliveryAddress']) ?? '',
       deliveryFee: (json['deliveryFee'] as num?)?.toDouble() ?? 0,
-      deliveryStatus:
-          (json['delivery'] as Map<String, dynamic>?)?['status'] as String?,
+      deliveryStatus: strOrNull(
+        (json['delivery'] as Map<String, dynamic>?)?['status'],
+      ),
     );
   }
 
@@ -805,13 +829,13 @@ class PushNotification {
   /// Backend uses "createdAt" instead of "timestamp", type is UPPERCASE
   factory PushNotification.fromApiJson(Map<String, dynamic> json) =>
       PushNotification(
-        id: json['id'] as String,
-        title: json['title'] as String,
-        body: json['body'] as String? ?? '',
+        id: strOrNull(json['id']) ?? '',
+        title: strOrNull(json['title']) ?? '',
+        body: strOrNull(json['body']) ?? '',
         timestamp:
-            json['createdAt'] as String? ?? json['timestamp'] as String? ?? '',
+            strOrNull(json['createdAt']) ?? strOrNull(json['timestamp']) ?? '',
         isRead: json['isRead'] as bool? ?? false,
-        type: (json['type'] as String?)?.toLowerCase() ?? 'info',
+        type: (strOrNull(json['type']))?.toLowerCase() ?? 'info',
       );
 }
 
@@ -889,17 +913,17 @@ class RestaurantSettings {
   /// Build from backend API response (dietaryOptions as [{option: "HALAL"}])
   factory RestaurantSettings.fromApiJson(Map<String, dynamic> json) =>
       RestaurantSettings(
-        id: json['id'] as String?,
-        managerFirstName: json['managerFirstName'] as String? ?? '',
-        managerPhone: json['managerPhone'] as String? ?? '',
-        managerIban: json['managerIban'] as String? ?? '',
-        name: json['name'] as String? ?? '',
-        description: json['description'] as String? ?? '',
-        image: json['image'] as String? ?? '',
-        cuisineType: json['cuisineType'] as String? ?? '',
-        category: json['category'] as String? ?? '',
-        city: json['city'] as String? ?? '',
-        address: json['address'] as String? ?? '',
+        id: strOrNull(json['id']),
+        managerFirstName: strOrNull(json['managerFirstName']) ?? '',
+        managerPhone: strOrNull(json['managerPhone']) ?? '',
+        managerIban: strOrNull(json['managerIban']) ?? '',
+        name: strOrNull(json['name']) ?? '',
+        description: strOrNull(json['description']) ?? '',
+        image: strOrNull(json['image']) ?? '',
+        cuisineType: strOrNull(json['cuisineType']) ?? '',
+        category: strOrNull(json['category']) ?? '',
+        city: strOrNull(json['city']) ?? '',
+        address: strOrNull(json['address']) ?? '',
         normalPrepTime: json['normalPrepTime'] as int? ?? 15,
         rushPrepTime: json['rushPrepTime'] as int? ?? 25,
         dietaryOptions: _parseDietaryList(json['dietaryOptions']),
@@ -952,21 +976,24 @@ class Reservation {
   bool get isUpcoming => dateTime.isAfter(DateTime.now());
 
   factory Reservation.fromApiJson(Map<String, dynamic> json) => Reservation(
-    id: json['id'] as String,
-    restaurantId: json['restaurantId'] as String,
+    id: strOrNull(json['id']) ?? '',
+    restaurantId: strOrNull(json['restaurantId']) ?? '',
     restaurantName:
-        (json['restaurant'] as Map<String, dynamic>?)?['name'] as String? ?? '',
+        strOrNull((json['restaurant'] as Map<String, dynamic>?)?['name']) ?? '',
     restaurantImage:
-        (json['restaurant'] as Map<String, dynamic>?)?['image'] as String? ?? '',
+        strOrNull((json['restaurant'] as Map<String, dynamic>?)?['image']) ?? '',
     customerName:
-        json['userName'] as String? ??
-            (json['customer'] as Map<String, dynamic>?)?['name'] as String? ??
-            (json['customerName'] as String? ?? ''),
+        strOrNull(json['userName']) ??
+            strOrNull(
+              (json['customer'] as Map<String, dynamic>?)?['name'],
+            ) ??
+            strOrNull(json['customerName']) ??
+            '',
     partySize: json['partySize'] as int? ?? 2,
-    dateTime: DateTime.tryParse(json['dateTime'] as String? ?? '') ??
+    dateTime: DateTime.tryParse(strOrNull(json['dateTime']) ?? '') ??
         DateTime.now(),
-    status: json['status'] as String? ?? 'PENDING',
-    note: json['note'] as String?,
-    tableNumber: json['tableNumber'] as String?,
+    status: strOrNull(json['status']) ?? 'PENDING',
+    note: strOrNull(json['note']),
+    tableNumber: strOrNull(json['tableNumber']),
   );
 }

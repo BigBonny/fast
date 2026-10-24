@@ -148,8 +148,8 @@ class ApiClient {
     String errorMessage;
     if (body is Map<String, dynamic>) {
       errorMessage =
-          body['error'] as String? ??
-          body['message'] as String? ??
+          _errorText(body['error']) ??
+          _errorText(body['message']) ??
           'Erreur serveur';
     } else {
       errorMessage = 'Erreur serveur (${response.statusCode})';
@@ -182,5 +182,24 @@ class ApiClient {
     }
 
     throw ApiException(errorMessage, response.statusCode);
+  }
+
+  /// Error payloads can be a plain string, a nested {message} object, or a
+  /// validation map — coerce any of those to readable text without throwing.
+  static String? _errorText(dynamic v) {
+    if (v == null) return null;
+    if (v is String) return v;
+    if (v is num || v is bool) return v.toString();
+    if (v is Map) {
+      final inner = _errorText(v['message']) ?? _errorText(v['error']);
+      if (inner != null) return inner;
+      try {
+        return json.encode(v);
+      } catch (_) {
+        return null;
+      }
+    }
+    if (v is List) return v.map(_errorText).whereType<String>().join(', ');
+    return v.toString();
   }
 }

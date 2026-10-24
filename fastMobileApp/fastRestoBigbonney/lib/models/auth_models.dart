@@ -41,9 +41,27 @@ class AuthResponse {
   AuthResponse({required this.token, required this.user});
 
   factory AuthResponse.fromJson(Map<String, dynamic> json) => AuthResponse(
-    token: json['token'] as String,
+    token: strOrNull(json['token']) ?? '',
     user: UserData.fromJson(json['user'] as Map<String, dynamic>),
   );
+}
+
+/// Tolerant scalar coercion — see models.dart's version. Some backends
+/// deliver related entities as objects where a plain string is expected
+/// (this is what crashed Google sign-in).
+String? strOrNull(dynamic v) {
+  if (v == null) return null;
+  if (v is String) return v;
+  if (v is num || v is bool) return v.toString();
+  if (v is Map<String, dynamic>) {
+    return strOrNull(v['id']) ??
+        strOrNull(v['code']) ??
+        strOrNull(v['name']) ??
+        strOrNull(v['status']) ??
+        strOrNull(v['message']) ??
+        strOrNull(v['url']);
+  }
+  return null;
 }
 
 class UserData {
@@ -73,11 +91,11 @@ class UserData {
   });
 
   factory UserData.fromJson(Map<String, dynamic> json) => UserData(
-    id: json['id'] as String,
-    email: json['email'] as String,
-    name: json['name'] as String? ?? '',
-    phone: json['phone'] as String? ?? '',
-    role: json['role'] as String,
+    id: strOrNull(json['id']) ?? '',
+    email: strOrNull(json['email']) ?? '',
+    name: strOrNull(json['name']) ?? '',
+    phone: strOrNull(json['phone']) ?? '',
+    role: strOrNull(json['role']) ?? 'CLIENT',
     points: json['points'] as int? ?? 0,
     restaurant: json['restaurant'] as Map<String, dynamic>?,
     driverProfile: json['driverProfile'] is Map<String, dynamic>
@@ -85,10 +103,14 @@ class UserData {
             json['driverProfile'] as Map<String, dynamic>,
           )
         : null,
-    restaurantId: json['restaurantId'] as String? ??
-        (json['staffAssignment'] as Map<String, dynamic>?)?['restaurantId'] as String?,
-    staffRole: json['staffRole'] as String? ??
-        (json['staffAssignment'] as Map<String, dynamic>?)?['staffRole'] as String?,
+    restaurantId: strOrNull(json['restaurantId']) ??
+        strOrNull(
+          (json['staffAssignment'] as Map<String, dynamic>?)?['restaurantId'],
+        ),
+    staffRole: strOrNull(json['staffRole']) ??
+        strOrNull(
+          (json['staffAssignment'] as Map<String, dynamic>?)?['staffRole'],
+        ),
   );
 
   bool get isRestaurant => role == 'RESTAURANT';
@@ -118,11 +140,11 @@ class DriverProfileData {
 
   factory DriverProfileData.fromJson(Map<String, dynamic> json) =>
       DriverProfileData(
-        id: json['id'] as String? ?? '',
-        type: json['type'] as String? ?? 'OCCASIONAL',
+        id: strOrNull(json['id']) ?? '',
+        type: strOrNull(json['type']) ?? 'OCCASIONAL',
         isOnline: json['isOnline'] as bool? ?? false,
         isPaused: json['isPaused'] as bool? ?? false,
-        timezone: json['timezone'] as String? ?? 'Europe/Paris',
+        timezone: strOrNull(json['timezone']) ?? 'Europe/Paris',
         schedules: (json['schedules'] as List<dynamic>? ?? const [])
             .whereType<Map<String, dynamic>>()
             .toList(),

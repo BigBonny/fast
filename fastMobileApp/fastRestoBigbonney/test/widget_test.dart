@@ -70,6 +70,26 @@ void main() {
     expect(user.staffRole, 'GUEST');
   });
 
+  test('UserData tolerates object-shaped fields (Google sign-in crash)', () {
+    // The backend can deliver related entities as objects where a plain
+    // string is expected — these must coerce, not throw
+    // "_Map<String, dynamic> is not a subtype of type 'String?'".
+    final user = UserData.fromJson({
+      'id': {'id': 'user-obj'},
+      'name': 'Karim',
+      'email': {'message': 'karim@example.test'},
+      'role': 'RESTAURANT',
+      'phone': 33612345678,
+      'restaurantId': {'id': 'resto-obj'},
+      'staffRole': null,
+      'restaurant': {'id': 'resto-obj', 'name': 'Test Resto'},
+    });
+    expect(user.id, 'user-obj');
+    expect(user.email, 'karim@example.test');
+    expect(user.phone, '33612345678');
+    expect(user.restaurantId, 'resto-obj');
+  });
+
   test('Favorites are scoped per account, not shared on one device', () async {
     TestWidgetsFlutterBinding.ensureInitialized();
     // Seed the pre-fix device-wide key — user A inherits it once via the
