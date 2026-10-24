@@ -45,11 +45,10 @@ class _RestoMainShellState extends State<RestoMainShell> {
     const RestoProfileScreen(),
   ];
 
-  // Nav shows 4 tabs (orders, menu, settings, profile); the RUSH button
-  // floats raised between menu and settings like the old 5-slot bar.
-  static const _navMap = [0, 1, 3, 4];
-  int get _navIndex =>
-      _currentIndex <= 1 ? _currentIndex : _currentIndex - 1;
+  // Nav shows 5 slots — orders, menu, RUSH (action, never selected),
+  // settings, profile. The stats page (2) highlights Menu, like before.
+  static const _navMap = [0, 1, -1, 3, 4];
+  int get _navIndex => _currentIndex == 2 ? 1 : _currentIndex;
 
   List<_TutorialStep> get _tutorialSteps => [
     _TutorialStep(
@@ -288,61 +287,51 @@ class _RestoMainShellState extends State<RestoMainShell> {
               Expanded(child: _pages[_currentIndex]),
             ],
           ),
-          bottomNavigationBar: Stack(
-            clipBehavior: Clip.none,
-            alignment: Alignment.topCenter,
-            children: [
-              Padding(
-                // Room above the pill so the Rush dome can straddle its
-                // top edge instead of covering the tab hit zones.
-                padding: const EdgeInsets.only(top: 24),
-                child: FastNavBar(
-                accent: FASTPro.teal,
-                surface: FASTPro.header,
-                line: const Color(0xFF1E293B),
-                inactive: const Color(0xFF94A3B8),
-                currentIndex: _navIndex,
-                onTap: (i) =>
-                    setState(() => _currentIndex = _navMap[i]),
-                itemKeys: [
-                  _ordersKey,
-                  _menuKey,
-                  _settingsKey,
-                  _profileKey,
-                ],
-                items: [
-                  FastNavItem(
-                    icon: Icons.receipt_long_outlined,
-                    activeIcon: Icons.receipt_long,
-                    label: tr(context, 'nav_orders'),
-                  ),
-                  FastNavItem(
-                    icon: Icons.restaurant_menu_outlined,
-                    activeIcon: Icons.restaurant_menu,
-                    label: tr(context, 'menu'),
-                  ),
-                  FastNavItem(
-                    icon: Icons.settings_outlined,
-                    activeIcon: Icons.settings,
-                    label: tr(context, 'nav_settings'),
-                  ),
-                  FastNavItem(
-                    icon: Icons.storefront_outlined,
-                    activeIcon: Icons.storefront,
-                    label: tr(context, 'nav_profile'),
-                  ),
-                ],
+          bottomNavigationBar: FastNavBar(
+            accent: FASTPro.teal,
+            surface: FASTPro.header,
+            line: const Color(0xFF1E293B),
+            inactive: const Color(0xFF94A3B8),
+            currentIndex: _navIndex,
+            onTap: (i) {
+              if (i == 2) {
+                _showRushSheet(provider);
+                return;
+              }
+              setState(() => _currentIndex = _navMap[i]);
+            },
+            itemKeys: [
+              _ordersKey,
+              _menuKey,
+              _statsKey,
+              _settingsKey,
+              _profileKey,
+            ],
+            items: [
+              FastNavItem(
+                icon: Icons.receipt_long_outlined,
+                activeIcon: Icons.receipt_long,
+                label: tr(context, 'nav_orders'),
               ),
+              FastNavItem(
+                icon: Icons.restaurant_menu_outlined,
+                activeIcon: Icons.restaurant_menu,
+                label: tr(context, 'menu'),
               ),
-              Positioned(
-                top: 0,
-                child: KeyedSubtree(
-                  key: _statsKey,
-                  child: GestureDetector(
-                    onTap: () => _showRushSheet(provider),
-                    child: _rushButton(provider),
-                  ),
-                ),
+              FastNavItem(
+                icon: Icons.warning_rounded,
+                label: 'RUSH',
+                customIcon: _rushButton(provider),
+              ),
+              FastNavItem(
+                icon: Icons.settings_outlined,
+                activeIcon: Icons.settings,
+                label: tr(context, 'nav_settings'),
+              ),
+              FastNavItem(
+                icon: Icons.storefront_outlined,
+                activeIcon: Icons.storefront,
+                label: tr(context, 'nav_profile'),
               ),
             ],
           ),
@@ -361,13 +350,14 @@ class _RestoMainShellState extends State<RestoMainShell> {
     );
   }
 
-  /// Big glossy red circle floating at the centre of the nav pill —
-  /// opens a confirmation sheet so Rush Mode can't be toggled accidentally.
+  /// Glossy red dome rendered inside the RUSH nav tab — same level as the
+  /// other tabs, still visually distinct. Tap opens a confirmation sheet
+  /// so Rush Mode can't be toggled accidentally.
   Widget _rushButton(RestoProvider provider) {
     final active = provider.isRushMode;
     return Container(
-      width: 48,
-      height: 48,
+      width: 36,
+      height: 36,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: const RadialGradient(
@@ -401,12 +391,12 @@ class _RestoMainShellState extends State<RestoMainShell> {
         children: [
           // Specular highlight — glossy dome look
           Positioned(
-            top: 6,
+            top: 4,
             child: Container(
-              width: 24,
-              height: 9,
+              width: 18,
+              height: 7,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(8),
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
@@ -418,7 +408,7 @@ class _RestoMainShellState extends State<RestoMainShell> {
               ),
             ),
           ),
-          const Icon(Icons.warning_rounded, color: Colors.white, size: 24),
+          const Icon(Icons.warning_rounded, color: Colors.white, size: 18),
         ],
       ),
     );

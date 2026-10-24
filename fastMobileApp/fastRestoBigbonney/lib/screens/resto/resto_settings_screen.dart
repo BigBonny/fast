@@ -20,7 +20,8 @@ class RestoSettingsScreen extends StatefulWidget {
   State<RestoSettingsScreen> createState() => _RestoSettingsScreenState();
 }
 
-class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
+class _RestoSettingsScreenState extends State<RestoSettingsScreen>
+    with WidgetsBindingObserver {
   // Controllers
   final _nameCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
@@ -114,8 +115,16 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadFromBackend();
     _loadConnectStatus();
+  }
+
+  /// Returning from the in-app Stripe onboarding webview re-syncs the
+  /// Connect status so the badge updates without reopening the screen.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _loadConnectStatus();
   }
 
   Future<void> _loadConnectStatus() async {
@@ -135,7 +144,10 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
       final link = await _paymentService.createConnectAccountLink();
       final url = link['url'] as String?;
       if (url != null) {
-        await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+        // In-app webview — the owner stays inside FAST while completing
+        // Stripe onboarding. On finish, Stripe hits our return page which
+        // deep-links back here and the resume hook re-syncs the status.
+        await launchUrl(Uri.parse(url), mode: LaunchMode.inAppWebView);
       }
       await _loadConnectStatus();
     } catch (e) {
@@ -337,6 +349,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _nameCtrl.dispose();
     _descCtrl.dispose();
     _cuisineCtrl.dispose();
