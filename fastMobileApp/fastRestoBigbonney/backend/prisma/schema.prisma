@@ -126,6 +126,7 @@ model User {
   staffAssignments RestaurantStaff[]
   addresses        SavedAddress[]
   reservations     Reservation[]
+  restaurantRequests RestaurantRequest[]
 }
 
 model PhoneVerification {
@@ -530,4 +531,23 @@ model Reservation {
 
   @@index([restaurantId, status])
   @@index([userId])
+}
+
+model RestaurantRequest {
+  id        String   @id @default(cuid())
+  name      String
+  city      String   @default("")
+  address   String   @default("")
+  phone     String   @default("")
+  note      String   @default("")
+  status    String   @default("NEW") // NEW | CONTACTED | ONBOARDED | DECLINED
+  userId    String?
+  userName  String   @default("")
+  userEmail String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
 }

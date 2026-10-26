@@ -91,4 +91,25 @@ class RestaurantService {
     final data = await _api.patch(ApiConfig.updateRestaurant(id), body: body);
     return data as Map<String, dynamic>;
   }
+
+  /// Client suggests a restaurant that isn't on FAST yet — ops calls the
+  /// restaurant and onboards it.
+  Future<void> requestRestaurant({
+    required String name,
+    String city = '',
+    String address = '',
+    String phone = '',
+    String note = '',
+  }) async {
+    await _api.post(
+      ApiConfig.restaurantRequests,
+      body: {
+        'name': name,
+        'city': city,
+        'address': address,
+        'phone': phone,
+        'note': note,
+      },
+    );
+  }
 }

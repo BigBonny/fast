@@ -139,6 +139,13 @@ class FASTProvider extends ChangeNotifier {
     _isLoading = false;
     _error = null;
     _orderError = null;
+    // "Mode Client" is a session toggle — it must not leak across
+    // logout/login or a different account on the same device,
+    // otherwise a Pro account can get stuck landing on the client side.
+    _viewAsClient = false;
+    SharedPreferences.getInstance().then(
+      (prefs) => prefs.remove('fast_view_as_client'),
+    );
     notifyListeners();
     _loadFavorites();
   }

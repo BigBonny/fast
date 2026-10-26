@@ -193,6 +193,14 @@ class _AuthScreenState extends State<AuthScreen>
     );
 
     final isResto = auth.isRestaurant;
+    // Signing in through the "Professionnel" form is an explicit role
+    // choice — it always lands on the Pro side, even if a stale
+    // "Mode Client" flag survived from an earlier session.
+    if (isResto &&
+        (widget.initialRole ?? 'CLIENT') == 'RESTAURANT' &&
+        fastProv.viewAsClient) {
+      fastProv.setViewAsClient(false);
+    }
     // An owner who chose "Mode Client" stays on the client side.
     final goClient = isResto && fastProv.viewAsClient;
 

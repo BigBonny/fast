@@ -9,6 +9,7 @@ import '../widgets/fast_image.dart';
 import '../widgets/fast_glow_background.dart';
 import '../widgets/fast_ui.dart';
 import '../l10n/tr.dart';
+import '../services/restaurant_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -631,6 +632,25 @@ class _HomeScreenState extends State<HomeScreen>
                           style: TextStyle(
                             fontSize: 10,
                             color: context.fast.t3,
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        TextButton.icon(
+                          onPressed: () => _showRestaurantRequestSheet(
+                            context,
+                            provider.searchKeyword,
+                          ),
+                          icon: const Icon(
+                            Icons.storefront_outlined,
+                            size: 15,
+                          ),
+                          label: Text(tr(context, 'req_resto_cta')),
+                          style: TextButton.styleFrom(
+                            foregroundColor: const Color(0xFFF59E0B),
+                            textStyle: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
                           ),
                         ),
                       ],
@@ -1528,16 +1548,47 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Widget _buildNoKitchens(BuildContext context, FASTProvider provider) {
-    return FastEmpty(
-      icon: Icons.restaurant_outlined,
-      title: tr(context, 'no_cuisine'),
-      subtitle: tr(context, 'widen_radius'),
-      action: FastButton(
-        label: tr(context, 'reset_filters'),
-        onPressed: () => provider.resetFilters(),
-        expand: false,
-        height: 44,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        FastEmpty(
+          icon: Icons.restaurant_outlined,
+          title: tr(context, 'no_cuisine'),
+          subtitle: tr(context, 'widen_radius'),
+          action: FastButton(
+            label: tr(context, 'reset_filters'),
+            onPressed: () => provider.resetFilters(),
+            expand: false,
+            height: 44,
+          ),
+        ),
+        TextButton.icon(
+          onPressed: () => _showRestaurantRequestSheet(context, ''),
+          icon: const Icon(Icons.storefront_outlined, size: 15),
+          label: Text(tr(context, 'req_resto_cta')),
+          style: TextButton.styleFrom(
+            foregroundColor: const Color(0xFFF59E0B),
+            textStyle: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Client suggests a restaurant that isn't on FAST — ops calls it and
+  /// onboards it. Name is prefilled with the active search keyword.
+  void _showRestaurantRequestSheet(BuildContext context, String keyword) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: context.fast.card,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
+      builder: (ctx) => _RestaurantRequestSheet(initialName: keyword),
     );
   }
 
@@ -1896,3 +1947,159 @@ const _heroHeadline = TextStyle(
     Shadow(color: Colors.black54, blurRadius: 12, offset: Offset(0, 2)),
   ],
 );
+
+/// Bottom sheet — client suggests a restaurant that isn't on FAST yet.
+/// The FAST team calls the restaurant and onboards it; the request keeps
+/// the client's identity so they can be told when it goes live.
+class _RestaurantRequestSheet extends StatefulWidget {
+  final String initialName;
+  const _RestaurantRequestSheet({required this.initialName});
+
+  @override
+  State<_RestaurantRequestSheet> createState() =>
+      _RestaurantRequestSheetState();
+}
+
+class _RestaurantRequestSheetState extends State<_RestaurantRequestSheet> {
+  late final TextEditingController _name = TextEditingController(
+    text: widget.initialName,
+  );
+  final _city = TextEditingController();
+  final _phone = TextEditingController();
+  final _note = TextEditingController();
+  bool _sending = false;
+
+  @override
+  void dispose() {
+    _name.dispose();
+    _city.dispose();
+    _phone.dispose();
+    _note.dispose();
+    super.dispose();
+  }
+
+  InputDecoration _fieldStyle(String label) => InputDecoration(
+    labelText: label,
+    labelStyle: TextStyle(color: context.fast.t3, fontSize: 12),
+    filled: true,
+    fillColor: context.fast.faint,
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: context.fast.line),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: context.fast.line),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: Color(0xFFF59E0B)),
+    ),
+    contentPadding: const EdgeInsets.symmetric(
+      horizontal: 14,
+      vertical: 12,
+    ),
+  );
+
+  Future<void> _submit() async {
+    final name = _name.text.trim();
+    if (name.length < 2 || _sending) return;
+    setState(() => _sending = true);
+    try {
+      await RestaurantService().requestRestaurant(
+        name: name,
+        city: _city.text.trim(),
+        phone: _phone.text.trim(),
+        note: _note.text.trim(),
+      );
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(tr(context, 'req_resto_done'))),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _sending = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(tr(context, 'req_resto_err'))),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        20,
+        16,
+        20,
+        MediaQuery.viewInsetsOf(context).bottom + 20,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.storefront_outlined,
+                color: Color(0xFFF59E0B),
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  tr(context, 'req_resto_title'),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                    color: context.fast.t1,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            tr(context, 'req_resto_sub'),
+            style: TextStyle(fontSize: 12, color: context.fast.t3),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _name,
+            style: TextStyle(color: context.fast.t1, fontSize: 14),
+            decoration: _fieldStyle(tr(context, 'req_resto_name')),
+            textCapitalization: TextCapitalization.words,
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            controller: _city,
+            style: TextStyle(color: context.fast.t1, fontSize: 14),
+            decoration: _fieldStyle(tr(context, 'req_resto_city')),
+            textCapitalization: TextCapitalization.words,
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            controller: _phone,
+            style: TextStyle(color: context.fast.t1, fontSize: 14),
+            decoration: _fieldStyle(tr(context, 'req_resto_phone')),
+            keyboardType: TextInputType.phone,
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            controller: _note,
+            style: TextStyle(color: context.fast.t1, fontSize: 14),
+            decoration: _fieldStyle(tr(context, 'req_resto_note')),
+            maxLines: 2,
+          ),
+          const SizedBox(height: 16),
+          FastButton(
+            label: tr(context, 'req_resto_submit'),
+            onPressed: _sending ? null : _submit,
+            height: 48,
+          ),
+        ],
+      ),
+    );
+  }
+}
