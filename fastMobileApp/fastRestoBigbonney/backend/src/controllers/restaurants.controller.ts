@@ -349,3 +349,50 @@ export const updatePayoutFrequency = async (req: Request, res: Response): Promis
 
   res.json({ payoutFrequency: updated.payoutFrequency });
 };
+
+// ─── Restaurant requests (client → FAST) ─────────────────────
+// A client suggests a restaurant that isn't on FAST yet. Ops calls the
+// restaurant and onboards it — the request keeps the client's contact
+// info so they can be told when it goes live.
+
+const cleanField = (v: unknown, max = 160): string =>
+  typeof v === 'string' ? v.trim().slice(0, max) : '';
+
+export const createRestaurantRequest = async (req: Request, res: Response): Promise<void> => {
+  const body = req.body as Record<string, unknown>;
+  const name = cleanField(body.name, 120);
+  if (name.length < 2) {
+    res.status(400).json({ error: 'Nom du restaurant requis' });
+    return;
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: req.user!.userId },
+    select: { name: true, email: true },
+  });
+
+  const request = await prisma.restaurantRequest.create({
+    data: {
+      name,
+      city: cleanField(body.city, 120),
+      address: cleanField(body.address, 200),
+      phone: cleanField(body.phone, 30),
+      note: cleanField(body.note, 500),
+      userId: req.user!.userId,
+      userName: user?.name ?? '',
+      userEmail: user?.email ?? '',
+    },
+  });
+
+  res.status(201).json({ ok: true, request: { id: request.id, name: request.name, createdAt: request.createdAt } });
+};
+
+export const listMyRestaurantRequests = async (req: Request, res: Response): Promise<void> => {
+  const requests = await prisma.restaurantRequest.findMany({
+    where: { userId: req.user!.userId },
+    orderBy: { createdAt: 'desc' },
+    take: 20,
+    select: { id: true, name: true, city: true, status: true, createdAt: true },
+  });
+  res.json(requests);
+};

@@ -8,11 +8,18 @@ import {
   toggleRushMode,
   toggleFullMode,
   updatePayoutFrequency,
+  createRestaurantRequest,
+  listMyRestaurantRequests,
 } from '../controllers/restaurants.controller';
 import { authenticate, requireRole, requireRestaurantAccess } from '../middleware/auth';
 import { asyncHandler } from '../utils/asyncHandler';
 
 const router = Router();
+
+// Client suggestions — must be registered before '/:id' so "requests"
+// isn't swallowed as a restaurant id.
+router.post('/requests', authenticate, asyncHandler(createRestaurantRequest));
+router.get('/requests/mine', authenticate, asyncHandler(listMyRestaurantRequests));
 
 // Public
 router.get('/', asyncHandler(listRestaurants));
