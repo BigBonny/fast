@@ -116,6 +116,7 @@ class UserData {
   bool get isRestaurant => role == 'RESTAURANT';
   bool get isClient => role == 'CLIENT';
   bool get isLivreur => role == 'LIVREUR';
+  bool get isAdmin => role == 'ADMIN';
   // Kitchen/guest accounts — orders board only, no stats/payments/settings
   bool get isStaff => role == 'STAFF' || role == 'GUEST';
   bool get isGuest => role == 'GUEST' || staffRole == 'GUEST';

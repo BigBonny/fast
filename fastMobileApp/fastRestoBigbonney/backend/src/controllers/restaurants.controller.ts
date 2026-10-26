@@ -396,3 +396,30 @@ export const listMyRestaurantRequests = async (req: Request, res: Response): Pro
   });
   res.json(requests);
 };
+
+// Admin: full pipeline view + status updates so the FAST team can call
+// the requested restaurants and track onboarding progress.
+const REQUEST_STATUSES = ['NEW', 'CONTACTED', 'ONBOARDED', 'DECLINED'];
+
+export const listRestaurantRequests = async (req: Request, res: Response): Promise<void> => {
+  const status = cleanField(req.query.status, 20).toUpperCase();
+  const requests = await prisma.restaurantRequest.findMany({
+    where: REQUEST_STATUSES.includes(status) ? { status } : undefined,
+    orderBy: { createdAt: 'desc' },
+    take: 200,
+  });
+  res.json(requests);
+};
+
+export const updateRestaurantRequestStatus = async (req: Request, res: Response): Promise<void> => {
+  const status = cleanField((req.body as Record<string, unknown>).status, 20).toUpperCase();
+  if (!REQUEST_STATUSES.includes(status)) {
+    res.status(400).json({ error: 'Statut invalide' });
+    return;
+  }
+  const request = await prisma.restaurantRequest.update({
+    where: { id: String(req.params.requestId) },
+    data: { status },
+  });
+  res.json({ ok: true, request });
+};
