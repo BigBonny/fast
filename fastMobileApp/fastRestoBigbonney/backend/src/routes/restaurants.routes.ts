@@ -10,6 +10,8 @@ import {
   updatePayoutFrequency,
   createRestaurantRequest,
   listMyRestaurantRequests,
+  listRestaurantRequests,
+  updateRestaurantRequestStatus,
 } from '../controllers/restaurants.controller';
 import { authenticate, requireRole, requireRestaurantAccess } from '../middleware/auth';
 import { asyncHandler } from '../utils/asyncHandler';
@@ -20,6 +22,9 @@ const router = Router();
 // isn't swallowed as a restaurant id.
 router.post('/requests', authenticate, asyncHandler(createRestaurantRequest));
 router.get('/requests/mine', authenticate, asyncHandler(listMyRestaurantRequests));
+// Admin pipeline — also before '/:id' (GET + PATCH) for the same reason.
+router.get('/requests', authenticate, requireRole('ADMIN'), asyncHandler(listRestaurantRequests));
+router.patch('/requests/:requestId/status', authenticate, requireRole('ADMIN'), asyncHandler(updateRestaurantRequestStatus));
 
 // Public
 router.get('/', asyncHandler(listRestaurants));

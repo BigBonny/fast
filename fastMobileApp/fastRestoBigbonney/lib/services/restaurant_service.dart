@@ -112,4 +112,23 @@ class RestaurantService {
       },
     );
   }
+
+  /// Admin pipeline — every client suggestion with the requester's
+  /// contact info, so ops can call the restaurant and track progress.
+  Future<List<Map<String, dynamic>>> listRestaurantRequests({
+    String? status,
+  }) async {
+    final data = await _api.get(
+      ApiConfig.restaurantRequests,
+      queryParams: status == null ? null : {'status': status},
+    );
+    return (data as List).cast<Map<String, dynamic>>();
+  }
+
+  Future<void> updateRestaurantRequestStatus(String id, String status) async {
+    await _api.patch(
+      ApiConfig.restaurantRequestStatus(id),
+      body: {'status': status},
+    );
+  }
 }

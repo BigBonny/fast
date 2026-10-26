@@ -10,6 +10,7 @@ import '../theme.dart';
 import '../l10n/tr.dart';
 import 'saved_addresses_screen.dart';
 import 'saved_cards_screen.dart';
+import 'admin_requests_screen.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -514,6 +515,46 @@ class _AccountScreenState extends State<AccountScreen>
               ],
             ),
           ),
+
+          // FAST team only — pipeline of client restaurant requests
+          if (context.watch<AuthProvider>().user?.isAdmin ?? false) ...[
+            SizedBox(height: 24),
+            _sectionLabel('FAST'),
+            SizedBox(height: 8),
+            Container(
+              decoration: BoxDecoration(
+                color: context.fast.card,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: context.fast.line),
+              ),
+              child: ListTile(
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const AdminRequestsScreen(),
+                  ),
+                ),
+                leading: Icon(
+                  Icons.storefront_outlined,
+                  color: Color(0xFFF59E0B),
+                  size: 20,
+                ),
+                title: Text(
+                  provider.tr('admin_req_title'),
+                  style: TextStyle(
+                    color: context.fast.t1,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
+                trailing: Icon(
+                  Icons.chevron_right,
+                  color: context.fast.faint,
+                  size: 18,
+                ),
+              ),
+            ),
+          ],
 
           SizedBox(height: 24),
 

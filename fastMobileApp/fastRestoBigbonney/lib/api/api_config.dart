@@ -21,6 +21,8 @@ class ApiConfig {
   static String restaurant(String id) => '/restaurants/$id';
   static const String restaurantRequests = '/restaurants/requests';
   static const String myRestaurantRequests = '/restaurants/requests/mine';
+  static String restaurantRequestStatus(String id) =>
+      '/restaurants/requests/$id/status';
   static const String myRestaurant = '/restaurants/account/mine';
   static const String toggleRush = '/restaurants/toggle-rush';
   static String updateRestaurant(String id) => '/restaurants/$id';
