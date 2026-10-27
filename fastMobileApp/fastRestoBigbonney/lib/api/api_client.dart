@@ -24,6 +24,9 @@ class ApiClient {
 
   bool get isAuthenticated => _token != null && _token!.isNotEmpty;
 
+  /// JWT for authenticating the realtime socket connection.
+  String? get token => _token;
+
   Future<void> setToken(String? token) async {
     _token = token;
     if (token != null) {

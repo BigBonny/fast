@@ -180,8 +180,18 @@ async function createPaidOrderFromCheckout(
             type: 'STATUS',
           },
         });
+        const clientNotification = await prisma.notification.create({
+          data: {
+            userId: result.order.userId,
+            orderId: result.order.id,
+            title: 'Commande confirmée',
+            body: `Commande #${result.order.id.slice(-6)} payée — le restaurant va la préparer.`,
+            type: 'SUCCESS',
+          },
+        });
         safeEmitOrderToRestaurant(result.order.restaurantId, result.order);
         safeEmitNotificationToUser(result.restaurantOwnerId!, notification);
+        safeEmitNotificationToUser(result.order.userId, clientNotification);
       }
 
       return result.order;
