@@ -72,6 +72,10 @@
 	</array>
 	<key>GIDClientID</key>
 	<string>792298746020-61i7cv8gp2cdubrkrim5coqjndfu9tl0.apps.googleusercontent.com</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 </dict>
