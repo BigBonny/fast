@@ -421,5 +421,22 @@ export const updateRestaurantRequestStatus = async (req: Request, res: Response)
     where: { id: String(req.params.requestId) },
     data: { status },
   });
+
+  // Keep the requesting client in the loop — the big win is ONBOARDED,
+  // which turns their suggestion into a place they can actually order from.
+  if (request.userId && (status === 'CONTACTED' || status === 'ONBOARDED')) {
+    const notification = await prisma.notification.create({
+      data: {
+        userId: request.userId,
+        title: status === 'ONBOARDED' ? `${request.name} est sur FAST !` : 'Bonne nouvelle !',
+        body: status === 'ONBOARDED'
+          ? 'Le restaurant que vous attendiez vient de nous rejoindre — bon appétit !'
+          : `Nous avons contacté ${request.name} pour le faire rejoindre FAST.`,
+        type: 'SUCCESS',
+      },
+    });
+    safeEmitNotificationToUser(request.userId, notification);
+  }
+
   res.json({ ok: true, request });
 };

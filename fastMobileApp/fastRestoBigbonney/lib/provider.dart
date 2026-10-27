@@ -15,6 +15,9 @@ import 'services/review_service.dart';
 import 'services/auth_service.dart';
 import 'services/group_service.dart';
 import 'services/payment_service.dart';
+import 'services/local_push_service.dart';
+import 'services/proximity_service.dart';
+import 'services/realtime_service.dart';
 import 'api/api_exceptions.dart';
 import 'l10n/app_strings.dart';
 
@@ -115,6 +118,8 @@ class FASTProvider extends ChangeNotifier {
   void resetSession() {
     _requestGeneration++;
     stopOrderPolling();
+    RealtimeService.instance.disconnect();
+    ProximityService.instance.stop();
     _surpriseTimer?.cancel();
     _userId = '';
     _userName = '';
@@ -352,6 +357,47 @@ class FASTProvider extends ChangeNotifier {
     _userPoints = points;
     notifyListeners();
     _loadFavorites();
+    _startRealtime();
+  }
+
+  /// Realtime socket + GPS proximity — live notifications without polling.
+  void _startRealtime() {
+    final realtime = RealtimeService.instance;
+    realtime.onNotification ??= _onRealtimeNotification;
+    realtime.onOrderStatus ??= (_, _) {
+      unawaited(refreshOrders());
+    };
+    realtime.connect(_userId);
+    LocalPushService.instance.init();
+
+    ProximityService.instance.start(
+      orders: () => _orders,
+      restaurants: () => _restaurants,
+      onArrival: (order, restaurant) {
+        LocalPushService.instance.show(
+          title: tr('notif_arrive_title'),
+          body: tr(
+            'notif_arrive_body',
+          ).replaceAll('{n}', restaurant.name),
+        );
+      },
+    );
+  }
+
+  /// A backend-created notification arrived over the socket: mirror it
+  /// into the in-app list and surface it as a system notification.
+  void _onRealtimeNotification(PushNotification notification) {
+    if (notification.id.isNotEmpty &&
+        _notifications.any((n) => n.id == notification.id)) {
+      return;
+    }
+    _notifications.insert(0, notification);
+    _saveNotifications();
+    notifyListeners();
+    LocalPushService.instance.show(
+      title: notification.title,
+      body: notification.body,
+    );
   }
 
   void syncPoints(int points) {
