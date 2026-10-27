@@ -42,6 +42,7 @@ class ApiConfig {
   static const String orders = '/orders';
   static const String myOrders = '/orders/mine';
   static String cancelOrder(String id) => '/orders/$id/cancel';
+  static String orderDelay(String id) => '/orders/$id/delay';
   static const String restaurantOrders = '/orders/restaurant';
   static String updateOrderStatus(String id) => '/orders/$id/status';
   static String order(String id) => '/orders/$id';
@@ -58,6 +59,8 @@ class ApiConfig {
   static const String stripeConnectStatus = '/payments/connect/status';
   static const String uploads = '/uploads';
   static const String menuAiPhoto = '/menu/ai-photo';
+  static String menuAiPhotos(String restaurantId) =>
+      '/menu/restaurant/$restaurantId/ai-photos';
   static const String paymentMethods = '/payments/methods';
   static const String setupPaymentMethod = '/payments/methods/setup';
   static String paymentMethod(String id) => '/payments/methods/$id';

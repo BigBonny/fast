@@ -610,6 +610,42 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
       });
     }
 
+    // Pre-fill the Connect account with everything the owner already
+    // typed into FAST (legal name, SIRET, address, phone) — hosted
+    // onboarding should only ask for identity verification, not make
+    // them re-enter their restaurant's identity.
+    try {
+      await stripe.accounts.update(accountId, {
+        business_profile: {
+          name: restaurant.name,
+          mcc: '5812', // eating places / restaurants
+          support_phone: restaurant.phone || undefined,
+          support_address: restaurant.address
+            ? {
+                line1: restaurant.address,
+                city: restaurant.city || undefined,
+                country: 'FR',
+              }
+            : undefined,
+        },
+        company: {
+          name: restaurant.name,
+          registration_number: restaurant.siret || undefined,
+          phone: restaurant.phone || undefined,
+          address: restaurant.address
+            ? {
+                line1: restaurant.address,
+                city: restaurant.city || undefined,
+                country: 'FR',
+              }
+            : undefined,
+        },
+      });
+    } catch (prefillErr) {
+      // Prefill is a convenience — never block onboarding on it.
+      console.warn('[Stripe] Connect prefill failed:', (prefillErr as Error).message);
+    }
+
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
       type: 'account_onboarding',

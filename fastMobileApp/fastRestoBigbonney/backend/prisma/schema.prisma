@@ -169,6 +169,9 @@ model Restaurant {
   city                 String   @default("")
   cuisineType          String   @default("")
   managerIban          String   @default("")
+  siret                String   @default("")
+  phone                String   @default("")
+  openingHours         Json?
   stripeAccountId      String?
   stripeChargesEnabled Boolean  @default(false)
   stripePayoutsEnabled Boolean  @default(false)

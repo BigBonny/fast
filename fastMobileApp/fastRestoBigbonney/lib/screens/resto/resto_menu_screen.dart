@@ -8,6 +8,7 @@ import 'menu_item_edit_screen.dart';
 import '../../theme.dart';
 import '../../widgets/fast_image.dart';
 import '../../l10n/tr.dart';
+import '../../services/menu_service.dart';
 
 class RestoMenuScreen extends StatefulWidget {
   const RestoMenuScreen({super.key});
@@ -18,6 +19,41 @@ class RestoMenuScreen extends StatefulWidget {
 
 class _RestoMenuScreenState extends State<RestoMenuScreen> {
   String _filter = 'all';
+  bool _generatingPhotos = false;
+
+  /// "Photos IA" for the whole menu — fills every dish that still lacks
+  /// a photo in one shot; the owner keeps editorial control afterwards.
+  Future<void> _generateAllPhotos(BuildContext context) async {
+    final prov = Provider.of<RestoProvider>(context, listen: false);
+    final restaurantId = prov.restaurantId;
+    if (restaurantId == null || _generatingPhotos) return;
+    setState(() => _generatingPhotos = true);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final updated = await MenuService().generateMenuPhotos(restaurantId);
+      await prov.loadMenu();
+      if (!context.mounted) return;
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            updated == 0
+                ? tr(context, 'gen_photos_none')
+                : tr(
+                    context,
+                    'gen_photos_done',
+                  ).replaceAll('{n}', '$updated'),
+          ),
+        ),
+      );
+    } catch (_) {
+      if (!context.mounted) return;
+      messenger.showSnackBar(
+        SnackBar(content: Text(tr(context, 'gen_photos_err'))),
+      );
+    } finally {
+      if (mounted) setState(() => _generatingPhotos = false);
+    }
+  }
 
   void _openEdit(BuildContext context, {MenuItem? item}) {
     Navigator.push(
@@ -405,30 +441,66 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Client preview — see the menu exactly as customers do
+        // Client preview + one-tap AI photos for the whole menu
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-          child: OutlinedButton.icon(
-            onPressed: () => _showClientPreview(context, prov),
-            icon: const Icon(
-              Icons.visibility_outlined,
-              size: 16,
-              color: Color(0xFF00C8B3),
-            ),
-            label: Text(
-              tr(context, 'preview_client'),
-              style: TextStyle(
-                color: Color(0xFF00C8B3),
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
+          child: Row(
+            children: [
+              OutlinedButton.icon(
+                onPressed: () => _showClientPreview(context, prov),
+                icon: const Icon(
+                  Icons.visibility_outlined,
+                  size: 16,
+                  color: Color(0xFF00C8B3),
+                ),
+                label: Text(
+                  tr(context, 'preview_client'),
+                  style: TextStyle(
+                    color: Color(0xFF00C8B3),
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Color(0xFF00C8B3)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
               ),
-            ),
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: Color(0xFF00C8B3)),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
+              const SizedBox(width: 8),
+              if (!isGuest)
+                OutlinedButton.icon(
+                  onPressed: _generatingPhotos
+                      ? null
+                      : () => _generateAllPhotos(context),
+                  icon: _generatingPhotos
+                      ? const SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(
+                          Icons.auto_awesome,
+                          size: 16,
+                          color: Color(0xFF8B5CF6),
+                        ),
+                  label: Text(
+                    tr(context, 'gen_all_photos'),
+                    style: TextStyle(
+                      color: Color(0xFF8B5CF6),
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Color(0xFF8B5CF6)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+            ],
           ),
         ),
         // Category filter tabs

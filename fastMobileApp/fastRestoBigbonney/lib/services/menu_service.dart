@@ -58,6 +58,13 @@ class MenuService {
     );
   }
 
+  /// One tap: AI photos for every dish still missing one. Returns how
+  /// many images were generated and saved.
+  Future<int> generateMenuPhotos(String restaurantId) async {
+    final data = await _api.post(ApiConfig.menuAiPhotos(restaurantId));
+    return (data as Map<String, dynamic>)['updated'] as int? ?? 0;
+  }
+
   Future<void> deleteItem(String id) async {
     await _api.delete(ApiConfig.menuItem(id));
   }
