@@ -12,6 +12,8 @@ import 'package:fast_resto_bigbonney/models/auth_models.dart';
 import 'package:fast_resto_bigbonney/l10n/tr.dart';
 import 'package:fast_resto_bigbonney/screens/home_screen.dart';
 import 'package:fast_resto_bigbonney/screens/resto/pro_intro_slides.dart';
+import 'package:fast_resto_bigbonney/models.dart';
+import 'package:fast_resto_bigbonney/services/proximity_service.dart';
 import 'package:fast_resto_bigbonney/widgets/intro_carousel.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -395,5 +397,58 @@ void main() {
     );
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  Restaurant resto(String id, double lat, double lng) =>
+      Restaurant(
+        id: id, name: 'R$id', description: '', image: '', category: 'burger',
+        rating: 4.5, reviewsCount: 10, reviews: const [], pickupPrepTime: 10,
+        distance: 0, dietaryOptions: const [], menu: const [], address: '',
+        latitude: lat, longitude: lng,
+      );
+
+  Order mkOrder(String id, String restoId,
+          {OrderStatus status = OrderStatus.preparing, bool delivery = false}) =>
+      Order(
+        id: id, restaurantId: restoId, restaurantName: 'R', restaurantImage: '',
+        items: const [], subtotal: 10, serviceFee: 0, total: 10,
+        status: status, createdAt: '', userWalkTimeMinutes: 10,
+        fulfillmentType: delivery
+            ? FulfillmentType.delivery
+            : FulfillmentType.pickup,
+      );
+
+  test('Proximity alerts once, inside 250m, for pickup orders only', () {
+    final near = resto('near', 48.0007, 2.0);
+    final restaurants = [near, resto('far', 49.0, 3.0), resto('noloc', 0, 0)];
+    final notified = <String>{};
+
+    var hits = ProximityService.evaluateArrivals(
+      48.0, 2.0,
+      [
+        mkOrder('o1', 'near'),
+        mkOrder('o2', 'far'),
+        mkOrder('o3', 'noloc'),
+        mkOrder('o4', 'near', status: OrderStatus.completed),
+        mkOrder('o5', 'near', delivery: true),
+        mkOrder('o6', 'near', status: OrderStatus.readyForPickup),
+      ],
+      restaurants, notified,
+    );
+    expect(hits.map((h) => h.$1.id).toSet(), {'o1', 'o6'});
+    for (final h in hits) {
+      expect(h.$2.id, 'near');
+      notified.add(h.$1.id);
+    }
+
+    hits = ProximityService.evaluateArrivals(
+      48.0, 2.0,
+      [
+        mkOrder('o1', 'near'),
+        mkOrder('o6', 'near', status: OrderStatus.readyForPickup),
+      ],
+      restaurants, notified,
+    );
+    expect(hits, isEmpty);
   });
 }

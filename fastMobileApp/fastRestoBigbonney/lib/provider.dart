@@ -373,6 +373,8 @@ class FASTProvider extends ChangeNotifier {
     ProximityService.instance.start(
       orders: () => _orders,
       restaurants: () => _restaurants,
+      foregroundTitle: tr('geo_tracking_title'),
+      foregroundBody: tr('geo_tracking_body'),
       onArrival: (order, restaurant) {
         LocalPushService.instance.show(
           title: tr('notif_arrive_title'),
@@ -382,6 +384,7 @@ class FASTProvider extends ChangeNotifier {
         );
       },
     );
+    ProximityService.instance.sync();
   }
 
   /// A backend-created notification arrived over the socket: mirror it
@@ -454,6 +457,7 @@ class FASTProvider extends ChangeNotifier {
       _restaurants = restaurants;
       _orders = orders;
       _notifications = notifications;
+      ProximityService.instance.sync();
       // Fetch user location after data loads
       fetchUserLocation();
       // Start/stop order polling based on active orders
@@ -479,6 +483,7 @@ class FASTProvider extends ChangeNotifier {
       final orders = await _orderService.getMyOrders();
       if (_disposed || generation != _requestGeneration) return;
       _orders = orders;
+      ProximityService.instance.sync();
       await _saveOrders();
       notifyListeners();
     } catch (_) {}
