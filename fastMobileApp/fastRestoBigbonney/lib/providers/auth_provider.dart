@@ -1,6 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../api/api_client.dart';
+import '../api/api_exceptions.dart';
 import '../models/auth_models.dart';
 import '../services/auth_service.dart';
 
@@ -19,6 +22,18 @@ class AuthProvider extends ChangeNotifier {
   bool get isLivreur => _user?.isLivreur ?? false;
   bool get isBusy => _state == AuthState.loading || _isLoggingOut;
 
+  static const String _cachedUserKey = 'fast_cached_user';
+
+  /// Cache the session user so the next cold start skips the /auth/me
+  /// round-trip — splash ends instantly, backend refresh happens behind.
+  Future<void> _cacheUser() async {
+    if (_user == null) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_cachedUserKey, jsonEncode(_user!.toJson()));
+    } catch (_) {}
+  }
+
   /// Try auto-login on app start using stored token
   Future<void> autoLogin() async {
     _state = AuthState.loading;
@@ -31,15 +46,43 @@ class AuthProvider extends ChangeNotifier {
       return;
     }
 
+    // Fast path: restore the cached session immediately so the app opens
+    // straight into the UI, then validate/refresh in the background.
+    UserData? cached;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_cachedUserKey);
+      if (raw != null) {
+        cached = UserData.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+      }
+    } catch (_) {}
+    if (cached != null && cached.id.isNotEmpty) {
+      _user = cached;
+      _state = AuthState.authenticated;
+      notifyListeners();
+    }
+
     try {
       final me = await AuthService().getMe();
       _user = me;
       _state = AuthState.authenticated;
-    } catch (_) {
-      await ApiClient().setToken(null);
-      _state = AuthState.unauthenticated;
+      notifyListeners();
+      await _cacheUser();
+    } catch (e) {
+      // 401 = session actually dead → real logout. Any other failure
+      // (offline, server blip) keeps the cached session — kicking the
+      // user out because the network is down would be worse.
+      if (e is UnauthorizedException || cached == null) {
+        await ApiClient().setToken(null);
+        _user = null;
+        _state = AuthState.unauthenticated;
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.remove(_cachedUserKey);
+        } catch (_) {}
+        notifyListeners();
+      }
     }
-    notifyListeners();
   }
 
   Future<bool> login(String email, String password) async {
@@ -55,6 +98,7 @@ class AuthProvider extends ChangeNotifier {
       _user = response.user;
       _state = AuthState.authenticated;
       notifyListeners();
+      await _cacheUser();
       return true;
     } catch (e) {
       _state = AuthState.error;
@@ -98,6 +142,7 @@ class AuthProvider extends ChangeNotifier {
       _user = response.user;
       _state = AuthState.authenticated;
       notifyListeners();
+      await _cacheUser();
       return true;
     } catch (e) {
       _state = AuthState.error;
@@ -134,6 +179,7 @@ class AuthProvider extends ChangeNotifier {
       _user = response.user;
       _state = AuthState.authenticated;
       notifyListeners();
+      await _cacheUser();
       return true;
     } catch (e) {
       _state = AuthState.error;
@@ -156,6 +202,7 @@ class AuthProvider extends ChangeNotifier {
       _user = response.user;
       _state = AuthState.authenticated;
       notifyListeners();
+      await _cacheUser();
       return true;
     } catch (e) {
       _state = AuthState.error;
@@ -196,6 +243,10 @@ class AuthProvider extends ChangeNotifier {
       _error = null;
       notifyListeners();
       try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove(_cachedUserKey);
+      } catch (_) {}
+      try {
         await revoke;
       } catch (_) {
         // Proceed with local logout even if API call fails
@@ -224,6 +275,10 @@ class AuthProvider extends ChangeNotifier {
       _user = null;
       _state = AuthState.unauthenticated;
       notifyListeners();
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove(_cachedUserKey);
+      } catch (_) {}
       return true;
     } catch (e) {
       _state = AuthState.error;

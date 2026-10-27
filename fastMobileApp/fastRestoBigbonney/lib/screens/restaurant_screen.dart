@@ -34,6 +34,7 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
   List<String> _catOrder = [];
   String? _activeCat;
   bool _showCatBar = false;
+  DateTime _spyLockUntil = DateTime.fromMillisecondsSinceEpoch(0);
 
   static const double _barHeight = 46;
 
@@ -84,12 +85,15 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
         _scroll.offset >= firstDoc - _barTopInset - _barHeight;
     final next = active ?? (_catOrder.isNotEmpty ? _catOrder.first : null);
     final catChanged = next != _activeCat;
-    if (show != _showCatBar || catChanged) {
+    // While a chip tap animates the scroll, the tapped category owns the
+    // highlight — the spy takes over again once it lands.
+    final spyLocked = DateTime.now().isBefore(_spyLockUntil);
+    if (show != _showCatBar || (catChanged && !spyLocked)) {
       setState(() {
         _showCatBar = show;
-        _activeCat = next;
+        if (!spyLocked) _activeCat = next;
       });
-      if (catChanged && next != null) _revealChip(next);
+      if (catChanged && next != null && !spyLocked) _revealChip(next);
     }
   }
 
@@ -111,6 +115,13 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
   void _scrollToCategory(String cat) {
     final key = _catKeys[cat];
     if (key == null || !_scroll.hasClients) return;
+    // Optimistic activation — on short menus the section can never reach
+    // the scroll-spy threshold, so the tap drives the state, not the spy.
+    _spyLockUntil = DateTime.now().add(const Duration(milliseconds: 700));
+    if (_activeCat != cat) {
+      setState(() => _activeCat = cat);
+    }
+    _revealChip(cat);
     final doc = _docOffsetOf(key);
     if (doc.isNaN) return;
     final target = (doc - _barTopInset - _barHeight - 6).clamp(

@@ -113,6 +113,21 @@ class UserData {
         ),
   );
 
+  /// Round-trips [fromJson] — used to cache the session user so a cold
+  /// start doesn't have to wait on a network call to show the UI.
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'email': email,
+    'name': name,
+    'phone': phone,
+    'role': role,
+    'points': points,
+    'restaurant': restaurant,
+    'driverProfile': driverProfile?.toJson(),
+    'restaurantId': restaurantId,
+    'staffRole': staffRole,
+  };
+
   bool get isRestaurant => role == 'RESTAURANT';
   bool get isClient => role == 'CLIENT';
   bool get isLivreur => role == 'LIVREUR';
@@ -150,4 +165,13 @@ class DriverProfileData {
             .whereType<Map<String, dynamic>>()
             .toList(),
       );
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'type': type,
+    'isOnline': isOnline,
+    'isPaused': isPaused,
+    'timezone': timezone,
+    'schedules': schedules,
+  };
 }

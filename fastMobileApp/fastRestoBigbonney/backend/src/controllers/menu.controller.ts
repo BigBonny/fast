@@ -646,6 +646,23 @@ function pollinationsDishPhoto(prompt: string, seedSource: string): string {
   )}?${q.toString()}`;
 }
 
+/// Prompt tuned for dish fidelity: the image must actually be *that*
+/// dish — name + description carry the semantics, style constraints
+/// keep it consistent with the FAST photo style.
+function dishPhotoPrompt(name: string, description: string, category: string): string {
+  return (
+    `Ultra-realistic professional food photography of exactly this dish: "${name}"` +
+    (description ? ` — ${description}` : '') +
+    '. The photo must clearly show ' + `"${name}"` + ' with its typical' +
+    ' ingredients and presentation recognizable at first glance — do not' +
+    ' substitute a different dish or generic food item.' +
+    (category ? ` Category: ${category}.` : '') +
+    ' Served in clean fast-casual restaurant plating, appetizing,' +
+    ' soft natural lighting, shallow depth of field, 45-degree angle,' +
+    ' photorealistic, high detail, no text, no watermark, no people.'
+  );
+}
+
 export const generateDishPhoto = async (
   req: Request,
   res: Response,
@@ -662,13 +679,7 @@ export const generateDishPhoto = async (
   const safeName = name.trim().slice(0, 120);
   const safeDesc = (description ?? '').trim().slice(0, 200);
   const safeCat = (category ?? '').trim().slice(0, 60);
-  const prompt =
-    `Appetizing professional food photography of "${safeName}"` +
-    (safeDesc ? ` (${safeDesc})` : '') +
-    (safeCat ? `, category ${safeCat}` : '') +
-    ', served on a plate on a restaurant table, soft natural lighting,' +
-    ' shallow depth of field, photorealistic, high detail, no text,' +
-    ' no watermark, no people';
+  const prompt = dishPhotoPrompt(safeName, safeDesc, safeCat);
 
   if (env.geminiApiKey) {
     const url = await geminiGenerateImage(prompt);
@@ -678,6 +689,56 @@ export const generateDishPhoto = async (
     }
   }
   res.json({ imageUrl: pollinationsDishPhoto(prompt, safeName), source: 'pollinations' });
+};
+
+/// Batch fill — generates a photo for every menu item that still lacks
+/// one, so the whole menu gets visuals in one tap. Gemini is used for
+/// the first few (bounded cost/latency), Pollinations for the rest.
+export const generateMenuPhotos = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  const restaurantId = String(req.params.restaurantId);
+  if (await getRestaurantIdForUser(req.user!) !== restaurantId) {
+    res.status(403).json({ error: 'Accès refusé' });
+    return;
+  }
+
+  const items = await prisma.menuItem.findMany({
+    where: { restaurantId, image: '' },
+    select: { id: true, name: true, description: true, category: true },
+    take: 100,
+  });
+  if (items.length === 0) {
+    res.json({ updated: 0, items: [] });
+    return;
+  }
+
+  const geminiBudget = env.geminiApiKey ? 4 : 0;
+  const results: { id: string; imageUrl: string; source: string }[] = [];
+
+  for (const [index, item] of items.entries()) {
+    const prompt = dishPhotoPrompt(
+      item.name.slice(0, 120),
+      (item.description ?? '').slice(0, 200),
+      (item.category ?? '').slice(0, 60),
+    );
+    let imageUrl: string | null = null;
+    let source = 'pollinations';
+    if (index < geminiBudget) {
+      imageUrl = await geminiGenerateImage(prompt);
+      if (imageUrl) source = 'gemini';
+    }
+    imageUrl ??= pollinationsDishPhoto(prompt, item.name);
+
+    await prisma.menuItem.update({
+      where: { id: item.id },
+      data: { image: imageUrl },
+    });
+    results.push({ id: item.id, imageUrl, source });
+  }
+
+  res.json({ updated: results.length, items: results });
 };
 
 export const suggestPrepTime = async (req: Request, res: Response): Promise<void> => {

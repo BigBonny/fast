@@ -44,6 +44,15 @@ class OrderService {
     await _api.post(ApiConfig.cancelOrder(orderId));
   }
 
+  /// Tell the restaurant when the client will actually arrive — fired
+  /// from the interactive pickup notification actions.
+  Future<void> signalDelay(String orderId, int delayMin) async {
+    await _api.post(
+      ApiConfig.orderDelay(orderId),
+      body: {'delayMin': delayMin},
+    );
+  }
+
   Future<Order> updateOrderStatus(
     String orderId,
     String status, {

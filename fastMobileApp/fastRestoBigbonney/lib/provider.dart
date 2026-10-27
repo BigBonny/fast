@@ -363,12 +363,17 @@ class FASTProvider extends ChangeNotifier {
   /// Realtime socket + GPS proximity — live notifications without polling.
   void _startRealtime() {
     final realtime = RealtimeService.instance;
+    final push = LocalPushService.instance;
     realtime.onNotification ??= _onRealtimeNotification;
-    realtime.onOrderStatus ??= (_, _) {
-      unawaited(refreshOrders());
-    };
+    realtime.onOrderStatus ??= _onRealtimeOrderStatus;
+    push.onAction ??= _onNotificationAction;
     realtime.connect(_userId);
-    LocalPushService.instance.init();
+    unawaited(
+      push.init(
+        eta5Label: tr('notif_eta5'),
+        eta15Label: tr('notif_eta15'),
+      ),
+    );
 
     ProximityService.instance.start(
       orders: () => _orders,
@@ -389,6 +394,8 @@ class FASTProvider extends ChangeNotifier {
 
   /// A backend-created notification arrived over the socket: mirror it
   /// into the in-app list and surface it as a system notification.
+  /// 'status' types are covered interactively by [ _onRealtimeOrderStatus ]
+  /// — showing them plainly too would double-notify.
   void _onRealtimeNotification(PushNotification notification) {
     if (notification.id.isNotEmpty &&
         _notifications.any((n) => n.id == notification.id)) {
@@ -397,10 +404,71 @@ class FASTProvider extends ChangeNotifier {
     _notifications.insert(0, notification);
     _saveNotifications();
     notifyListeners();
+    if (notification.type == 'status') return;
     LocalPushService.instance.show(
       title: notification.title,
       body: notification.body,
     );
+  }
+
+  /// Order kicked off / ready: interactive "say when you arrive"
+  /// notification, then a responsibility reminder if it stays unclaimed.
+  void _onRealtimeOrderStatus(String orderId, String status) {
+    unawaited(refreshOrders());
+    final push = LocalPushService.instance;
+    final normalized = status.toUpperCase();
+
+    if (normalized == 'COMPLETED' || normalized == 'CANCELLED') {
+      unawaited(push.cancelReminderFor(orderId));
+      return;
+    }
+    if (normalized != 'PREPARING' && normalized != 'READY_FOR_PICKUP') {
+      return;
+    }
+
+    final matches = _orders.where((o) => o.id == orderId);
+    final order = matches.isEmpty ? null : matches.first;
+    // ETA actions only make sense for pickup — deliveries come to you.
+    if (order != null && order.isDelivery) return;
+
+    final ready = normalized == 'READY_FOR_PICKUP';
+    unawaited(
+      push.showOrderActions(
+        title: tr(
+          ready ? 'notif_order_ready_title' : 'notif_order_preparing_title',
+        ),
+        body: tr(
+          ready ? 'notif_order_ready_body' : 'notif_order_preparing_body',
+        ).replaceAll('{n}', order?.restaurantName ?? ''),
+        orderId: orderId,
+        eta5Label: tr('notif_eta5'),
+        eta15Label: tr('notif_eta15'),
+      ),
+    );
+    if (ready) {
+      unawaited(
+        push.scheduleReminder(
+          orderId: orderId,
+          title: tr('notif_reminder_title'),
+          body: tr(
+            'notif_reminder_body',
+          ).replaceAll('{n}', order?.restaurantName ?? ''),
+          delay: const Duration(minutes: 8),
+        ),
+      );
+    }
+  }
+
+  /// Notification action tap → relay the client's ETA to the restaurant.
+  void _onNotificationAction(String actionId, String? orderId) {
+    if (orderId == null) return;
+    final delayMin = switch (actionId) {
+      LocalPushService.eta5Action => 5,
+      LocalPushService.eta15Action => 15,
+      _ => 0,
+    };
+    if (delayMin == 0) return;
+    unawaited(_orderService.signalDelay(orderId, delayMin));
   }
 
   void syncPoints(int points) {
@@ -438,9 +506,11 @@ class FASTProvider extends ChangeNotifier {
   /// Load all data from the backend API
   Future<void> loadFromApi() async {
     final generation = _requestGeneration;
-    _isLoading = true;
+    // Only show the full-screen loader when there's nothing cached —
+    // with cached restaurants the UI renders instantly and refreshes.
+    _isLoading = _restaurants.isEmpty;
     _error = null;
-    notifyListeners();
+    if (_isLoading) notifyListeners();
 
     try {
       final results = await Future.wait([

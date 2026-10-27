@@ -80,6 +80,11 @@ export const updateRestaurantSchema = createRestaurantSchema.partial().extend({
   dineInFee: z.number().min(0).max(50).optional(),
   isFoodTruck: z.boolean().optional(),
   truckStops: z.array(truckStopSchema).max(7).optional(),
+  // Legal identity — collected in-app so Stripe Connect onboarding
+  // starts pre-filled instead of asking the owner to type it all again.
+  siret: z.string().max(20).optional(),
+  phone: z.string().max(30).optional(),
+  openingHours: z.record(z.string(), z.string().max(20)).optional(),
 });
 
 // ─── Order tracking / pickup ─────────────────────────────────

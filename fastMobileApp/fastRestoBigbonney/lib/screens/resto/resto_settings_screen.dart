@@ -30,6 +30,17 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
   final _cityCtrl = TextEditingController();
   final _addressCtrl = TextEditingController();
   final _ibanCtrl = TextEditingController();
+  final _siretCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
+  // Weekly hours — open/close text fields per day; closed days are
+  // stored as "closed" so the state survives a save/load round-trip.
+  final Map<int, TextEditingController> _openCtrls = {
+    for (var d = 1; d <= 7; d++) d: TextEditingController(),
+  };
+  final Map<int, TextEditingController> _closeCtrls = {
+    for (var d = 1; d <= 7; d++) d: TextEditingController(),
+  };
+  final Set<int> _closedDays = {};
 
   final ImagePicker _picker = ImagePicker();
   String _imageBase64 = '';
@@ -182,6 +193,19 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
         _cityCtrl.text = data['city'] as String? ?? '';
         _addressCtrl.text = data['address'] as String? ?? '';
         _ibanCtrl.text = data['managerIban'] as String? ?? '';
+        _siretCtrl.text = data['siret'] as String? ?? '';
+        _phoneCtrl.text = data['phone'] as String? ?? '';
+        final hours = data['openingHours'] as Map<String, dynamic>? ?? {};
+        for (var d = 1; d <= 7; d++) {
+          final s = '${hours['$d'] ?? ''}';
+          if (s == 'closed') {
+            _closedDays.add(d);
+          } else if (s.contains('-')) {
+            final parts = s.split('-');
+            _openCtrls[d]!.text = parts[0];
+            _closeCtrls[d]!.text = parts.length > 1 ? parts[1] : '';
+          }
+        }
         _imageBase64 = data['image'] as String? ?? '';
         _normalPrepTime = ((data['normalPrepTime'] as num?)?.toDouble()) ?? 15;
         _rushPrepTime = ((data['rushPrepTime'] as num?)?.toDouble()) ?? 25;
@@ -267,6 +291,17 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
       'city': _cityCtrl.text.trim(),
       'address': _addressCtrl.text.trim(),
       'managerIban': _ibanCtrl.text.trim(),
+      'siret': _siretCtrl.text.trim(),
+      'phone': _phoneCtrl.text.trim(),
+      'openingHours': {
+        for (var d = 1; d <= 7; d++)
+          if (_closedDays.contains(d))
+            '$d': 'closed'
+          else if (_openCtrls[d]!.text.trim().isNotEmpty &&
+              _closeCtrls[d]!.text.trim().isNotEmpty)
+            '$d':
+                '${_openCtrls[d]!.text.trim()}-${_closeCtrls[d]!.text.trim()}',
+      },
       if (_imageBase64.isNotEmpty) 'image': _imageBase64,
       'normalPrepTime': _normalPrepTime.round(),
       'rushPrepTime': _rushPrepTime.round(),
@@ -363,6 +398,14 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
     for (final c in _truckDayCtrls.values) {
       c.dispose();
     }
+    _siretCtrl.dispose();
+    _phoneCtrl.dispose();
+    for (final c in _openCtrls.values) {
+      c.dispose();
+    }
+    for (final c in _closeCtrls.values) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -451,6 +494,27 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
           hint: tr(context, 'addr_example'),
         ),
         _field('IBAN', _ibanCtrl, hint: 'FR76 **** **** **** **** 1234'),
+
+        SizedBox(height: 24),
+        _section(tr(context, 'legal_identity')),
+        Text(
+          tr(context, 'identity_help'),
+          style: TextStyle(color: context.fast.t3, fontSize: 11, height: 1.4),
+        ),
+        SizedBox(height: 12),
+        _field(tr(context, 'siret_lbl'), _siretCtrl, hint: '123 456 789 00012'),
+        _field(tr(context, 'phone_lbl'), _phoneCtrl, hint: '06 12 34 56 78'),
+        SizedBox(height: 8),
+        Text(
+          tr(context, 'opening_hours'),
+          style: TextStyle(
+            color: context.fast.t2,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        SizedBox(height: 8),
+        _hoursEditor(),
 
         SizedBox(height: 24),
         _section(tr(context, 'cuisine_category')),
@@ -862,6 +926,115 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Compact weekly hours editor — day row: label · open field · close
+  /// field · "Fermé" checkbox. Saved as {day: "HH:MM-HH:MM" | "closed"}.
+  Widget _hoursEditor() {
+    return Container(
+      decoration: BoxDecoration(
+        color: context.fast.card,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: context.fast.faint),
+      ),
+      child: Column(
+        children: [
+          for (var d = 1; d <= 7; d++) ...[
+            if (d > 1) Divider(height: 1, color: context.fast.line),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 34,
+                    child: Text(
+                      tr(context, 'day_$d'),
+                      style: TextStyle(
+                        color: context.fast.t2,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(child: _hourField(_openCtrls[d]!, d)),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    child: Text('–', style: TextStyle(color: context.fast.t3)),
+                  ),
+                  Expanded(child: _hourField(_closeCtrls[d]!, d)),
+                  const SizedBox(width: 4),
+                  InkWell(
+                    onTap: () => setState(() {
+                      if (_closedDays.contains(d)) {
+                        _closedDays.remove(d);
+                      } else {
+                        _closedDays.add(d);
+                      }
+                    }),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          _closedDays.contains(d)
+                              ? Icons.check_box
+                              : Icons.check_box_outline_blank,
+                          size: 16,
+                          color: _closedDays.contains(d)
+                              ? const Color(0xFF00C8B3)
+                              : context.fast.faint,
+                        ),
+                        const SizedBox(width: 3),
+                        Text(
+                          tr(context, 'closed'),
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: context.fast.t3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _hourField(TextEditingController ctrl, int day) {
+    final closed = _closedDays.contains(day);
+    return TextField(
+      controller: ctrl,
+      enabled: !closed,
+      keyboardType: TextInputType.datetime,
+      style: TextStyle(
+        color: closed ? context.fast.faint : context.fast.t1,
+        fontSize: 12,
+      ),
+      textAlign: TextAlign.center,
+      decoration: InputDecoration(
+        hintText: '09:00',
+        hintStyle: TextStyle(color: context.fast.faint, fontSize: 12),
+        filled: true,
+        fillColor: context.fast.faint.withValues(alpha: 0.25),
+        isDense: true,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(6),
+          borderSide: BorderSide(color: context.fast.faint),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(6),
+          borderSide: BorderSide(color: context.fast.faint),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 4,
+          vertical: 8,
+        ),
       ),
     );
   }
