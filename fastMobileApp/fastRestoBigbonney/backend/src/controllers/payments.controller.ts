@@ -751,6 +751,72 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
       }
     }
 
+    // Test-mode shortcut: satisfy every currently-due requirement through the
+    // API so hosted onboarding (and its ID-verification screens) is skipped
+    // entirely. Only for sk_test_ accounts — live accounts must complete real
+    // KYC through the hosted flow, that's a legal requirement we can't bypass.
+    if (env.stripeSecretKey.startsWith('sk_test_')) {
+      try {
+        let acct = await stripe.accounts.retrieve(accountId);
+        if ((acct.requirements?.currently_due?.length ?? 0) > 0) {
+          const testIban = ibanValid ? iban : 'FR1420041010050500013M02606';
+          await stripe.accounts.update(accountId, {
+            business_type: restaurant.siret ? 'company' : 'individual',
+            tos_acceptance: {
+              date: Math.floor(Date.now() / 1000),
+              ip: req.ip || '127.0.0.1',
+            },
+            individual: {
+              first_name: (nameParts.length ? nameParts[0] : undefined) || 'Jean',
+              last_name:
+                (nameParts.length > 1 ? nameParts.slice(1).join(' ') : undefined) || 'Test',
+              email: owner?.email,
+              dob: dob ?? { day: 1, month: 1, year: 1980 },
+              address: ownerAddress
+                ? { line1: ownerAddress, country: 'FR' }
+                : {
+                    line1: '10 rue de la Paix',
+                    city: 'Paris',
+                    postal_code: '75001',
+                    country: 'FR',
+                  },
+            },
+            company: {
+              name: restaurant.name,
+              tax_id: siren || undefined,
+            },
+          });
+          try {
+            await stripe.accounts.createExternalAccount(accountId, {
+              external_account: {
+                object: 'bank_account',
+                country: testIban.slice(0, 2),
+                currency: 'eur',
+                account_holder_name: restaurant.name,
+                account_number: testIban,
+              },
+            });
+          } catch (bankErr) {
+            console.warn('[Stripe] test-mode bank attach:', (bankErr as Error).message);
+          }
+          acct = await stripe.accounts.retrieve(accountId);
+        }
+        if ((acct.requirements?.currently_due?.length ?? 0) === 0) {
+          await prisma.restaurant.update({
+            where: { id: restaurant.id },
+            data: {
+              stripeChargesEnabled: acct.charges_enabled ?? false,
+              stripePayoutsEnabled: acct.payouts_enabled ?? false,
+            },
+          });
+          res.json({ accountId, connected: acct.charges_enabled ?? false });
+          return;
+        }
+      } catch (testErr) {
+        console.warn('[Stripe] test-mode auto-connect failed:', (testErr as Error).message);
+      }
+    }
+
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
       type: 'account_onboarding',
