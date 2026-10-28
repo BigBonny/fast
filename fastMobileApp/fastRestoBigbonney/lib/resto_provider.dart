@@ -12,6 +12,7 @@ import 'api/api_exceptions.dart';
 import 'api/api_client.dart';
 import 'api/api_config.dart';
 import 'l10n/app_strings.dart';
+import 'services/local_push_service.dart';
 
 class RestoProvider extends ChangeNotifier {
   RestaurantSettings? _settings;
@@ -25,6 +26,9 @@ class RestoProvider extends ChangeNotifier {
 
   // Orders specific to Resto
   List<Order> _restoOrders = [];
+  /// Order IDs already surfaced to the owner — new ones trigger an alert.
+  /// Null until the first successful fetch so a restart never re-alerts.
+  Set<String>? _seenOrderIds;
 
   // Menu
   List<MenuItem> _menu = [];
@@ -54,6 +58,7 @@ class RestoProvider extends ChangeNotifier {
   void resetSession() {
     _sessionGeneration++;
     _statsRequestId++;
+    _seenOrderIds = null;
     stopPolling();
     _settings = null;
     _restaurantId = null;
@@ -272,6 +277,7 @@ class RestoProvider extends ChangeNotifier {
       final orders = await _orderService.getRestaurantOrders();
       if (_disposed || generation != _sessionGeneration) return;
       _error = null;
+      _alertNewOrders(orders);
       // Skip rebuild when nothing changed — the 15s poll otherwise
       // repaints the whole screen for no reason.
       if (_ordersSignature(orders) == _ordersSignature(_restoOrders)) return;
@@ -282,6 +288,36 @@ class RestoProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  /// System notification (sound + banner) for every order that appeared
+  /// since the last poll. The backend has no push channel on Vercel, so
+  /// the 15 s poll is the kitchen's only wake-up call.
+  void _alertNewOrders(List<Order> orders) {
+    final seen = _seenOrderIds;
+    final ids = orders.map((o) => o.id).toSet();
+    if (seen == null) {
+      _seenOrderIds = ids;
+      return;
+    }
+    for (final o in newPlacedOrders(seen, orders)) {
+      unawaited(
+        LocalPushService.instance.show(
+          title: AppStrings.trNow('notif_new_order_title'),
+          body: AppStrings.trNow('notif_new_order_body')
+              .replaceAll('{n}', o.items.length.toString())
+              .replaceAll('{total}', o.total.toStringAsFixed(2)),
+        ),
+      );
+    }
+    _seenOrderIds = ids;
+  }
+
+  /// Pure: orders not in [seen] that still await acceptance.
+  @visibleForTesting
+  static List<Order> newPlacedOrders(Set<String> seen, List<Order> orders) =>
+      orders
+          .where((o) => !seen.contains(o.id) && o.status == OrderStatus.placed)
+          .toList();
 
   static String _ordersSignature(List<Order> orders) => orders
       .map(

@@ -981,6 +981,8 @@ class AppStrings {
     'guest_lbl': 'Invité',
     'guest_badge': 'INVITÉ',
     'menu_soldout_sub': 'Menu — ruptures uniquement',
+    'notif_new_order_title': 'Nouvelle commande !',
+    'notif_new_order_body': '{n} article(s) — {total} € à préparer. Ouvrez FAST Pro pour l\'accepter.',
   };
 
   // ──────────────────────────── English ────────────────────────────
@@ -1888,6 +1890,8 @@ class AppStrings {
     'guest_lbl': 'Guest',
     'guest_badge': 'GUEST',
     'menu_soldout_sub': 'Menu — sold-out only',
+    'notif_new_order_title': 'New order!',
+    'notif_new_order_body': '{n} item(s) — €{total} to prepare. Open FAST Pro to accept it.',
   };
 
   // ──────────────────────────── Turkish ────────────────────────────
@@ -2747,6 +2751,8 @@ class AppStrings {
     'guest_lbl': 'Misafir',
     'guest_badge': 'MİSAFİR',
     'menu_soldout_sub': 'Menü — yalnızca tükenenler',
+    'notif_new_order_title': 'Yeni sipariş!',
+    'notif_new_order_body': '{n} ürün — hazırlanacak {total} €. Kabul etmek için FAST Pro\'yu açın.',
   };
 
   // ──────────────────────────── Arabic ────────────────────────────
@@ -3585,6 +3591,8 @@ class AppStrings {
     'guest_lbl': 'ضيف',
     'guest_badge': 'ضيف',
     'menu_soldout_sub': 'القائمة — النفاد فقط',
+    'notif_new_order_title': 'طلب جديد!',
+    'notif_new_order_body': '{n} عنصر — {total} € للتحضير. افتح FAST Pro لقبوله.',
   };
 
   // ──────────────────────────── Spanish ────────────────────────────
@@ -4451,6 +4459,8 @@ class AppStrings {
     'guest_lbl': 'Invitado',
     'guest_badge': 'INVITADO',
     'menu_soldout_sub': 'Menú — solo agotados',
+    'notif_new_order_title': '¡Nuevo pedido!',
+    'notif_new_order_body': '{n} artículo(s) — {total} € por preparar. Abre FAST Pro para aceptarlo.',
   };
 
   // ──────────────────────────── Portuguese ────────────────────────────
@@ -5315,6 +5325,8 @@ class AppStrings {
     'guest_lbl': 'Convidado',
     'guest_badge': 'CONVIDADO',
     'menu_soldout_sub': 'Menu — só esgotados',
+    'notif_new_order_title': 'Novo pedido!',
+    'notif_new_order_body': '{n} artigo(s) — {total} € a preparar. Abra o FAST Pro para aceitar.',
   };
 
   // ──────────────────────────── Italian ────────────────────────────
@@ -6181,6 +6193,8 @@ class AppStrings {
     'guest_lbl': 'Ospite',
     'guest_badge': 'OSPITE',
     'menu_soldout_sub': 'Menu — solo esauriti',
+    'notif_new_order_title': 'Nuovo ordine!',
+    'notif_new_order_body': '{n} articolo/i — {total} € da preparare. Apri FAST Pro per accettarlo.',
   };
 
   // ──────────────────────────── Chinese ────────────────────────────
@@ -6989,6 +7003,8 @@ class AppStrings {
     'guest_lbl': '访客',
     'guest_badge': '访客',
     'menu_soldout_sub': '菜单——仅限售罄',
+    'notif_new_order_title': '新订单！',
+    'notif_new_order_body': '{n} 件商品 — 待准备 {total} €。打开 FAST Pro 接单。',
   };
 
   // ─────────── Essential keys — other languages ───────────
