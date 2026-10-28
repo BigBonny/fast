@@ -778,15 +778,25 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
       } catch { /* account unusable — create a fresh one below */ }
 
       try {
-        const testIban = ibanValid ? iban : 'FR1420041010050500013M02606';
+        // Test mode only accepts Stripe's test bank numbers — a real IBAN
+        // (valid or not) is rejected outright, so always use the official one.
+        const testIban = 'FR1420041010050500013M02606';
         const first = (nameParts.length ? nameParts[0] : undefined) || 'Jean';
         const last =
           (nameParts.length > 1 ? nameParts.slice(1).join(' ') : undefined) || 'Test';
+        // Stripe wants E.164 — normalize a French "0612345678" to "+33612345678",
+        // and fall back to a known-good test number when the saved one is junk.
+        const rawPhone = (restaurant.phone || '').replace(/[\s.-]/g, '');
+        const personPhone = /^\+[1-9]\d{7,14}$/.test(rawPhone)
+          ? rawPhone
+          : /^0[1-9]\d{8}$/.test(rawPhone)
+            ? `+33${rawPhone.slice(1)}`
+            : '+33612345678';
         const person: Record<string, unknown> = {
           first_name: first,
           last_name: last,
           email: owner?.email,
-          phone: restaurant.phone || '+33612345678',
+          phone: personPhone,
           dob: dob ?? { day: 1, month: 1, year: 1980 },
           address: ownerAddress
             ? { line1: ownerAddress, country: 'FR' }
