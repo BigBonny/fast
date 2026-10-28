@@ -9,7 +9,7 @@ const passwordSchema = z
   .regex(/[0-9]/, 'Doit contenir un chiffre');
 
 export const registerSchema = z.object({
-  email: z.string().email('Email invalide'),
+  email: z.string().trim().toLowerCase().email('Email invalide'),
   password: passwordSchema,
   name: z.string().min(1, 'Nom requis').max(100, 'Nom trop long'),
   phone: z.string().max(20, 'Téléphone trop long').optional(),
@@ -26,13 +26,13 @@ export const registerSchema = z.object({
 });
 
 export const loginSchema = z.object({
-  email: z.string().email('Email invalide'),
+  email: z.string().trim().toLowerCase().email('Email invalide'),
   password: z.string().min(1, 'Mot de passe requis'),
 });
 
 export const updateProfileSchema = z.object({
   name: z.string().min(1, 'Nom requis').max(100, 'Nom trop long').optional(),
-  email: z.string().email('Email invalide').optional(),
+  email: z.string().trim().toLowerCase().email('Email invalide').optional(),
   phone: z.string().max(20, 'Téléphone trop long').optional(),
 });
 
