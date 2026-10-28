@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'api_config.dart';
@@ -53,6 +55,25 @@ class ApiClient {
     return headers;
   }
 
+  /// Turns transport-level failures (offline, DNS, timeout, TLS) into a
+  /// localized NetworkException instead of leaking raw Dart errors to
+  /// snackbars across the app.
+  Future<T> _guard<T>(Future<T> Function() request) async {
+    try {
+      return await request();
+    } on ApiException {
+      rethrow;
+    } on SocketException {
+      throw NetworkException();
+    } on TimeoutException {
+      throw NetworkException(AppStrings.trNow('request_timeout'));
+    } on http.ClientException {
+      throw NetworkException();
+    } on FormatException {
+      throw ApiException('Réponse serveur invalide', 0);
+    }
+  }
+
   Future<dynamic> get(
     String endpoint, {
     Map<String, String>? queryParams,
@@ -60,53 +81,59 @@ class ApiClient {
     final uri = Uri.parse(
       '${ApiConfig.baseUrl}$endpoint',
     ).replace(queryParameters: queryParams);
-    final response = await http
-        .get(uri, headers: _headers)
-        .timeout(ApiConfig.timeout);
+    final response = await _guard(
+      () => http.get(uri, headers: _headers).timeout(ApiConfig.timeout),
+    );
     return _handleResponse(response);
   }
 
   Future<dynamic> post(String endpoint, {Map<String, dynamic>? body}) async {
     final uri = Uri.parse('${ApiConfig.baseUrl}$endpoint');
-    final response = await http
-        .post(
-          uri,
-          headers: _headers,
-          body: body != null ? json.encode(body) : null,
-        )
-        .timeout(ApiConfig.timeout);
+    final response = await _guard(
+      () => http
+          .post(
+            uri,
+            headers: _headers,
+            body: body != null ? json.encode(body) : null,
+          )
+          .timeout(ApiConfig.timeout),
+    );
     return _handleResponse(response);
   }
 
   Future<dynamic> patch(String endpoint, {Map<String, dynamic>? body}) async {
     final uri = Uri.parse('${ApiConfig.baseUrl}$endpoint');
-    final response = await http
-        .patch(
-          uri,
-          headers: _headers,
-          body: body != null ? json.encode(body) : null,
-        )
-        .timeout(ApiConfig.timeout);
+    final response = await _guard(
+      () => http
+          .patch(
+            uri,
+            headers: _headers,
+            body: body != null ? json.encode(body) : null,
+          )
+          .timeout(ApiConfig.timeout),
+    );
     return _handleResponse(response);
   }
 
   Future<dynamic> put(String endpoint, {Map<String, dynamic>? body}) async {
     final uri = Uri.parse('${ApiConfig.baseUrl}$endpoint');
-    final response = await http
-        .put(
-          uri,
-          headers: _headers,
-          body: body != null ? json.encode(body) : null,
-        )
-        .timeout(ApiConfig.timeout);
+    final response = await _guard(
+      () => http
+          .put(
+            uri,
+            headers: _headers,
+            body: body != null ? json.encode(body) : null,
+          )
+          .timeout(ApiConfig.timeout),
+    );
     return _handleResponse(response);
   }
 
   Future<dynamic> delete(String endpoint) async {
     final uri = Uri.parse('${ApiConfig.baseUrl}$endpoint');
-    final response = await http
-        .delete(uri, headers: _headers)
-        .timeout(ApiConfig.timeout);
+    final response = await _guard(
+      () => http.delete(uri, headers: _headers).timeout(ApiConfig.timeout),
+    );
     return _handleResponse(response);
   }
 
@@ -129,7 +156,9 @@ class ApiClient {
     if (_token != null) {
       request.headers['Authorization'] = 'Bearer $_token';
     }
-    final streamed = await request.send().timeout(ApiConfig.timeout);
+    final streamed = await _guard(
+      () => request.send().timeout(ApiConfig.timeout),
+    );
     final response = await http.Response.fromStream(streamed);
     return _handleResponse(response);
   }

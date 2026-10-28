@@ -984,6 +984,8 @@ class AppStrings {
     'notif_new_order_title': 'Nouvelle commande !',
     'notif_new_order_body': '{n} article(s) — {total} € à préparer. Ouvrez FAST Pro pour l\'accepter.',
     'apple_signin': 'Se connecter avec Apple',
+    'network_error': 'Connexion impossible. Vérifiez votre connexion internet.',
+    'request_timeout': 'Le serveur met trop de temps à répondre. Réessayez.',
   };
 
   // ──────────────────────────── English ────────────────────────────
@@ -1894,6 +1896,8 @@ class AppStrings {
     'notif_new_order_title': 'New order!',
     'notif_new_order_body': '{n} item(s) — €{total} to prepare. Open FAST Pro to accept it.',
     'apple_signin': 'Sign in with Apple',
+    'network_error': 'Connection failed. Check your internet connection.',
+    'request_timeout': 'The server is taking too long to respond. Try again.',
   };
 
   // ──────────────────────────── Turkish ────────────────────────────
@@ -2756,6 +2760,8 @@ class AppStrings {
     'notif_new_order_title': 'Yeni sipariş!',
     'notif_new_order_body': '{n} ürün — hazırlanacak {total} €. Kabul etmek için FAST Pro\'yu açın.',
     'apple_signin': 'Apple ile giriş yap',
+    'network_error': 'Bağlantı kurulamadı. İnternet bağlantınızı kontrol edin.',
+    'request_timeout': 'Sunucu yanıt vermiyor. Tekrar deneyin.',
   };
 
   // ──────────────────────────── Arabic ────────────────────────────
@@ -3597,6 +3603,8 @@ class AppStrings {
     'notif_new_order_title': 'طلب جديد!',
     'notif_new_order_body': '{n} عنصر — {total} € للتحضير. افتح FAST Pro لقبوله.',
     'apple_signin': 'تسجيل الدخول عبر Apple',
+    'network_error': 'تعذّر الاتصال. تحقق من اتصالك بالإنترنت.',
+    'request_timeout': 'الخادم يستغرق وقتًا طويلاً للرد. حاول مرة أخرى.',
   };
 
   // ──────────────────────────── Spanish ────────────────────────────
@@ -4466,6 +4474,8 @@ class AppStrings {
     'notif_new_order_title': '¡Nuevo pedido!',
     'notif_new_order_body': '{n} artículo(s) — {total} € por preparar. Abre FAST Pro para aceptarlo.',
     'apple_signin': 'Iniciar sesión con Apple',
+    'network_error': 'No se pudo conectar. Revisa tu conexión a internet.',
+    'request_timeout': 'El servidor tarda demasiado. Inténtalo de nuevo.',
   };
 
   // ──────────────────────────── Portuguese ────────────────────────────
@@ -5333,6 +5343,8 @@ class AppStrings {
     'notif_new_order_title': 'Novo pedido!',
     'notif_new_order_body': '{n} artigo(s) — {total} € a preparar. Abra o FAST Pro para aceitar.',
     'apple_signin': 'Iniciar sessão com Apple',
+    'network_error': 'Falha na ligação. Verifique a sua ligação à internet.',
+    'request_timeout': 'O servidor demora muito a responder. Tente novamente.',
   };
 
   // ──────────────────────────── Italian ────────────────────────────
@@ -6202,6 +6214,8 @@ class AppStrings {
     'notif_new_order_title': 'Nuovo ordine!',
     'notif_new_order_body': '{n} articolo/i — {total} € da preparare. Apri FAST Pro per accettarlo.',
     'apple_signin': 'Accedi con Apple',
+    'network_error': 'Connessione non riuscita. Controlla la tua connessione internet.',
+    'request_timeout': 'Il server impiega troppo tempo. Riprova.',
   };
 
   // ──────────────────────────── Chinese ────────────────────────────
@@ -7013,6 +7027,8 @@ class AppStrings {
     'notif_new_order_title': '新订单！',
     'notif_new_order_body': '{n} 件商品 — 待准备 {total} €。打开 FAST Pro 接单。',
     'apple_signin': '通过 Apple 登录',
+    'network_error': '无法连接。请检查您的网络连接。',
+    'request_timeout': '服务器响应超时，请重试。',
   };
 
   // ─────────── Essential keys — other languages ───────────

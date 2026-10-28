@@ -20,6 +20,13 @@ class NotFoundException extends ApiException {
     : super(message ?? AppStrings.trNow('not_found'), 404);
 }
 
+/// Connectivity-level failure (DNS, socket, timeout) — message is already
+/// localized so call sites that show `$e` read correctly in any language.
+class NetworkException extends ApiException {
+  NetworkException([String? message])
+    : super(message ?? AppStrings.trNow('network_error'), 0);
+}
+
 class ValidationException extends ApiException {
   final Map<String, dynamic>? errors;
   ValidationException([String? message, this.errors])
