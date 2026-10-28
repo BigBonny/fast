@@ -1,8 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
+import { Sentry } from '../config/sentry';
 
 export function errorHandler(err: Error, _req: Request, res: Response, _next: NextFunction): void {
   console.error('[ERROR]', err);
+  try {
+    Sentry.captureException(err);
+  } catch {
+    // Sentry not initialized — reporting is best-effort.
+  }
 
   // Zod validation errors
   if (err instanceof ZodError) {
