@@ -9,6 +9,7 @@ import { env } from '../config/env';
 import { getRestaurantIdForUser } from '../middleware/auth';
 import { parseOcrResponse } from '../utils/menuOcr';
 import { uploadDir } from './uploads.controller';
+import { storeMedia } from '../services/storage';
 
 export const listMenuItems = async (req: Request, res: Response): Promise<void> => {
   const restaurantId = req.params.restaurantId as string;
@@ -617,11 +618,12 @@ async function geminiGenerateImage(prompt: string): Promise<string | null> {
       const filename = `ai-${Date.now()}-${crypto
         .randomBytes(4)
         .toString('hex')}${ext}`;
-      fs.writeFileSync(
-        path.join(uploadDir, filename),
+      return await storeMedia(
         Buffer.from(b64, 'base64'),
+        filename,
+        mime,
+        uploadDir,
       );
-      return `/uploads/${filename}`;
     } catch {
       continue;
     }

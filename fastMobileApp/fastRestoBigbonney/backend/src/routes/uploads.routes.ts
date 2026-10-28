@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authenticate, requireRestaurantAccess } from '../middleware/auth';
+import { asyncHandler } from '../utils/asyncHandler';
 import { mediaUpload, uploadMedia } from '../controllers/uploads.controller';
 
 const router = Router();
@@ -10,7 +11,7 @@ router.post(
   authenticate,
   requireRestaurantAccess('STAFF'),
   mediaUpload.single('file'),
-  uploadMedia,
+  asyncHandler(uploadMedia),
 );
 
 export default router;
