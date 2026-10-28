@@ -88,8 +88,7 @@ class ProximityService {
             return permission;
           })
           .then((permission) {
-            if (permission == LocationPermission.denied ||
-                permission == LocationPermission.deniedForever ||
+            if (!canTrackWith(permission as LocationPermission) ||
                 _sub != null ||
                 activePickupOrders().isEmpty) {
               return;
@@ -149,6 +148,12 @@ class ProximityService {
       _onArrival?.call(order, restaurant);
     }
   }
+
+  /// Pure permission gate (unit-testable): tracking starts for
+  /// whileInUse/always, stays off for denied/deniedForever/unableToDetermine.
+  static bool canTrackWith(LocationPermission permission) =>
+      permission == LocationPermission.whileInUse ||
+      permission == LocationPermission.always;
 
   /// Pure trigger logic (unit-testable): which (order, restaurant) pairs
   /// should alert for this position. Skips deliveries, inactive orders,
