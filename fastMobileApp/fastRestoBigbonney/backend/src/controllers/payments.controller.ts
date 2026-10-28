@@ -440,8 +440,12 @@ export const createCheckoutSession = async (req: Request, res: Response): Promis
           : []),
       ],
       payment_intent_data: Object.keys(paymentIntentData).length > 0 ? paymentIntentData : undefined,
-      success_url: env.stripeSuccessUrl,
-      cancel_url: env.stripeCancelUrl,
+      success_url: data.returnBase
+        ? `${data.returnBase}${data.returnBase.includes('?') ? '&' : '?'}checkout=success&session_id={CHECKOUT_SESSION_ID}`
+        : env.stripeSuccessUrl,
+      cancel_url: data.returnBase
+        ? `${data.returnBase}${data.returnBase.includes('?') ? '&' : '?'}checkout=cancel`
+        : env.stripeCancelUrl,
     });
 
     await prisma.paymentCheckout.update({

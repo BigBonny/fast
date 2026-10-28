@@ -286,6 +286,34 @@ export const orderApi = {
   },
 };
 
+// ─── Payments ───────────────────────────────────────────────────────────────────
+
+export interface CheckoutSessionResponse {
+  sessionId: string;
+  url: string;
+}
+
+export const paymentsApi = {
+  // Creates a Stripe Checkout session for the cart. `returnBase` tells the
+  // backend which page Stripe should return to (validated server-side).
+  checkoutSession: async (
+    data: CreateOrderPayload & { returnBase?: string }
+  ): Promise<CheckoutSessionResponse> => {
+    return apiFetch<CheckoutSessionResponse>("/payments/checkout-session", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+  // Materializes the order after a paid session — idempotent with the webhook.
+  confirmCheckoutSession: async (sessionId: string): Promise<Order> => {
+    const order = await apiFetch<Order>(
+      `/payments/checkout-session/${encodeURIComponent(sessionId)}/confirm`,
+      { method: "POST" }
+    );
+    return normalizeOrder(order);
+  },
+};
+
 // ─── Reviews ────────────────────────────────────────────────────────────────────
 
 export const reviewApi = {

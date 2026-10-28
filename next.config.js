@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://backend-lovat-xi-0axv990rct.vercel.app/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://backend-six-iota-69.vercel.app/api";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
