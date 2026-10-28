@@ -16,6 +16,7 @@ import 'package:fast_resto_bigbonney/models.dart';
 import 'package:fast_resto_bigbonney/services/proximity_service.dart';
 import 'package:fast_resto_bigbonney/widgets/intro_carousel.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:geolocator/geolocator.dart';
 
 void main() {
   testWidgets('App landing screen smoke test', (WidgetTester tester) async {
@@ -481,6 +482,46 @@ void main() {
       n('e', type: 'success'),
     ]);
     expect(fresh.map((x) => x.id).toList(), ['b', 'e']);
+  });
+
+  test('Proximity: 250 m boundary respected (245 m fires, 255 m does not)', () {
+    // 1° latitude ≈ 111 195 m with R = 6 371 km — offsets chosen safely
+    // inside/outside the 250 m trigger radius.
+    final restoAt = resto('r', 48.0, 2.0);
+    final notified = <String>{};
+
+    final inside = ProximityService.evaluateArrivals(
+      48.0 + 245 / 111195, 2.0,
+      [mkOrder('o-in', 'r')],
+      [restoAt], notified,
+    );
+    expect(inside.map((h) => h.$1.id), ['o-in']);
+
+    final outside = ProximityService.evaluateArrivals(
+      48.0 + 255 / 111195, 2.0,
+      [mkOrder('o-out', 'r')],
+      [restoAt], notified,
+    );
+    expect(outside, isEmpty);
+  });
+
+  test('Proximity: two active pickup orders at the same restaurant both fire',
+      () {
+    final restoAt = resto('r', 48.0007, 2.0);
+    final hits = ProximityService.evaluateArrivals(
+      48.0, 2.0,
+      [mkOrder('o1', 'r'), mkOrder('o2', 'r', status: OrderStatus.readyForPickup)],
+      [restoAt], <String>{},
+    );
+    expect(hits.map((h) => h.$1.id).toSet(), {'o1', 'o2'});
+  });
+
+  test('Proximity: permission gate — only granted permissions track', () {
+    expect(ProximityService.canTrackWith(LocationPermission.whileInUse), isTrue);
+    expect(ProximityService.canTrackWith(LocationPermission.always), isTrue);
+    expect(ProximityService.canTrackWith(LocationPermission.denied), isFalse);
+    expect(ProximityService.canTrackWith(LocationPermission.deniedForever), isFalse);
+    expect(ProximityService.canTrackWith(LocationPermission.unableToDetermine), isFalse);
   });
 
   test('Pro: new PLACED orders since last poll trigger the kitchen alert', () {
