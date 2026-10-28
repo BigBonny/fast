@@ -161,6 +161,11 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
         // Stripe onboarding. On finish, Stripe hits our return page which
         // deep-links back here and the resume hook re-syncs the status.
         await launchUrl(Uri.parse(url), mode: LaunchMode.inAppWebView);
+      } else if (link['connected'] == true && mounted) {
+        // Test mode: backend connected the account via API — no hosted flow.
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(tr(context, 'stripe_active'))),
+        );
       }
       await _loadConnectStatus();
     } catch (e) {
