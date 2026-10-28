@@ -25,10 +25,17 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
   /// a photo in one shot; the owner keeps editorial control afterwards.
   Future<void> _generateAllPhotos(BuildContext context) async {
     final prov = Provider.of<RestoProvider>(context, listen: false);
-    final restaurantId = prov.restaurantId;
-    if (restaurantId == null || _generatingPhotos) return;
-    setState(() => _generatingPhotos = true);
     final messenger = ScaffoldMessenger.of(context);
+    if (_generatingPhotos) return;
+    final restaurantId = prov.restaurantId;
+    if (restaurantId == null) {
+      // Silent no-ops feel broken — say the menu hasn't loaded yet.
+      messenger.showSnackBar(
+        SnackBar(content: Text(tr(context, 'gen_photos_loading'))),
+      );
+      return;
+    }
+    setState(() => _generatingPhotos = true);
     try {
       final updated = await MenuService().generateMenuPhotos(restaurantId);
       await prov.loadMenu();
@@ -441,72 +448,112 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Client preview + one-tap AI photos for the whole menu.
-        // Wrap, not Row — on narrow phones the two buttons can't fit on
-        // one line; wrapping drops the second below instead of
-        // clipping it off-screen.
+        // Client preview — see the menu exactly as customers do
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              OutlinedButton.icon(
-                onPressed: () => _showClientPreview(context, prov),
-                icon: const Icon(
-                  Icons.visibility_outlined,
-                  size: 16,
-                  color: Color(0xFF00C8B3),
-                ),
-                label: Text(
-                  tr(context, 'preview_client'),
-                  style: TextStyle(
-                    color: Color(0xFF00C8B3),
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
+          child: OutlinedButton.icon(
+            onPressed: () => _showClientPreview(context, prov),
+            icon: const Icon(
+              Icons.visibility_outlined,
+              size: 16,
+              color: Color(0xFF00C8B3),
+            ),
+            label: Text(
+              tr(context, 'preview_client'),
+              style: TextStyle(
+                color: Color(0xFF00C8B3),
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: Color(0xFF00C8B3)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          ),
+        ),
+        // Whole-menu AI photos — a full-width action card, not a
+        // squeezed second button: explains itself and can't clip.
+        if (!isGuest)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: _generatingPhotos
+                    ? null
+                    : () => _generateAllPhotos(context),
+                borderRadius: BorderRadius.circular(12),
+                child: Ink(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
                   ),
-                ),
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Color(0xFF00C8B3)),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 34,
+                        height: 34,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.18),
+                          shape: BoxShape.circle,
+                        ),
+                        child: _generatingPhotos
+                            ? const Padding(
+                                padding: EdgeInsets.all(8),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Icon(
+                                Icons.auto_awesome,
+                                size: 17,
+                                color: Colors.white,
+                              ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              tr(context, 'gen_all_photos'),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            Text(
+                              tr(context, 'gen_photos_sub'),
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.8),
+                                fontSize: 10,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(
+                        Icons.chevron_right,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ],
                   ),
                 ),
               ),
-              if (!isGuest)
-                OutlinedButton.icon(
-                  onPressed: _generatingPhotos
-                      ? null
-                      : () => _generateAllPhotos(context),
-                  icon: _generatingPhotos
-                      ? const SizedBox(
-                          width: 14,
-                          height: 14,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(
-                          Icons.auto_awesome,
-                          size: 16,
-                          color: Color(0xFF8B5CF6),
-                        ),
-                  label: Text(
-                    tr(context, 'gen_all_photos'),
-                    style: TextStyle(
-                      color: Color(0xFF8B5CF6),
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Color(0xFF8B5CF6)),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                ),
-            ],
+            ),
           ),
-        ),
         // Category filter tabs
         if (categories.length > 2)
           SizedBox(

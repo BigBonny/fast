@@ -85,6 +85,8 @@ export const updateRestaurantSchema = createRestaurantSchema.partial().extend({
   siret: z.string().max(20).optional(),
   phone: z.string().max(30).optional(),
   openingHours: z.record(z.string(), z.string().max(20)).optional(),
+  ownerBirthDate: z.string().max(10).optional(),
+  ownerAddress: z.string().max(200).optional(),
 });
 
 // ─── Order tracking / pickup ─────────────────────────────────
