@@ -827,6 +827,12 @@ class FASTProvider extends ChangeNotifier {
     final themePref = prefs.getString('fast_theme_mode') ?? 'system';
     _viewAsClient = prefs.getBool('fast_view_as_client') ?? false;
     _appLanguage = prefs.getString('fast_app_language') ?? 'fr';
+    // Hidden languages (hi/bn/ur/bm/wo/ln) keep their maps for later
+    // re-enabling, but users who saved one before launch fall back to fr
+    // instead of a mostly-English UI.
+    if (!AppStrings.languages.any((l) => l.$1 == _appLanguage)) {
+      _appLanguage = 'fr';
+    }
     AppStrings.currentLanguage = _appLanguage;
     _themeMode = themePref == 'light'
         ? ThemeMode.light
