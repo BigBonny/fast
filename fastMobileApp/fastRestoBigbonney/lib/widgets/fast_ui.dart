@@ -632,8 +632,8 @@ class _FastNavBarState extends State<FastNavBar>
               children: [
                 AnimatedBuilder(
                   animation: _pos,
-                  builder: (ctx, _) => Positioned(
-                    left: _pos.value * tabW + 7,
+                  builder: (ctx, _) => PositionedDirectional(
+                    start: _pos.value * tabW + 7,
                     top: 8,
                     width: tabW - 14,
                     height: 48,

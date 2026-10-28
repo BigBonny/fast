@@ -285,9 +285,9 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
               ),
             ),
             // Back Button
-            Positioned(
+            PositionedDirectional(
               top: 12,
-              left: 12,
+              start: 12,
               child: Container(
                 decoration: BoxDecoration(
                   color: context.fast.bg.withValues(alpha: 0.8),
@@ -307,9 +307,9 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
               ),
             ),
             // Favorite heart
-            Positioned(
+            PositionedDirectional(
               top: 12,
-              right: 12,
+              end: 12,
               child: Container(
                 decoration: BoxDecoration(
                   color: context.fast.bg.withValues(alpha: 0.8),
@@ -334,9 +334,9 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
               (m) =>
                   m.available && (m.image.isNotEmpty || m.videoUrl.isNotEmpty),
             ))
-              Positioned(
+              PositionedDirectional(
                 top: 64,
-                right: 12,
+                end: 12,
                 child: GestureDetector(
                   onTap: () => Navigator.push(
                     context,
