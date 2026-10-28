@@ -591,35 +591,88 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
     }
     const owner = await prisma.user.findUnique({ where: { id: req.user!.userId } });
 
+    // Everything the owner already typed into FAST — passed at ACCOUNT
+    // CREATION, not via update: Express accounts collect requirements
+    // through Stripe, which rejects most post-creation updates. Passing
+    // the data here is the only way the hosted flow opens pre-filled.
+    const siren = (restaurant.siret || '').replace(/\D/g, '').slice(0, 9);
+    const nameParts = (owner?.name || '').trim().split(/\s+/);
+    const iban = (restaurant.managerIban || '').replace(/\s+/g, '').toUpperCase();
+    const ibanValid = /^[A-Z]{2}\d{2}[0-9A-Z]{11,30}$/.test(iban);
+
+    const buildCreateParams = (withIban: boolean): Stripe.AccountCreateParams => ({
+      type: 'express',
+      country: 'FR',
+      email: owner?.email,
+      capabilities: {
+        card_payments: { requested: true },
+        transfers: { requested: true },
+      },
+      business_type: 'company',
+      business_profile: {
+        name: restaurant.name,
+        mcc: '5812', // eating places / restaurants
+        support_phone: restaurant.phone || undefined,
+        support_address: restaurant.address
+          ? {
+              line1: restaurant.address,
+              city: restaurant.city || undefined,
+              country: 'FR',
+            }
+          : undefined,
+      },
+      company: {
+        name: restaurant.name,
+        registration_number: siren || undefined,
+        phone: restaurant.phone || undefined,
+        address: restaurant.address
+          ? {
+              line1: restaurant.address,
+              city: restaurant.city || undefined,
+              country: 'FR',
+            }
+          : undefined,
+      },
+      individual: owner
+        ? {
+            first_name: nameParts[0] || undefined,
+            last_name: nameParts.length > 1 ? nameParts.slice(1).join(' ') : undefined,
+            email: owner.email,
+            phone: owner.phone || undefined,
+          }
+        : undefined,
+      external_account: withIban
+        ? {
+            object: 'bank_account',
+            country: iban.slice(0, 2),
+            currency: 'eur',
+            account_number: iban,
+          }
+        : undefined,
+      metadata: { restaurantId: restaurant.id, ownerId: req.user!.userId },
+    });
+
     let accountId = restaurant.stripeAccountId;
     if (!accountId) {
-      const account = await stripe.accounts.create({
-        type: 'express',
-        country: 'FR',
-        email: owner?.email,
-        capabilities: {
-          card_payments: { requested: true },
-          transfers: { requested: true },
-        },
-        business_type: 'company',
-        metadata: { restaurantId: restaurant.id, ownerId: req.user!.userId },
-      });
+      let account;
+      try {
+        account = await stripe.accounts.create(buildCreateParams(ibanValid));
+      } catch (createErr) {
+        if (!ibanValid) throw createErr;
+        // Some Stripe configs reject a bank account at creation —
+        // retry without it; onboarding will collect the IBAN itself.
+        account = await stripe.accounts.create(buildCreateParams(false));
+      }
       accountId = account.id;
       await prisma.restaurant.update({
         where: { id: restaurant.id },
         data: { stripeAccountId: accountId },
       });
-    }
-
-    // Pre-fill the Connect account with everything the owner already
-    // typed into FAST (legal name, SIREN/SIRET, address, phone, their
-    // own identity, payout IBAN) — hosted onboarding then only asks
-    // for what Stripe still legally requires instead of re-asking it all.
-    try {
-      // Stripe FR expects the 9-digit SIREN — a SIRET is SIREN + NIC.
-      const siren = (restaurant.siret || '').replace(/\D/g, '').slice(0, 9);
-      const nameParts = (owner?.name || '').trim().split(/\s+/);
-      await stripe.accounts.update(accountId, {
+    } else {
+      // Existing account — best-effort update (Stripe may reject some
+      // fields on Express; warn and continue either way).
+      try {
+        await stripe.accounts.update(accountId, {
         business_profile: {
           name: restaurant.name,
           mcc: '5812', // eating places / restaurants
@@ -654,10 +707,9 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
           : undefined,
       });
 
-      // Payout IBAN collected in-app → attach the bank account directly
-      // so the hosted flow can skip the bank-details step entirely.
-      const iban = (restaurant.managerIban || '').replace(/\s+/g, '').toUpperCase();
-      if (/^[A-Z]{2}\d{2}[0-9A-Z]{11,30}$/.test(iban)) {
+      // Existing account + saved IBAN → try attaching the bank account
+      // so the hosted flow can skip the bank-details step.
+      if (ibanValid) {
         try {
           await stripe.accounts.createExternalAccount(accountId, {
             external_account: {
@@ -671,9 +723,10 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
           console.warn('[Stripe] IBAN attach failed:', (bankErr as Error).message);
         }
       }
-    } catch (prefillErr) {
-      // Prefill is a convenience — never block onboarding on it.
-      console.warn('[Stripe] Connect prefill failed:', (prefillErr as Error).message);
+      } catch (prefillErr) {
+        // Prefill is a convenience — never block onboarding on it.
+        console.warn('[Stripe] Connect prefill failed:', (prefillErr as Error).message);
+      }
     }
 
     const accountLink = await stripe.accountLinks.create({
