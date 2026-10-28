@@ -147,6 +147,19 @@ export const placeOrderSchema = z.object({
   deliveryAddress: z.string().max(500).optional(),
   deliveryLatitude: z.number().min(-90).max(90).optional(),
   deliveryLongitude: z.number().min(-180).max(180).optional(),
+  // Website checkout: origin to return to after Stripe. Restricted to the
+  // public site so it can't be abused as an open redirect.
+  returnBase: z
+    .string()
+    .max(500)
+    .refine((v) => {
+      try {
+        return new URL(v).origin === 'https://fast-enterprise.com';
+      } catch {
+        return false;
+      }
+    })
+    .optional(),
 }).superRefine((data, ctx) => {
   if (data.fulfillmentType === 'DELIVERY') {
     if (!data.deliveryAddress?.trim()) {

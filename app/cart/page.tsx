@@ -1,25 +1,23 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { orderApi, getErrorMessage } from "@/api/fastBackend";
+import { useMutation } from "@tanstack/react-query";
+import { paymentsApi, getErrorMessage } from "@/api/fastBackend";
 import {
   getCart,
   updateCartQuantity,
   updateCartItemNotes,
   removeFromCart,
-  clearCart,
   getCartTotal,
   getCartRestaurants,
   keepOnlyRestaurant,
   CartItem,
 } from "@/lib/localCart";
-import { ArrowLeft, Minus, Plus, Trash2, Zap, ShoppingCart, PartyPopper, UtensilsCrossed, AlertTriangle, StickyNote } from "lucide-react";
+import { ArrowLeft, Minus, Plus, Trash2, Zap, ShoppingCart, UtensilsCrossed, AlertTriangle, StickyNote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { m, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import SafeImage from "@/components/SafeImage";
 import { useI18n } from "@/lib/i18n";
 
@@ -29,12 +27,9 @@ export default function CartPage() {
   const { t } = useI18n();
   const [notes, setNotes] = useState("");
   const [showCheckout, setShowCheckout] = useState(false);
-  const [confirmed, setConfirmed] = useState(false);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [walkTimeMin, setWalkTimeMin] = useState(10);
   const [editingNotesFor, setEditingNotesFor] = useState<string | null>(null);
-  const queryClient = useQueryClient();
-  const router = useRouter();
 
   useEffect(() => {
     setCartItems(getCart());
@@ -65,31 +60,31 @@ export default function CartPage() {
       if (hasMixedCart) {
         throw { status: 0, message: t("cart_mixed_err") };
       }
-      const order = await orderApi.create({
+      // Stripe Checkout handles the payment off-site; the order is
+      // materialized by the webhook / confirm endpoint after payment.
+      // The cart is only cleared on the success page — cancelling
+      // payment brings the customer back with their cart intact.
+      const orderNote = notes.trim();
+      const session = await paymentsApi.checkoutSession({
         restaurantId,
-        items: cartItems.map((c) => ({
+        items: cartItems.map((c, i) => ({
           menuItemId: c.menuItemId,
           quantity: c.quantity || 1,
           selectedOptions: c.options || [],
-          allergyNotes: c.notes || "",
+          allergyNotes:
+            [c.notes, i === 0 ? orderNote : ""].filter(Boolean).join(" · ") ||
+            undefined,
         })),
-        allergyNotes: notes,
         userWalkTimeMin: walkTimeMin,
+        returnBase: `${window.location.origin}/order-complete`,
       });
-      clearCart();
-      setCartItems([]);
-      return order;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
-      setShowCheckout(false);
-      setConfirmed(true);
+      window.location.href = session.url;
     },
   });
 
   const cartTotal = getCartTotal(cartItems);
 
-  if (cartItems.length === 0 && !confirmed) {
+  if (cartItems.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-screen px-5 bg-white dark:bg-gray-950">
         <div className="w-20 h-20 rounded-3xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
@@ -104,21 +99,6 @@ export default function CartPage() {
             {t("discover")}
           </Button>
         </Link>
-      </div>
-    );
-  }
-
-  if (confirmed) {
-    return (
-      <div className="min-h-screen bg-gray-50/50 dark:bg-gray-950 flex flex-col items-center justify-center px-5">
-        <div className="w-20 h-20 rounded-3xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center mb-4">
-          <PartyPopper className="w-9 h-9 text-emerald-500" />
-        </div>
-        <h1 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{t("order_confirmed")}</h1>
-        <p className="text-gray-400 text-center mb-6">{t("order_sent")}</p>
-        <Button onClick={() => router.push("/orders")} style={{ background: "#14b8a6" }}>
-          {t("view_orders")}
-        </Button>
       </div>
     );
   }
