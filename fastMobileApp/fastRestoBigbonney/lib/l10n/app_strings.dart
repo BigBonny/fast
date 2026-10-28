@@ -983,6 +983,7 @@ class AppStrings {
     'menu_soldout_sub': 'Menu — ruptures uniquement',
     'notif_new_order_title': 'Nouvelle commande !',
     'notif_new_order_body': '{n} article(s) — {total} € à préparer. Ouvrez FAST Pro pour l\'accepter.',
+    'apple_signin': 'Se connecter avec Apple',
   };
 
   // ──────────────────────────── English ────────────────────────────
@@ -1892,6 +1893,7 @@ class AppStrings {
     'menu_soldout_sub': 'Menu — sold-out only',
     'notif_new_order_title': 'New order!',
     'notif_new_order_body': '{n} item(s) — €{total} to prepare. Open FAST Pro to accept it.',
+    'apple_signin': 'Sign in with Apple',
   };
 
   // ──────────────────────────── Turkish ────────────────────────────
@@ -2753,6 +2755,7 @@ class AppStrings {
     'menu_soldout_sub': 'Menü — yalnızca tükenenler',
     'notif_new_order_title': 'Yeni sipariş!',
     'notif_new_order_body': '{n} ürün — hazırlanacak {total} €. Kabul etmek için FAST Pro\'yu açın.',
+    'apple_signin': 'Apple ile giriş yap',
   };
 
   // ──────────────────────────── Arabic ────────────────────────────
@@ -3593,6 +3596,7 @@ class AppStrings {
     'menu_soldout_sub': 'القائمة — النفاد فقط',
     'notif_new_order_title': 'طلب جديد!',
     'notif_new_order_body': '{n} عنصر — {total} € للتحضير. افتح FAST Pro لقبوله.',
+    'apple_signin': 'تسجيل الدخول عبر Apple',
   };
 
   // ──────────────────────────── Spanish ────────────────────────────
@@ -4461,6 +4465,7 @@ class AppStrings {
     'menu_soldout_sub': 'Menú — solo agotados',
     'notif_new_order_title': '¡Nuevo pedido!',
     'notif_new_order_body': '{n} artículo(s) — {total} € por preparar. Abre FAST Pro para aceptarlo.',
+    'apple_signin': 'Iniciar sesión con Apple',
   };
 
   // ──────────────────────────── Portuguese ────────────────────────────
@@ -5327,6 +5332,7 @@ class AppStrings {
     'menu_soldout_sub': 'Menu — só esgotados',
     'notif_new_order_title': 'Novo pedido!',
     'notif_new_order_body': '{n} artigo(s) — {total} € a preparar. Abra o FAST Pro para aceitar.',
+    'apple_signin': 'Iniciar sessão com Apple',
   };
 
   // ──────────────────────────── Italian ────────────────────────────
@@ -6195,6 +6201,7 @@ class AppStrings {
     'menu_soldout_sub': 'Menu — solo esauriti',
     'notif_new_order_title': 'Nuovo ordine!',
     'notif_new_order_body': '{n} articolo/i — {total} € da preparare. Apri FAST Pro per accettarlo.',
+    'apple_signin': 'Accedi con Apple',
   };
 
   // ──────────────────────────── Chinese ────────────────────────────
@@ -7005,6 +7012,7 @@ class AppStrings {
     'menu_soldout_sub': '菜单——仅限售罄',
     'notif_new_order_title': '新订单！',
     'notif_new_order_body': '{n} 件商品 — 待准备 {total} €。打开 FAST Pro 接单。',
+    'apple_signin': '通过 Apple 登录',
   };
 
   // ─────────── Essential keys — other languages ───────────

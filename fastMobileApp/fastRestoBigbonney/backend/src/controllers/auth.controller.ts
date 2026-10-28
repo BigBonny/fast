@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { createRemoteJWKSet, jwtVerify } from 'jose';
 import { prisma } from '../services/prisma';
 import { env } from '../config/env';
 import { registerSchema, loginSchema, updateProfileSchema, changePasswordSchema, phoneRequestSchema, phoneVerifySchema } from '../utils/validation';
@@ -188,8 +189,16 @@ export const googleLogin = async (req: Request, res: Response): Promise<void> =>
     email?: string;
     name?: string;
     sub?: string;
+    aud?: string;
   };
-  if (!payload.email) {
+  // The token must have been minted for FAST's own OAuth clients — a
+  // Google ID token from any other app must not open a session here.
+  const googleClientIds = (
+    process.env.GOOGLE_CLIENT_IDS ||
+    '792298746020-ssfs311jl0k5qt2cdh32hs66p5uooko9.apps.googleusercontent.com,' +
+      '792298746020-61i7cv8gp2cdubrkrim5coqjndfu9tl0.apps.googleusercontent.com'
+  ).split(',');
+  if (!payload.email || !payload.aud || !googleClientIds.includes(payload.aud)) {
     res.status(401).json({ error: 'Token Google invalide ou expiré' });
     return;
   }
@@ -204,11 +213,19 @@ export const googleLogin = async (req: Request, res: Response): Promise<void> =>
         password: await bcrypt.hash(`google-${payload.sub}-${Date.now()}`, env.bcryptRounds),
         role: (role as never) || 'CLIENT',
       },
-      include: { driverProfile: true, restaurant: true },
+      include: userWithLinks,
     });
   }
 
-  // Resolve staff assignment (same as login — also heals legacy accounts)
+  await issueSession(user, res);
+};
+
+/** Shared sign-in tail: staff context → FAST JWT → user payload. */
+async function issueSession(
+  user: Awaited<ReturnType<typeof findUserByEmail>> & {},
+  res: Response,
+) {
+  if (!user) return;
   const ctx = await resolveStaffContext(user);
   const restaurantId = ctx.restaurantId;
   const staffRole = ctx.staffRole;
@@ -223,6 +240,69 @@ export const googleLogin = async (req: Request, res: Response): Promise<void> =>
     token,
     user: { id: user.id, name: user.name, email: user.email, phone: user.phone, role: ctx.role, points: user.points, driverProfile: user.driverProfile, restaurant: user.restaurant, restaurantId, staffRole },
   });
+}
+
+// Apple's public signing keys for the identity token (RS256).
+const appleJwks = createRemoteJWKSet(
+  new URL('https://appleid.apple.com/auth/keys'),
+);
+
+/**
+ * Sign in with Apple (Guideline 4.8). The client sends the identityToken
+ * plus the display name Apple returns on the FIRST authorization only.
+ */
+export const appleLogin = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { identityToken, name, role } = req.body as {
+      identityToken?: string;
+      name?: string;
+      role?: string;
+    };
+    if (!identityToken || typeof identityToken !== 'string') {
+      res.status(400).json({ error: 'identityToken requis' });
+      return;
+    }
+
+    const appleClientIds = (
+      process.env.APPLE_CLIENT_IDS || 'com.fast.resto.fastRestoBigbonney'
+    ).split(',');
+    const { payload } = await jwtVerify(identityToken, appleJwks, {
+      issuer: 'https://appleid.apple.com',
+      audience: appleClientIds,
+    });
+    if (!payload.email && !payload.sub) {
+      res.status(401).json({ error: 'Token Apple invalide ou expiré' });
+      return;
+    }
+
+    // Users may hide their real email — the relay address is stable per
+    // sub, so prefer the email but fall back to a deterministic synthetic
+    // one keyed on the Apple user id.
+    const appleEmail = String(
+      payload.email ?? `apple-${payload.sub}@privaterelay.appleid.local`,
+    )
+      .trim()
+      .toLowerCase();
+    let user = await findUserByEmail(appleEmail);
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          email: appleEmail,
+          name: (typeof name === 'string' ? name.trim() : '') || appleEmail.split('@')[0],
+          password: await bcrypt.hash(
+            `apple-${payload.sub}-${Date.now()}`,
+            env.bcryptRounds,
+          ),
+          role: (role as never) || 'CLIENT',
+        },
+        include: userWithLinks,
+      });
+    }
+
+    await issueSession(user, res);
+  } catch {
+    res.status(401).json({ error: 'Token Apple invalide ou expiré' });
+  }
 };
 
 export const getMe = async (req: Request, res: Response): Promise<void> => {

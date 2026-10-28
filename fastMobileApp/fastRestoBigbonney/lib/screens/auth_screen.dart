@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show defaultTargetPlatform;
 import 'package:provider/provider.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/auth_provider.dart';
 import '../provider.dart';
@@ -7,6 +9,7 @@ import '../resto_provider.dart';
 import '../services/auth_service.dart';
 import 'role_selection_screen.dart';
 import '../theme.dart';
+import '../l10n/tr.dart';
 import '../widgets/fast_ui.dart';
 
 class AuthScreen extends StatefulWidget {
@@ -493,6 +496,32 @@ class _AuthScreenState extends State<AuthScreen>
               );
             },
           ),
+          // Guideline 4.8: on iOS the Apple button must sit next to the
+          // other third-party options, equally visible.
+          if (defaultTargetPlatform == TargetPlatform.iOS) ...[
+            const SizedBox(height: 12),
+            Consumer<AuthProvider>(
+              builder: (context, auth, _) {
+                return SizedBox(
+                  height: 48,
+                  child: SignInWithAppleButton(
+                    onPressed: auth.isBusy
+                        ? () {}
+                        : () async {
+                            final ok = await auth.signInWithApple(
+                              role: widget.initialRole ?? 'CLIENT',
+                            );
+                            if (ok && mounted) _navigateToShell();
+                          },
+                    style: Theme.of(context).brightness == Brightness.dark
+                        ? SignInWithAppleButtonStyle.white
+                        : SignInWithAppleButtonStyle.black,
+                    text: tr(context, 'apple_signin'),
+                  ),
+                );
+              },
+            ),
+          ],
         ],
       ),
     );

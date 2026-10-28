@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { register, login, googleLogin, getMe, updateProfile, changePassword, logout, deleteAccount, phoneVerificationStatus, requestPhoneCode, verifyPhoneCode } from '../controllers/auth.controller';
+import { register, login, googleLogin, appleLogin, getMe, updateProfile, changePassword, logout, deleteAccount, phoneVerificationStatus, requestPhoneCode, verifyPhoneCode } from '../controllers/auth.controller';
 import { authenticate } from '../middleware/auth';
 import { asyncHandler } from '../utils/asyncHandler';
 
@@ -8,6 +8,7 @@ const router = Router();
 router.post('/register', asyncHandler(register));
 router.post('/login', asyncHandler(login));
 router.post('/google', asyncHandler(googleLogin));
+router.post('/apple', asyncHandler(appleLogin));
 router.get('/phone/status', asyncHandler(phoneVerificationStatus));
 router.post('/phone/request-code', asyncHandler(requestPhoneCode));
 router.post('/phone/verify', asyncHandler(verifyPhoneCode));
