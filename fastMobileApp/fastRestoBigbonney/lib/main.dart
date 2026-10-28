@@ -7,6 +7,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:app_links/app_links.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'models.dart';
 import 'provider.dart';
 import 'resto_provider.dart';
@@ -45,14 +46,86 @@ void main() {
     // This will be connected to AuthProvider after providers are created
   };
 
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (context) => AuthProvider()),
-        ChangeNotifierProvider(create: (context) => FASTProvider()),
-        ChangeNotifierProvider(create: (context) => RestoProvider()),
-      ],
-      child: const FASTApp(),
+  final app = MultiProvider(
+    providers: [
+      ChangeNotifierProvider(create: (context) => AuthProvider()),
+      ChangeNotifierProvider(create: (context) => FASTProvider()),
+      ChangeNotifierProvider(create: (context) => RestoProvider()),
+    ],
+    child: const FASTApp(),
+  );
+
+  // Crash reporting — active only when built with
+  // --dart-define=SENTRY_DSN=... No personal data is sent: the user
+  // context is reduced to an opaque id and emails/JWTs are stripped
+  // from breadcrumbs, exceptions and URLs before anything leaves.
+  const sentryDsn = String.fromEnvironment('SENTRY_DSN');
+  if (sentryDsn.isEmpty) {
+    runApp(app);
+    return;
+  }
+
+  SentryFlutter.init(
+    (options) {
+      options.dsn = sentryDsn;
+      options.sendDefaultPii = false;
+      options.attachScreenshot = false;
+      options.tracesSampleRate = 0.1;
+      options.beforeSend = (event, hint) {
+        final scrubbed = _scrubSentryEvent(event);
+        return scrubbed;
+      };
+    },
+    appRunner: () => runApp(app),
+  );
+}
+
+final _emailRe = RegExp(r'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}');
+final _jwtRe = RegExp(r'eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*');
+
+String _scrub(String s) =>
+    s.replaceAll(_emailRe, '[email]').replaceAll(_jwtRe, '[token]');
+
+Object? _scrubDeep(Object? v) {
+  if (v is String) return _scrub(v);
+  if (v is Iterable) return v.map(_scrubDeep).toList();
+  if (v is Map) {
+    return v.map((k, val) => MapEntry(k, _scrubDeep(val)));
+  }
+  return v;
+}
+
+/// Strips every piece of personal data from a Sentry event: user fields
+/// down to an opaque id, emails/JWTs anywhere they appear, auth headers,
+/// and the device IP.
+SentryEvent _scrubSentryEvent(SentryEvent event) {
+  return event.copyWith(
+    user: event.user?.id == null
+        ? null
+        : SentryUser(id: event.user!.id),
+    serverName: null,
+    breadcrumbs: event.breadcrumbs
+        ?.map(
+          (b) => b.copyWith(
+            message: b.message != null ? _scrub(b.message!) : null,
+            data: _scrubDeep(b.data) as Map<String, dynamic>?,
+          ),
+        )
+        .toList(),
+    request: event.request?.copyWith(
+      headers: event.request!.headers.map(
+        (k, v) => MapEntry(
+          k,
+          RegExp('authorization|cookie|token', caseSensitive: false).hasMatch(k)
+              ? '[redacted]'
+              : _scrub(v),
+        ),
+      ),
+      data: null,
+      cookies: null,
+    ),
+    contexts: event.contexts.copyWith(
+      device: event.contexts.device?.copyWith(),
     ),
   );
 }

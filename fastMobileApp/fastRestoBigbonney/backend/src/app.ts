@@ -6,6 +6,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import { env } from './config/env';
+import { initSentry, Sentry } from './config/sentry';
 import { errorHandler } from './middleware/errorHandler';
 import uploadRoutes from './routes/uploads.routes';
 import { uploadDir } from './controllers/uploads.controller';
@@ -25,6 +26,8 @@ import refundRoutes from './routes/refunds.routes';
 import addressesRoutes from './routes/addresses.routes';
 import reservationsRoutes from './routes/reservations.routes';
 import { stripeWebhook } from './controllers/payments.controller';
+
+initSentry();
 
 const app = express();
 
