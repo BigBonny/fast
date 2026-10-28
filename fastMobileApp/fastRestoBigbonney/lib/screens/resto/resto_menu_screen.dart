@@ -441,10 +441,15 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Client preview + one-tap AI photos for the whole menu
+        // Client preview + one-tap AI photos for the whole menu.
+        // Wrap, not Row — on narrow phones the two buttons can't fit on
+        // one line; wrapping drops the second below instead of
+        // clipping it off-screen.
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-          child: Row(
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
             children: [
               OutlinedButton.icon(
                 onPressed: () => _showClientPreview(context, prov),
@@ -468,7 +473,6 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
               if (!isGuest)
                 OutlinedButton.icon(
                   onPressed: _generatingPhotos

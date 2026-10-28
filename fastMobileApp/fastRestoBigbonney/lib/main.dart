@@ -392,8 +392,10 @@ class _MainShellState extends State<MainShell>
       // On home the hero fills the top edge — body extends under the
       // transparent AppBar so there's no light band above the dark hero.
       extendBodyBehindAppBar: onHome,
-      // Content scrolls behind the floating FastNavBar pill.
-      extendBody: true,
+      // extendBody off: the Scaffold reserves the nav pill's footprint
+      // so bottom content (buttons, last list items) can't scroll
+      // underneath it and become unreachable.
+      extendBody: false,
       drawer: const ClientDrawer(),
       appBar: AppBar(
         // Transparent on home so the hero fills the top edge; solid on

@@ -160,8 +160,10 @@ class _RestoMainShellState extends State<RestoMainShell> {
         Scaffold(
           key: _scaffoldKey,
           backgroundColor: context.fast.bg,
-          // Pages scroll behind the floating FastNavBar pill.
-          extendBody: true,
+          // extendBody stays off: the Scaffold reserves the nav pill's
+          // footprint so page content (save/disconnect buttons) can
+          // never scroll underneath it and get hidden.
+          extendBody: false,
           appBar: AppBar(
             backgroundColor: FASTPro.header,
             systemOverlayStyle: SystemUiOverlayStyle.light,
