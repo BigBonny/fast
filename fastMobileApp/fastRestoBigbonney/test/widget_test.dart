@@ -451,4 +451,44 @@ void main() {
     );
     expect(hits, isEmpty);
   });
+
+  test('Polling diff: only real status changes notify the client', () {
+    final baseline = {
+      'o1': OrderStatus.placed,
+      'o2': OrderStatus.preparing,
+      'o3': OrderStatus.preparing,
+    };
+    final changed = FASTProvider.changedOrderStatuses(baseline, [
+      mkOrder('o1', 'r', status: OrderStatus.preparing), // placed → preparing
+      mkOrder('o2', 'r', status: OrderStatus.preparing), // unchanged
+      mkOrder('o3', 'r', status: OrderStatus.readyForPickup), // → ready
+      mkOrder('o4', 'r', status: OrderStatus.placed), // brand new: silent
+    ]);
+    expect(changed.map((o) => o.id).toList(), ['o1', 'o3']);
+  });
+
+  test('Polling diff: unseen, unread, non-status notifications surface', () {
+    PushNotification n(String id, {String type = 'info', bool read = false}) =>
+        PushNotification(
+            id: id, title: 't', body: 'b', timestamp: '', type: type,
+            isRead: read);
+    final fresh = FASTProvider.freshNotifications({'a'}, [
+      n('a'), // already seen
+      n('b'), // fresh
+      n('c', type: 'status'), // handled by the order diff
+      n('d', read: true), // already read elsewhere
+      n(''), // no id → unsafe to dedupe
+      n('e', type: 'success'),
+    ]);
+    expect(fresh.map((x) => x.id).toList(), ['b', 'e']);
+  });
+
+  test('Pro: new PLACED orders since last poll trigger the kitchen alert', () {
+    final fresh = RestoProvider.newPlacedOrders({'o1'}, [
+      mkOrder('o1', 'r', status: OrderStatus.placed), // seen
+      mkOrder('o2', 'r', status: OrderStatus.placed), // new → alert
+      mkOrder('o3', 'r', status: OrderStatus.preparing), // new but accepted
+    ]);
+    expect(fresh.map((o) => o.id).toList(), ['o2']);
+  });
 }

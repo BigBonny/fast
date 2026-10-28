@@ -3,7 +3,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math' show Random, cos, sin;
-import 'package:flutter/foundation.dart' show compute;
+import 'package:flutter/foundation.dart' show compute, visibleForTesting;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:latlong2/latlong.dart';
@@ -152,6 +152,8 @@ class FASTProvider extends ChangeNotifier {
     _userPoints = 0;
     _orders = [];
     _notifications = [];
+    _orderStatusBaseline = null;
+    _seenNotificationIds = null;
     _cart = [];
     _selectedRestaurant = null;
     _activeGroupId = null;
@@ -367,6 +369,74 @@ class FASTProvider extends ChangeNotifier {
   bool get locationLoading => _locationLoading;
 
   /// Sync from AuthProvider after login
+  /// Last status seen per order from the API. Null until the first fetch
+  /// so cached/cold-start data never triggers a burst of notifications.
+  /// Also the dedupe point between the socket path and the polling path.
+  Map<String, OrderStatus>? _orderStatusBaseline;
+  Set<String>? _seenNotificationIds;
+
+  static String _apiStatus(OrderStatus s) => switch (s) {
+        OrderStatus.placed => 'PLACED',
+        OrderStatus.preparing => 'PREPARING',
+        OrderStatus.readyForPickup => 'READY_FOR_PICKUP',
+        OrderStatus.completed => 'COMPLETED',
+        OrderStatus.cancelled => 'CANCELLED',
+      };
+
+  /// Diff freshly fetched orders against the baseline and surface status
+  /// changes as system notifications — the production backend has no
+  /// socket channel, so polling is how clients learn their order moved.
+  void _applyFetchedOrders(List<Order> orders) {
+    final baseline = _orderStatusBaseline;
+    _orders = orders;
+    _orderStatusBaseline = {for (final o in orders) o.id: o.status};
+    if (baseline == null) return;
+    for (final changed in changedOrderStatuses(baseline, orders)) {
+      _notifyOrderStatus(changed.id, _apiStatus(changed.status));
+    }
+  }
+
+  /// Pure: orders whose status differs from [baseline]. Orders absent from
+  /// the baseline are new (already shown on the success screen) — skipped.
+  @visibleForTesting
+  static List<Order> changedOrderStatuses(
+    Map<String, OrderStatus> baseline,
+    List<Order> orders,
+  ) =>
+      orders.where((o) {
+        final prev = baseline[o.id];
+        return prev != null && prev != o.status;
+      }).toList();
+
+  /// Pure: notifications worth a system banner — unseen, unread, and not a
+  /// status update (those are handled interactively by the order diff).
+  @visibleForTesting
+  static List<PushNotification> freshNotifications(
+    Set<String> seen,
+    List<PushNotification> notifications,
+  ) =>
+      notifications
+          .where(
+            (n) =>
+                n.id.isNotEmpty &&
+                !seen.contains(n.id) &&
+                !n.isRead &&
+                n.type != 'status',
+          )
+          .toList();
+
+  /// Same idea for backend-created notifications (payment confirmed,
+  /// request contacted, …): anything unseen becomes a system banner.
+  void _applyFetchedNotifications(List<PushNotification> notifications) {
+    final seen = _seenNotificationIds;
+    _notifications = notifications;
+    _seenNotificationIds = notifications.map((n) => n.id).toSet();
+    if (seen == null) return;
+    for (final n in freshNotifications(seen, notifications).reversed) {
+      unawaited(LocalPushService.instance.show(title: n.title, body: n.body));
+    }
+  }
+
   void syncFromAuth({
     required String id,
     required String name,
@@ -383,6 +453,7 @@ class FASTProvider extends ChangeNotifier {
     _restoreAccountCache(id);
     _loadFavorites();
     _startRealtime();
+    startOrderPolling();
   }
 
   /// Instant-fill orders + notifications from this account's cache so
@@ -461,7 +532,15 @@ class FASTProvider extends ChangeNotifier {
   /// Order kicked off / ready: interactive "say when you arrive"
   /// notification, then a responsibility reminder if it stays unclaimed.
   void _onRealtimeOrderStatus(String orderId, String status) {
+    // Record it first so the follow-up poll doesn't notify a second time.
+    _orderStatusBaseline?[orderId] = OrderStatus.fromApiJson(status);
+    _notifyOrderStatus(orderId, status);
     unawaited(refreshOrders());
+  }
+
+  /// Interactive status notification (ETA actions + reminder). Shared by
+  /// the socket path and the polling diff.
+  void _notifyOrderStatus(String orderId, String status) {
     final push = LocalPushService.instance;
     final normalized = status.toUpperCase();
 
@@ -572,8 +651,8 @@ class FASTProvider extends ChangeNotifier {
       final notifications = results[2] as List<PushNotification>;
 
       _restaurants = restaurants;
-      _orders = orders;
-      _notifications = notifications;
+      _applyFetchedOrders(orders);
+      _applyFetchedNotifications(notifications);
       ProximityService.instance.sync();
       // Fetch user location after data loads
       fetchUserLocation();
@@ -599,7 +678,7 @@ class FASTProvider extends ChangeNotifier {
     try {
       final orders = await _orderService.getMyOrders();
       if (_disposed || generation != _requestGeneration) return;
-      _orders = orders;
+      _applyFetchedOrders(orders);
       ProximityService.instance.sync();
       await _saveOrders();
       notifyListeners();
@@ -612,14 +691,23 @@ class FASTProvider extends ChangeNotifier {
     syncOrderPolling();
   }
 
-  /// Start periodic polling for active orders and notifications (every 30s)
+  /// Periodic poll while signed in (every 30s): notifications always,
+  /// orders only while one is in flight. This is the production delivery
+  /// path for order/notification alerts (no socket on Vercel).
   void startOrderPolling() {
-    _orderPollTimer?.cancel();
+    if (_orderPollTimer != null) return;
     _orderPollTimer = Timer.periodic(const Duration(seconds: 30), (_) {
-      refreshOrdersAndSync();
-      refreshNotifications();
+      if (_userId.isEmpty) return;
+      if (_hasActiveOrders) unawaited(refreshOrders());
+      unawaited(refreshNotifications());
     });
   }
+
+  bool get _hasActiveOrders => _orders.any(
+        (o) =>
+            o.status != OrderStatus.completed &&
+            o.status != OrderStatus.cancelled,
+      );
 
   /// Stop periodic order polling
   void stopOrderPolling() {
@@ -629,16 +717,7 @@ class FASTProvider extends ChangeNotifier {
 
   /// Start or stop polling based on whether there are active orders
   void syncOrderPolling() {
-    final hasActive = _orders.any(
-      (o) =>
-          o.status != OrderStatus.completed &&
-          o.status != OrderStatus.cancelled,
-    );
-    if (hasActive) {
-      startOrderPolling();
-    } else {
-      stopOrderPolling();
-    }
+    if (_userId.isNotEmpty) startOrderPolling();
   }
 
   /// Refresh just notifications
@@ -648,7 +727,7 @@ class FASTProvider extends ChangeNotifier {
     try {
       final notifications = await _notificationService.listNotifications();
       if (_disposed || generation != _requestGeneration) return;
-      _notifications = notifications;
+      _applyFetchedNotifications(notifications);
       await _saveNotifications();
       notifyListeners();
     } catch (_) {}
@@ -1329,6 +1408,8 @@ class FASTProvider extends ChangeNotifier {
       final order = await _paymentService.confirmCheckoutSession(sessionId);
       await FASTProvider.clearPendingStripeSession();
       acceptPaidOrder(order);
+      _orderStatusBaseline?[order.id] = order.status;
+      unawaited(refreshNotifications());
       return true;
     } catch (e) {
       _orderError = _extractErrorMessage(e);
