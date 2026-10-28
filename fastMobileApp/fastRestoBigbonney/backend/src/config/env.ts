@@ -20,6 +20,11 @@ export const env = {
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '24h',
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000,http://localhost:5173',
   uploadDir: process.env.UPLOAD_DIR || './uploads',
+  // Durable media storage (Supabase Storage, public bucket). Without these
+  // uploads fall back to local disk — fine for dev, lost on Vercel.
+  supabaseUrl: process.env.SUPABASE_URL || '',
+  supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+  supabaseBucket: process.env.SUPABASE_STORAGE_BUCKET || 'media',
   serviceFee: parseFloat(process.env.SERVICE_FEE || '1.50'),
   bcryptRounds: parseInt(process.env.BCRYPT_ROUNDS || '12', 10),
   maxFailedLogins: parseInt(process.env.MAX_FAILED_LOGINS || '5', 10),

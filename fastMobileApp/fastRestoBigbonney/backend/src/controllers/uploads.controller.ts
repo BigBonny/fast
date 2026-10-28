@@ -5,6 +5,7 @@ import fs from 'fs';
 import os from 'os';
 import crypto from 'crypto';
 import { env } from '../config/env';
+import { storeMedia } from '../services/storage';
 
 // On read-only filesystems (Vercel functions), fall back to the only
 // writable location — /tmp. Note: /tmp is ephemeral, so durable media
@@ -56,14 +57,8 @@ const EXT_FOR: Record<string, string> = {
 };
 
 export const mediaUpload = multer({
-  storage: multer.diskStorage({
-    destination: uploadDir,
-    filename: (_req, file, cb) => {
-      const ext =
-        EXT_FOR[file.mimetype] ?? path.extname(file.originalname).toLowerCase();
-      cb(null, `${Date.now()}-${crypto.randomBytes(6).toString('hex')}${ext}`);
-    },
-  }),
+  // Buffer in memory, then hand off to durable storage (services/storage).
+  storage: multer.memoryStorage(),
   // 40 MB — short dish videos must fit; anything larger should be a link.
   limits: { fileSize: 40 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
@@ -75,11 +70,22 @@ export const mediaUpload = multer({
   },
 });
 
-export const uploadMedia = (req: Request, res: Response): void => {
+export const uploadMedia = async (req: Request, res: Response): Promise<void> => {
   const file = req.file;
   if (!file) {
     res.status(400).json({ error: 'Aucun fichier reçu' });
     return;
   }
-  res.status(201).json({ url: `/uploads/${file.filename}` });
+  const ext =
+    EXT_FOR[file.mimetype] ?? path.extname(file.originalname).toLowerCase();
+  const filename = `${Date.now()}-${crypto.randomBytes(6).toString('hex')}${ext}`;
+  try {
+    const url = await storeMedia(file.buffer, filename, file.mimetype, uploadDir);
+    res.status(201).json({ url });
+  } catch (err) {
+    console.error('[uploads]', (err as Error).message);
+    res
+      .status(502)
+      .json({ error: 'Stockage du fichier indisponible. Réessayez.' });
+  }
 };
