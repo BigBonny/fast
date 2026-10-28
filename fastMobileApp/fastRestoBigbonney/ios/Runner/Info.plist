@@ -31,8 +31,6 @@
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
@@ -51,6 +49,8 @@
 	<string>FAST utilise votre position pour le suivi de marche vers le restaurant lors d'une commande active.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>FAST utilise la caméra pour scanner le QR code de retrait des commandes (restaurant) et numériser les menus.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>FAST utilise le micro uniquement lorsque vous filmez une courte vidéo de présentation d'un plat.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>FAST vous permet de sélectionner une photo de menu ou de restaurant depuis votre photothèque.</string>
 	<key>CFBundleURLTypes</key>
