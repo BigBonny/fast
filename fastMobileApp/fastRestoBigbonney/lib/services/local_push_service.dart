@@ -75,18 +75,32 @@ class LocalPushService {
           importance: Importance.high,
         ),
       );
-      // Android 13+ runtime permission + iOS authorization
+    } catch (_) {
+      // No plugin implementation on this platform (tests, desktop) —
+      // system notifications are a bonus, never a blocker.
+      _initialized = false;
+    }
+  }
+
+  bool _permissionRequested = false;
+
+  /// Runtime permission — asked lazily the first time a real notification
+  /// is about to appear, not over the intro slides at first login.
+  Future<void> requestPermission() async {
+    if (!_initialized || _permissionRequested || kIsWeb) return;
+    _permissionRequested = true;
+    try {
+      final androidImpl = _plugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
       await androidImpl?.requestNotificationsPermission();
       await _plugin
           .resolvePlatformSpecificImplementation<
             IOSFlutterLocalNotificationsPlugin
           >()
           ?.requestPermissions(alert: true, badge: true, sound: true);
-    } catch (_) {
-      // No plugin implementation on this platform (tests, desktop) —
-      // system notifications are a bonus, never a blocker.
-      _initialized = false;
-    }
+    } catch (_) {}
   }
 
   NotificationDetails _details({List<AndroidNotificationAction>? actions}) =>
@@ -111,6 +125,7 @@ class LocalPushService {
     String? payload,
   }) async {
     if (!_initialized) return;
+    await requestPermission();
     try {
       await _plugin.show(
         id: _nextId++,
@@ -133,6 +148,7 @@ class LocalPushService {
     required String eta15Label,
   }) async {
     if (!_initialized) return;
+    await requestPermission();
     try {
       await _plugin.show(
         id: _nextId++,
@@ -158,6 +174,7 @@ class LocalPushService {
     required Duration delay,
   }) async {
     if (!_initialized) return;
+    await requestPermission();
     try {
       await _plugin.zonedSchedule(
         id: reminderIdFor(orderId),
