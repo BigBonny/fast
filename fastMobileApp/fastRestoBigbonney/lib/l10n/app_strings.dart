@@ -866,6 +866,7 @@ class AppStrings {
     'normal_time': 'Temps Normal',
     'rush_time': 'Temps Mode Rush',
     'stripe_active': 'Stripe Connect actif — paiements activés',
+    'stripe_pending': 'Activation Stripe en cours — réessayez dans une minute.',
     'stripe_connected':
         'Compte connecté — finalisez l\'activation des paiements',
     'stripe_required':
@@ -1782,6 +1783,7 @@ class AppStrings {
     'normal_time': 'Normal Time',
     'rush_time': 'Rush Mode Time',
     'stripe_active': 'Stripe Connect active — payments enabled',
+    'stripe_pending': 'Stripe activation in progress — try again in a minute.',
     'stripe_connected': 'Account connected — finish enabling payments',
     'stripe_required':
         'Stripe Connect not configured — required to receive payments',
@@ -2649,6 +2651,7 @@ class AppStrings {
     'normal_time': 'Normal Süre',
     'rush_time': 'Rush Modu Süresi',
     'stripe_active': 'Stripe Connect aktif — ödemeler açık',
+    'stripe_pending': 'Stripe aktivasyonu sürüyor — bir dakika sonra tekrar deneyin.',
     'stripe_connected': 'Hesap bağlandı — ödeme aktivasyonunu tamamlayın',
     'stripe_required': 'Stripe Connect ayarlanmadı — ödeme almak için gerekli',
     'restaurant_not_connected':
@@ -3539,6 +3542,7 @@ class AppStrings {
     'normal_time': 'الوقت العادي',
     'rush_time': 'وقت وضع الذروة',
     'stripe_active': 'Stripe Connect مفعّل — المدفوعات مفعلة',
+    'stripe_pending': 'تفعيل Stripe جارٍ — أعد المحاولة بعد دقيقة.',
     'stripe_connected': 'الحساب متصل — أكمل تفعيل المدفوعات',
     'stripe_required': 'Stripe Connect غير مُعد — مطلوب لاستلام المدفوعات',
     'restaurant_not_connected':
@@ -4448,6 +4452,7 @@ class AppStrings {
     'normal_time': 'Tiempo normal',
     'rush_time': 'Tiempo Modo Rush',
     'stripe_active': 'Stripe Connect activo — pagos habilitados',
+    'stripe_pending': 'Activación de Stripe en curso — inténtalo de nuevo en un minuto.',
     'stripe_connected': 'Cuenta conectada — termina de activar los pagos',
     'stripe_required':
         'Stripe Connect no configurado — necesario para recibir pagos',
@@ -5362,6 +5367,7 @@ class AppStrings {
     'normal_time': 'Tempo normal',
     'rush_time': 'Tempo Modo Rush',
     'stripe_active': 'Stripe Connect ativo — pagamentos ativados',
+    'stripe_pending': 'Ativação do Stripe em curso — tenta novamente dentro de um minuto.',
     'stripe_connected': 'Conta ligada — conclui a ativação dos pagamentos',
     'stripe_required':
         'Stripe Connect não configurado — necessário para receber pagamentos',
@@ -6276,6 +6282,7 @@ class AppStrings {
     'normal_time': 'Tempo normale',
     'rush_time': 'Tempo modalità Rush',
     'stripe_active': 'Stripe Connect attivo — pagamenti abilitati',
+    'stripe_pending': 'Attivazione Stripe in corso — riprova tra un minuto.',
     'stripe_connected':
         'Account collegato — completa l\'attivazione dei pagamenti',
     'stripe_required':
@@ -7143,6 +7150,7 @@ class AppStrings {
     'normal_time': '常规时间',
     'rush_time': '高峰模式时间',
     'stripe_active': 'Stripe Connect 已激活——支付已启用',
+    'stripe_pending': 'Stripe 激活中——请一分钟后重试。',
     'stripe_connected': '账户已连接——请完成支付激活',
     'stripe_required': 'Stripe Connect 未配置——收款需要',
     'restaurant_not_connected': '该餐厅暂时无法接收在线支付，请稍后再试。',
