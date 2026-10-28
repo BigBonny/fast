@@ -600,6 +600,20 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
     const iban = (restaurant.managerIban || '').replace(/\s+/g, '').toUpperCase();
     const ibanValid = /^[A-Z]{2}\d{2}[0-9A-Z]{11,30}$/.test(iban);
 
+    // Representative DOB — accept JJ/MM/AAAA or AAAA-MM-JJ from the app.
+    let dob: { day: number; month: number; year: number } | undefined;
+    const dobRaw = (restaurant.ownerBirthDate || '').trim();
+    const dobMatch =
+      dobRaw.match(/^(\d{2})\/(\d{2})\/(\d{4})$/) ??
+      dobRaw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (dobMatch) {
+      const [a, b, c] = [Number(dobMatch[1]), Number(dobMatch[2]), Number(dobMatch[3])];
+      dob = dobRaw.includes('-')
+        ? { year: a, month: b, day: c }
+        : { day: a, month: b, year: c };
+    }
+    const ownerAddress = (restaurant.ownerAddress || '').trim();
+
     const buildCreateParams = (withIban: boolean): Stripe.AccountCreateParams => ({
       type: 'express',
       country: 'FR',
@@ -639,6 +653,10 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
             last_name: nameParts.length > 1 ? nameParts.slice(1).join(' ') : undefined,
             email: owner.email,
             phone: owner.phone || undefined,
+            dob,
+            address: ownerAddress
+              ? { line1: ownerAddress, country: 'FR' }
+              : undefined,
           }
         : undefined,
       external_account: withIban
@@ -703,6 +721,10 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
               last_name: nameParts.length > 1 ? nameParts.slice(1).join(' ') : undefined,
               email: owner.email,
               phone: owner.phone || undefined,
+              dob,
+              address: ownerAddress
+                ? { line1: ownerAddress, country: 'FR' }
+                : undefined,
             }
           : undefined,
       });

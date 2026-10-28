@@ -32,6 +32,8 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
   final _ibanCtrl = TextEditingController();
   final _siretCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
+  final _ownerDobCtrl = TextEditingController();
+  final _ownerAddrCtrl = TextEditingController();
   // Weekly hours — open/close text fields per day; closed days are
   // stored as "closed" so the state survives a save/load round-trip.
   final Map<int, TextEditingController> _openCtrls = {
@@ -195,6 +197,8 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
         _ibanCtrl.text = data['managerIban'] as String? ?? '';
         _siretCtrl.text = data['siret'] as String? ?? '';
         _phoneCtrl.text = data['phone'] as String? ?? '';
+        _ownerDobCtrl.text = data['ownerBirthDate'] as String? ?? '';
+        _ownerAddrCtrl.text = data['ownerAddress'] as String? ?? '';
         final hours = data['openingHours'] as Map<String, dynamic>? ?? {};
         for (var d = 1; d <= 7; d++) {
           final s = '${hours['$d'] ?? ''}';
@@ -293,6 +297,8 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
       'managerIban': _ibanCtrl.text.trim(),
       'siret': _siretCtrl.text.trim(),
       'phone': _phoneCtrl.text.trim(),
+      'ownerBirthDate': _ownerDobCtrl.text.trim(),
+      'ownerAddress': _ownerAddrCtrl.text.trim(),
       'openingHours': {
         for (var d = 1; d <= 7; d++)
           if (_closedDays.contains(d))
@@ -400,6 +406,8 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
     }
     _siretCtrl.dispose();
     _phoneCtrl.dispose();
+    _ownerDobCtrl.dispose();
+    _ownerAddrCtrl.dispose();
     for (final c in _openCtrls.values) {
       c.dispose();
     }
@@ -504,6 +512,17 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
         SizedBox(height: 12),
         _field(tr(context, 'siret_lbl'), _siretCtrl, hint: '123 456 789 00012'),
         _field(tr(context, 'phone_lbl'), _phoneCtrl, hint: '06 12 34 56 78'),
+        _field(
+          tr(context, 'owner_dob_lbl'),
+          _ownerDobCtrl,
+          hint: '15/03/1985',
+          keyboard: TextInputType.datetime,
+        ),
+        _field(
+          tr(context, 'owner_addr_lbl'),
+          _ownerAddrCtrl,
+          hint: '10 Rue de la Paix, 75001 Paris',
+        ),
         SizedBox(height: 8),
         Text(
           tr(context, 'opening_hours'),
@@ -1177,12 +1196,14 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
     TextEditingController ctrl, {
     int maxLines = 1,
     String? hint,
+    TextInputType? keyboard,
   }) {
     return Padding(
       padding: EdgeInsets.only(bottom: 12),
       child: TextField(
         controller: ctrl,
         maxLines: maxLines,
+        keyboardType: keyboard,
         style: TextStyle(color: context.fast.t1, fontSize: 14),
         decoration: InputDecoration(
           labelText: label,

@@ -21,7 +21,7 @@ async function applyGeocoding(
 function publicRestaurant(restaurant: Record<string, unknown>): Record<string, unknown> {
   const result = { ...restaurant };
   result.paymentsReady = Boolean(restaurant.stripeAccountId && restaurant.stripeChargesEnabled);
-  for (const key of ['ownerId', 'managerIban', 'stripeAccountId', 'stripeChargesEnabled', 'stripePayoutsEnabled', 'payoutFrequency', 'staffInviteCode']) {
+  for (const key of ['ownerId', 'managerIban', 'ownerBirthDate', 'ownerAddress', 'stripeAccountId', 'stripeChargesEnabled', 'stripePayoutsEnabled', 'payoutFrequency', 'staffInviteCode']) {
     delete result[key];
   }
 

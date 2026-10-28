@@ -172,6 +172,11 @@ model Restaurant {
   siret                String   @default("")
   phone                String   @default("")
   openingHours         Json?
+  // Representative identity — prefilled into Stripe Connect at
+  // account creation so hosted onboarding only asks for the ID
+  // document and ToS, not the fields owners already know by heart.
+  ownerBirthDate       String   @default("")
+  ownerAddress         String   @default("")
   stripeAccountId      String?
   stripeChargesEnabled Boolean  @default(false)
   stripePayoutsEnabled Boolean  @default(false)
