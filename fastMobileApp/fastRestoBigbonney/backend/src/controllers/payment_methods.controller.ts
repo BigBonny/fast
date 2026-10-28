@@ -14,7 +14,32 @@ function paymentClient(res: Response): Stripe | null {
 export async function getStripeCustomerId(stripe: Stripe, userId: string, create = false): Promise<string | null> {
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { stripeCustomerId: true, email: true, name: true } });
   if (!user) throw new Error('Utilisateur introuvable');
-  if (user.stripeCustomerId) return user.stripeCustomerId;
+  if (user.stripeCustomerId) {
+    // The saved id can be stale — created under a different key/mode or
+    // deleted in the dashboard. Verify before trusting it; a bad id
+    // would otherwise 500 every checkout ("No such customer").
+    try {
+      const existing = await stripe.customers.retrieve(user.stripeCustomerId);
+      if (!(existing as Stripe.DeletedCustomer).deleted) {
+        return user.stripeCustomerId;
+      }
+    } catch (err) {
+      const code = (err as Stripe.errors.StripeError)?.code;
+      if (code !== 'resource_missing') throw err;
+    }
+    if (!create) return null;
+    await prisma.user.update({ where: { id: userId }, data: { stripeCustomerId: null } });
+    // Adopt an existing active customer with this email rather than
+    // creating a duplicate (or replaying a deleted idempotency result).
+    try {
+      const found = await stripe.customers.list({ email: user.email, limit: 1 });
+      const active = found.data.find((c) => !(c as unknown as Stripe.DeletedCustomer).deleted);
+      if (active) {
+        await prisma.user.update({ where: { id: userId }, data: { stripeCustomerId: active.id } });
+        return active.id;
+      }
+    } catch { /* search is best-effort — fall through to create */ }
+  }
   if (!create) return null;
   const customer = await stripe.customers.create({ email: user.email, name: user.name, metadata: { userId } }, { idempotencyKey: `fast-customer-${userId}` });
   await prisma.user.update({ where: { id: userId }, data: { stripeCustomerId: customer.id } });
