@@ -18,6 +18,22 @@ class AuthService {
     return AuthResponse.fromJson(data as Map<String, dynamic>);
   }
 
+  Future<AuthResponse> loginWithApple(
+    String identityToken,
+    String role, {
+    String? name,
+  }) async {
+    final data = await _api.post(
+      ApiConfig.appleAuth,
+      body: {
+        'identityToken': identityToken,
+        'role': role,
+        if (name != null) 'name': name,
+      },
+    );
+    return AuthResponse.fromJson(data as Map<String, dynamic>);
+  }
+
   Future<AuthResponse> register(RegisterRequest request) async {
     final data = await _api.post(ApiConfig.register, body: request.toJson());
     return AuthResponse.fromJson(data as Map<String, dynamic>);

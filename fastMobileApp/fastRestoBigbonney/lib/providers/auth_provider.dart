@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../api/api_client.dart';
 import '../api/api_exceptions.dart';
@@ -153,6 +154,58 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       await _cacheUser();
       return true;
+    } catch (e) {
+      _state = AuthState.error;
+      _error = _extractError(e);
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Sign in with Apple — required by App Review Guideline 4.8 alongside
+  /// Google sign-in. The native sheet supplies the name only on the first
+  /// authorization, so whatever it returns is forwarded to the backend.
+  Future<bool> signInWithApple({String role = 'CLIENT'}) async {
+    _state = AuthState.loading;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
+      final idToken = credential.identityToken;
+      if (idToken == null) {
+        throw Exception('Token Apple introuvable');
+      }
+      final name = [
+        credential.givenName,
+        credential.familyName,
+      ].whereType<String>().where((s) => s.isNotEmpty).join(' ');
+
+      final response = await AuthService().loginWithApple(
+        idToken,
+        role,
+        name: name.isEmpty ? null : name,
+      );
+      await ApiClient().setToken(response.token);
+      _user = response.user;
+      _state = AuthState.authenticated;
+      notifyListeners();
+      await _cacheUser();
+      return true;
+    } on SignInWithAppleAuthorizationException catch (e) {
+      if (e.code == AuthorizationErrorCode.canceled) {
+        _state = AuthState.idle;
+      } else {
+        _state = AuthState.error;
+        _error = _extractError(e);
+      }
+      notifyListeners();
+      return false;
     } catch (e) {
       _state = AuthState.error;
       _error = _extractError(e);
