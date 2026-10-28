@@ -81,12 +81,18 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
 
   /// Slides the active chip into view inside the horizontal bar —
   /// centred when possible so the user sees the neighbours too.
+  /// Scrolls ONLY the chip row's own ScrollPosition: ensureVisible()
+  /// would also move the outer CustomScrollView to centre the pinned
+  /// bar, bouncing the user back to the first section.
   void _revealChip(String cat) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final ctx = _chipKeys[cat]?.currentContext;
       if (ctx == null || !mounted) return;
-      Scrollable.ensureVisible(
-        ctx,
+      final object = ctx.findRenderObject();
+      final state = Scrollable.maybeOf(ctx);
+      if (object == null || state == null) return;
+      state.position.ensureVisible(
+        object,
         duration: const Duration(milliseconds: 220),
         curve: Curves.easeOutCubic,
         alignment: 0.5,
