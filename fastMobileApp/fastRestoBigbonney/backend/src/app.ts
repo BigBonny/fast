@@ -1,5 +1,6 @@
 import express from 'express';
 import path from 'path';
+import compression from 'compression';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
@@ -30,6 +31,12 @@ const app = express();
 // ─── Trust Proxy (for rate limiting behind reverse proxy) ──
 
 app.set('trust proxy', 1);
+
+// ─── Compression ────────────────────────────────────────────
+// Gzip JSON responses — the restaurant list (menus included) is the
+// app's biggest transfer; on mobile data this cuts it ~80%.
+
+app.use(compression());
 
 // ─── Security Headers ───────────────────────────────────────
 

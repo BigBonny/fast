@@ -44,6 +44,11 @@ List<PushNotification> _decodeNotifications(String raw) {
   return list.map((x) => PushNotification.fromJson(x)).toList();
 }
 
+// Encoding the full restaurant list (menus included) is just as heavy
+// as decoding — run it on the background isolate too.
+String _encodeRestaurants(List<Restaurant> restaurants) =>
+    json.encode(restaurants.map((x) => x.toJson()).toList());
+
 class CategoryItem {
   final String id;
   final String name;
@@ -769,10 +774,8 @@ class FASTProvider extends ChangeNotifier {
   // Save to persistence
   Future<void> _saveRestaurants() async {
     final prefs = await SharedPreferences.getInstance();
-    prefs.setString(
-      'fast_resto_restaurants',
-      json.encode(_restaurants.map((x) => x.toJson()).toList()),
-    );
+    final encoded = await compute(_encodeRestaurants, _restaurants);
+    prefs.setString('fast_resto_restaurants', encoded);
   }
 
   Future<void> _saveOrders() async {
