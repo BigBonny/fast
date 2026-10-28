@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -46,8 +47,9 @@ class AuthProvider extends ChangeNotifier {
       return;
     }
 
-    // Fast path: restore the cached session immediately so the app opens
-    // straight into the UI, then validate/refresh in the background.
+    // Fast path: restore the cached session and return immediately —
+    // splash ends without waiting for the network, /auth/me refreshes
+    // behind the scenes.
     UserData? cached;
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -60,8 +62,18 @@ class AuthProvider extends ChangeNotifier {
       _user = cached;
       _state = AuthState.authenticated;
       notifyListeners();
+      unawaited(_refreshMe());
+      return;
     }
 
+    // No cached session — the token must be validated before opening.
+    await _refreshMe();
+  }
+
+  /// Validates the stored token against /auth/me and refreshes the
+  /// cached user. Only a real 401 kills the session — a network blip
+  /// keeps the cached user (kicking them out for being offline is worse).
+  Future<void> _refreshMe() async {
     try {
       final me = await AuthService().getMe();
       _user = me;
@@ -69,10 +81,7 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       await _cacheUser();
     } catch (e) {
-      // 401 = session actually dead → real logout. Any other failure
-      // (offline, server blip) keeps the cached session — kicking the
-      // user out because the network is down would be worse.
-      if (e is UnauthorizedException || cached == null) {
+      if (e is UnauthorizedException || _user == null) {
         await ApiClient().setToken(null);
         _user = null;
         _state = AuthState.unauthenticated;

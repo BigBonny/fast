@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math' show Random, cos, sin;
+import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:latlong2/latlong.dart';
@@ -24,6 +25,24 @@ import 'l10n/app_strings.dart';
 const _pendingStripeSessionKey = 'fast_pending_stripe_session_id';
 const _activeGroupIdKey = 'fast_active_group_id';
 const _activeGroupCodeKey = 'fast_active_group_code';
+
+// Decode helpers — run on a background isolate via compute() so the
+// cached-restaurants JSON (which embeds every menu) never janks the
+// first frame.
+List<Restaurant> _decodeRestaurants(String raw) {
+  final List<dynamic> list = json.decode(raw);
+  return list.map((x) => Restaurant.fromJson(x)).toList();
+}
+
+List<Order> _decodeOrders(String raw) {
+  final List<dynamic> list = json.decode(raw);
+  return list.map((x) => Order.fromJson(x)).toList();
+}
+
+List<PushNotification> _decodeNotifications(String raw) {
+  final List<dynamic> list = json.decode(raw);
+  return list.map((x) => PushNotification.fromJson(x)).toList();
+}
 
 class CategoryItem {
   final String id;
@@ -356,8 +375,31 @@ class FASTProvider extends ChangeNotifier {
     _userPhone = phone;
     _userPoints = points;
     notifyListeners();
+    _restoreAccountCache(id);
     _loadFavorites();
     _startRealtime();
+  }
+
+  /// Instant-fill orders + notifications from this account's cache so
+  /// the screens are populated before the first API response lands.
+  Future<void> _restoreAccountCache(String userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    var changed = false;
+    final rawOrders = prefs.getString('fast_resto_orders_$userId');
+    if (rawOrders != null) {
+      try {
+        _orders = _decodeOrders(rawOrders);
+        changed = true;
+      } catch (_) {}
+    }
+    final rawNotifs = prefs.getString('fast_resto_notifications_$userId');
+    if (rawNotifs != null) {
+      try {
+        _notifications = _decodeNotifications(rawNotifs);
+        changed = true;
+      } catch (_) {}
+    }
+    if (changed && !_disposed) notifyListeners();
   }
 
   /// Realtime socket + GPS proximity — live notifications without polling.
@@ -659,12 +701,12 @@ class FASTProvider extends ChangeNotifier {
   Future<void> _initializeData() async {
     final prefs = await SharedPreferences.getInstance();
 
-    // 1. Load restaurants from SharedPreferences cache
+    // 1. Load restaurants from SharedPreferences cache — decoded off the
+    // UI isolate since this payload embeds every restaurant's full menu.
     final savedRest = prefs.getString('fast_resto_restaurants');
     if (savedRest != null) {
       try {
-        final List<dynamic> list = json.decode(savedRest);
-        _restaurants = list.map((x) => Restaurant.fromJson(x)).toList();
+        _restaurants = await compute(_decodeRestaurants, savedRest);
       } catch (e) {
         _restaurants = [];
       }
@@ -674,8 +716,7 @@ class FASTProvider extends ChangeNotifier {
     final savedOrders = prefs.getString('fast_resto_orders_anonymous');
     if (savedOrders != null) {
       try {
-        final List<dynamic> list = json.decode(savedOrders);
-        _orders = list.map((x) => Order.fromJson(x)).toList();
+        _orders = _decodeOrders(savedOrders);
       } catch (e) {
         _orders = [];
       }
@@ -687,8 +728,7 @@ class FASTProvider extends ChangeNotifier {
     final savedNotifs = prefs.getString('fast_resto_notifications_anonymous');
     if (savedNotifs != null) {
       try {
-        final List<dynamic> list = json.decode(savedNotifs);
-        _notifications = list.map((x) => PushNotification.fromJson(x)).toList();
+        _notifications = _decodeNotifications(savedNotifs);
       } catch (e) {
         _notifications = [];
       }
