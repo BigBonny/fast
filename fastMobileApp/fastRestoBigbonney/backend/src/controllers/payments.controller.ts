@@ -651,18 +651,9 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
             }
           : undefined,
       },
-      individual: owner
-        ? {
-            first_name: nameParts[0] || undefined,
-            last_name: nameParts.length > 1 ? nameParts.slice(1).join(' ') : undefined,
-            email: owner.email,
-            phone: owner.phone || undefined,
-            dob,
-            address: ownerAddress
-              ? { line1: ownerAddress, country: 'FR' }
-              : undefined,
-          }
-        : undefined,
+      // No `individual` here: with business_type 'company' Stripe rejects
+      // it outright, and Express collects the representative in the hosted
+      // flow regardless.
       external_account: withIban
         ? {
             object: 'bank_account',
@@ -674,8 +665,11 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
       metadata: { restaurantId: restaurant.id, ownerId: req.user!.userId },
     });
 
+    const isTestKey = env.stripeSecretKey.startsWith('sk_test_');
     let accountId = restaurant.stripeAccountId;
-    if (!accountId) {
+    // In test mode the platform-collected shortcut below creates/updates
+    // the account — no need to spawn an Express account first.
+    if (!accountId && !isTestKey) {
       let account;
       try {
         account = await stripe.accounts.create(buildCreateParams(ibanValid));
@@ -690,7 +684,7 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
         where: { id: restaurant.id },
         data: { stripeAccountId: accountId },
       });
-    } else {
+    } else if (accountId) {
       // Existing account — best-effort update (Stripe may reject some
       // fields on Express; warn and continue either way).
       try {
@@ -719,18 +713,6 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
               }
             : undefined,
         },
-        individual: owner
-          ? {
-              first_name: nameParts[0] || undefined,
-              last_name: nameParts.length > 1 ? nameParts.slice(1).join(' ') : undefined,
-              email: owner.email,
-              phone: owner.phone || undefined,
-              dob,
-              address: ownerAddress
-                ? { line1: ownerAddress, country: 'FR' }
-                : undefined,
-            }
-          : undefined,
       });
 
       // Existing account + saved IBAN → try attaching the bank account
@@ -755,70 +737,136 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
       }
     }
 
-    // Test-mode shortcut: satisfy every currently-due requirement through the
-    // API so hosted onboarding (and its ID-verification screens) is skipped
-    // entirely. Only for sk_test_ accounts — live accounts must complete real
-    // KYC through the hosted flow, that's a legal requirement we can't bypass.
-    if (env.stripeSecretKey.startsWith('sk_test_')) {
+    // Test-mode shortcut: hosted onboarding can't be skipped for Express
+    // accounts (Stripe forbids API ToS acceptance on them), so in test mode
+    // we create a platform-collected account instead — account_token carries
+    // the data + ToS, the test document file satisfies identity checks, and
+    // ToS acceptance via API is allowed because the platform collects
+    // requirements. Lands fully enabled with zero hosted screens.
+    // Only runs for sk_test_ keys — live accounts must complete real KYC.
+    if (isTestKey) {
       try {
-        let acct = await stripe.accounts.retrieve(accountId);
-        if ((acct.requirements?.currently_due?.length ?? 0) > 0) {
-          const testIban = ibanValid ? iban : 'FR1420041010050500013M02606';
-          await stripe.accounts.update(accountId, {
-            business_type: restaurant.siret ? 'company' : 'individual',
-            tos_acceptance: {
-              date: Math.floor(Date.now() / 1000),
-              ip: req.ip || '127.0.0.1',
-            },
-            individual: {
-              first_name: (nameParts.length ? nameParts[0] : undefined) || 'Jean',
-              last_name:
-                (nameParts.length > 1 ? nameParts.slice(1).join(' ') : undefined) || 'Test',
-              email: owner?.email,
-              dob: dob ?? { day: 1, month: 1, year: 1980 },
-              address: ownerAddress
-                ? { line1: ownerAddress, country: 'FR' }
-                : {
-                    line1: '10 rue de la Paix',
-                    city: 'Paris',
-                    postal_code: '75001',
-                    country: 'FR',
-                  },
-            },
-            company: {
-              name: restaurant.name,
-              tax_id: siren || undefined,
-            },
-          });
-          try {
-            await stripe.accounts.createExternalAccount(accountId, {
-              external_account: {
-                object: 'bank_account',
-                country: testIban.slice(0, 2),
-                currency: 'eur',
-                account_holder_name: restaurant.name,
-                account_number: testIban,
-              },
-            });
-          } catch (bankErr) {
-            console.warn('[Stripe] test-mode bank attach:', (bankErr as Error).message);
+        const existing = accountId
+          ? await stripe.accounts.retrieve(accountId)
+          : null;
+        if (existing) {
+          // Platform-collected account still under review — poll briefly
+          // rather than abandoning it and creating an orphan.
+          let current = existing;
+          if (!current.charges_enabled && current.controller?.requirement_collection === 'application') {
+            for (let i = 0; i < 8 && !current.charges_enabled; i++) {
+              await new Promise((r) => setTimeout(r, 3000));
+              current = await stripe.accounts.retrieve(accountId!);
+            }
           }
-          acct = await stripe.accounts.retrieve(accountId);
+          if (current.charges_enabled) {
+            await prisma.restaurant.update({
+              where: { id: restaurant.id },
+              data: { stripeChargesEnabled: true, stripePayoutsEnabled: current.payouts_enabled ?? false },
+            });
+            res.json({ accountId, connected: true });
+            return;
+          }
+          if (current.controller?.requirement_collection === 'application') {
+            res.json({ accountId, connected: false, pending: true });
+            return;
+          }
+          // Express/other account type still incomplete — replace it with
+          // a fresh platform-collected account below (test mode only, so
+          // the orphaned Express account is disposable).
         }
-        if ((acct.requirements?.currently_due?.length ?? 0) === 0) {
-          await prisma.restaurant.update({
-            where: { id: restaurant.id },
-            data: {
-              stripeChargesEnabled: acct.charges_enabled ?? false,
-              stripePayoutsEnabled: acct.payouts_enabled ?? false,
-            },
-          });
-          res.json({ accountId, connected: acct.charges_enabled ?? false });
-          return;
+      } catch { /* account unusable — create a fresh one below */ }
+
+      try {
+        const testIban = ibanValid ? iban : 'FR1420041010050500013M02606';
+        const first = (nameParts.length ? nameParts[0] : undefined) || 'Jean';
+        const last =
+          (nameParts.length > 1 ? nameParts.slice(1).join(' ') : undefined) || 'Test';
+        const person: Record<string, unknown> = {
+          first_name: first,
+          last_name: last,
+          email: owner?.email,
+          phone: restaurant.phone || '+33612345678',
+          dob: dob ?? { day: 1, month: 1, year: 1980 },
+          address: ownerAddress
+            ? { line1: ownerAddress, country: 'FR' }
+            : { line1: '10 rue de la Paix', city: 'Paris', postal_code: '75001', country: 'FR' },
+          verification: {
+            document: { front: 'file_identity_document_success' },
+            additional_document: { front: 'file_identity_document_success' },
+          },
+        };
+        const accountToken = await stripe.tokens.create({
+          account: {
+            business_type: 'individual',
+            individual: person as Stripe.TokenCreateParams.Account.Individual,
+            tos_shown_and_accepted: true,
+          } as Stripe.TokenCreateParams.Account,
+        });
+        const fresh = await stripe.accounts.create({
+          country: 'FR',
+          email: owner?.email,
+          controller: {
+            losses: { payments: 'application' },
+            fees: { payer: 'application' },
+            stripe_dashboard: { type: 'none' },
+            requirement_collection: 'application',
+          },
+          account_token: accountToken.id,
+          capabilities: {
+            card_payments: { requested: true },
+            transfers: { requested: true },
+          },
+          external_account: {
+            object: 'bank_account',
+            country: testIban.slice(0, 2),
+            currency: 'eur',
+            account_holder_name: restaurant.name,
+            account_number: testIban,
+          },
+          business_profile: {
+            mcc: '5812',
+            url: 'https://fast-enterprise.com',
+          },
+          settings: { payouts: { schedule: { interval: 'manual' } } },
+        });
+        await stripe.accounts.update(fresh.id, {
+          tos_acceptance: {
+            date: Math.floor(Date.now() / 1000),
+            ip: req.ip || '127.0.0.1',
+          },
+        });
+        // Capability review is asynchronous — requirements clear instantly
+        // but card_payments/transfers flip to "active" ~30 s later. Poll
+        // within the request (Vercel gives us 60 s) so the owner isn't
+        // left staring at a disconnected state.
+        let enabled = await stripe.accounts.retrieve(fresh.id);
+        for (let i = 0; i < 13 && !enabled.charges_enabled; i++) {
+          await new Promise((r) => setTimeout(r, 3000));
+          enabled = await stripe.accounts.retrieve(fresh.id);
         }
+        await prisma.restaurant.update({
+          where: { id: restaurant.id },
+          data: {
+            stripeAccountId: fresh.id,
+            stripeChargesEnabled: enabled.charges_enabled ?? false,
+            stripePayoutsEnabled: enabled.payouts_enabled ?? false,
+          },
+        });
+        res.json({
+          accountId: fresh.id,
+          connected: enabled.charges_enabled ?? false,
+          pending: !enabled.charges_enabled,
+        });
+        return;
       } catch (testErr) {
         console.warn('[Stripe] test-mode auto-connect failed:', (testErr as Error).message);
       }
+    }
+
+    if (!accountId) {
+      res.status(500).json({ error: 'Compte Stripe indisponible. Réessayez.' });
+      return;
     }
 
     const accountLink = await stripe.accountLinks.create({
