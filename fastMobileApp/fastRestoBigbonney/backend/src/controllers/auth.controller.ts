@@ -6,10 +6,27 @@ import { env } from '../config/env';
 import { registerSchema, loginSchema, updateProfileSchema, changePasswordSchema, phoneRequestSchema, phoneVerifySchema } from '../utils/validation';
 import crypto from 'crypto';
 
+const userWithLinks = { driverProfile: true, restaurant: true } as const;
+
+/**
+ * Emails are stored as typed historically (mixed case). New accounts are
+ * normalised to lowercase by the schemas; lookups try the exact value first
+ * (so legacy mixed-case rows keep working), then a case-insensitive match.
+ */
+async function findUserByEmail(email: string) {
+  const exact = await prisma.user.findUnique({ where: { email }, include: userWithLinks });
+  if (exact) return exact;
+  return prisma.user.findFirst({
+    where: { email: { equals: email, mode: 'insensitive' } },
+    orderBy: { createdAt: 'asc' },
+    include: userWithLinks,
+  });
+}
+
 export const register = async (req: Request, res: Response): Promise<void> => {
   const data = registerSchema.parse(req.body);
 
-  const existing = await prisma.user.findUnique({ where: { email: data.email } });
+  const existing = await findUserByEmail(data.email);
   if (existing) {
     res.status(409).json({ error: 'Cet email est déjà utilisé' });
     return;
@@ -98,10 +115,7 @@ async function resolveStaffContext(user: { id: string; role: string }): Promise<
 export const login = async (req: Request, res: Response): Promise<void> => {
   const data = loginSchema.parse(req.body);
 
-  const user = await prisma.user.findUnique({
-    where: { email: data.email },
-    include: { driverProfile: true, restaurant: true },
-  });
+  const user = await findUserByEmail(data.email);
   if (!user) {
     res.status(401).json({ error: 'Email ou mot de passe incorrect' });
     return;
@@ -180,15 +194,13 @@ export const googleLogin = async (req: Request, res: Response): Promise<void> =>
     return;
   }
 
-  let user = await prisma.user.findUnique({
-    where: { email: payload.email },
-    include: { driverProfile: true, restaurant: true },
-  });
+  const googleEmail = payload.email.trim().toLowerCase();
+  let user = await findUserByEmail(googleEmail);
   if (!user) {
     user = await prisma.user.create({
       data: {
-        email: payload.email,
-        name: payload.name?.trim() || payload.email.split('@')[0],
+        email: googleEmail,
+        name: payload.name?.trim() || googleEmail.split('@')[0],
         password: await bcrypt.hash(`google-${payload.sub}-${Date.now()}`, env.bcryptRounds),
         role: (role as never) || 'CLIENT',
       },
@@ -280,7 +292,7 @@ export const updateProfile = async (req: Request, res: Response): Promise<void> 
 
   // If email is being changed, ensure it's not already in use.
   if (data.email) {
-    const existing = await prisma.user.findUnique({ where: { email: data.email } });
+    const existing = await findUserByEmail(data.email);
     if (existing && existing.id !== req.user!.userId) {
       res.status(409).json({ error: 'Cet email est déjà utilisé' });
       return;
