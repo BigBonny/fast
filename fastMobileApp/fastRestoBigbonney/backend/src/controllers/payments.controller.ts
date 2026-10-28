@@ -589,13 +589,14 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
       res.status(404).json({ error: 'Restaurant introuvable' });
       return;
     }
+    const owner = await prisma.user.findUnique({ where: { id: req.user!.userId } });
 
     let accountId = restaurant.stripeAccountId;
     if (!accountId) {
       const account = await stripe.accounts.create({
         type: 'express',
         country: 'FR',
-        email: undefined,
+        email: owner?.email,
         capabilities: {
           card_payments: { requested: true },
           transfers: { requested: true },
@@ -611,10 +612,13 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
     }
 
     // Pre-fill the Connect account with everything the owner already
-    // typed into FAST (legal name, SIRET, address, phone) — hosted
-    // onboarding should only ask for identity verification, not make
-    // them re-enter their restaurant's identity.
+    // typed into FAST (legal name, SIREN/SIRET, address, phone, their
+    // own identity, payout IBAN) — hosted onboarding then only asks
+    // for what Stripe still legally requires instead of re-asking it all.
     try {
+      // Stripe FR expects the 9-digit SIREN — a SIRET is SIREN + NIC.
+      const siren = (restaurant.siret || '').replace(/\D/g, '').slice(0, 9);
+      const nameParts = (owner?.name || '').trim().split(/\s+/);
       await stripe.accounts.update(accountId, {
         business_profile: {
           name: restaurant.name,
@@ -630,7 +634,7 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
         },
         company: {
           name: restaurant.name,
-          registration_number: restaurant.siret || undefined,
+          registration_number: siren || undefined,
           phone: restaurant.phone || undefined,
           address: restaurant.address
             ? {
@@ -640,7 +644,33 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
               }
             : undefined,
         },
+        individual: owner
+          ? {
+              first_name: nameParts[0] || undefined,
+              last_name: nameParts.length > 1 ? nameParts.slice(1).join(' ') : undefined,
+              email: owner.email,
+              phone: owner.phone || undefined,
+            }
+          : undefined,
       });
+
+      // Payout IBAN collected in-app → attach the bank account directly
+      // so the hosted flow can skip the bank-details step entirely.
+      const iban = (restaurant.managerIban || '').replace(/\s+/g, '').toUpperCase();
+      if (/^[A-Z]{2}\d{2}[0-9A-Z]{11,30}$/.test(iban)) {
+        try {
+          await stripe.accounts.createExternalAccount(accountId, {
+            external_account: {
+              object: 'bank_account',
+              country: iban.slice(0, 2),
+              currency: 'eur',
+              account_number: iban,
+            },
+          });
+        } catch (bankErr) {
+          console.warn('[Stripe] IBAN attach failed:', (bankErr as Error).message);
+        }
+      }
     } catch (prefillErr) {
       // Prefill is a convenience — never block onboarding on it.
       console.warn('[Stripe] Connect prefill failed:', (prefillErr as Error).message);
@@ -651,6 +681,12 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
       type: 'account_onboarding',
       refresh_url: env.stripeConnectRefreshUrl,
       return_url: env.stripeConnectReturnUrl,
+      // Only what's needed right now — no "you'll need this later"
+      // questions. Keeps the flow to identity + confirmation.
+      collection_options: {
+        fields: 'currently_due',
+        future_requirements: 'omit',
+      },
     });
 
     res.json({ url: accountLink.url, accountId });

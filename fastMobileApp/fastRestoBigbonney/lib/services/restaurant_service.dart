@@ -1,6 +1,14 @@
+import 'package:flutter/foundation.dart';
+
 import '../api/api_client.dart';
 import '../api/api_config.dart';
 import '../models.dart';
+
+// Runs on a background isolate — the restaurant list embeds every menu
+// and mapping it on the UI thread noticeably stalls the first frames.
+List<Restaurant> _restaurantsFromApi(List<dynamic> data) => data
+    .map((e) => Restaurant.fromApiJson(e as Map<String, dynamic>))
+    .toList();
 
 class RestaurantService {
   final ApiClient _api = ApiClient();
@@ -19,10 +27,7 @@ class RestaurantService {
       ApiConfig.restaurants,
       queryParams: params.isNotEmpty ? params : null,
     );
-    final list = (data as List<dynamic>)
-        .map((e) => Restaurant.fromApiJson(e as Map<String, dynamic>))
-        .toList();
-    return list;
+    return compute(_restaurantsFromApi, data as List<dynamic>);
   }
 
   Future<Restaurant> getRestaurant(String id) async {

@@ -33,7 +33,6 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
   final Map<String, GlobalKey> _chipKeys = {};
   List<String> _catOrder = [];
   String? _activeCat;
-  bool _showCatBar = false;
   DateTime _spyLockUntil = DateTime.fromMillisecondsSinceEpoch(0);
 
   static const double _barHeight = 46;
@@ -61,39 +60,22 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
   }
 
   void _onScroll() {
-    if (!_scroll.hasClients) return;
-    if (_catOrder.isEmpty) {
-      if (_showCatBar || _activeCat != null) {
-        setState(() {
-          _showCatBar = false;
-          _activeCat = null;
-        });
-      }
-      return;
-    }
+    if (!_scroll.hasClients || _catOrder.isEmpty) return;
     final threshold = _scroll.offset + _barTopInset + _barHeight + 12;
     String? active;
-    double firstDoc = double.nan;
     for (final cat in _catOrder) {
       final doc = _docOffsetOf(_catKeys[cat]!);
       if (doc.isNaN) continue;
-      if (firstDoc.isNaN) firstDoc = doc;
       if (doc <= threshold) active = cat;
     }
-    final show =
-        !firstDoc.isNaN &&
-        _scroll.offset >= firstDoc - _barTopInset - _barHeight;
-    final next = active ?? (_catOrder.isNotEmpty ? _catOrder.first : null);
+    final next = active ?? _catOrder.first;
     final catChanged = next != _activeCat;
     // While a chip tap animates the scroll, the tapped category owns the
     // highlight — the spy takes over again once it lands.
     final spyLocked = DateTime.now().isBefore(_spyLockUntil);
-    if (show != _showCatBar || (catChanged && !spyLocked)) {
-      setState(() {
-        _showCatBar = show;
-        if (!spyLocked) _activeCat = next;
-      });
-      if (catChanged && next != null && !spyLocked) _revealChip(next);
+    if (catChanged && !spyLocked) {
+      setState(() => _activeCat = next);
+      _revealChip(next);
     }
   }
 
@@ -181,41 +163,71 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
     );
   }
 
-  Widget _categoryBar(BuildContext context) {
-    final pad = MediaQuery.of(context).padding.top;
-    return Positioned(
-      top: 0,
-      left: 0,
-      right: 0,
-      child: IgnorePointer(
-        ignoring: !_showCatBar,
-        child: AnimatedSlide(
-          offset: _showCatBar ? Offset.zero : const Offset(0, -1.1),
-          duration: const Duration(milliseconds: 220),
-          curve: Curves.easeOutCubic,
-          child: AnimatedOpacity(
-            opacity: _showCatBar ? 1 : 0,
-            duration: const Duration(milliseconds: 160),
-            child: Container(
-              padding: EdgeInsets.fromLTRB(12, pad + 6, 12, 8),
-              decoration: BoxDecoration(
-                color: context.fast.bg.withValues(alpha: 0.94),
-                border: Border(
-                  bottom: BorderSide(color: context.fast.line),
+  /// The category bar lives inside the scroll flow — it sits right above
+  /// the menu and pins under the status bar once the menu reaches it.
+  /// [pinned] is true while it's stuck; the back arrow only appears then,
+  /// since the banner's own back button has scrolled away by that point.
+  Widget _catBarContent(BuildContext context, {required bool pinned}) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(12, _barTopInset, 12, 8),
+      decoration: BoxDecoration(
+        color: context.fast.bg,
+        border: Border(
+          bottom: BorderSide(
+            color: pinned ? context.fast.line : Colors.transparent,
+          ),
+        ),
+        boxShadow: pinned
+            ? [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
                 ),
-              ),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    for (final cat in _catOrder)
-                      _categoryChip(context, cat, cat == _activeCat),
-                  ],
+              ]
+            : null,
+      ),
+      child: Row(
+        children: [
+          if (pinned) ...[
+            GestureDetector(
+              onTap: () {
+                final provider = Provider.of<FASTProvider>(
+                  context,
+                  listen: false,
+                );
+                provider.selectRestaurant(null);
+                provider.navigateToScreen('home');
+              },
+              child: Container(
+                width: 34,
+                height: 34,
+                margin: const EdgeInsets.only(right: 8),
+                decoration: BoxDecoration(
+                  color: context.fast.card,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: context.fast.line),
+                ),
+                child: Icon(
+                  Icons.arrow_back,
+                  size: 16,
+                  color: context.fast.t1,
                 ),
               ),
             ),
+          ],
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  for (final cat in _catOrder)
+                    _categoryChip(context, cat, cat == _activeCat),
+                ],
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -229,11 +241,17 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
       return Center(child: Text(provider.tr('no_resto')));
     }
 
-    return Stack(
-      children: [
-        ListView(
-          controller: _scroll,
-      children: [
+    // Categories are computed up front — the pinned sliver needs to
+    // know whether the bar exists before the menu sections build.
+    final cats = _categoriesOf(rest);
+
+    return CustomScrollView(
+      controller: _scroll,
+      slivers: [
+        SliverToBoxAdapter(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
         // Restaurant Banner Header
         Stack(
           children: [
@@ -641,7 +659,24 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
             ),
           ),
         ),
+            ],
+          ),
+        ),
 
+        // Sticky category bar — pins at the top while the menu scrolls
+        if (cats.length > 1)
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _StickyCatBarDelegate(
+              height: _barTopInset + _barHeight,
+              builder: (ctx, pinned) => _catBarContent(ctx, pinned: pinned),
+            ),
+          ),
+
+        SliverToBoxAdapter(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
         // Menu — grouped under clean category sections
         if (rest.menu.isEmpty)
           Padding(
@@ -679,9 +714,9 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
           ),
         ],
         const SizedBox(height: 120),
-          ],
+            ],
+          ),
         ),
-        _categoryBar(context),
       ],
     );
   }
@@ -689,6 +724,36 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
   /// Group menu items under category headers, ordered by meal flow:
   /// starters → mains → desserts → drinks, custom labels alphabetically,
   /// uncategorized last.
+  /// Ordered category keys for this menu — computed once per build and
+  /// registered with the spy keys so the pinned bar can exist before the
+  /// lazily-built sections are laid out.
+  List<String> _categoriesOf(Restaurant rest) {
+    final keys = <String>{};
+    for (final item in rest.menu) {
+      keys.add(_normalizedCategory(item.category));
+    }
+    final ordered = keys.toList()
+      ..sort((a, b) {
+        final ia = _categoryOrder(a);
+        final ib = _categoryOrder(b);
+        if (ia != ib) return ia.compareTo(ib);
+        return a.compareTo(b);
+      });
+
+    _catOrder = ordered;
+    _activeCat ??= ordered.isNotEmpty ? ordered.first : null;
+    if (_activeCat != null && !ordered.contains(_activeCat)) {
+      _activeCat = ordered.isNotEmpty ? ordered.first : null;
+    }
+    for (final k in ordered) {
+      _catKeys.putIfAbsent(k, () => GlobalKey());
+      _chipKeys.putIfAbsent(k, () => GlobalKey());
+    }
+    _catKeys.removeWhere((k, _) => !ordered.contains(k));
+    _chipKeys.removeWhere((k, _) => !ordered.contains(k));
+    return ordered;
+  }
+
   List<Widget> _buildMenuSections(
     BuildContext context,
     FASTProvider provider,
@@ -700,23 +765,7 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
       groups.putIfAbsent(key, () => []).add(item);
     }
 
-    final keys = groups.keys.toList()
-      ..sort((a, b) {
-        final ia = _categoryOrder(a);
-        final ib = _categoryOrder(b);
-        if (ia != ib) return ia.compareTo(ib);
-        return a.compareTo(b);
-      });
-
-    // Register section keys + order for the sticky category bar.
-    _catOrder = keys;
-    for (final k in keys) {
-      _catKeys.putIfAbsent(k, () => GlobalKey());
-      _chipKeys.putIfAbsent(k, () => GlobalKey());
-    }
-    _catKeys.removeWhere((k, _) => !keys.contains(k));
-    _chipKeys.removeWhere((k, _) => !keys.contains(k));
-
+    final keys = _catOrder;
     return [
       for (final key in keys) ...[
         Padding(
@@ -1979,4 +2028,33 @@ class _ReviewSheetState extends State<_ReviewSheet> {
       ),
     );
   }
+}
+
+/// Pins the category bar to the top of the viewport while the menu
+/// sections scroll beneath it. `overlapsContent` tells the bar it's
+/// stuck — used to reveal the back button and drop shadow.
+class _StickyCatBarDelegate extends SliverPersistentHeaderDelegate {
+  _StickyCatBarDelegate({required this.height, required this.builder});
+
+  final double height;
+  final Widget Function(BuildContext context, bool pinned) builder;
+
+  @override
+  double get minExtent => height;
+
+  @override
+  double get maxExtent => height;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return SizedBox.expand(child: builder(context, overlapsContent));
+  }
+
+  @override
+  bool shouldRebuild(_StickyCatBarDelegate oldDelegate) =>
+      oldDelegate.height != height || oldDelegate.builder != builder;
 }
