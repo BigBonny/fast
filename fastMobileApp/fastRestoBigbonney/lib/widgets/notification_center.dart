@@ -2,7 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../models.dart';
 import '../provider.dart';
+import '../services/local_push_service.dart';
 import '../theme.dart';
 import '../l10n/tr.dart';
 
@@ -84,7 +86,19 @@ class NotificationCenterList extends StatelessWidget {
     final activeProvider = provider ?? Provider.of<FASTProvider>(context);
     final notifications = activeProvider.notifications;
 
-    if (notifications.isEmpty) {
+    return Column(
+      children: [
+        const _PushPermissionBanner(),
+        Expanded(
+          child: notifications.isEmpty
+              ? _buildEmpty(context)
+              : _buildList(context, activeProvider, notifications),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmpty(BuildContext context) {
       return Center(
         child: Padding(
           padding: EdgeInsets.all(24.0),
@@ -115,8 +129,13 @@ class NotificationCenterList extends StatelessWidget {
           ),
         ),
       );
-    }
+  }
 
+  Widget _buildList(
+    BuildContext context,
+    FASTProvider activeProvider,
+    List<PushNotification> notifications,
+  ) {
     return Column(
       children: [
         Expanded(
@@ -248,5 +267,107 @@ class NotificationCenterList extends StatelessWidget {
       default:
         return context.fast.t2; // Muted grey
     }
+  }
+}
+
+/// Shows an amber warning when the OS has notifications disabled for the
+/// app (the request dialog stops appearing after a denial — only the
+/// settings screen can fix it). When enabled, offers a self-test button.
+class _PushPermissionBanner extends StatefulWidget {
+  const _PushPermissionBanner();
+
+  @override
+  State<_PushPermissionBanner> createState() => _PushPermissionBannerState();
+}
+
+class _PushPermissionBannerState extends State<_PushPermissionBanner>
+    with WidgetsBindingObserver {
+  bool? _enabled;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _refresh();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _refresh();
+  }
+
+  Future<void> _refresh() async {
+    final enabled = await LocalPushService.instance.isEnabled();
+    if (mounted) setState(() => _enabled = enabled);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = _enabled;
+    if (enabled == null) return const SizedBox.shrink();
+    if (!enabled) {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF59E0B).withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: const Color(0xFFF59E0B).withValues(alpha: 0.4),
+          ),
+        ),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.notifications_off_outlined,
+              color: Color(0xFFF59E0B),
+              size: 18,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                tr(context, 'notif_off_banner'),
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: context.fast.t1,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () =>
+                  LocalPushService.instance.openSystemSettings(),
+              child: Text(
+                tr(context, 'notif_enable'),
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    return Align(
+      alignment: Alignment.centerRight,
+      child: TextButton.icon(
+        onPressed: () => LocalPushService.instance.show(
+          title: 'FAST',
+          body: tr(context, 'notif_test_body'),
+        ),
+        icon: const Icon(Icons.send_outlined, size: 14),
+        label: Text(
+          tr(context, 'notif_test_send'),
+          style: const TextStyle(fontSize: 11),
+        ),
+      ),
+    );
   }
 }

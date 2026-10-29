@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest_all.dart' as tzdata;
+import 'package:url_launcher/url_launcher.dart';
 
 /// System-level notifications shown by the app itself (no FCM needed):
 /// fired when a realtime socket event lands, or by the proximity watcher.
@@ -100,6 +101,45 @@ class LocalPushService {
             IOSFlutterLocalNotificationsPlugin
           >()
           ?.requestPermissions(alert: true, badge: true, sound: true);
+    } catch (_) {}
+  }
+
+  /// Whether the OS will actually display our notifications right now
+  /// (false after a denial — the request dialog won't show again).
+  Future<bool> isEnabled() async {
+    if (!_initialized || kIsWeb) return false;
+    try {
+      final androidImpl = _plugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
+      if (androidImpl != null) {
+        return (await androidImpl.areNotificationsEnabled()) ?? false;
+      }
+      final perms = await _plugin
+          .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin
+          >()
+          ?.checkPermissions();
+      return perms?.isEnabled ?? true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// After a denial the only fix is the system settings screen.
+  Future<void> openSystemSettings() async {
+    if (kIsWeb) return;
+    try {
+      final androidImpl = _plugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
+      if (androidImpl != null) {
+        await androidImpl.openAppNotificationSettings();
+        return;
+      }
+      await launchUrl(Uri.parse('app-settings:'));
     } catch (_) {}
   }
 

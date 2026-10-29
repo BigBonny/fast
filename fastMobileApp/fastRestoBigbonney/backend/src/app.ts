@@ -9,6 +9,7 @@ import { env } from './config/env';
 import { initSentry, Sentry } from './config/sentry';
 import { errorHandler } from './middleware/errorHandler';
 import uploadRoutes from './routes/uploads.routes';
+import usersRoutes from './routes/users.routes';
 import { uploadDir } from './controllers/uploads.controller';
 import authRoutes from './routes/auth.routes';
 import restaurantRoutes from './routes/restaurants.routes';
@@ -153,6 +154,7 @@ app.use('/api/staff', staffRoutes);
 app.use('/api/addresses', addressesRoutes);
 app.use('/api/reservations', reservationsRoutes);
 app.use('/api/uploads', uploadRoutes);
+app.use('/api/users', usersRoutes);
 
 // ─── Error Handler ──────────────────────────────────────────
 
