@@ -506,13 +506,13 @@ export default function Home() {
             {error ? (
               <div className="text-center py-16 px-5 rounded-2xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800">
                 <AlertTriangle className="w-12 h-12 text-amber-400 mx-auto mb-3" />
-                <p className="text-gray-700 dark:text-gray-300 text-sm font-bold mb-1">Impossible de charger les restaurants</p>
-                <p className="text-gray-400 text-xs mb-4">Vérifie ta connexion et réessaie.</p>
+                <p className="text-gray-700 dark:text-gray-300 text-sm font-bold mb-1">{t("load_error_title")}</p>
+                <p className="text-gray-400 text-xs mb-4">{t("load_error_body")}</p>
                 <button
                   onClick={() => queryClient.invalidateQueries({ queryKey: ["restaurants"] })}
                   className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white text-sm font-bold shadow-lg shadow-violet-200"
                 >
-                  Réessayer
+                  {t("retry_btn")}
                 </button>
               </div>
             ) : isLoading ? (
@@ -531,7 +531,7 @@ export default function Home() {
               <div className="text-center py-16 rounded-2xl bg-gray-50 dark:bg-gray-900 border border-dashed border-gray-200 dark:border-gray-700">
                 <SearchX className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
                 <p className="text-gray-500 dark:text-gray-400 text-sm font-semibold">{t("no_restos")}</p>
-                <p className="text-gray-400 text-xs mt-1">Essayez une autre recherche ou catégorie.</p>
+                <p className="text-gray-400 text-xs mt-1">{t("no_restos_hint")}</p>
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
