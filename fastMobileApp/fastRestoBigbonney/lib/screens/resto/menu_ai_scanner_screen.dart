@@ -41,6 +41,7 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
   Timer? _returnTimer;
 
   void _fail(Object error, {bool camera = false}) {
+    debugPrint('[Scanner] fail: $error');
     if (!mounted) return;
     final denied = error is CameraException && error.code.contains('Denied');
     final message = error is ApiException ? error.message
@@ -197,12 +198,21 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
       for (final fraction in [0.1, 0.25, 0.4, 0.55, 0.7, 0.85]) {
         if (!mounted) return;
         final ms = (durationMs * fraction).round();
-        final bytes = await vt.VideoThumbnail.thumbnailData(
+        // video_thumbnail returns null silently on some formats — retry
+        // at frame 0 with a smaller size before giving up on this sample.
+        var bytes = await vt.VideoThumbnail.thumbnailData(
           video: video.path,
           imageFormat: vt.ImageFormat.JPEG,
           timeMs: ms,
           quality: 85,
           maxWidth: 1600,
+        );
+        bytes ??= await vt.VideoThumbnail.thumbnailData(
+          video: video.path,
+          imageFormat: vt.ImageFormat.JPEG,
+          timeMs: 0,
+          quality: 70,
+          maxWidth: 1024,
         );
         if (!mounted) return;
         if (bytes != null && bytes.isNotEmpty) {
@@ -214,7 +224,9 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
       }
       if (frames.isEmpty) {
         if (!mounted) return;
-        throw Exception(tr(context, 'extract_fail'));
+        // ValidationException (an ApiException) so _fail shows THIS
+        // message instead of the generic scan_failed text.
+        throw ValidationException(tr(context, 'extract_fail'));
       }
       debugPrint('[Scanner] extracted ${frames.length} frames');
 
