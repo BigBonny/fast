@@ -36,13 +36,11 @@ class PushService {
 
     final messaging = FirebaseMessaging.instance;
     try {
-      // Fires on first registration and again whenever the registration
-      // rotates — always keep the backend copy fresh.
-      messaging.onRegistered.listen(_sendToken);
-      messaging.onUnregistered.listen((_) => _lastToken = null);
-
       await messaging.requestPermission(alert: true, badge: true, sound: true);
-      await messaging.register();
+      await _registerToken(messaging);
+
+      // Re-register whenever FCM rotates the token.
+      messaging.onTokenRefresh.listen((_) => _registerToken(messaging));
 
       // FCM does not show system UI while the app is in the foreground —
       // mirror the payload through the local channel so it still pops.
@@ -65,12 +63,13 @@ class PushService {
     _ready = false;
     _lastToken = null;
     try {
-      await FirebaseMessaging.instance.unregister();
+      await FirebaseMessaging.instance.deleteToken();
     } catch (_) {}
   }
 
-  Future<void> _sendToken(String token) async {
-    if (token.isEmpty || token == _lastToken) return;
+  Future<void> _registerToken(FirebaseMessaging messaging) async {
+    final token = await messaging.getToken();
+    if (token == null || token.isEmpty || token == _lastToken) return;
     try {
       await ApiClient().post(
         ApiConfig.fcmToken,
@@ -78,7 +77,7 @@ class PushService {
       );
       _lastToken = token;
     } catch (_) {
-      // Transient — the next registration/login retries.
+      // Transient — the next refresh/login retries.
     }
   }
 }
