@@ -154,7 +154,12 @@ export const placeOrderSchema = z.object({
     .max(500)
     .refine((v) => {
       try {
-        return new URL(v).origin === 'https://fast-enterprise.com';
+        const origin = new URL(v).origin;
+        return (
+          origin === 'https://fast-enterprise.com' ||
+          origin === 'https://www.fast-enterprise.com' ||
+          /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)
+        );
       } catch {
         return false;
       }
