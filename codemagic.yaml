@@ -112,6 +112,7 @@ workflows:
     artifacts:
       - "fastMobileApp/fastRestoBigbonney/build/ios/ipa/*.ipa"
       - "fastMobileApp/fastRestoBigbonney/build/ios/ipa/*.dSYM.zip"
+      - "/tmp/xcodebuild_logs/*.log"
     publishing:
       app_store_connect:
         api_key: $APP_STORE_CONNECT_PRIVATE_KEY
