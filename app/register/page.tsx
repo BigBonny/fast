@@ -6,6 +6,7 @@ import { m } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, Phone, Zap, Store, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/lib/AuthContext";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
 
 function RoleInitializer({ onRole }: { onRole: (role: "RESTAURANT") => void }) {
   const searchParams = useSearchParams();
@@ -19,7 +20,7 @@ function RoleInitializer({ onRole }: { onRole: (role: "RESTAURANT") => void }) {
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { register, isLoadingAuth } = useAuth();
+  const { register, googleLogin, isLoadingAuth } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -37,6 +38,17 @@ export default function RegisterPage() {
       router.replace(destination);
     } catch (err: any) {
       setError(err.message || "Erreur lors de l'inscription");
+    }
+  };
+
+  const handleGoogle = async (idToken: string) => {
+    setError("");
+    try {
+      const currentUser = await googleLogin(idToken, role);
+      const destination = currentUser?.role === "RESTAURANT" ? "/partner/onboarding" : "/";
+      router.replace(destination);
+    } catch (err: any) {
+      setError(err.message || "Connexion Google impossible. Réessayez.");
     }
   };
 
@@ -191,6 +203,18 @@ export default function RegisterPage() {
               {isLoadingAuth ? "Inscription..." : role === "RESTAURANT" ? "S'inscrire comme restaurateur" : "S'inscrire"}
             </m.button>
           </form>
+
+          <div className="my-5 flex items-center gap-3">
+            <div className="h-px flex-1 bg-white/10" />
+            <span className="text-xs font-bold text-gray-500 uppercase">ou</span>
+            <div className="h-px flex-1 bg-white/10" />
+          </div>
+
+          <GoogleSignInButton
+            disabled={isLoadingAuth}
+            onCredential={handleGoogle}
+            onError={() => setError("Connexion Google impossible. Réessayez.")}
+          />
 
           <div className="mt-6 text-center space-y-2">
             <p className="text-gray-400 text-sm">

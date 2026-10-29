@@ -7,10 +7,11 @@ import { Eye, EyeOff, Mail, Lock, ArrowLeft, Zap, Store } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/lib/AuthContext";
 import { useI18n } from "@/lib/i18n";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, isLoadingAuth } = useAuth();
+  const { login, googleLogin, isLoadingAuth } = useAuth();
   const { t } = useI18n();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,6 +27,17 @@ export default function LoginPage() {
       router.replace(destination);
     } catch (err: any) {
       setError(err.message || t("login_err"));
+    }
+  };
+
+  const handleGoogle = async (idToken: string) => {
+    setError("");
+    try {
+      const currentUser = await googleLogin(idToken);
+      const destination = currentUser?.role === "RESTAURANT" ? "/partner/orders" : "/";
+      router.replace(destination);
+    } catch (err: any) {
+      setError(err.message || t("google_err"));
     }
   };
 
@@ -137,6 +149,18 @@ export default function LoginPage() {
               {isLoadingAuth ? t("connecting") : t("login_submit")}
             </m.button>
           </form>
+
+          <div className="my-5 flex items-center gap-3">
+            <div className="h-px flex-1 bg-white/10" />
+            <span className="text-xs font-bold text-gray-500 uppercase">{t("or_divider")}</span>
+            <div className="h-px flex-1 bg-white/10" />
+          </div>
+
+          <GoogleSignInButton
+            disabled={isLoadingAuth}
+            onCredential={handleGoogle}
+            onError={() => setError(t("google_err"))}
+          />
 
           <div className="mt-6 text-center space-y-2">
             <p className="text-gray-400 text-sm">

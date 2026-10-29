@@ -6,7 +6,7 @@ import { ArrowLeft, Users, Plus, Link2, Copy, Check, PartyPopper, LogOut } from 
 import Link from "next/link";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { groupApi, getErrorMessage } from "@/api/fastBackend";
+import { groupApi, restaurantApi, getErrorMessage } from "@/api/fastBackend";
 import { useAuth } from "@/lib/AuthContext";
 
 export default function GroupOrderPage() {
@@ -14,6 +14,13 @@ export default function GroupOrderPage() {
   const queryClient = useQueryClient();
   const [copied, setCopied] = useState(false);
   const [joinCode, setJoinCode] = useState("");
+  const [createRestoId, setCreateRestoId] = useState("");
+
+  const { data: restaurants = [] } = useQuery({
+    queryKey: ["restaurants", "group-create"],
+    queryFn: () => restaurantApi.list(),
+    enabled: isAuthenticated,
+  });
 
   const { data: group, isLoading } = useQuery({
     queryKey: ["group", "mine"],
@@ -25,7 +32,7 @@ export default function GroupOrderPage() {
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["group", "mine"] });
 
   const createMutation = useMutation({
-    mutationFn: () => groupApi.create(),
+    mutationFn: () => groupApi.create({ restaurantId: createRestoId }),
     onSuccess: invalidate,
   });
 
@@ -92,6 +99,8 @@ export default function GroupOrderPage() {
                 <div>
                   <h3 className="font-bold text-gray-900 dark:text-white">Groupe actif</h3>
                   <p className="text-xs text-gray-400">
+                    {restaurants.find((r) => r.id === group.restaurantId)?.name || ""}
+                    {restaurants.find((r) => r.id === group.restaurantId) ? " • " : ""}
                     {group.members?.length || 0} personne{(group.members?.length || 0) > 1 ? "s" : ""} • En cours
                   </p>
                 </div>
@@ -155,10 +164,21 @@ export default function GroupOrderPage() {
               <p className="text-white/80 text-sm mb-4">
                 Créez un groupe et invitez vos amis à commander ensemble. Chacun choisit ce qu&apos;il veut !
               </p>
+              <select
+                value={createRestoId}
+                onChange={(e) => setCreateRestoId(e.target.value)}
+                aria-label="Restaurant du groupe"
+                className="w-full mb-3 h-12 px-4 rounded-xl bg-white/15 border border-white/25 text-white font-semibold text-sm outline-none focus:border-white/60 [&>option]:text-gray-900"
+              >
+                <option value="">Choisissez le restaurant…</option>
+                {restaurants.map((r) => (
+                  <option key={r.id} value={r.id}>{r.name}</option>
+                ))}
+              </select>
               <Button
                 className="w-full bg-white text-violet-600 font-bold hover:bg-white/90 rounded-xl h-12"
                 onClick={() => createMutation.mutate()}
-                disabled={createMutation.isPending}
+                disabled={createMutation.isPending || !createRestoId}
               >
                 <Plus className="w-5 h-5 mr-2" />
                 {createMutation.isPending ? "Création…" : "Créer un groupe"}

@@ -16,6 +16,7 @@ interface AuthContextType {
   isLoadingAuth: boolean;
   authError: AuthError | null;
   login: (email: string, password: string) => Promise<User>;
+  googleLogin: (idToken: string, role?: string) => Promise<User>;
   register: (data: RegisterPayload) => Promise<User>;
   logout: (shouldRedirect?: boolean) => Promise<void>;
   navigateToLogin: () => void;
@@ -90,6 +91,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
+  const googleLogin = useCallback(async (idToken: string, role?: string) => {
+    setAuthError(null);
+    setIsLoadingAuth(true);
+    try {
+      await authApi.google(idToken, role);
+      const currentUser = await authApi.me();
+      setUser(currentUser);
+      setIsAuthenticated(true);
+      return currentUser;
+    } finally {
+      setIsLoadingAuth(false);
+    }
+  }, []);
+
   const register = useCallback(async (data: RegisterPayload) => {
     setAuthError(null);
     setIsLoadingAuth(true);
@@ -139,6 +154,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         isLoadingAuth,
         authError,
         login,
+        googleLogin,
         register,
         logout,
         navigateToLogin,
