@@ -30,7 +30,7 @@ workflows:
       - name: Install dependencies
         script: |
           # SPM resolves sentry-cocoa too new for sentry_flutter's Swift code.
-          flutter config --no-enable-swift-package-manager
+          flutter config --enable-swift-package-manager
           flutter pub get
 
       - name: Install CocoaPods

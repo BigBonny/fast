@@ -99,21 +99,25 @@ Object? _scrubDeep(Object? v) {
 /// down to an opaque id, emails/JWTs anywhere they appear, auth headers,
 /// and the device IP.
 SentryEvent _scrubSentryEvent(SentryEvent event) {
-  return event.copyWith(
-    user: event.user?.id == null
-        ? null
-        : SentryUser(id: event.user!.id),
-    serverName: null,
-    breadcrumbs: event.breadcrumbs
-        ?.map(
-          (b) => b.copyWith(
-            message: b.message != null ? _scrub(b.message!) : null,
-            data: _scrubDeep(b.data) as Map<String, dynamic>?,
-          ),
-        )
-        .toList(),
-    request: event.request?.copyWith(
-      headers: event.request!.headers.map(
+  final user = event.user;
+  event.user = user?.id == null ? null : SentryUser(id: user!.id);
+  event.serverName = null;
+  event.breadcrumbs = event.breadcrumbs
+      ?.map(
+        (b) => b
+          ..message = b.message != null ? _scrub(b.message!) : null
+          ..data = _scrubDeep(b.data) as Map<String, dynamic>?,
+      )
+      .toList();
+  final request = event.request;
+  if (request != null) {
+    event.request = SentryRequest(
+      url: request.url,
+      method: request.method,
+      queryString: request.queryString,
+      fragment: request.fragment,
+      apiTarget: request.apiTarget,
+      headers: request.headers.map(
         (k, v) => MapEntry(
           k,
           RegExp('authorization|cookie|token', caseSensitive: false).hasMatch(k)
@@ -121,13 +125,9 @@ SentryEvent _scrubSentryEvent(SentryEvent event) {
               : _scrub(v),
         ),
       ),
-      data: null,
-      cookies: null,
-    ),
-    contexts: event.contexts.copyWith(
-      device: event.contexts.device?.copyWith(),
-    ),
-  );
+    );
+  }
+  return event;
 }
 
 class FASTApp extends StatefulWidget {
