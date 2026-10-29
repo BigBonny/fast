@@ -544,8 +544,22 @@ class FASTProvider extends ChangeNotifier {
     final push = LocalPushService.instance;
     final normalized = status.toUpperCase();
 
-    if (normalized == 'COMPLETED' || normalized == 'CANCELLED') {
+    if (normalized == 'COMPLETED') {
       unawaited(push.cancelReminderFor(orderId));
+      return;
+    }
+    if (normalized == 'CANCELLED') {
+      unawaited(push.cancelReminderFor(orderId));
+      final cancelled = _orders.where((o) => o.id == orderId);
+      unawaited(
+        push.show(
+          title: tr('notif_order_cancelled_title'),
+          body: tr('notif_order_cancelled_body').replaceAll(
+            '{n}',
+            cancelled.isEmpty ? '' : cancelled.first.restaurantName,
+          ),
+        ),
+      );
       return;
     }
     if (normalized != 'PREPARING' && normalized != 'READY_FOR_PICKUP') {
@@ -554,8 +568,23 @@ class FASTProvider extends ChangeNotifier {
 
     final matches = _orders.where((o) => o.id == orderId);
     final order = matches.isEmpty ? null : matches.first;
-    // ETA actions only make sense for pickup — deliveries come to you.
-    if (order != null && order.isDelivery) return;
+    // ETA actions only make sense for pickup — for deliveries a plain
+    // banner still tells the customer their order moved.
+    if (order != null && order.isDelivery) {
+      final ready = normalized == 'READY_FOR_PICKUP';
+      unawaited(
+        push.show(
+          title: tr(
+            ready ? 'notif_order_ready_title' : 'notif_order_preparing_title',
+          ),
+          body: tr(
+            ready ? 'notif_order_ready_body' : 'notif_order_preparing_body',
+          ).replaceAll('{n}', order.restaurantName),
+          payload: orderId,
+        ),
+      );
+      return;
+    }
 
     final ready = normalized == 'READY_FOR_PICKUP';
     unawaited(
