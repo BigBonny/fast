@@ -74,9 +74,9 @@ workflows:
       - name: Flutter build (no codesign)
         script: |
           cd "fastMobileApp/fastRestoBigbonney"
-          # SPM resolves sentry-cocoa at a version newer than sentry_flutter's
-          # Swift code supports (SentryBinaryImageCache.image removed). Several
-          # plugins don't support SPM at all — keep CocoaPods resolution.
+          # maplibre_ios registers only via SPM; sentry_flutter 10 pins its
+          # sentry-cocoa version exactly so resolution is safe. Non-SPM plugins
+          # still resolve through CocoaPods.
           flutter config --enable-swift-package-manager
           # Retry up to 3 times — CocoaPods CDN downloads can fail transiently
           for attempt in 1 2 3; do
