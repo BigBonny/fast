@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1088760934770",
+    "project_id": "fast-49d37",
+    "storage_bucket": "fast-49d37.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1088760934770:android:e6a3678b0cde91753fadeb",
+        "android_client_info": {
+          "package_name": "com.fast.resto.fast_resto_bigbonney"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDe0x8eRyFkY6Y6Kb5lKvpe_ljqhbe8kw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
