@@ -86,6 +86,7 @@ class ApiConfig {
   static const String phoneVerifyCode = '/auth/phone/verify';
 
   // Notifications
+  static const String fcmToken = '/users/me/fcm-token';
   static const String notifications = '/notifications';
   static const String readAll = '/notifications/read-all';
   static String readNotification(String id) => '/notifications/$id/read';

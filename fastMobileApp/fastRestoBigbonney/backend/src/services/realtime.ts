@@ -3,6 +3,7 @@ import { Server, Socket } from 'socket.io';
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env';
 import { prisma } from './prisma';
+import { sendPushToUser } from './push';
 
 interface AuthPayload {
   userId: string;
@@ -110,8 +111,21 @@ export function safeEmitOrderStatusToUser(
 }
 
 export function safeEmitNotificationToUser(userId: string, notification: unknown): void {
-  if (!io) return;
-  io.to(`user:${userId}`).emit('notification', notification);
+  if (io) {
+    io.to(`user:${userId}`).emit('notification', notification);
+  }
+  // Socket.IO cannot hold connections on the serverless (Vercel) deploy —
+  // FCM is what actually reaches the device there. Fire-and-forget so a
+  // push failure never breaks the request that created the notification.
+  const n = notification as { title?: string; body?: string; type?: string; orderId?: string } | null;
+  sendPushToUser(userId, {
+    title: n?.title,
+    body: n?.body,
+    data: {
+      type: n?.type ?? '',
+      ...(n?.orderId ? { orderId: n.orderId } : {}),
+    },
+  }).catch((err) => console.error('[FCM] send failed:', err));
 }
 
 export function emitOrderUpdate(userId: string, order: unknown): void {

@@ -19,6 +19,7 @@ import 'services/payment_service.dart';
 import 'services/local_push_service.dart';
 import 'services/proximity_service.dart';
 import 'services/realtime_service.dart';
+import 'services/push_service.dart';
 import 'api/api_exceptions.dart';
 import 'l10n/app_strings.dart';
 
@@ -143,6 +144,7 @@ class FASTProvider extends ChangeNotifier {
     _requestGeneration++;
     stopOrderPolling();
     RealtimeService.instance.disconnect();
+    unawaited(PushService.instance.unregister());
     ProximityService.instance.stop();
     _surpriseTimer?.cancel();
     _userId = '';
@@ -453,6 +455,7 @@ class FASTProvider extends ChangeNotifier {
     _restoreAccountCache(id);
     _loadFavorites();
     _startRealtime();
+    unawaited(PushService.instance.init());
     startOrderPolling();
   }
 
