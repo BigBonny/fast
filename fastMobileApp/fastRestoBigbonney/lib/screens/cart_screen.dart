@@ -297,7 +297,7 @@ class _CartScreenState extends State<CartScreen> {
                     // quantity adjustments
                     Container(
                       decoration: BoxDecoration(
-                        color: FASTBrand.onAmber,
+                        color: context.fast.cardHigh,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
@@ -307,23 +307,27 @@ class _CartScreenState extends State<CartScreen> {
                               item.menuItem.id,
                               item.quantity - 1,
                             ),
-                            child: const Padding(
-                              padding: EdgeInsets.symmetric(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
                                 horizontal: 10,
                                 vertical: 6,
                               ),
                               child: Text(
                                 '-',
-                                style: TextStyle(fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: context.fast.t1,
+                                ),
                               ),
                             ),
                           ),
                           Text(
                             '${item.quantity}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 12,
                               fontFamily: 'monospace',
+                              color: context.fast.t1,
                             ),
                           ),
                           GestureDetector(
@@ -331,14 +335,17 @@ class _CartScreenState extends State<CartScreen> {
                               item.menuItem.id,
                               item.quantity + 1,
                             ),
-                            child: const Padding(
-                              padding: EdgeInsets.symmetric(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
                                 horizontal: 10,
                                 vertical: 6,
                               ),
                               child: Text(
                                 '+',
-                                style: TextStyle(fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: context.fast.t1,
+                                ),
                               ),
                             ),
                           ),

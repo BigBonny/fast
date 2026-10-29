@@ -1410,7 +1410,7 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: FASTBrand.onAmber,
+                          color: context.fast.cardHigh,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: context.fast.line),
                         ),
@@ -1424,7 +1424,11 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
                                   });
                                 }
                               },
-                              icon: const Icon(Icons.remove, size: 16),
+                              icon: Icon(
+                                Icons.remove,
+                                size: 16,
+                                color: context.fast.t1,
+                              ),
                             ),
                             Text(
                               '$qty',
@@ -1440,7 +1444,11 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
                                   qty++;
                                 });
                               },
-                              icon: const Icon(Icons.add, size: 16),
+                              icon: Icon(
+                                Icons.add,
+                                size: 16,
+                                color: context.fast.t1,
+                              ),
                             ),
                           ],
                         ),

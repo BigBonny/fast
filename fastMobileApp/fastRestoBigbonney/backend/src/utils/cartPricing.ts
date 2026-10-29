@@ -43,12 +43,21 @@ export async function computeCartPricing(
     const selectedOptions = item.selectedOptions || [];
 
     let supplementTotal = 0;
-    for (const optId of selectedOptions) {
-      const supplement = supplementMap.get(optId);
-      if (!supplement) {
-        throw new Error('SUPPLEMENT_NOT_FOUND');
+    for (const opt of selectedOptions) {
+      // Paid extras arrive as supplement IDs. The app also merges free
+      // customisation labels ("Sans oignons") into selectedOptions — those
+      // aren't IDs, so match by name too and only bill real supplements.
+      const byId = supplementMap.get(opt);
+      if (byId) {
+        supplementTotal += byId.price;
+        continue;
       }
-      supplementTotal += supplement.price;
+      const byName = menuItem.supplements.find(
+        (s) => s.name.trim().toLowerCase() === opt.trim().toLowerCase(),
+      );
+      if (byName) {
+        supplementTotal += byName.price;
+      }
     }
 
     const unitPrice = menuItem.price + supplementTotal;
