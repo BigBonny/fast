@@ -159,6 +159,14 @@ export const authApi = {
     if (res?.token) setToken(res.token);
     return res;
   },
+  google: async (idToken: string, role?: string): Promise<AuthResponse> => {
+    const res = await apiFetch<AuthResponse>("/auth/google", {
+      method: "POST",
+      body: JSON.stringify({ idToken, role }),
+    });
+    if (res?.token) setToken(res.token);
+    return res;
+  },
   me: async (): Promise<User> => {
     return apiFetch<User>("/auth/me");
   },

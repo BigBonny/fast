@@ -6,14 +6,15 @@ import { usePathname } from "next/navigation";
 import { m } from "framer-motion";
 import { getCart, getCartCount } from "@/lib/localCart";
 import { useTheme } from "@/lib/useTheme";
+import { useI18n } from "@/lib/i18n";
 import { Home, ClipboardList, ShoppingCart, Users } from "lucide-react";
 import Navbar from "@/components/Navbar";
 
 const navItems = [
-  { name: "Accueil", path: "/", icon: Home, color: "#06b6d4" },
-  { name: "Commandes", path: "/orders", icon: ClipboardList, color: "#8b5cf6" },
-  { name: "Groupe", path: "/group-order", icon: Users, color: "#ec4899" },
-  { name: "Panier", path: "/cart", icon: ShoppingCart, color: "#10b981" },
+  { labelKey: "nav_home", path: "/", icon: Home, color: "#06b6d4" },
+  { labelKey: "nav_orders", path: "/orders", icon: ClipboardList, color: "#8b5cf6" },
+  { labelKey: "nav_group", path: "/group-order", icon: Users, color: "#ec4899" },
+  { labelKey: "nav_cart", path: "/cart", icon: ShoppingCart, color: "#10b981" },
 ];
 
 const hideNavPaths = ["/welcome", "/profile", "/login", "/register"];
@@ -25,6 +26,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   // Theme is owned by useTheme so the client and partner shells stay in sync.
   useTheme();
+  const { t } = useI18n();
 
   useEffect(() => {
     setMounted(true);
@@ -111,7 +113,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     className="text-[9px] font-bold transition-all duration-300 relative z-10"
                     style={{ color: isActive ? "#fff" : "rgba(255,255,255,0.55)" }}
                   >
-                    {item.name}
+                    {t(item.labelKey)}
                   </span>
 
                   {isActive && (

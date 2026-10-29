@@ -52,7 +52,7 @@ function OrderCompleteInner() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-5 bg-white dark:bg-gray-950">
         <Loader2 className="w-8 h-8 text-teal-500 animate-spin mb-4" />
-        <p className="text-gray-400 text-sm">Confirmation du paiement…</p>
+        <p className="text-gray-400 text-sm">{t("payment_confirming")}</p>
       </div>
     );
   }
@@ -80,12 +80,12 @@ function OrderCompleteInner() {
         <XCircle className="w-9 h-9 text-red-400" />
       </div>
       <h1 className="text-2xl font-black text-gray-900 dark:text-white mb-2">
-        {outcome === "cancel" ? "Paiement annulé" : t("order_fail")}
+        {outcome === "cancel" ? t("payment_cancelled") : t("order_fail")}
       </h1>
       <p className="text-gray-400 text-center mb-6">
         {outcome === "cancel"
-          ? "Votre panier est conservé — vous pouvez réessayer."
-          : error || "Si le montant a été débité, la commande apparaîtra sous peu."}
+          ? t("cart_kept")
+          : error || t("payment_failed_sub")}
       </p>
       <Link href="/cart">
         <Button variant="outline">{t("cart_title")}</Button>

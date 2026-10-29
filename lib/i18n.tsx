@@ -9,17 +9,12 @@ import React, {
   useState,
 } from "react";
 
+// Only locales with a real dictionary below are offered — same set as the app.
 export const LANGUAGES: { code: string; label: string }[] = [
   { code: "fr", label: "🇫🇷 Français" },
   { code: "en", label: "🇬🇧 English" },
   { code: "tr", label: "🇹🇷 Türkçe" },
   { code: "ar", label: "🇸🇦 العربية" },
-  { code: "hi", label: "🇮🇳 हिन्दी" },
-  { code: "bn", label: "🇧🇩 বাংলা" },
-  { code: "ur", label: "🇵🇰 اردو" },
-  { code: "bm", label: "🇲🇱 Bamanankan" },
-  { code: "wo", label: "🇸🇳 Wolof" },
-  { code: "ln", label: "🇨🇩 Lingála" },
   { code: "es", label: "🇪🇸 Español" },
   { code: "pt", label: "🇵🇹 Português" },
   { code: "it", label: "🇮🇹 Italiano" },
@@ -136,6 +131,17 @@ const fr: Dict = {
   order_btn: "Commander — {n} €",
   order_fail: "La commande n'a pas pu être envoyée.",
   confirm: "Confirmer",
+  nav_cart: "Panier",
+  cancel: "Annuler",
+  keep_rest: "Garder {n}",
+  order_note_lbl: "Note pour la commande",
+  payment_confirming: "Confirmation du paiement…",
+  payment_cancelled: "Paiement annulé",
+  cart_kept: "Votre panier est conservé — vous pouvez réessayer.",
+  payment_failed_sub: "Si le montant a été débité, la commande apparaîtra sous peu.",
+  google_continue: "Continuer avec Google",
+  google_err: "Connexion Google impossible.",
+  or_divider: "ou",
 };
 
 const en: Dict = {
@@ -243,6 +249,17 @@ const en: Dict = {
   order_btn: "Order — €{n}",
   order_fail: "The order could not be sent.",
   confirm: "Confirm",
+  nav_cart: "Cart",
+  cancel: "Cancel",
+  keep_rest: "Keep {n}",
+  order_note_lbl: "Note for the order",
+  payment_confirming: "Confirming payment…",
+  payment_cancelled: "Payment cancelled",
+  cart_kept: "Your cart is saved — you can try again.",
+  payment_failed_sub: "If the amount was charged, the order will appear shortly.",
+  google_continue: "Continue with Google",
+  google_err: "Google sign-in failed.",
+  or_divider: "or",
 };
 
 const tr_: Dict = {
@@ -350,6 +367,17 @@ const tr_: Dict = {
   order_btn: "Sipariş ver — {n} €",
   order_fail: "Sipariş gönderilemedi.",
   confirm: "Onayla",
+  nav_cart: "Sepet",
+  cancel: "İptal",
+  keep_rest: "{n} ile devam et",
+  order_note_lbl: "Sipariş için not",
+  payment_confirming: "Ödeme onaylanıyor…",
+  payment_cancelled: "Ödeme iptal edildi",
+  cart_kept: "Sepetiniz kaydedildi — tekrar deneyebilirsiniz.",
+  payment_failed_sub: "Tutar tahsil edildiyse sipariş kısa süre içinde görünecektir.",
+  google_continue: "Google ile devam et",
+  google_err: "Google ile giriş başarısız.",
+  or_divider: "veya",
 };
 
 const ar: Dict = {
@@ -456,6 +484,17 @@ const ar: Dict = {
   order_btn: "اطلب — {n} €",
   order_fail: "تعذر إرسال الطلب.",
   confirm: "تأكيد",
+  nav_cart: "السلة",
+  cancel: "إلغاء",
+  keep_rest: "الاحتفاظ بـ{n}",
+  order_note_lbl: "ملاحظة للطلب",
+  payment_confirming: "جاري تأكيد الدفع…",
+  payment_cancelled: "تم إلغاء الدفع",
+  cart_kept: "تم الاحتفاظ بسلتك — يمكنك المحاولة مرة أخرى.",
+  payment_failed_sub: "إذا تم خصم المبلغ، فسيظهر الطلب قريباً.",
+  google_continue: "المتابعة باستخدام Google",
+  google_err: "تعذر تسجيل الدخول عبر Google.",
+  or_divider: "أو",
 };
 
 const es: Dict = {
@@ -563,6 +602,17 @@ const es: Dict = {
   order_btn: "Pedir — {n} €",
   order_fail: "No se pudo enviar el pedido.",
   confirm: "Confirmar",
+  nav_cart: "Cesta",
+  cancel: "Cancelar",
+  keep_rest: "Quedarse con {n}",
+  order_note_lbl: "Nota para el pedido",
+  payment_confirming: "Confirmando el pago…",
+  payment_cancelled: "Pago cancelado",
+  cart_kept: "Tu cesta se ha guardado — puedes volver a intentarlo.",
+  payment_failed_sub: "Si se ha cargado el importe, el pedido aparecerá en breve.",
+  google_continue: "Continuar con Google",
+  google_err: "No se pudo iniciar sesión con Google.",
+  or_divider: "o",
 };
 
 const pt: Dict = {
@@ -670,6 +720,17 @@ const pt: Dict = {
   order_btn: "Pedir — {n} €",
   order_fail: "Não foi possível enviar o pedido.",
   confirm: "Confirmar",
+  nav_cart: "Carrinho",
+  cancel: "Cancelar",
+  keep_rest: "Manter {n}",
+  order_note_lbl: "Nota para o pedido",
+  payment_confirming: "A confirmar o pagamento…",
+  payment_cancelled: "Pagamento cancelado",
+  cart_kept: "O seu carrinho foi guardado — pode tentar novamente.",
+  payment_failed_sub: "Se o valor foi debitado, o pedido aparecerá em breve.",
+  google_continue: "Continuar com Google",
+  google_err: "Não foi possível iniciar sessão com o Google.",
+  or_divider: "ou",
 };
 
 const it: Dict = {
@@ -777,6 +838,17 @@ const it: Dict = {
   order_btn: "Ordina — {n} €",
   order_fail: "Impossibile inviare l'ordine.",
   confirm: "Conferma",
+  nav_cart: "Carrello",
+  cancel: "Annulla",
+  keep_rest: "Mantieni {n}",
+  order_note_lbl: "Nota per l'ordine",
+  payment_confirming: "Conferma del pagamento…",
+  payment_cancelled: "Pagamento annullato",
+  cart_kept: "Il carrello è stato salvato — puoi riprovare.",
+  payment_failed_sub: "Se l'importo è stato addebitato, l'ordine apparirà a breve.",
+  google_continue: "Continua con Google",
+  google_err: "Accesso con Google non riuscito.",
+  or_divider: "oppure",
 };
 
 const zh: Dict = {
@@ -882,6 +954,17 @@ const zh: Dict = {
   order_btn: "下单 — {n} €",
   order_fail: "订单发送失败。",
   confirm: "确认",
+  nav_cart: "购物车",
+  cancel: "取消",
+  keep_rest: "保留{n}",
+  order_note_lbl: "订单备注",
+  payment_confirming: "正在确认付款…",
+  payment_cancelled: "付款已取消",
+  cart_kept: "您的购物车已保留——您可以重试。",
+  payment_failed_sub: "如果已扣款，订单将很快显示。",
+  google_continue: "使用 Google 继续",
+  google_err: "Google 登录失败。",
+  or_divider: "或",
 };
 
 const DICTS: Record<string, Dict> = {

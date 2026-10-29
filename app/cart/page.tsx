@@ -18,13 +18,17 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { m, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import SafeImage from "@/components/SafeImage";
 import { useI18n } from "@/lib/i18n";
+import { useAuth } from "@/lib/AuthContext";
 
 const WALK_TIME_OPTIONS = [5, 10, 15, 20, 30];
 
 export default function CartPage() {
   const { t } = useI18n();
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
   const [notes, setNotes] = useState("");
   const [showCheckout, setShowCheckout] = useState(false);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -159,7 +163,7 @@ export default function CartPage() {
                       onClick={() => keepRestaurant(r.id)}
                       className="text-xs font-bold px-3 py-1.5 rounded-xl bg-white dark:bg-gray-900 border border-amber-200 dark:border-amber-500/30 text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-colors"
                     >
-                      Garder {r.name}
+                      {t("keep_rest", { n: r.name })}
                     </button>
                   ))}
                 </div>
@@ -242,7 +246,7 @@ export default function CartPage() {
                       onBlur={() => setEditingNotesFor(null)}
                       onKeyDown={(e) => e.key === "Enter" && setEditingNotesFor(null)}
                       placeholder={t("note_for", { n: item.name })}
-                      aria-label={`Note pour ${item.name}`}
+                      aria-label={t("note_for", { n: item.name })}
                       className="mt-2.5 w-full text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white outline-none focus:border-teal-400"
                     />
                   ) : (
@@ -262,7 +266,7 @@ export default function CartPage() {
           {/* Order-level notes */}
           <div className="px-5 mt-4 max-w-2xl mx-auto">
             <label htmlFor="order-notes" className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">
-              Note pour la commande
+              {t("order_note_lbl")}
             </label>
             <Textarea
               id="order-notes"
@@ -359,12 +363,18 @@ export default function CartPage() {
               )}
               <div className="flex gap-3">
                 <Button variant="outline" className="flex-1" onClick={() => setShowCheckout(false)}>
-                  Annuler
+                  {t("cancel")}
                 </Button>
                 <Button
                   className="flex-1 text-white"
                   style={{ background: "linear-gradient(135deg, #14b8a6, #06b6d4)" }}
-                  onClick={() => placeOrderMutation.mutate()}
+                  onClick={() => {
+                    if (!isAuthenticated) {
+                      router.push("/login");
+                      return;
+                    }
+                    placeOrderMutation.mutate();
+                  }}
                   disabled={placeOrderMutation.isPending}
                 >
                   {placeOrderMutation.isPending ? "..." : t("confirm")}
