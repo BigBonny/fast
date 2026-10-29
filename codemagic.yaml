@@ -77,7 +77,7 @@ workflows:
           # SPM resolves sentry-cocoa at a version newer than sentry_flutter's
           # Swift code supports (SentryBinaryImageCache.image removed). Several
           # plugins don't support SPM at all — keep CocoaPods resolution.
-          flutter config --no-enable-swift-package-manager
+          flutter config --enable-swift-package-manager
           # Retry up to 3 times — CocoaPods CDN downloads can fail transiently
           for attempt in 1 2 3; do
             echo "=== Build attempt $attempt ==="

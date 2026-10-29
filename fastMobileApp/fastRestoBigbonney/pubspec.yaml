@@ -41,7 +41,7 @@ dependencies:
   flutter_secure_storage: ^9.2.4
   http: ^1.2.0
   fl_chart: ^1.2.0
-  maplibre: ^0.3.3
+  maplibre: ^0.3.7
   latlong2: ^0.9.1
   geolocator: ^13.0.2
   geocoding: ^3.0.0
@@ -60,7 +60,7 @@ dependencies:
   socket_io_client: ^3.1.6
   timezone: ^0.11.2
   sign_in_with_apple: ^7.0.1
-  sentry_flutter: ^8.14.0
+  sentry_flutter: ^10.2.0
 
 dev_dependencies:
   flutter_test:
