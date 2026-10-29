@@ -693,9 +693,14 @@ export const generateDishPhoto = async (
   res.json({ imageUrl: pollinationsDishPhoto(prompt, safeName), source: 'pollinations' });
 };
 
-/// Batch fill — generates a photo for every menu item that still lacks
-/// one, so the whole menu gets visuals in one tap. Gemini is used for
-/// the first few (bounded cost/latency), Pollinations for the rest.
+/// Batch fill — assigns a photo for every menu item that still lacks
+/// one, so the whole menu gets visuals in one tap. Deliberately uses
+/// Pollinations only: it's a deterministic URL (zero generation latency,
+/// no rate limits), so 100 items fill in ~1 s. The previous flow tried
+/// Gemini's image model per item — sequential 45 s attempts made a full
+/// menu take minutes and blow past the client's 30 s timeout mid-batch,
+/// which looked "inconsistent" (half the items updated, half not).
+/// Owners can still regenerate a single dish via /ai-photo (Gemini path).
 export const generateMenuPhotos = async (
   req: Request,
   res: Response,
@@ -716,29 +721,25 @@ export const generateMenuPhotos = async (
     return;
   }
 
-  const geminiBudget = env.geminiApiKey ? 4 : 0;
   const results: { id: string; imageUrl: string; source: string }[] = [];
 
-  for (const [index, item] of items.entries()) {
-    const prompt = dishPhotoPrompt(
-      item.name.slice(0, 120),
-      (item.description ?? '').slice(0, 200),
-      (item.category ?? '').slice(0, 60),
-    );
-    let imageUrl: string | null = null;
-    let source = 'pollinations';
-    if (index < geminiBudget) {
-      imageUrl = await geminiGenerateImage(prompt);
-      if (imageUrl) source = 'gemini';
-    }
-    imageUrl ??= pollinationsDishPhoto(prompt, item.name);
-
-    await prisma.menuItem.update({
-      where: { id: item.id },
-      data: { image: imageUrl },
-    });
-    results.push({ id: item.id, imageUrl, source });
-  }
+  // Pollinations URLs are just strings — parallelize the DB writes
+  // rather than awaiting 100 sequential updates.
+  await Promise.all(
+    items.map(async (item) => {
+      const prompt = dishPhotoPrompt(
+        item.name.slice(0, 120),
+        (item.description ?? '').slice(0, 200),
+        (item.category ?? '').slice(0, 60),
+      );
+      const imageUrl = pollinationsDishPhoto(prompt, item.name);
+      await prisma.menuItem.update({
+        where: { id: item.id },
+        data: { image: imageUrl },
+      });
+      results.push({ id: item.id, imageUrl, source: 'pollinations' });
+    }),
+  );
 
   res.json({ updated: results.length, items: results });
 };
