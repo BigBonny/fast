@@ -29,7 +29,8 @@ workflows:
     scripts:
       - name: Install dependencies
         script: |
-          # SPM resolves sentry-cocoa too new for sentry_flutter's Swift code.
+          # maplibre_ios registers only via SPM; non-SPM plugins still
+          # resolve through CocoaPods.
           flutter config --enable-swift-package-manager
           flutter pub get
 
