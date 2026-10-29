@@ -115,6 +115,12 @@ class LocalPushService {
         ),
         iOS: DarwinNotificationDetails(
           categoryIdentifier: actions != null ? etaCategory : null,
+          // Without these, iOS swallows the notification whenever the app
+          // is in the foreground — the exact case for a kitchen iPad left
+          // open on the orders screen.
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
         ),
       );
 
