@@ -911,7 +911,63 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
             );
           },
         ),
+        const SizedBox(height: 8),
+        // App Store 5.1.1(v): accounts created in the app must be
+        // deletable from the app — Pro accounts included.
+        TextButton.icon(
+          onPressed: _confirmDeleteAccount,
+          icon: const Icon(Icons.delete_outline, color: Color(0xFFEF4444), size: 18),
+          label: Text(
+            tr(context, 'del_my_account'),
+            style: const TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.bold),
+          ),
+        ),
       ],
+    );
+  }
+
+  void _confirmDeleteAccount() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: context.fast.card,
+        title: Text(
+          tr(context, 'del_account_q'),
+          style: const TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.bold, fontSize: 14),
+        ),
+        content: Text(
+          tr(context, 'del_account_warn'),
+          style: TextStyle(color: context.fast.t2, fontSize: 12, height: 1.4),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(tr(context, 'cancel'), style: TextStyle(color: context.fast.t3)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final auth = context.read<AuthProvider>();
+              final deleted = await auth.deleteAccount();
+              if (!mounted || !ctx.mounted) return;
+              if (deleted) {
+                context.read<FASTProvider>().deleteAccount();
+                Navigator.of(ctx).pop();
+                Navigator.of(context).popUntil((route) => route.isFirst);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(auth.error ?? tr(context, 'del_fail'))),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+              foregroundColor: Colors.white,
+              elevation: 0,
+            ),
+            child: Text(tr(context, 'del'), style: const TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
     );
   }
 
