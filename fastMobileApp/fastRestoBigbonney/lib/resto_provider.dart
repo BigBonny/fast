@@ -251,6 +251,16 @@ class RestoProvider extends ChangeNotifier {
     return applied;
   }
 
+  /// Replaces an item already in the loaded menu (e.g. after attaching
+  /// supplements to a freshly created dish).
+  void replaceMenuItem(MenuItem item) {
+    final idx = _menu.indexWhere((m) => m.id == item.id);
+    if (idx != -1) {
+      _menu[idx] = item;
+      notifyListeners();
+    }
+  }
+
   Future<bool> deleteMenuItem(String id) async {
     try {
       await _menuService.deleteItem(id);

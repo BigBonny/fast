@@ -104,12 +104,13 @@ export const verifyPickupSchema = z.object({
 
 // ─── Menu ───────────────────────────────────────────────────
 
-export const createMenuItemSchema = z.object({
+export const menuItemBaseSchema = z.object({
   name: z.string().min(1, 'Nom requis').max(200, 'Nom trop long'),
   description: z.string().max(2000).optional(),
-  // `price` is the restaurateur's BASE price — the FAST markup is applied
-  // server-side; `basePrice` may be sent explicitly (same semantics).
-  price: z.number().positive('Prix doit être positif').max(9999.99, 'Prix trop élevé'),
+  // `price`/`basePrice` are the restaurateur's BASE price — the FAST
+  // markup is applied server-side; either spelling carries the same
+  // semantics, so both are optional and create refines below.
+  price: z.number().positive('Prix doit être positif').max(9999.99, 'Prix trop élevé').optional(),
   basePrice: z.number().positive().max(9999.99).optional(),
   originalPrice: z.number().positive().max(9999.99).optional(),
   // Accepts https URL or data:image/*;base64 uploads (≈4 MB max)
@@ -117,6 +118,7 @@ export const createMenuItemSchema = z.object({
   // Story/preview video URL (hosted video, e.g. mp4)
   videoUrl: z.string().max(2000).optional(),
   category: z.string().max(50).optional(),
+  isAvailable: z.boolean().optional(),
   isPlatDuJour: z.boolean().optional(),
   isSpecialOffer: z.boolean().optional(),
   specialOfferLabel: z.string().max(100).optional(),
@@ -125,9 +127,12 @@ export const createMenuItemSchema = z.object({
   dietaryTags: z.array(z.nativeEnum({ VEGAN: 'VEGAN', VEGETARIAN: 'VEGETARIAN', GLUTEN_FREE: 'GLUTEN_FREE', HALAL: 'HALAL', KETO: 'KETO', DAIRY_FREE: 'DAIRY_FREE' })).optional(),
 });
 
-export const updateMenuItemSchema = createMenuItemSchema.extend({
-  isAvailable: z.boolean().optional(),
-}).partial();
+export const createMenuItemSchema = menuItemBaseSchema.refine(
+  (data) => data.price != null || data.basePrice != null,
+  { message: 'Prix requis', path: ['price'] },
+);
+
+export const updateMenuItemSchema = menuItemBaseSchema.partial();
 
 // ─── Order ──────────────────────────────────────────────────
 

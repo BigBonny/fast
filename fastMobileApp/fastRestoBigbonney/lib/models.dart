@@ -21,21 +21,26 @@ String? strOrNull(dynamic v) {
 }
 
 enum DietaryPreference {
-  vegan('Végétalien'),
-  vegetarian('Végétarien'),
-  glutenFree('Sans Gluten'),
-  halal('Halal'),
-  keto('Céto'),
-  dairyFree('Sans Lactose');
+  vegan('Végétalien', 'VEGAN'),
+  vegetarian('Végétarien', 'VEGETARIAN'),
+  glutenFree('Sans Gluten', 'GLUTEN_FREE'),
+  halal('Halal', 'HALAL'),
+  keto('Céto', 'KETO'),
+  dairyFree('Sans Lactose', 'DAIRY_FREE');
 
   final String label;
-  const DietaryPreference(this.label);
+  /// Exact backend enum value — `name.toUpperCase()` produced
+  /// "GLUTENFREE"/"DAIRYFREE" which the API rejects.
+  final String apiValue;
+  const DietaryPreference(this.label, this.apiValue);
 
   static DietaryPreference fromString(String value) {
+    final normalized = value.toLowerCase().replaceAll('_', '');
     return DietaryPreference.values.firstWhere(
       (e) =>
           e.label.toLowerCase() == value.toLowerCase() ||
-          e.name.toLowerCase() == value.toLowerCase(),
+          e.apiValue.toLowerCase() == value.toLowerCase() ||
+          e.name.toLowerCase() == normalized,
       orElse: () => DietaryPreference.vegan,
     );
   }
@@ -59,6 +64,19 @@ double computeFastPrice(double basePrice) {
                           ? 0.01
                           : 0.005;
   return (basePrice * (1 + rate) * 100).roundToDouble() / 100;
+}
+
+/// Locale-safe amount parsing: French keyboards emit `,` for decimals
+/// and users may include `€`/spaces — normalize before parsing so
+/// "12,50" works like "12.50" instead of failing validation.
+double? parseAmount(String input) {
+  final cleaned = input
+      .trim()
+      .replaceAll('€', '')
+      .replaceAll(RegExp(r'[\s  ]'), '')
+      .replaceAll(',', '.');
+  if (cleaned.isEmpty) return null;
+  return double.tryParse(cleaned);
 }
 
 class MenuItem {
@@ -104,6 +122,7 @@ class MenuItem {
     String? category,
     List<DietaryPreference>? dietaryTags,
     bool? available,
+    List<MenuItemSupplement>? supplements,
   }) => MenuItem(
     id: id,
     name: name ?? this.name,
@@ -114,7 +133,7 @@ class MenuItem {
     dietaryTags: dietaryTags ?? this.dietaryTags,
     rating: rating,
     available: available ?? this.available,
-    supplements: supplements,
+    supplements: supplements ?? this.supplements,
     prepTime: prepTime,
     prepTimeRush: prepTimeRush,
     videoUrl: videoUrl,

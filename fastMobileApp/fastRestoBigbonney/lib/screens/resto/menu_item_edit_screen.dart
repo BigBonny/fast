@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../models.dart';
@@ -453,14 +454,15 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
     final body = {
       'name': _name.text.trim(),
       'description': _description.text.trim(),
-      'basePrice': double.parse(_price.text.trim()),
+      // Backend treats this as the BASE price and applies the FAST markup.
+      'basePrice': parseAmount(_price.text) ?? 0,
       'image': _image.text.trim(),
       'category': _category.text.trim(),
-      'prepTime': int.tryParse(_prepTime.text.trim()) ?? 0,
-      'prepTimeRush': int.tryParse(_prepTimeRush.text.trim()) ?? 0,
+      'prepTime': (int.tryParse(_prepTime.text.trim()) ?? 0).clamp(0, 120),
+      'prepTimeRush': (int.tryParse(_prepTimeRush.text.trim()) ?? 0).clamp(0, 120),
       'videoUrl': _videoUrl.text.trim(),
-      'available': _available,
-      'dietaryTags': _dietary.map((d) => d.name.toUpperCase()).toList(),
+      'isAvailable': _available,
+      'dietaryTags': _dietary.map((d) => d.apiValue).toList(),
     };
 
     bool ok;
@@ -469,6 +471,23 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
     } else {
       final item = await provider.addMenuItem(body);
       ok = item != null;
+      if (item != null && _supplements.isNotEmpty) {
+        // Create mode keeps supplements local until the dish exists —
+        // persist them now that it has an id.
+        final created = <MenuItemSupplement>[];
+        for (final s in _supplements) {
+          try {
+            created.add(
+              await MenuService().addSupplement(item.id, s.name, s.price),
+            );
+          } catch (_) {}
+        }
+        if (created.isNotEmpty) {
+          provider.replaceMenuItem(
+            item.copyWith(supplements: [...item.supplements, ...created]),
+          );
+        }
+      }
     }
 
     if (!mounted) return;
@@ -552,7 +571,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
             _dialogField(
               tr(context, 'price_lbl'),
               priceCtrl,
-              keyboard: TextInputType.number,
+              keyboard: const TextInputType.numberWithOptions(decimal: true),
             ),
           ],
         ),
@@ -567,8 +586,8 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
           TextButton(
             onPressed: () async {
               final n = nameCtrl.text.trim();
-              final p = double.tryParse(priceCtrl.text.trim());
-              if (n.isEmpty || p == null) return;
+              final p = parseAmount(priceCtrl.text);
+              if (n.isEmpty || p == null || p < 0) return;
               Navigator.pop(ctx);
 
               final svc = MenuService();
@@ -685,6 +704,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
               controller: _name,
               label: tr(context, 'dish_name_lbl'),
               icon: Icons.restaurant_menu,
+              maxLength: 200,
               validator: (v) => v == null || v.trim().isEmpty
                   ? tr(context, 'required_f')
                   : null,
@@ -695,6 +715,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
               label: tr(context, 'description'),
               icon: Icons.notes,
               maxLines: 3,
+              maxLength: 2000,
             ),
             // F06 — AI proposes a description the owner reviews before
             // saving; nothing is applied automatically.
@@ -731,12 +752,15 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                     controller: _price,
                     label: tr(context, 'price_lbl'),
                     icon: Icons.euro,
-                    keyboard: TextInputType.number,
+                    keyboard: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     validator: (v) {
                       if (v == null || v.trim().isEmpty) {
                         return tr(context, 'required_f');
                       }
-                      if (double.tryParse(v.trim()) == null) {
+                      final amount = parseAmount(v);
+                      if (amount == null || amount <= 0) {
                         return tr(context, 'invalid_f');
                       }
                       return null;
@@ -749,6 +773,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                     controller: _category,
                     label: tr(context, 'category_lbl'),
                     icon: Icons.category_outlined,
+                    maxLength: 50,
                     validator: (v) => v == null || v.trim().isEmpty
                         ? tr(context, 'required_f')
                         : null,
@@ -761,7 +786,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
             ValueListenableBuilder<TextEditingValue>(
               valueListenable: _price,
               builder: (context, value, _) {
-                final base = double.tryParse(value.text.trim());
+                final base = parseAmount(value.text);
                 if (base == null || base <= 0) {
                   return const SizedBox.shrink();
                 }
@@ -1095,6 +1120,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
     required IconData icon,
     TextInputType? keyboard,
     int maxLines = 1,
+    int? maxLength,
     String? Function(String?)? validator,
   }) {
     return TextFormField(
@@ -1102,6 +1128,9 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
       keyboardType: keyboard,
       maxLines: maxLines,
       validator: validator,
+      inputFormatters: maxLength != null
+          ? [LengthLimitingTextInputFormatter(maxLength)]
+          : null,
       style: TextStyle(color: context.fast.t1, fontSize: 15),
       decoration: InputDecoration(
         labelText: label,
