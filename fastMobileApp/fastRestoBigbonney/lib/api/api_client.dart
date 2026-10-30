@@ -87,7 +87,11 @@ class ApiClient {
     return _handleResponse(response);
   }
 
-  Future<dynamic> post(String endpoint, {Map<String, dynamic>? body}) async {
+  Future<dynamic> post(
+    String endpoint, {
+    Map<String, dynamic>? body,
+    Duration? timeout,
+  }) async {
     final uri = Uri.parse('${ApiConfig.baseUrl}$endpoint');
     final response = await _guard(
       () => http
@@ -96,7 +100,7 @@ class ApiClient {
             headers: _headers,
             body: body != null ? json.encode(body) : null,
           )
-          .timeout(ApiConfig.timeout),
+          .timeout(timeout ?? ApiConfig.timeout),
     );
     return _handleResponse(response);
   }
