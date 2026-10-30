@@ -170,6 +170,13 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   });
 };
 
+// Social sign-up may only self-assign the roles email registration allows
+// (registerSchema) — never ADMIN/STAFF/GUEST from a client-supplied body.
+const SELF_SERVICE_ROLES = ['CLIENT', 'RESTAURANT', 'LIVREUR'] as const;
+export function selfServiceRole(role: unknown): (typeof SELF_SERVICE_ROLES)[number] {
+  return SELF_SERVICE_ROLES.find((r) => r === role) ?? 'CLIENT';
+}
+
 export const googleLogin = async (req: Request, res: Response): Promise<void> => {
   const { idToken, role } = req.body as { idToken?: string; role?: string };
   if (!idToken || typeof idToken !== 'string') {
@@ -211,7 +218,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<void> =>
         email: googleEmail,
         name: payload.name?.trim() || googleEmail.split('@')[0],
         password: await bcrypt.hash(`google-${payload.sub}-${Date.now()}`, env.bcryptRounds),
-        role: (role as never) || 'CLIENT',
+        role: selfServiceRole(role),
       },
       include: userWithLinks,
     });
@@ -293,7 +300,7 @@ export const appleLogin = async (req: Request, res: Response): Promise<void> => 
             `apple-${payload.sub}-${Date.now()}`,
             env.bcryptRounds,
           ),
-          role: (role as never) || 'CLIENT',
+          role: selfServiceRole(role),
         },
         include: userWithLinks,
       });
