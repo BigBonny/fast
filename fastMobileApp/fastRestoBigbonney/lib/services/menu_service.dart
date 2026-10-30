@@ -58,11 +58,18 @@ class MenuService {
     );
   }
 
-  /// One tap: AI photos for every dish still missing one. Returns how
-  /// many images were generated and saved.
-  Future<int> generateMenuPhotos(String restaurantId) async {
+  /// One tap: AI photos for every dish still missing one. Returns the
+  /// generated image URL keyed by item id so the caller can patch the
+  /// local menu in place — a full refetch would also resurrect rows
+  /// deleted earlier in the session before `deletedAt` existed.
+  Future<Map<String, String>> generateMenuPhotos(String restaurantId) async {
     final data = await _api.post(ApiConfig.menuAiPhotos(restaurantId));
-    return (data as Map<String, dynamic>)['updated'] as int? ?? 0;
+    final items =
+        (data as Map<String, dynamic>)['items'] as List<dynamic>? ?? const [];
+    return {
+      for (final e in items)
+        (e as Map<String, dynamic>)['id'] as String: e['imageUrl'] as String,
+    };
   }
 
   Future<void> deleteItem(String id) async {

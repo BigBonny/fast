@@ -37,8 +37,8 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
     }
     setState(() => _generatingPhotos = true);
     try {
-      final updated = await MenuService().generateMenuPhotos(restaurantId);
-      await prov.loadMenu();
+      final photos = await MenuService().generateMenuPhotos(restaurantId);
+      final updated = prov.applyMenuPhotos(photos);
       if (!context.mounted) return;
       messenger.showSnackBar(
         SnackBar(
