@@ -237,6 +237,20 @@ class RestoProvider extends ChangeNotifier {
     }
   }
 
+  /// Applies backend-generated photo URLs in place. Faster than a menu
+  /// refetch and cannot resurrect items deleted earlier in the session.
+  int applyMenuPhotos(Map<String, String> photos) {
+    var applied = 0;
+    for (var i = 0; i < _menu.length; i++) {
+      final url = photos[_menu[i].id];
+      if (url == null) continue;
+      _menu[i] = _menu[i].copyWith(image: url);
+      applied++;
+    }
+    if (applied > 0) notifyListeners();
+    return applied;
+  }
+
   Future<bool> deleteMenuItem(String id) async {
     try {
       await _menuService.deleteItem(id);

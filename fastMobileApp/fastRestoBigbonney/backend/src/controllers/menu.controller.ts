@@ -15,7 +15,7 @@ export const listMenuItems = async (req: Request, res: Response): Promise<void> 
   const restaurantId = req.params.restaurantId as string;
 
   const items = await prisma.menuItem.findMany({
-    where: { restaurantId, isAvailable: true },
+    where: { restaurantId, isAvailable: true, deletedAt: null },
     include: { dietaryTags: true, supplements: true },
     orderBy: { category: 'asc' },
   });
@@ -30,7 +30,7 @@ export const listManagedMenuItems = async (req: Request, res: Response): Promise
     return;
   }
   const items = await prisma.menuItem.findMany({
-    where: { restaurantId },
+    where: { restaurantId, deletedAt: null },
     include: { dietaryTags: true, supplements: true },
     orderBy: [{ category: 'asc' }, { name: 'asc' }],
   });
@@ -135,7 +135,13 @@ export const deleteMenuItem = async (req: Request, res: Response): Promise<void>
     return;
   }
 
-  await prisma.menuItem.update({ where: { id }, data: { isAvailable: false } });
+  // Soft delete via deletedAt — a real DELETE would break CartItem rows
+  // in order history (FK has no cascade). isAvailable: false alone leaked
+  // the dish back into the owner's menu as "sold out".
+  await prisma.menuItem.update({
+    where: { id },
+    data: { deletedAt: new Date(), isAvailable: false },
+  });
   res.json({ message: 'Article supprimé' });
 };
 
@@ -641,7 +647,9 @@ function pollinationsDishPhoto(prompt: string, seedSource: string): string {
     height: '600',
     seed: String(Math.abs(seed)),
     nologo: 'true',
-    model: 'flux',
+    // turbo generates in seconds vs ~30 s for flux — the URL is rendered
+    // on first load, so model latency is the visible "Photos IA" wait.
+    model: 'turbo',
   });
   return `https://image.pollinations.ai/prompt/${encodeURIComponent(
     prompt,
@@ -712,7 +720,7 @@ export const generateMenuPhotos = async (
   }
 
   const items = await prisma.menuItem.findMany({
-    where: { restaurantId, image: '' },
+    where: { restaurantId, image: '', deletedAt: null },
     select: { id: true, name: true, description: true, category: true },
     take: 100,
   });

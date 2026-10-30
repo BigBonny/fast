@@ -292,6 +292,7 @@ model MenuItem {
   category         String   @default("")
   rating           Float    @default(0.0)
   isAvailable      Boolean  @default(true)
+  deletedAt        DateTime? // set instead of hard delete — CartItem rows keep referencing the dish for order history
   isPlatDuJour     Boolean  @default(false)
   isSpecialOffer   Boolean  @default(false)
   specialOfferLabel String  @default("")
