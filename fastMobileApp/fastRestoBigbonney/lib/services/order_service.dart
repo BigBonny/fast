@@ -57,12 +57,14 @@ class OrderService {
     String orderId,
     String status, {
     int? prepTimeMinutes,
+    bool? isBilledAnyway,
   }) async {
     final data = await _api.patch(
       ApiConfig.updateOrderStatus(orderId),
       body: {
         'status': status,
         if (prepTimeMinutes != null) 'prepTimeMinutes': prepTimeMinutes,
+        if (isBilledAnyway != null) 'isBilledAnyway': isBilledAnyway,
       },
     );
     return Order.fromApiJson(data as Map<String, dynamic>);

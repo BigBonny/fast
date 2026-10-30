@@ -90,7 +90,11 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
 
   Future<void> _cancelOrder(Order order, bool billAnyway) async {
     try {
-      await _orderService.updateOrderStatus(order.id, 'CANCELLED');
+      await _orderService.updateOrderStatus(
+        order.id,
+        'CANCELLED',
+        isBilledAnyway: billAnyway,
+      );
       if (!mounted) return;
       order.status = OrderStatus.cancelled;
       order.isBilledAnyway = billAnyway;
