@@ -41,7 +41,8 @@ android {
         applicationId = "com.fast.resto.fast_resto_bigbonney"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        // 26 is the floor imposed by sentry_flutter (Android 8.0, ~99% of devices).
+        minSdk = 26
         targetSdk = 35
         versionCode = flutter.versionCode
         versionName = flutter.versionName
