@@ -1,4 +1,4 @@
-import { createMenuItemSchema } from './validation';
+import { menuItemBaseSchema } from './validation';
 
 export interface ScannedMenuItem {
   name: string;
@@ -7,7 +7,7 @@ export interface ScannedMenuItem {
   description: string;
 }
 
-const schema = createMenuItemSchema.pick({ name: true, price: true, category: true, description: true });
+const schema = menuItemBaseSchema.pick({ name: true, price: true, category: true, description: true }).required({ price: true });
 
 export function normalizeOcrItems(raw: unknown): ScannedMenuItem[] {
   if (!Array.isArray(raw)) throw new Error('Invalid OCR item list');

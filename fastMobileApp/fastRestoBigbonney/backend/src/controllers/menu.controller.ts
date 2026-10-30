@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { prisma } from '../services/prisma';
-import { createMenuItemSchema, updateMenuItemSchema } from '../utils/validation';
+import { createMenuItemSchema, updateMenuItemSchema, menuItemBaseSchema } from '../utils/validation';
 import { resolveFastPricing } from '../utils/fastPricing';
 import { env } from '../config/env';
 import { getRestaurantIdForUser } from '../middleware/auth';
@@ -458,7 +458,7 @@ export const scanMenu = async (req: Request, res: Response): Promise<void> => {
   }
 
   // Sanitize and bound-check OCR output before writing to DB
-  const ocr_item_schema = createMenuItemSchema.pick({ name: true, price: true, category: true, description: true });
+  const ocr_item_schema = menuItemBaseSchema.pick({ name: true, price: true, category: true, description: true }).required({ price: true });
   const validItems = parsedItems.reduce<Array<{ name: string; price: number; category: string; description: string }>>((acc, item) => {
     const result = ocr_item_schema.safeParse(item);
     if (result.success) acc.push(result.data as { name: string; price: number; category: string; description: string });
