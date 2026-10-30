@@ -148,7 +148,7 @@ function RestaurantContent({ restaurantId }: { restaurantId: string }) {
                 <p className="text-xs text-gray-400 mt-1">{restaurant.description}</p>
               )}
             </div>
-            {restaurant.rating && (
+            {!!restaurant.rating && (
               <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-500/10 px-2 py-1 rounded-lg">
                 <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
                 <span className="text-sm font-bold text-amber-700 dark:text-amber-400">{restaurant.rating}</span>
