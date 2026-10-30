@@ -47,7 +47,7 @@ function MenuItemCard({ item, onAdd }: MenuItemCardProps) {
           <h4 className="font-semibold text-sm text-gray-900 dark:text-white truncate">
             {item.name}
           </h4>
-          {(item.isPopular || (item.rating && item.rating >= 4.5)) && (
+          {(item.isPopular || (item.rating ?? 0) >= 4.5) && (
             <Flame className="w-3.5 h-3.5 text-orange-400 flex-shrink-0" />
           )}
         </div>
