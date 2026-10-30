@@ -170,6 +170,9 @@ export const placeOrderSchema = z.object({
       }
     })
     .optional(),
+  // Native in-app payment: return a PaymentIntent for PaymentSheet
+  // instead of a hosted Checkout Session URL.
+  usePaymentSheet: z.boolean().optional(),
 }).superRefine((data, ctx) => {
   if (data.fulfillmentType === 'DELIVERY') {
     if (!data.deliveryAddress?.trim()) {

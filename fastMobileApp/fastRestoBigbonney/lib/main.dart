@@ -220,9 +220,25 @@ class _FASTAppState extends State<FASTApp> with WidgetsBindingObserver {
   }
 
   Future<void> _handleStripeReturn() async {
+    final pendingIntent = await FASTProvider.loadPendingStripeIntent();
+    if (pendingIntent != null && pendingIntent.isNotEmpty) {
+      await _confirmStripeIntent(pendingIntent);
+      return;
+    }
     final pending = await FASTProvider.loadPendingStripeSession();
     if (pending != null && pending.isNotEmpty) {
       await _confirmStripeSession(pending);
+    }
+  }
+
+  Future<void> _confirmStripeIntent(String intentId) async {
+    if (!mounted) return;
+    final auth = context.read<AuthProvider>();
+    if (!auth.isLoggedIn || auth.isRestaurant || auth.isLivreur) return;
+    final fastProv = context.read<FASTProvider>();
+    final ok = await fastProv.confirmStripeIntent(intentId);
+    if (ok && mounted) {
+      fastProv.navigateToScreen('commandes');
     }
   }
 

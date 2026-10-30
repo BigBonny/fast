@@ -52,9 +52,12 @@ class ApiConfig {
   static String orderDelivery(String orderId) => '/deliveries/order/$orderId';
 
   // Payments
+  static const String paymentConfig = '/payments/config';
   static const String createCheckoutSession = '/payments/checkout-session';
   static String confirmCheckoutSession(String sessionId) =>
       '/payments/checkout-session/$sessionId/confirm';
+  static String confirmPaymentIntent(String intentId) =>
+      '/payments/payment-intent/$intentId/confirm';
   static const String stripeConnectAccountLink =
       '/payments/connect/account-link';
   static const String stripeConnectStatus = '/payments/connect/status';

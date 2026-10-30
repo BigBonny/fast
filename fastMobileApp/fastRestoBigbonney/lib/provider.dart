@@ -24,6 +24,7 @@ import 'api/api_exceptions.dart';
 import 'l10n/app_strings.dart';
 
 const _pendingStripeSessionKey = 'fast_pending_stripe_session_id';
+const _pendingStripeIntentKey = 'fast_pending_stripe_intent_id';
 const _activeGroupIdKey = 'fast_active_group_id';
 const _activeGroupCodeKey = 'fast_active_group_code';
 
@@ -1441,10 +1442,42 @@ class FASTProvider extends ChangeNotifier {
     await prefs.remove(_pendingStripeSessionKey);
   }
 
+  static Future<void> savePendingStripeIntent(String intentId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_pendingStripeIntentKey, intentId);
+  }
+
+  static Future<String?> loadPendingStripeIntent() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_pendingStripeIntentKey);
+  }
+
+  static Future<void> clearPendingStripeIntent() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_pendingStripeIntentKey);
+  }
+
   Future<bool> confirmStripeCheckout(String sessionId) async {
     try {
       final order = await _paymentService.confirmCheckoutSession(sessionId);
       await FASTProvider.clearPendingStripeSession();
+      acceptPaidOrder(order);
+      _orderStatusBaseline?[order.id] = order.status;
+      unawaited(refreshNotifications());
+      return true;
+    } catch (e) {
+      _orderError = _extractErrorMessage(e);
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// PaymentSheet path — PaymentIntent id instead of a session id; the
+  /// order itself is created server-side the same way.
+  Future<bool> confirmStripeIntent(String intentId) async {
+    try {
+      final order = await _paymentService.confirmPaymentIntent(intentId);
+      await FASTProvider.clearPendingStripeIntent();
       acceptPaidOrder(order);
       _orderStatusBaseline?[order.id] = order.status;
       unawaited(refreshNotifications());

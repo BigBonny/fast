@@ -1,6 +1,14 @@
 // lib/screens/cart_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_stripe/flutter_stripe.dart'
+    show
+        Stripe,
+        StripeException,
+        FailureCode,
+        SetupPaymentSheetParameters,
+        PaymentSheetApplePay,
+        PaymentSheetGooglePay;
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:geocoding/geocoding.dart';
@@ -984,6 +992,10 @@ class _CartScreenState extends State<CartScreen> {
           isReady: true,
         );
       }
+      // Native PaymentSheet first — returns false when the native SDK
+      // isn't usable (no publishable key / old backend), keeping the
+      // hosted Checkout page as the automatic fallback.
+      if (await _payWithPaymentSheet(provider, rest, items)) return;
       final session = await _paymentService.createCheckoutSession(
         restaurantId: rest.id,
         items: items,
@@ -1016,6 +1028,85 @@ class _CartScreenState extends State<CartScreen> {
         });
       }
     }
+  }
+
+  /// Native Stripe PaymentSheet — the whole payment stays inside the
+  /// app. Returns false only when native payment can't run at all, so
+  /// the caller can fall back to the hosted Checkout session.
+  Future<bool> _payWithPaymentSheet(
+    FASTProvider provider,
+    Restaurant rest,
+    List<Map<String, dynamic>> items,
+  ) async {
+    StripePaymentConfig config;
+    try {
+      config = await _paymentService.getPaymentConfig();
+    } catch (_) {
+      return false;
+    }
+    if (config.publishableKey.isEmpty) return false;
+    Stripe.publishableKey = config.publishableKey;
+    if (config.applePayMerchantId != null) {
+      Stripe.merchantIdentifier = config.applePayMerchantId!;
+    }
+
+    StripePaymentIntent intent;
+    try {
+      intent = await _paymentService.createPaymentIntent(
+        restaurantId: rest.id,
+        items: items,
+        userWalkTimeMin: _selectedWalkTime,
+        groupId: provider.activeGroupId,
+        fulfillmentType: provider.fulfillmentType,
+        deliveryAddress: provider.deliveryAddress,
+        deliveryLatitude: provider.deliveryLatitude,
+        deliveryLongitude: provider.deliveryLongitude,
+      );
+    } on PaymentSheetUnavailable {
+      return false;
+    }
+    // Persisted so an app-kill mid-sheet still creates the order on the
+    // next resume (the payment_intent.succeeded webhook is the durable
+    // path — this only makes recovery instant).
+    await FASTProvider.savePendingStripeIntent(intent.paymentIntentId);
+
+    try {
+      await Stripe.instance.initPaymentSheet(
+        paymentSheetParameters: SetupPaymentSheetParameters(
+          paymentIntentClientSecret: intent.clientSecret,
+          customerId: intent.customerId,
+          customerEphemeralKeySecret: intent.ephemeralKeySecret,
+          merchantDisplayName: 'FAST',
+          applePay: config.applePayMerchantId != null
+              ? PaymentSheetApplePay(
+                  merchantCountryCode: config.merchantCountryCode,
+                )
+              : null,
+          googlePay: config.googlePayEnabled
+              ? PaymentSheetGooglePay(
+                  merchantCountryCode: config.merchantCountryCode,
+                  testEnv: config.googlePayTestEnv,
+                )
+              : null,
+        ),
+      );
+      await Stripe.instance.presentPaymentSheet();
+    } on StripeException catch (e) {
+      if (e.error.code == FailureCode.Canceled) return true;
+      if (mounted) {
+        provider.showToast(
+          tr(context, 'payment_fail'),
+          e.error.localizedMessage ?? e.error.message ?? e.toString(),
+        );
+      }
+      return true;
+    } catch (_) {
+      return false; // native SDK failure — fall back to the web session
+    }
+    if (!mounted) return true;
+    final ok = await provider.confirmStripeIntent(intent.paymentIntentId);
+    if (ok && mounted) provider.navigateToScreen('commandes');
+    return true;
   }
 
   Future<void> _confirmStripeCheckout(FASTProvider provider) async {
