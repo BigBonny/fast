@@ -27,14 +27,19 @@ const orderInclude = {
   groupOrder: { select: { code: true, status: true } },
 };
 
-async function refundPaidOrder(order: {
-  id: string;
-  paymentStatus: string;
-  stripePaymentIntentId: string | null;
-  stripeCheckoutSessionId: string | null;
-  total: number;
-  serviceFee: number;
-}): Promise<void> {
+async function refundPaidOrder(
+  order: {
+    id: string;
+    paymentStatus: string;
+    stripePaymentIntentId: string | null;
+    stripeCheckoutSessionId: string | null;
+    total: number;
+    serviceFee: number;
+  },
+  // Restaurant declines refund the whole paid amount; client self-cancel
+  // keeps the service fee (existing policy).
+  options?: { includeServiceFee?: boolean },
+): Promise<void> {
   if (order.paymentStatus !== 'PAID') return;
 
   const stripe = stripeClient();
@@ -49,13 +54,25 @@ async function refundPaidOrder(order: {
   }
   if (!paymentIntentId) return;
 
-  const refundAmountCents = Math.round((order.total - order.serviceFee) * 100);
+  const refundAmountCents = Math.round(
+    (options?.includeServiceFee ? order.total : order.total - order.serviceFee) * 100,
+  );
   if (refundAmountCents <= 0) return;
 
-  await stripe.refunds.create({
-    payment_intent: paymentIntentId,
-    amount: refundAmountCents,
-  });
+  await stripe.refunds.create(
+    {
+      payment_intent: paymentIntentId,
+      amount: refundAmountCents,
+      // Destination charge — pull the money back from the connected
+      // account rather than paying the refund from the platform balance.
+      reverse_transfer: true,
+      // The platform fee only goes back when the customer is fully refunded.
+      ...(options?.includeServiceFee ? { refund_application_fee: true } : {}),
+    },
+    // Retries after a network blip replay the same refund instead of
+    // charging a second one.
+    { idempotencyKey: `order-refund-${order.id}` },
+  );
 
   await prisma.order.update({
     where: { id: order.id },
@@ -310,6 +327,16 @@ export const updateOrderStatus = async (req: Request, res: Response): Promise<vo
   if (data.status === 'CANCELLED' && data.isBilledAnyway) {
     updateData.isBilledAnyway = true;
   }
+  // A restaurant cancelling a paid order refunds the customer — same
+  // rule as client self-cancel. Only 'billed anyway' cancellations keep
+  // the money (preparation already started).
+  if (
+    data.status === 'CANCELLED' &&
+    !data.isBilledAnyway &&
+    order.paymentStatus === 'PAID'
+  ) {
+    await refundPaidOrder(order, { includeServiceFee: true });
+  }
   if (data.status === 'COMPLETED') {
     updateData.isReadyAtEntrance = true;
     await prisma.user.update({
@@ -338,7 +365,13 @@ export const updateOrderStatus = async (req: Request, res: Response): Promise<vo
         ? 'Le restaurant prépare votre commande.'
         : data.status === 'READY_FOR_PICKUP'
           ? 'Votre repas est chaud et prêt à être récupéré !'
-          : `Statut mis à jour : ${label}`,
+          : data.status === 'CANCELLED'
+            ? (data.isBilledAnyway
+                ? 'Commande annulée — la préparation était déjà commencée, elle reste facturée.'
+                : order.paymentStatus === 'PAID'
+                  ? 'Le restaurant n\'a pas pu honorer votre commande — remboursement en cours.'
+                  : 'Le restaurant n\'a pas pu honorer votre commande.')
+            : `Statut mis à jour : ${label}`,
       type: data.status === 'COMPLETED' ? 'SUCCESS' : 'STATUS',
     },
   });

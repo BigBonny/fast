@@ -625,10 +625,12 @@ enum OrderStatus {
     );
   }
 
-  /// Parse backend UPPER_SNAKE format (e.g. "READY_FOR_PICKUP")
+  /// Parse backend UPPER_SNAKE format (e.g. "READY_FOR_PICKUP") —
+  /// underscores are stripped so 'READY_FOR_PICKUP' matches readyForPickup.
   static OrderStatus fromApiJson(String value) {
+    final normalized = value.toUpperCase().replaceAll('_', '');
     return OrderStatus.values.firstWhere(
-      (e) => e.name.toUpperCase() == value.toUpperCase(),
+      (e) => e.name.toUpperCase() == normalized,
       orElse: () => OrderStatus.placed,
     );
   }

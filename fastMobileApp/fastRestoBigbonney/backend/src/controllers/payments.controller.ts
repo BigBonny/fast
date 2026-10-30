@@ -184,8 +184,8 @@ async function createPaidOrderFromCheckout(
           data: {
             userId: result.order.userId,
             orderId: result.order.id,
-            title: 'Commande confirmée',
-            body: `Commande #${result.order.id.slice(-6)} payée — le restaurant va la préparer.`,
+            title: 'Commande payée',
+            body: `Commande #${result.order.id.slice(-6)} payée — en attente d'acceptation par le restaurant.`,
             type: 'SUCCESS',
           },
         });
