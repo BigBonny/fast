@@ -393,6 +393,51 @@ export const createCheckoutSession = async (req: Request, res: Response): Promis
     // resurface at checkout; Stripe creates one on the first payment.
     const stripeCustomerId = await getStripeCustomerId(stripe, req.user!.userId, true);
 
+    // Native in-app path: identical pricing/checkout row, but the client
+    // confirms a PaymentIntent via PaymentSheet instead of being sent to
+    // a hosted Checkout page in the browser.
+    if (data.usePaymentSheet) {
+      const intentParams: Stripe.PaymentIntentCreateParams = {
+        amount: cents(total),
+        currency: env.stripeCurrency,
+        customer: stripeCustomerId!,
+        automatic_payment_methods: { enabled: true },
+        setup_future_usage: 'off_session',
+        metadata: {
+          checkoutId: checkout.id,
+          userId: req.user!.userId,
+          restaurantId: data.restaurantId,
+          ...(data.groupId ? { groupId: data.groupId } : {}),
+        },
+      };
+      if (paymentIntentData.application_fee_amount != null) {
+        intentParams.application_fee_amount = paymentIntentData.application_fee_amount;
+      }
+      if (paymentIntentData.transfer_data != null) {
+        intentParams.transfer_data = paymentIntentData.transfer_data;
+      }
+      const intent = await stripe.paymentIntents.create(intentParams);
+      // The ephemeral key lets PaymentSheet display this customer's
+      // saved cards without giving the app reusable customer access.
+      const ephemeralKey = await stripe.ephemeralKeys.create(
+        { customer: stripeCustomerId! },
+        { apiVersion: stripe.getApiField('version') as string },
+      );
+      await prisma.paymentCheckout.update({
+        where: { id: checkout.id },
+        data: { stripePaymentIntentId: intent.id },
+      });
+      res.status(201).json({
+        paymentIntentId: intent.id,
+        paymentIntentClientSecret: intent.client_secret,
+        ephemeralKeySecret: ephemeralKey.secret,
+        customerId: stripeCustomerId,
+        checkoutId: checkout.id,
+        groupOrder: groupOrderResponse,
+      });
+      return;
+    }
+
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       currency: env.stripeCurrency,
@@ -492,6 +537,43 @@ export const confirmCheckoutSession = async (req: Request, res: Response): Promi
   }
 };
 
+/// Config the app needs to bootstrap Stripe natively. The publishable
+/// key is public by design; the Apple merchant id stays null until the
+/// Apple-side setup exists so PaymentSheet simply hides Apple Pay.
+export const getPaymentConfig = (_req: Request, res: Response): void => {
+  res.json({
+    publishableKey: env.stripePublishableKey,
+    merchantCountryCode: env.stripeMerchantCountry,
+    applePayMerchantId: env.stripeAppleMerchantId || null,
+    googlePayEnabled: env.stripeGooglePayEnabled,
+    googlePayTestEnv: env.stripeGooglePayTestEnv,
+  });
+};
+
+export const confirmPaymentIntent = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const stripe = stripeClient();
+    const intent = await stripe.paymentIntents.retrieve(req.params.intentId as string);
+
+    const checkoutId = intent.metadata?.checkoutId;
+    if (!checkoutId || intent.status !== 'succeeded') {
+      res.status(402).json({ error: 'Paiement non confirmé' });
+      return;
+    }
+
+    const checkout = await prisma.paymentCheckout.findUnique({ where: { id: checkoutId } });
+    if (!checkout || checkout.userId !== req.user!.userId || checkout.stripePaymentIntentId !== intent.id) {
+      res.status(403).json({ error: 'Accès refusé' });
+      return;
+    }
+
+    const order = await createPaidOrderFromCheckout(checkoutId, intent.id);
+    res.json(order);
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+};
+
 export const stripeWebhook = async (req: Request, res: Response): Promise<void> => {
   try {
     const stripe = stripeClient();
@@ -526,6 +608,15 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
           ? session.payment_intent
           : session.payment_intent?.id ?? null;
         await createPaidOrderFromCheckout(session.metadata.checkoutId, paymentIntentId);
+      }
+    }
+
+    // PaymentSheet path — the durable order creation when the app was
+    // closed/killed before it could call the confirm endpoint.
+    if (event.type === 'payment_intent.succeeded') {
+      const intent = event.data.object as Stripe.PaymentIntent;
+      if (intent.metadata?.checkoutId) {
+        await createPaidOrderFromCheckout(intent.metadata.checkoutId, intent.id);
       }
     }
 

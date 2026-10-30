@@ -3,11 +3,13 @@ import {
   checkoutCancelPage,
   checkoutSuccessPage,
   confirmCheckoutSession,
+  confirmPaymentIntent,
   connectRefreshPage,
   connectReturnPage,
   createCheckoutSession,
   createConnectAccountLink,
   getConnectStatus,
+  getPaymentConfig,
 } from '../controllers/payments.controller';
 import { authenticate, requireRole } from '../middleware/auth';
 import { asyncHandler } from '../utils/asyncHandler';
@@ -21,8 +23,10 @@ router.get('/methods/return', paymentMethodReturnPage);
 router.get('/methods', authenticate, requireRole('CLIENT', 'RESTAURANT'), asyncHandler(listPaymentMethods));
 router.post('/methods/setup', authenticate, requireRole('CLIENT', 'RESTAURANT'), asyncHandler(setupPaymentMethod));
 router.delete('/methods/:id', authenticate, requireRole('CLIENT', 'RESTAURANT'), asyncHandler(removePaymentMethod));
+router.get('/config', authenticate, asyncHandler(getPaymentConfig));
 router.post('/checkout-session', authenticate, asyncHandler(createCheckoutSession));
 router.post('/checkout-session/:sessionId/confirm', authenticate, asyncHandler(confirmCheckoutSession));
+router.post('/payment-intent/:intentId/confirm', authenticate, asyncHandler(confirmPaymentIntent));
 
 router.post('/connect/account-link', authenticate, requireRole('RESTAURANT'), asyncHandler(createConnectAccountLink));
 router.get('/connect/status', authenticate, requireRole('RESTAURANT'), asyncHandler(getConnectStatus));

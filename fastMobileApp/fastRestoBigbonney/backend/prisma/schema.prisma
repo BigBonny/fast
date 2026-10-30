@@ -401,6 +401,7 @@ model PaymentCheckout {
   serviceFee              Float
   total                   Float
   stripeCheckoutSessionId String?  @unique
+  stripePaymentIntentId   String?  @unique
   createdOrderId          String?
   groupOrderId            String?
   createdAt               DateTime @default(now())

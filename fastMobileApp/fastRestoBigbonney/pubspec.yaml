@@ -63,6 +63,7 @@ dependencies:
   sentry_flutter: ^10.2.0
   firebase_core: ^3.0.0
   firebase_messaging: ^15.0.0
+  flutter_stripe: ^14.2.0
 
 dev_dependencies:
   flutter_test:

@@ -35,6 +35,16 @@ export const env = {
   twilioAuthToken: process.env.TWILIO_AUTH_TOKEN || '',
   twilioFromNumber: process.env.TWILIO_FROM_NUMBER || '',
   stripeSecretKey: process.env.STRIPE_SECRET_KEY || '',
+  stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY || '',
+  // Optional Apple Pay merchant id — PaymentSheet only offers Apple Pay
+  // when this is set, so the feature stays dormant until Apple-side
+  // setup (merchant id + entitlement + profile) is done.
+  stripeAppleMerchantId: process.env.STRIPE_APPLE_MERCHANT_ID || '',
+  stripeMerchantCountry: process.env.STRIPE_MERCHANT_COUNTRY || 'fr',
+  // Google Pay in PaymentSheet stays off until Google's production
+  // access is granted; test env lets a debug build exercise it.
+  stripeGooglePayEnabled: process.env.STRIPE_GOOGLE_PAY_ENABLED === 'true',
+  stripeGooglePayTestEnv: process.env.STRIPE_GOOGLE_PAY_TEST_ENV !== 'false',
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
   // Optional second secret for a "connected accounts" webhook destination —
   // Stripe signs account.* events of connected accounts with a different key.
