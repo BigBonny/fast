@@ -58,18 +58,36 @@ class MenuService {
     );
   }
 
-  /// One tap: AI photos for every dish still missing one. Returns the
-  /// generated image URL keyed by item id so the caller can patch the
-  /// local menu in place — a full refetch would also resurrect rows
-  /// deleted earlier in the session before `deletedAt` existed.
-  Future<Map<String, String>> generateMenuPhotos(String restaurantId) async {
-    final data = await _api.post(ApiConfig.menuAiPhotos(restaurantId));
-    final items =
-        (data as Map<String, dynamic>)['items'] as List<dynamic>? ?? const [];
-    return {
-      for (final e in items)
-        (e as Map<String, dynamic>)['id'] as String: e['imageUrl'] as String,
-    };
+  /// One tap: AI photos for every dish still missing one. The backend
+  /// bakes a small chunk per call (real image bytes take seconds each),
+  /// so this loops while `remaining` > 0; [onBatch] fires per chunk so
+  /// the caller can patch the local menu progressively. Returns the
+  /// generated image URL keyed by item id — a full refetch would also
+  /// resurrect rows deleted earlier in the session before `deletedAt`.
+  Future<Map<String, String>> generateMenuPhotos(
+    String restaurantId, {
+    void Function(Map<String, String> batch)? onBatch,
+  }) async {
+    final photos = <String, String>{};
+    for (var guard = 0; guard < 50; guard++) {
+      final data = await _api.post(
+        ApiConfig.menuAiPhotos(restaurantId),
+        timeout: const Duration(seconds: 60),
+      );
+      final map = data as Map<String, dynamic>;
+      final items = map['items'] as List<dynamic>? ?? const [];
+      final batch = {
+        for (final e in items)
+          (e as Map<String, dynamic>)['id'] as String:
+              e['imageUrl'] as String,
+      };
+      photos.addAll(batch);
+      onBatch?.call(batch);
+      final remaining = (map['remaining'] as num?)?.toInt() ?? 0;
+      // Older deploys have no `remaining` — one call fills everything.
+      if (remaining <= 0 || batch.isEmpty) break;
+    }
+    return photos;
   }
 
   Future<void> deleteItem(String id) async {

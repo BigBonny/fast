@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 /// Image widget that accepts either an http(s) URL or a
@@ -44,14 +45,18 @@ class FastImage extends StatelessWidget {
         return _fallback();
       }
     }
-    return Image.network(
-      src,
+    // Disk-cached: a flaky remote URL only has to succeed once, and
+    // repeat renders don't re-hit the network on every screen open.
+    return CachedNetworkImage(
+      imageUrl: src,
       width: width,
       height: height,
       fit: fit,
-      cacheWidth: cacheWidth,
+      memCacheWidth: cacheWidth,
       filterQuality: FilterQuality.low,
-      errorBuilder: (_, __, ___) => _fallback(),
+      fadeInDuration: const Duration(milliseconds: 200),
+      placeholder: (_, __) => placeholder ?? const SizedBox.shrink(),
+      errorWidget: (_, __, ___) => _fallback(),
     );
   }
 }

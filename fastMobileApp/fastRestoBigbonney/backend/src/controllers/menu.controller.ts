@@ -9,7 +9,7 @@ import { env } from '../config/env';
 import { getRestaurantIdForUser } from '../middleware/auth';
 import { parseOcrResponse } from '../utils/menuOcr';
 import { uploadDir } from './uploads.controller';
-import { storeMedia } from '../services/storage';
+import { storeMedia, storageConfigured } from '../services/storage';
 
 export const listMenuItems = async (req: Request, res: Response): Promise<void> => {
   const restaurantId = req.params.restaurantId as string;
@@ -590,7 +590,10 @@ const GEMINI_IMAGE_MODELS = [
 
 async function geminiGenerateImage(prompt: string): Promise<string | null> {
   const apiKey = env.geminiApiKey;
-  if (!apiKey) return null;
+  // The result is written through storeMedia — without Supabase storage
+  // that means ephemeral /uploads links that die on cold start, which is
+  // worse than a warmed pollinations URL. Skip straight to that path.
+  if (!apiKey || !storageConfigured()) return null;
   for (const model of GEMINI_IMAGE_MODELS) {
     try {
       const response = await fetch(
@@ -656,6 +659,48 @@ function pollinationsDishPhoto(prompt: string, seedSource: string): string {
   )}?${q.toString()}`;
 }
 
+const PHOTO_FETCH_TIMEOUT_MS = 15_000;
+// One batch per invocation — real image bytes take seconds each, so the
+// client loops while `remaining` > 0 rather than timing out on a big menu.
+const PHOTO_BATCH_SIZE = 6;
+const PHOTO_BATCH_CONCURRENCY = 3;
+const PHOTO_BATCH_DEADLINE_MS = 40_000;
+
+/**
+ * A pollinations URL only renders on first fetch — storing it raw made the
+ * customer's phone do the generation, and free-tier queueing turned that
+ * into slow or never-loading images. We fetch it server-side instead:
+ * with Supabase storage the bytes land on a durable CDN URL; without it
+ * the fetch still warms the provider cache so the client load is fast.
+ * On total failure the lazy URL is returned — a slow image beats none.
+ */
+async function bakeDishPhoto(
+  prompt: string,
+  seedSource: string,
+  filename: string,
+): Promise<string> {
+  const lazyUrl = pollinationsDishPhoto(prompt, seedSource);
+  const wantStore = storageConfigured();
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const resp = await fetch(lazyUrl, {
+        signal: AbortSignal.timeout(PHOTO_FETCH_TIMEOUT_MS),
+      });
+      if (!resp.ok) continue;
+      if (!wantStore) return lazyUrl; // provider cache warmed — done
+      const bytes = Buffer.from(await resp.arrayBuffer());
+      if (bytes.length < 1024) return lazyUrl; // error page, not an image
+      const mime = resp.headers.get('content-type')?.includes('png')
+        ? 'image/png'
+        : 'image/jpeg';
+      return await storeMedia(bytes, filename, mime, uploadDir);
+    } catch {
+      // timeout/network — retry once, then fall back to the lazy URL
+    }
+  }
+  return lazyUrl;
+}
+
 /// Prompt tuned for dish fidelity: the image must actually be *that*
 /// dish — name + description carry the semantics, style constraints
 /// keep it consistent with the FAST photo style.
@@ -698,17 +743,22 @@ export const generateDishPhoto = async (
       return;
     }
   }
-  res.json({ imageUrl: pollinationsDishPhoto(prompt, safeName), source: 'pollinations' });
+  res.json({
+    imageUrl: await bakeDishPhoto(
+      prompt,
+      safeName,
+      `ai-${Date.now()}-${crypto.randomBytes(4).toString('hex')}.jpg`,
+    ),
+    source: 'pollinations',
+  });
 };
 
 /// Batch fill — assigns a photo for every menu item that still lacks
-/// one, so the whole menu gets visuals in one tap. Deliberately uses
-/// Pollinations only: it's a deterministic URL (zero generation latency,
-/// no rate limits), so 100 items fill in ~1 s. The previous flow tried
-/// Gemini's image model per item — sequential 45 s attempts made a full
-/// menu take minutes and blow past the client's 30 s timeout mid-batch,
-/// which looked "inconsistent" (half the items updated, half not).
-/// Owners can still regenerate a single dish via /ai-photo (Gemini path).
+/// one. Each call bakes a small chunk of real images (see bakeDishPhoto)
+/// inside a deadline, so the client loops while `remaining` > 0 and shows
+/// progress as chunks land instead of one long opaque wait. Without
+/// Supabase storage the fetches still warm the provider cache — the lazy
+/// pollinations URL stays the fallback either way.
 export const generateMenuPhotos = async (
   req: Request,
   res: Response,
@@ -722,34 +772,48 @@ export const generateMenuPhotos = async (
   const items = await prisma.menuItem.findMany({
     where: { restaurantId, image: '', deletedAt: null },
     select: { id: true, name: true, description: true, category: true },
-    take: 100,
+    take: PHOTO_BATCH_SIZE,
   });
   if (items.length === 0) {
-    res.json({ updated: 0, items: [] });
+    res.json({ updated: 0, remaining: 0, items: [] });
     return;
   }
 
   const results: { id: string; imageUrl: string; source: string }[] = [];
+  const deadline = Date.now() + PHOTO_BATCH_DEADLINE_MS;
 
-  // Pollinations URLs are just strings — parallelize the DB writes
-  // rather than awaiting 100 sequential updates.
-  await Promise.all(
-    items.map(async (item) => {
-      const prompt = dishPhotoPrompt(
-        item.name.slice(0, 120),
-        (item.description ?? '').slice(0, 200),
-        (item.category ?? '').slice(0, 60),
-      );
-      const imageUrl = pollinationsDishPhoto(prompt, item.name);
-      await prisma.menuItem.update({
-        where: { id: item.id },
-        data: { image: imageUrl },
-      });
-      results.push({ id: item.id, imageUrl, source: 'pollinations' });
-    }),
-  );
+  for (
+    let i = 0;
+    i < items.length && Date.now() < deadline;
+    i += PHOTO_BATCH_CONCURRENCY
+  ) {
+    await Promise.all(
+      items.slice(i, i + PHOTO_BATCH_CONCURRENCY).map(async (item) => {
+        const prompt = dishPhotoPrompt(
+          item.name.slice(0, 120),
+          (item.description ?? '').slice(0, 200),
+          (item.category ?? '').slice(0, 60),
+        );
+        const imageUrl = await bakeDishPhoto(
+          prompt,
+          item.name,
+          `ai-${item.id}-${Date.now()}.jpg`,
+        );
+        await prisma.menuItem.update({
+          where: { id: item.id },
+          data: { image: imageUrl },
+        });
+        results.push({ id: item.id, imageUrl, source: 'pollinations' });
+      }),
+    );
+  }
 
-  res.json({ updated: results.length, items: results });
+  // Counted after processing — deadline-skipped items stay blank and are
+  // picked up by the client's next call.
+  const remaining = await prisma.menuItem.count({
+    where: { restaurantId, image: '', deletedAt: null },
+  });
+  res.json({ updated: results.length, remaining, items: results });
 };
 
 export const suggestPrepTime = async (req: Request, res: Response): Promise<void> => {

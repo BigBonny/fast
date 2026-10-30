@@ -37,8 +37,13 @@ class _RestoMenuScreenState extends State<RestoMenuScreen> {
     }
     setState(() => _generatingPhotos = true);
     try {
-      final photos = await MenuService().generateMenuPhotos(restaurantId);
-      final updated = prov.applyMenuPhotos(photos);
+      // Each backend chunk lands here immediately — the menu fills
+      // progressively instead of jumping all at once at the end.
+      final photos = await MenuService().generateMenuPhotos(
+        restaurantId,
+        onBatch: prov.applyMenuPhotos,
+      );
+      final updated = photos.length;
       if (!context.mounted) return;
       messenger.showSnackBar(
         SnackBar(
