@@ -55,466 +55,507 @@ class _HomeScreenState extends State<HomeScreen>
       behavior: HitTestBehavior.translucent,
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: Stack(
-      children: [
-        Container(color: context.fast.bg),
-        LayoutBuilder(
-          builder: (context, viewport) => ListView(
-            // Dragging the list dismisses the keyboard too.
-            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-            padding: EdgeInsets.zero,
-            children: [
-              // Branded hero — dark glow background, headline + search pill
-              FastGlowBackground(
-                arcs: false,
-                child: LayoutBuilder(
-                  builder: (context, box) {
-                    // The hero extends under the floating AppBar; the brand
-                    // mark sits level with the nav icons, like the reference.
-                    final statusBar = MediaQuery.of(context).padding.top;
-                    const heroBody = 292.0;
-                    final heroHeight = statusBar + heroBody;
-                    // The photo owns the lower-right; measured from the
-                    // reference it spans ~60% of the width at natural aspect.
-                    final photoW = box.maxWidth * 0.58;
-                    // Asset is 323x312 → natural height for this width.
-                    final photoH = photoW * 312 / 323;
-                    // Where the photo's left edge and top edge sit in hero
-                    // coordinates — the streak painter needs these to draw
-                    // the diagonal slash continuing into the purple.
-                    final photoLeft = box.maxWidth - photoW;
-                    final photoTop = heroHeight - photoH;
-                    return SizedBox(
-                      height: heroHeight,
-                      width: double.infinity,
-                      child: Stack(
-                        children: [
-                          Positioned(
-                            right: 0,
-                            bottom: 0,
-                            width: photoW,
-                            height: photoH,
-                            child: ClipPath(
-                              // Cuts the top-left corner along the line the
-                              // baked fiery streak travels — purple above,
-                              // food below, just like the reference.
-                              clipper: const _HeroPhotoClip(),
-                              child: ShaderMask(
-                                blendMode: BlendMode.dstIn,
-                                shaderCallback: (rect) => const LinearGradient(
-                                  begin: Alignment.centerLeft,
-                                  end: Alignment.centerRight,
-                                  colors: [
-                                    Colors.transparent,
-                                    Colors.white,
-                                    Colors.white,
-                                  ],
-                                  stops: [0.0, 0.16, 1.0],
-                                ).createShader(rect),
-                                child: Image.asset(
-                                  'assets/images/hero_food.png',
-                                  width: photoW,
-                                  height: photoH,
-                                  fit: BoxFit.fill,
-                                  alignment: Alignment.bottomRight,
-                                ),
-                              ),
-                            ),
-                          ),
-                          // The diagonal neon slash — continues the streak
-                          // baked into the photo across the purple toward
-                          // the top-right corner, the reference's signature.
-                          Positioned.fill(
-                            child: IgnorePointer(
-                              child: CustomPaint(
-                                painter: _HeroStreakPainter(
-                                  photoLeft: photoLeft,
-                                  photoTop: photoTop,
-                                  photoW: photoW,
-                                  photoH: photoH,
-                                ),
-                              ),
-                            ),
-                          ),
-                          // Soft dark veil on the left so the headline stays
-                          // crisp where it meets the photo
-                          Positioned.fill(
-                            child: IgnorePointer(
-                              child: DecoratedBox(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.centerLeft,
-                                    end: Alignment.centerRight,
-                                    colors: [
-                                      FastGlowBackground.topColor.withValues(
-                                        alpha: 0.70,
-                                      ),
-                                      FastGlowBackground.topColor.withValues(
-                                        alpha: 0.42,
-                                      ),
-                                      Colors.transparent,
-                                    ],
-                                    stops: const [0.0, 0.34, 0.54],
+        children: [
+          Container(color: context.fast.bg),
+          LayoutBuilder(
+            builder: (context, viewport) => ListView(
+              // Dragging the list dismisses the keyboard too.
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: EdgeInsets.zero,
+              children: [
+                // Branded hero — dark glow background, headline + search pill
+                FastGlowBackground(
+                  arcs: false,
+                  child: LayoutBuilder(
+                    builder: (context, box) {
+                      // The hero extends under the floating AppBar; the brand
+                      // mark sits level with the nav icons, like the reference.
+                      final statusBar = MediaQuery.of(context).padding.top;
+                      const heroBody = 292.0;
+                      final heroHeight = statusBar + heroBody;
+                      // The photo owns the lower-right; measured from the
+                      // reference it spans ~60% of the width at natural aspect.
+                      final photoW = box.maxWidth * 0.58;
+                      // Asset is 323x312 → natural height for this width.
+                      final photoH = photoW * 312 / 323;
+                      // Where the photo's left edge and top edge sit in hero
+                      // coordinates — the streak painter needs these to draw
+                      // the diagonal slash continuing into the purple.
+                      final photoLeft = box.maxWidth - photoW;
+                      final photoTop = heroHeight - photoH;
+                      return SizedBox(
+                        height: heroHeight,
+                        width: double.infinity,
+                        child: Stack(
+                          children: [
+                            Positioned(
+                              right: 0,
+                              bottom: 0,
+                              width: photoW,
+                              height: photoH,
+                              child: ClipPath(
+                                // Cuts the top-left corner along the line the
+                                // baked fiery streak travels — purple above,
+                                // food below, just like the reference.
+                                clipper: const _HeroPhotoClip(),
+                                child: ShaderMask(
+                                  blendMode: BlendMode.dstIn,
+                                  shaderCallback: (rect) =>
+                                      const LinearGradient(
+                                        begin: Alignment.centerLeft,
+                                        end: Alignment.centerRight,
+                                        colors: [
+                                          Colors.transparent,
+                                          Colors.white,
+                                          Colors.white,
+                                        ],
+                                        stops: [0.0, 0.16, 1.0],
+                                      ).createShader(rect),
+                                  child: Image.asset(
+                                    'assets/images/hero_food.png',
+                                    width: photoW,
+                                    height: photoH,
+                                    fit: BoxFit.fill,
+                                    alignment: Alignment.bottomRight,
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                          // Brand mark + tagline — centered, slightly above
-                          // the nav icon row like the reference. The
-                          // wordmark burns amber→ember with a soft halo so
-                          // it reads as lit, not flat.
-                          Positioned(
-                            top: statusBar * 0.4,
-                            left: 0,
-                            right: 0,
-                            child: Column(
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    _boltIcon(),
-                                    const SizedBox(width: 2),
-                                    AnimatedBuilder(
-                                      animation: _brandShine,
-                                      builder: (context, _) {
-                                        // A bright band sweeping
-                                        // left→right across the gradient.
-                                        final t = _brandShine.value * 2 - 0.5;
-                                        return ShaderMask(
-                                          blendMode: BlendMode.srcIn,
-                                          shaderCallback: (rect) =>
-                                              LinearGradient(
-                                                begin: Alignment.centerLeft,
-                                                end: Alignment.centerRight,
-                                                colors: const [
-                                                  Color(0xFFF59E0B),
-                                                  Color(0xFFFBBF24),
-                                                  Color(0xFFFFFBEB),
-                                                  Color(0xFFFBBF24),
-                                                  Color(0xFFD97706),
-                                                ],
-                                                stops: [
-                                                  (t - 0.5).clamp(0.0, 1.0),
-                                                  (t - 0.22).clamp(0.0, 1.0),
-                                                  t.clamp(0.0, 1.0),
-                                                  (t + 0.22).clamp(0.0, 1.0),
-                                                  (t + 0.5).clamp(0.0, 1.0),
-                                                ],
-                                              ).createShader(rect),
-                                          child: const Text(
-                                            'FAST',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.w900,
-                                              fontStyle: FontStyle.italic,
-                                              fontSize: 38,
-                                              letterSpacing: 1.2,
-                                              color: Colors.white,
-                                              shadows: [
-                                                Shadow(
-                                                  color: Color(0x80F59E0B),
-                                                  blurRadius: 26,
-                                                  offset: Offset(0, 4),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                    const SizedBox(width: 2),
-                                    _boltIcon(),
-                                  ],
-                                ),
-                                const SizedBox(height: 2),
-                                const Text(
-                                  'CHAQUE MINUTE COMPTE',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w600,
-                                    letterSpacing: 3.2,
-                                    color: Color(0xB3FBBF24),
+                            // The diagonal neon slash — continues the streak
+                            // baked into the photo across the purple toward
+                            // the top-right corner, the reference's signature.
+                            Positioned.fill(
+                              child: IgnorePointer(
+                                child: CustomPaint(
+                                  painter: _HeroStreakPainter(
+                                    photoLeft: photoLeft,
+                                    photoTop: photoTop,
+                                    photoW: photoW,
+                                    photoH: photoH,
                                   ),
                                 ),
-                              ],
+                              ),
                             ),
-                          ),
-                          // Headline block — left of the photo, tilted a touch
-                          // so the sentence feels like it lifts as it goes.
-                          // The column's right edge is capped just inside the
-                          // photo's faded left margin so no line can ever
-                          // overlap the bowl, whatever the screen width.
-                          Positioned(
-                            left: 20,
-                            right: 0,
-                            top: statusBar + 50,
-                            child: FractionallySizedBox(
-                              alignment: Alignment.centerLeft,
-                              widthFactor:
-                                  (((photoLeft + photoW * 0.10) - 20) /
-                                          box.maxWidth)
-                                      .clamp(0.38, 0.62),
-                              child: Transform.rotate(
-                                angle: -0.028,
-                                alignment: Alignment.centerLeft,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // scaleDown keeps every locale on one
-                                    // line instead of wrapping into the photo
-                                    FittedBox(
-                                      fit: BoxFit.scaleDown,
-                                      alignment: Alignment.centerLeft,
-                                      child: Text(
-                                        tr(context, 'hero_order'),
-                                        style: _heroHeadline,
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(left: 12),
-                                      // Amber→ember gradient "Fast." — the
-                                      // brand accent line, on its own row.
-                                      child: FittedBox(
-                                        fit: BoxFit.scaleDown,
-                                        alignment: Alignment.centerLeft,
-                                        child: ShaderMask(
-                                          blendMode: BlendMode.srcIn,
-                                          shaderCallback: (rect) =>
-                                              const LinearGradient(
-                                                begin: Alignment.topLeft,
-                                                end: Alignment.bottomRight,
-                                                colors: [
-                                                  Color(0xFFFBBF24),
-                                                  Color(0xFFF59E0B),
-                                                  Color(0xFFD97706),
-                                                ],
-                                              ).createShader(rect),
-                                          child: const Text(
-                                            'Fast.',
-                                            style: TextStyle(
-                                              fontSize: 32,
-                                              fontWeight: FontWeight.w900,
-                                              fontStyle: FontStyle.italic,
-                                              letterSpacing: -0.8,
-                                              color: Colors.white,
-                                              height: 1.05,
-                                              shadows: [
-                                                Shadow(
-                                                  color: Colors.black54,
-                                                  blurRadius: 12,
-                                                  offset: Offset(0, 2),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
+                            // Soft dark veil on the left so the headline stays
+                            // crisp where it meets the photo
+                            Positioned.fill(
+                              child: IgnorePointer(
+                                child: DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.centerLeft,
+                                      end: Alignment.centerRight,
+                                      colors: [
+                                        FastGlowBackground.topColor.withValues(
+                                          alpha: 0.70,
                                         ),
-                                      ),
+                                        FastGlowBackground.topColor.withValues(
+                                          alpha: 0.42,
+                                        ),
+                                        Colors.transparent,
+                                      ],
+                                      stops: const [0.0, 0.34, 0.54],
                                     ),
-                                    const SizedBox(height: 6),
-                                    // The sub wraps inside the safe column —
-                                    // no fixed width, so it never rides over
-                                    // the photo edge.
-                                    Padding(
-                                      padding: const EdgeInsets.only(left: 6),
-                                      child: Text(
-                                        tr(context, 'hero_sub'),
-                                        style: const TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w800,
-                                          color: Color(0xFFFBBF24),
-                                          height: 1.2,
-                                          shadows: [
-                                            Shadow(
-                                              color: Colors.black54,
-                                              blurRadius: 10,
-                                              offset: Offset(0, 2),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            // Brand mark + tagline — centered between the
+                            // nav icons like the reference, but as one tight
+                            // lockup: bolt inside a gradient badge, wordmark
+                            // burning amber→ember, tagline breathing below.
+                            Positioned(
+                              top: statusBar + 6,
+                              left: 0,
+                              right: 0,
+                              child: Column(
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Container(
+                                        width: 30,
+                                        height: 30,
+                                        decoration: BoxDecoration(
+                                          gradient: const LinearGradient(
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                            colors: [
+                                              Color(0xFFFBBF24),
+                                              Color(0xFFD97706),
+                                            ],
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                          boxShadow: const [
+                                            BoxShadow(
+                                              color: Color(0x66F59E0B),
+                                              blurRadius: 14,
+                                              offset: Offset(0, 4),
                                             ),
                                           ],
                                         ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    // Curved orange swoosh — the reference's
-                                    // hand-drawn highlight under the accent.
-                                    Padding(
-                                      padding: const EdgeInsets.only(left: 6),
-                                      child: SizedBox(
-                                        width: 150,
-                                        height: 10,
-                                        child: CustomPaint(
-                                          painter: _HeroUnderlinePainter(),
+                                        child: const Icon(
+                                          Icons.bolt,
+                                          color: Color(0xFF1A1425),
+                                          size: 20,
                                         ),
                                       ),
+                                      const SizedBox(width: 8),
+                                      AnimatedBuilder(
+                                        animation: _brandShine,
+                                        builder: (context, _) {
+                                          // A bright band sweeping
+                                          // left→right across the gradient.
+                                          final t = _brandShine.value * 2 - 0.5;
+                                          return ShaderMask(
+                                            blendMode: BlendMode.srcIn,
+                                            shaderCallback: (rect) =>
+                                                LinearGradient(
+                                                  begin: Alignment.centerLeft,
+                                                  end: Alignment.centerRight,
+                                                  colors: const [
+                                                    Color(0xFFF59E0B),
+                                                    Color(0xFFFBBF24),
+                                                    Color(0xFFFFFBEB),
+                                                    Color(0xFFFBBF24),
+                                                    Color(0xFFD97706),
+                                                  ],
+                                                  stops: [
+                                                    (t - 0.5).clamp(0.0, 1.0),
+                                                    (t - 0.22).clamp(0.0, 1.0),
+                                                    t.clamp(0.0, 1.0),
+                                                    (t + 0.22).clamp(0.0, 1.0),
+                                                    (t + 0.5).clamp(0.0, 1.0),
+                                                  ],
+                                                ).createShader(rect),
+                                            child: const Text(
+                                              'FAST',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.w900,
+                                                fontStyle: FontStyle.italic,
+                                                fontSize: 30,
+                                                letterSpacing: 1.6,
+                                                color: Colors.white,
+                                                shadows: [
+                                                  Shadow(
+                                                    color: Color(0x80F59E0B),
+                                                    blurRadius: 22,
+                                                    offset: Offset(0, 3),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 6),
+                                  const Text(
+                                    'CHAQUE MINUTE COMPTE',
+                                    style: TextStyle(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 3.8,
+                                      color: Color(0x99FBBF24),
                                     ),
-                                  ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // Headline block — left of the photo, tilted a touch
+                            // so the sentence feels like it lifts as it goes.
+                            // The column's right edge is capped just inside the
+                            // photo's faded left margin so no line can ever
+                            // overlap the bowl, whatever the screen width.
+                            Positioned(
+                              left: 20,
+                              right: 0,
+                              top: statusBar + 76,
+                              child: FractionallySizedBox(
+                                alignment: Alignment.centerLeft,
+                                widthFactor:
+                                    (((photoLeft + photoW * 0.10) - 20) /
+                                            box.maxWidth)
+                                        .clamp(0.38, 0.62),
+                                child: Transform.rotate(
+                                  angle: -0.028,
+                                  alignment: Alignment.centerLeft,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      // scaleDown keeps every locale on one
+                                      // line instead of wrapping into the photo
+                                      FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          tr(context, 'hero_order'),
+                                          style: _heroHeadline,
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 12,
+                                        ),
+                                        // Amber→ember gradient "Fast." — the
+                                        // brand accent line, on its own row.
+                                        child: FittedBox(
+                                          fit: BoxFit.scaleDown,
+                                          alignment: Alignment.centerLeft,
+                                          child: ShaderMask(
+                                            blendMode: BlendMode.srcIn,
+                                            shaderCallback: (rect) =>
+                                                const LinearGradient(
+                                                  begin: Alignment.topLeft,
+                                                  end: Alignment.bottomRight,
+                                                  colors: [
+                                                    Color(0xFFFBBF24),
+                                                    Color(0xFFF59E0B),
+                                                    Color(0xFFD97706),
+                                                  ],
+                                                ).createShader(rect),
+                                            child: const Text(
+                                              'Fast.',
+                                              style: TextStyle(
+                                                fontSize: 32,
+                                                fontWeight: FontWeight.w900,
+                                                fontStyle: FontStyle.italic,
+                                                letterSpacing: -0.8,
+                                                color: Colors.white,
+                                                height: 1.05,
+                                                shadows: [
+                                                  Shadow(
+                                                    color: Colors.black54,
+                                                    blurRadius: 12,
+                                                    offset: Offset(0, 2),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      // The sub wraps inside the safe column —
+                                      // no fixed width, so it never rides over
+                                      // the photo edge.
+                                      Padding(
+                                        padding: const EdgeInsets.only(left: 6),
+                                        child: Text(
+                                          tr(context, 'hero_sub'),
+                                          style: const TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w800,
+                                            color: Color(0xFFFBBF24),
+                                            height: 1.2,
+                                            shadows: [
+                                              Shadow(
+                                                color: Colors.black54,
+                                                blurRadius: 10,
+                                                offset: Offset(0, 2),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      // Curved orange swoosh — the reference's
+                                      // hand-drawn highlight under the accent.
+                                      Padding(
+                                        padding: const EdgeInsets.only(left: 6),
+                                        child: SizedBox(
+                                          width: 150,
+                                          height: 10,
+                                          child: CustomPaint(
+                                            painter: _HeroUnderlinePainter(),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          // Search pill pinned to the bottom of the hero
-                          Positioned(
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                // Search Bar — white pill on the dark hero
-                                Padding(
-                                  padding: const EdgeInsets.fromLTRB(
-                                    16,
-                                    0,
-                                    16,
-                                    18,
-                                  ),
-                                  child: Focus(
-                                    onFocusChange: (focus) {
-                                      setState(() {
-                                        _isFocusingSearch = focus;
-                                      });
-                                    },
-                                    child: TextField(
-                                      controller: _searchController,
-                                      // Shows a "Search" key on the
-                                      // keyboard — submitting dismisses
-                                      // it (vital on iOS).
-                                      textInputAction:
-                                          TextInputAction.search,
-                                      onSubmitted: (_) => FocusManager
-                                          .instance
-                                          .primaryFocus
-                                          ?.unfocus(),
-                                      onChanged: (val) =>
-                                          provider.setKeyword(val),
-                                      style: const TextStyle(
-                                        fontSize: 13,
-                                        color: Color(0xFF1A1425),
+                            // Search pill pinned to the bottom of the hero
+                            Positioned(
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // Search Bar — white pill on the dark hero
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(
+                                      16,
+                                      0,
+                                      16,
+                                      18,
+                                    ),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(30),
+                                        boxShadow: const [
+                                          BoxShadow(
+                                            color: Color(0x59000000),
+                                            blurRadius: 18,
+                                            offset: Offset(0, 8),
+                                          ),
+                                          BoxShadow(
+                                            color: Color(0x14F59E0B),
+                                            blurRadius: 30,
+                                            offset: Offset(0, 4),
+                                          ),
+                                        ],
                                       ),
-                                      decoration: InputDecoration(
-                                        hintText: provider.tr('search_hint'),
-                                        hintStyle: const TextStyle(
-                                          color: Color(0xFF8A8496),
-                                        ),
-                                        prefixIcon: const Icon(
-                                          Icons.search,
-                                          color: Color(0xFF8A8496),
-                                          size: 18,
-                                        ),
-                                        suffixIcon:
-                                            provider.searchKeyword.isNotEmpty
-                                            ? IconButton(
-                                                onPressed: () {
-                                                  provider.setKeyword('');
-                                                  _searchController.clear();
-                                                  FocusManager
-                                                      .instance
-                                                      .primaryFocus
-                                                      ?.unfocus();
-                                                },
-                                                icon: const Icon(
-                                                  Icons.close,
-                                                  color: Color(0xFF8A8496),
-                                                  size: 16,
-                                                ),
-                                              )
-                                            : null,
-                                        contentPadding:
-                                            const EdgeInsets.symmetric(
-                                              vertical: 0,
+                                      child: Focus(
+                                        onFocusChange: (focus) {
+                                          setState(() {
+                                            _isFocusingSearch = focus;
+                                          });
+                                        },
+                                        child: TextField(
+                                          controller: _searchController,
+                                          // Shows a "Search" key on the
+                                          // keyboard — submitting dismisses
+                                          // it (vital on iOS).
+                                          textInputAction:
+                                              TextInputAction.search,
+                                          onSubmitted: (_) => FocusManager
+                                              .instance
+                                              .primaryFocus
+                                              ?.unfocus(),
+                                          onChanged: (val) =>
+                                              provider.setKeyword(val),
+                                          style: const TextStyle(
+                                            fontSize: 13,
+                                            color: Color(0xFF1A1425),
+                                          ),
+                                          decoration: InputDecoration(
+                                            hintText: provider.tr(
+                                              'search_hint',
                                             ),
-                                        filled: true,
-                                        fillColor: Colors.white,
-                                        border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            30,
-                                          ),
-                                          borderSide: BorderSide.none,
-                                        ),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            30,
-                                          ),
-                                          borderSide: BorderSide.none,
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            30,
-                                          ),
-                                          borderSide: const BorderSide(
-                                            color: Color(0xFFF59E0B),
-                                            width: 1.5,
+                                            hintStyle: const TextStyle(
+                                              color: Color(0xFF8A8496),
+                                            ),
+                                            prefixIcon: const Icon(
+                                              Icons.search,
+                                              color: Color(0xFF8A8496),
+                                              size: 18,
+                                            ),
+                                            suffixIcon:
+                                                provider
+                                                    .searchKeyword
+                                                    .isNotEmpty
+                                                ? IconButton(
+                                                    onPressed: () {
+                                                      provider.setKeyword('');
+                                                      _searchController.clear();
+                                                      FocusManager
+                                                          .instance
+                                                          .primaryFocus
+                                                          ?.unfocus();
+                                                    },
+                                                    icon: const Icon(
+                                                      Icons.close,
+                                                      color: Color(0xFF8A8496),
+                                                      size: 16,
+                                                    ),
+                                                  )
+                                                : null,
+                                            contentPadding:
+                                                const EdgeInsets.symmetric(
+                                                  vertical: 0,
+                                                ),
+                                            filled: true,
+                                            fillColor: Colors.white,
+                                            border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(30),
+                                              borderSide: BorderSide.none,
+                                            ),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(30),
+                                              borderSide: BorderSide.none,
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(30),
+                                              borderSide: const BorderSide(
+                                                color: Color(0xFFF59E0B),
+                                                width: 1.5,
+                                              ),
+                                            ),
                                           ),
                                         ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                 ),
-              ),
 
-              // Autocomplete Suggestions Panel OR Main Page Content — both
-              // scroll together with the hero above them
-              if (isSearching)
-                SizedBox(
-                  height:
-                      (viewport.maxHeight -
+                // Autocomplete Suggestions Panel OR Main Page Content — both
+                // scroll together with the hero above them
+                if (isSearching)
+                  SizedBox(
+                    height:
+                        (viewport.maxHeight -
+                                268 -
+                                MediaQuery.of(context).padding.top) <
+                            240
+                        ? 240.0
+                        : viewport.maxHeight -
                               268 -
-                              MediaQuery.of(context).padding.top) <
-                          240
-                      ? 240.0
-                      : viewport.maxHeight -
-                            268 -
-                            MediaQuery.of(context).padding.top,
-                  child: Container(
+                              MediaQuery.of(context).padding.top,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: context.fast.bg,
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(24),
+                        ),
+                      ),
+                      child: _buildSuggestionsPanel(
+                        context,
+                        provider,
+                        suggCategories,
+                      ),
+                    ),
+                  )
+                else
+                  Container(
                     decoration: BoxDecoration(
                       color: context.fast.bg,
                       borderRadius: const BorderRadius.vertical(
                         top: Radius.circular(24),
                       ),
                     ),
-                    child: _buildSuggestionsPanel(
-                      context,
-                      provider,
-                      suggCategories,
-                    ),
+                    child: _buildMainContent(context, provider, filteredRest),
                   ),
-                )
-              else
-                Container(
-                  decoration: BoxDecoration(
-                    color: context.fast.bg,
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(24),
-                    ),
-                  ),
-                  child: _buildMainContent(context, provider, filteredRest),
-                ),
-            ],
+              ],
+            ),
           ),
-        ),
 
-        // Slot Machine Selection Overlay
-        if (provider.isSurpriseMeRolling) _buildSlotsOverlay(context, provider),
-      ],
+          // Slot Machine Selection Overlay
+          if (provider.isSurpriseMeRolling)
+            _buildSlotsOverlay(context, provider),
+        ],
       ),
     );
   }
 
   bool _isFocusingSearch = false;
-
-  /// Amber lightning bolt with a warm halo — flanks the FAST wordmark.
-  Widget _boltIcon() => const Icon(
-    Icons.bolt,
-    color: Color(0xFFFBBF24),
-    size: 30,
-    shadows: [Shadow(color: Color(0x99F59E0B), blurRadius: 16)],
-  );
 
   // Split suggestion layout
   Widget _buildSuggestionsPanel(
@@ -640,10 +681,7 @@ class _HomeScreenState extends State<HomeScreen>
                             context,
                             provider.searchKeyword,
                           ),
-                          icon: const Icon(
-                            Icons.storefront_outlined,
-                            size: 15,
-                          ),
+                          icon: const Icon(Icons.storefront_outlined, size: 15),
                           label: Text(tr(context, 'req_resto_cta')),
                           style: TextButton.styleFrom(
                             foregroundColor: const Color(0xFFF59E0B),
@@ -1262,229 +1300,229 @@ class _HomeScreenState extends State<HomeScreen>
           provider.navigateToScreen('restaurant');
         },
         child: Container(
-        margin: EdgeInsets.only(bottom: 16),
-        decoration: BoxDecoration(
-          color: context.fast.card,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: context.fast.line),
-          boxShadow: [
-            BoxShadow(
-              color: context.fast.shadow,
-              blurRadius: 10,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Restaurant Image
-            Stack(
-              children: [
-                FastParallax(
-                  maxShift: 14,
-                  child: FastImage(
-                    rest.image,
-                    height: 140,
-                    width: double.infinity,
-                    cacheWidth: 800,
-                    placeholder: Container(
+          margin: EdgeInsets.only(bottom: 16),
+          decoration: BoxDecoration(
+            color: context.fast.card,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: context.fast.line),
+            boxShadow: [
+              BoxShadow(
+                color: context.fast.shadow,
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Restaurant Image
+              Stack(
+                children: [
+                  FastParallax(
+                    maxShift: 14,
+                    child: FastImage(
+                      rest.image,
                       height: 140,
-                      color: context.fast.cardHigh,
-                      child: Icon(
-                        Icons.restaurant,
-                        color: context.fast.faint,
-                        size: 40,
+                      width: double.infinity,
+                      cacheWidth: 800,
+                      placeholder: Container(
+                        height: 140,
+                        color: context.fast.cardHigh,
+                        child: Icon(
+                          Icons.restaurant,
+                          color: context.fast.faint,
+                          size: 40,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                // Top gradient overlay
-                Positioned.fill(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.black.withValues(alpha: 0.5),
-                          Colors.transparent,
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
-                    ),
-                  ),
-                ),
-                // Favorite heart
-                Positioned(
-                  top: 12,
-                  left: 12,
-                  child: GestureDetector(
-                    onTap: () => provider.toggleFavorite(rest.id),
+                  // Top gradient overlay
+                  Positioned.fill(
                     child: Container(
-                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.black.withValues(alpha: 0.5),
+                            Colors.transparent,
+                          ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Favorite heart
+                  Positioned(
+                    top: 12,
+                    left: 12,
+                    child: GestureDetector(
+                      onTap: () => provider.toggleFavorite(rest.id),
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: context.fast.bg.withValues(alpha: 0.85),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.1),
+                          ),
+                        ),
+                        child: Icon(
+                          provider.isFavorite(rest.id)
+                              ? Icons.favorite
+                              : Icons.favorite_border,
+                          color: provider.isFavorite(rest.id)
+                              ? const Color(0xFFEF4444)
+                              : context.fast.t2,
+                          size: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Details badges
+                  Positioned(
+                    top: 12,
+                    right: 12,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: context.fast.bg.withValues(alpha: 0.85),
-                        shape: BoxShape.circle,
+                        borderRadius: BorderRadius.circular(8),
                         border: Border.all(
                           color: Colors.white.withValues(alpha: 0.1),
                         ),
                       ),
-                      child: Icon(
-                        provider.isFavorite(rest.id)
-                            ? Icons.favorite
-                            : Icons.favorite_border,
-                        color: provider.isFavorite(rest.id)
-                            ? const Color(0xFFEF4444)
-                            : context.fast.t2,
-                        size: 16,
+                      child: Row(
+                        children: [
+                          Icon(Icons.star, color: Color(0xFFF59E0B), size: 14),
+                          SizedBox(width: 4),
+                          Text(
+                            '${rest.rating}',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: context.fast.t1,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                ),
-                // Details badges
-                Positioned(
-                  top: 12,
-                  right: 12,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: context.fast.bg.withValues(alpha: 0.85),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.1),
+                  // Distance badge
+                  Positioned(
+                    bottom: 12,
+                    left: 12,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF59E0B),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        '⚡ ${rest.pickupPrepTime} ${tr(context, 'min_prep')} • ${provider.getRealDistance(rest).toStringAsFixed(1)} km',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: FASTBrand.onAmber,
+                        ),
                       ),
                     ),
-                    child: Row(
+                  ),
+                ],
+              ),
+              // Text info
+              Padding(
+                padding: EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      rest.name,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 14,
+                        color: context.fast.t1,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      rest.description,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: context.fast.t3,
+                        height: 1.4,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 10),
+                    // Dietary preference tags
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: rest.dietaryOptions.map((tag) {
+                        return Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: context.fast.cardHigh,
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: context.fast.line),
+                          ),
+                          child: Text(
+                            dietLabel(context, tag),
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                              color: context.fast.t2,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                    SizedBox(height: 10),
+                    // Website-style status row: teal FAST indicator + prep time
+                    Row(
                       children: [
-                        Icon(Icons.star, color: Color(0xFFF59E0B), size: 14),
-                        SizedBox(width: 4),
-                        Text(
-                          '${rest.rating}',
+                        Container(
+                          width: 6,
+                          height: 6,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF00C8B3),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 5),
+                        const Text(
+                          'FAST',
                           style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: context.fast.t1,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.2,
+                            color: Color(0xFF00C8B3),
+                          ),
+                        ),
+                        const Spacer(),
+                        Icon(Icons.schedule, size: 12, color: context.fast.t3),
+                        const SizedBox(width: 3),
+                        Text(
+                          '${rest.pickupPrepTime} min',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: context.fast.t3,
                           ),
                         ),
                       ],
                     ),
-                  ),
+                  ],
                 ),
-                // Distance badge
-                Positioned(
-                  bottom: 12,
-                  left: 12,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF59E0B),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      '⚡ ${rest.pickupPrepTime} ${tr(context, 'min_prep')} • ${provider.getRealDistance(rest).toStringAsFixed(1)} km',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: FASTBrand.onAmber,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            // Text info
-            Padding(
-              padding: EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    rest.name,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 14,
-                      color: context.fast.t1,
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    rest.description,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: context.fast.t3,
-                      height: 1.4,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(height: 10),
-                  // Dietary preference tags
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: rest.dietaryOptions.map((tag) {
-                      return Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: context.fast.cardHigh,
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: context.fast.line),
-                        ),
-                        child: Text(
-                          dietLabel(context, tag),
-                          style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.bold,
-                            color: context.fast.t2,
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                  SizedBox(height: 10),
-                  // Website-style status row: teal FAST indicator + prep time
-                  Row(
-                    children: [
-                      Container(
-                        width: 6,
-                        height: 6,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF00C8B3),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 5),
-                      const Text(
-                        'FAST',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 1.2,
-                          color: Color(0xFF00C8B3),
-                        ),
-                      ),
-                      const Spacer(),
-                      Icon(Icons.schedule, size: 12, color: context.fast.t3),
-                      const SizedBox(width: 3),
-                      Text(
-                        '${rest.pickupPrepTime} min',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: context.fast.t3,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
         ),
       ),
     );
@@ -1995,10 +2033,7 @@ class _RestaurantRequestSheetState extends State<_RestaurantRequestSheet> {
       borderRadius: BorderRadius.circular(12),
       borderSide: const BorderSide(color: Color(0xFFF59E0B)),
     ),
-    contentPadding: const EdgeInsets.symmetric(
-      horizontal: 14,
-      vertical: 12,
-    ),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
   );
 
   Future<void> _submit() async {
@@ -2014,15 +2049,15 @@ class _RestaurantRequestSheetState extends State<_RestaurantRequestSheet> {
       );
       if (!mounted) return;
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr(context, 'req_resto_done'))),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(tr(context, 'req_resto_done'))));
     } catch (_) {
       if (!mounted) return;
       setState(() => _sending = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr(context, 'req_resto_err'))),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(tr(context, 'req_resto_err'))));
     }
   }
 

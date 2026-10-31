@@ -607,70 +607,112 @@ class _FastNavBarState extends State<FastNavBar>
     final accent = widget.accent;
     final inactive = widget.inactive ?? fast.t3;
     final bottom = MediaQuery.paddingOf(context).bottom;
+    // Icon/label color inside the filled indicator — dark on bright
+    // accents (teal, amber), white on dark ones.
+    final onAccent = accent.computeLuminance() > 0.35
+        ? const Color(0xFF10141F)
+        : Colors.white;
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(14, 0, 14, bottom + 10),
+      padding: EdgeInsets.fromLTRB(14, 0, 14, bottom + 12),
       child: Container(
-        height: 64,
         decoration: BoxDecoration(
-          color: (widget.surface ?? fast.card).withValues(alpha: 0.94),
-          borderRadius: BorderRadius.circular(32),
-          border: Border.all(color: widget.line ?? fast.line),
+          borderRadius: BorderRadius.circular(34),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.25),
-              blurRadius: 24,
-              offset: const Offset(0, 10),
+              color: Colors.black.withValues(alpha: 0.35),
+              blurRadius: 32,
+              offset: const Offset(0, 16),
+            ),
+            BoxShadow(
+              color: accent.withValues(alpha: 0.08),
+              blurRadius: 40,
+              offset: const Offset(0, 8),
             ),
           ],
         ),
-        clipBehavior: Clip.antiAlias,
-        child: LayoutBuilder(
-          builder: (context, c) {
-            final tabW = c.maxWidth / widget.items.length;
-            return Stack(
-              children: [
-                AnimatedBuilder(
-                  animation: _pos,
-                  builder: (ctx, _) => PositionedDirectional(
-                    start: _pos.value * tabW + 7,
-                    top: 8,
-                    width: tabW - 14,
-                    height: 48,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: accent.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(
-                          color: accent.withValues(alpha: 0.4),
-                        ),
-                      ),
-                    ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(34),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+            child: Container(
+              height: 68,
+              decoration: BoxDecoration(
+                color: (widget.surface ?? fast.card).withValues(alpha: 0.72),
+                borderRadius: BorderRadius.circular(34),
+                border: Border.all(
+                  color: (widget.line ?? Colors.white).withValues(
+                    alpha: widget.line != null ? 1 : 0.09,
                   ),
                 ),
-                Row(
-                  children: [
-                    for (var i = 0; i < widget.items.length; i++)
-                      Expanded(
-                        child: KeyedSubtree(
-                          key: widget.itemKeys != null &&
-                                  i < widget.itemKeys!.length
-                              ? widget.itemKeys![i]
-                              : null,
-                          child: _tab(i, widget.items[i], inactive, accent),
+              ),
+              child: LayoutBuilder(
+                builder: (context, c) {
+                  final tabW = c.maxWidth / widget.items.length;
+                  return Stack(
+                    children: [
+                      // Sliding indicator — filled gradient pill with a
+                      // soft accent glow, not a faint outline.
+                      AnimatedBuilder(
+                        animation: _pos,
+                        builder: (ctx, _) => PositionedDirectional(
+                          start: _pos.value * tabW + 8,
+                          top: 9,
+                          width: tabW - 16,
+                          height: 50,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  Color.lerp(accent, Colors.white, 0.12)!,
+                                  Color.lerp(accent, Colors.black, 0.18)!,
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(26),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: accent.withValues(alpha: 0.45),
+                                  blurRadius: 18,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
-                  ],
-                ),
-              ],
-            );
-          },
+                      Row(
+                        children: [
+                          for (var i = 0; i < widget.items.length; i++)
+                            Expanded(
+                              child: KeyedSubtree(
+                                key: widget.itemKeys != null &&
+                                        i < widget.itemKeys!.length
+                                    ? widget.itemKeys![i]
+                                    : null,
+                                child: _tab(
+                                  i,
+                                  widget.items[i],
+                                  inactive,
+                                  onAccent,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
         ),
       ),
     );
   }
 
-  Widget _tab(int i, FastNavItem item, Color inactive, Color accent) {
+  Widget _tab(int i, FastNavItem item, Color inactive, Color onAccent) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () => widget.onTap(i),
@@ -678,7 +720,7 @@ class _FastNavBarState extends State<FastNavBar>
         animation: _pos,
         builder: (ctx, _) {
           final t = 1 - (_pos.value - i).abs().clamp(0.0, 1.0);
-          final color = Color.lerp(inactive, accent, t)!;
+          final color = Color.lerp(inactive, onAccent, t)!;
           return Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
