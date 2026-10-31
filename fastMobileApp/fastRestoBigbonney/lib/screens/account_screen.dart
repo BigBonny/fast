@@ -27,6 +27,13 @@ class _AccountScreenState extends State<AccountScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    // Opening the notifications tab marks everything read — otherwise
+    // the unread dot would stay lit forever.
+    _tabController.addListener(() {
+      if (_tabController.index == 3 && !_tabController.indexIsChanging) {
+        context.read<FASTProvider>().markNotificationsRead();
+      }
+    });
   }
 
   @override

@@ -92,14 +92,19 @@ export const updateRestaurantSchema = createRestaurantSchema.partial().extend({
 // ─── Order tracking / pickup ─────────────────────────────────
 
 export const updateOrderTrackingSchema = z.object({
-  gpsProgress: z.number().min(0).max(1).optional(),
+  // Client reports progress as 0-100 (percent of the walked route).
+  gpsProgress: z.number().min(0).max(100).optional(),
   isReadyAtEntrance: z.boolean().optional(),
 }).refine((data) => data.gpsProgress !== undefined || data.isReadyAtEntrance !== undefined, {
   message: 'Au moins un champ requis (gpsProgress ou isReadyAtEntrance)',
 });
 
 export const verifyPickupSchema = z.object({
-  token: z.string().min(1, 'Token requis'),
+  // The app sends `pickupToken`; `token` kept for older clients/tools.
+  token: z.string().optional(),
+  pickupToken: z.string().optional(),
+}).refine((data) => (data.token ?? data.pickupToken)?.length, {
+  message: 'Token requis',
 });
 
 // ─── Menu ───────────────────────────────────────────────────

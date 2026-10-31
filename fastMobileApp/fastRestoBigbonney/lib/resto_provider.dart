@@ -346,7 +346,7 @@ class RestoProvider extends ChangeNotifier {
   static String _ordersSignature(List<Order> orders) => orders
       .map(
         (o) =>
-            '${o.id}:${o.status}:${o.prepTimerSeconds}:${o.prepStartedAt}:${o.gpsProgress}:${o.isReadyAtEntrance}',
+            '${o.id}:${o.status}:${o.prepTimerSeconds}:${o.prepStartedAt}:${o.gpsProgress}:${o.isReadyAtEntrance}:${o.clientDelayMin}',
       )
       .join('|');
 

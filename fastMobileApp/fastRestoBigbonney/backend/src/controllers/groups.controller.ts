@@ -4,6 +4,7 @@ import { prisma } from '../services/prisma';
 import { createGroupSchema, joinGroupSchema, updateGroupMemberSchema, saveGroupCartSchema } from '../utils/validation';
 import { computeCartPricing } from '../utils/cartPricing';
 import { getRestaurantIdForUser } from '../middleware/auth';
+import { safeEmitNotificationToUser } from '../services/realtime';
 
 function generateCode(): string {
   return `FAST-${randomBytes(6).toString('base64url').toUpperCase()}`;
@@ -450,7 +451,7 @@ export const submitGroup = async (req: Request, res: Response): Promise<void> =>
   }
 
   const submittedAt = new Date();
-  const updated = await prisma.$transaction(async (tx) => {
+  const txResult = await prisma.$transaction(async (tx) => {
     const result = await tx.groupOrder.updateMany({
       where: { id, status: 'LOCKED' },
       data: { status: 'SUBMITTED', submittedAt },
@@ -458,7 +459,7 @@ export const submitGroup = async (req: Request, res: Response): Promise<void> =>
     if (result.count !== 1) {
       throw new Error('GROUP_ALREADY_SUBMITTED');
     }
-    await tx.notification.create({
+    const notification = await tx.notification.create({
       data: {
         userId: group.restaurant.ownerId,
         title: 'Nouvelle commande groupée payée !',
@@ -466,14 +467,19 @@ export const submitGroup = async (req: Request, res: Response): Promise<void> =>
         type: 'STATUS',
       },
     });
-    return tx.groupOrder.findUnique({
+    const updated = await tx.groupOrder.findUnique({
       where: { id },
       include: safeGroupInclude,
     });
+    return { updated, notification };
   });
 
+  // The submit signal is how the kitchen learns a group order is on its
+  // way — it must reach the owner even with the app closed (FCM).
+  safeEmitNotificationToUser(group.restaurant.ownerId, txResult.notification);
+
   res.json({
-    ...updated,
+    ...txResult.updated,
     submittedOrderIds: group.orders.map((order) => order.id),
     excludedUnpaidMembers: group.members.filter((member) => member.paymentStatus !== 'PAID').length,
   });

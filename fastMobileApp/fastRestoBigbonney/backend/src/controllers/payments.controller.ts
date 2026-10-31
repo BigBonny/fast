@@ -170,27 +170,33 @@ async function createPaidOrderFromCheckout(
 
       if (!result.order) throw new Error('Paid order not found');
 
-      if (result.created && !result.order.groupOrderId) {
-        const notification = await prisma.notification.create({
-          data: {
-            userId: result.restaurantOwnerId!,
-            orderId: result.order.id,
-            title: 'Nouvelle commande payée !',
-            body: `Commande #${result.order.id.slice(-6)} — ${result.order.items.length} article(s)`,
-            type: 'STATUS',
-          },
-        });
+      if (result.created) {
         const clientNotification = await prisma.notification.create({
           data: {
             userId: result.order.userId,
             orderId: result.order.id,
             title: 'Commande payée',
-            body: `Commande #${result.order.id.slice(-6)} payée — en attente d'acceptation par le restaurant.`,
+            body: result.order.groupOrderId
+              ? 'Votre part est payée — la commande part dès que l’hôte envoie le groupe.'
+              : `Commande #${result.order.id.slice(-6)} payée — en attente d'acceptation par le restaurant.`,
             type: 'SUCCESS',
           },
         });
-        safeEmitOrderToRestaurant(result.order.restaurantId, result.order);
-        safeEmitNotificationToUser(result.restaurantOwnerId!, notification);
+        // Group orders only reach the kitchen once the host submits —
+        // the per-payment "new order" push stays off for them.
+        if (!result.order.groupOrderId) {
+          const notification = await prisma.notification.create({
+            data: {
+              userId: result.restaurantOwnerId!,
+              orderId: result.order.id,
+              title: 'Nouvelle commande payée !',
+              body: `Commande #${result.order.id.slice(-6)} — ${result.order.items.length} article(s)`,
+              type: 'STATUS',
+            },
+          });
+          safeEmitOrderToRestaurant(result.order.restaurantId, result.order);
+          safeEmitNotificationToUser(result.restaurantOwnerId!, notification);
+        }
         safeEmitNotificationToUser(result.order.userId, clientNotification);
       }
 
