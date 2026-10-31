@@ -215,7 +215,7 @@ class _CartScreenState extends State<CartScreen> {
         itemBuilder: (context, index) {
           final item = cart[index];
           return FastSwipeDelete(
-            onDelete: () => provider.removeFromCart(item.menuItem.id),
+            onDelete: () => provider.removeFromCart(item),
             child: Container(
             color: context.fast.card,
             child: Padding(
@@ -312,7 +312,7 @@ class _CartScreenState extends State<CartScreen> {
                         children: [
                           GestureDetector(
                             onTap: () => provider.updateCartQuantity(
-                              item.menuItem.id,
+                              item,
                               item.quantity - 1,
                             ),
                             child: Padding(
@@ -340,7 +340,7 @@ class _CartScreenState extends State<CartScreen> {
                           ),
                           GestureDetector(
                             onTap: () => provider.updateCartQuantity(
-                              item.menuItem.id,
+                              item,
                               item.quantity + 1,
                             ),
                             child: Padding(
@@ -363,7 +363,7 @@ class _CartScreenState extends State<CartScreen> {
                     const SizedBox(width: 8),
                     IconButton(
                       onPressed: () =>
-                          provider.removeFromCart(item.menuItem.id),
+                          provider.removeFromCart(item),
                       icon: const Icon(
                         Icons.delete_outline,
                         color: Color(0xFFEF4444),

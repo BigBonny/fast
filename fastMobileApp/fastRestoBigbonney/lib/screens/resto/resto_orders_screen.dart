@@ -376,6 +376,28 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                       ),
                     ),
                   ),
+                if (order.clientDelayMin > 0)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3B82F6),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      tr(context, 'client_eta').replaceAll(
+                        '{n}',
+                        '${order.clientDelayMin}',
+                      ),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ),
                 Text(
                   orderStatusLabel(context, order.status),
                   style: TextStyle(

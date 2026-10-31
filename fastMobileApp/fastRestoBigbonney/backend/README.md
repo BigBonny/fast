@@ -158,7 +158,7 @@ npm start
 | POST | `/api/orders` | ✅ | — | Passer commande (redirige vers Stripe) |
 | GET | `/api/orders/mine` | ✅ | — | Mes commandes (filtre: `status`) |
 | GET | `/api/orders/:id` | ✅ | CLIENT/RESTAURANT | Détail d'une commande (propriétaire ou restaurant) |
-| PATCH | `/api/orders/:id/tracking` | ✅ | CLIENT | Mise à jour GPS (`gpsProgress` 0-1, `isReadyAtEntrance`) |
+| PATCH | `/api/orders/:id/tracking` | ✅ | CLIENT | Mise à jour GPS (`gpsProgress` 0-100, `isReadyAtEntrance`) |
 | POST | `/api/orders/:id/cancel` | ✅ | — | Annuler ma commande (remboursement Stripe si PLACED+PAID) |
 | GET | `/api/orders/restaurant` | ✅ | RESTAURANT | Commandes du restaurant (filtre: `status`) |
 | PATCH | `/api/orders/:id/status` | ✅ | RESTAURANT | Mettre à jour le statut (transitions validées) |

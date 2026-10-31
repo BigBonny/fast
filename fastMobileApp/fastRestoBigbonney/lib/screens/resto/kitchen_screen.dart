@@ -369,6 +369,29 @@ class _KitchenScreenState extends State<KitchenScreen> {
                       ),
                     ),
                   ),
+                if (o.clientDelayMin > 0) ...[
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3B82F6),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      fast
+                          .tr('client_eta')
+                          .replaceAll('{n}', '${o.clientDelayMin}'),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(width: 8),
                 Text(
                   statusLabel,

@@ -497,6 +497,12 @@ class FASTProvider extends ChangeNotifier {
       ),
     );
 
+    // Push tap → land on the order list (client shell ignores the call
+    // harmlessly for restaurant-side notifications).
+    PushService.instance.onOpen = (data) {
+      if (data['orderId'] != null) navigateToScreen('commandes');
+    };
+
     ProximityService.instance.start(
       orders: () => _orders,
       restaurants: () => _restaurants,
@@ -1334,22 +1340,32 @@ class FASTProvider extends ChangeNotifier {
 
   int get cartCount => _cart.fold(0, (sum, item) => sum + item.quantity);
 
+  /// Two cart lines with the same dish but different option sets or
+  /// allergy notes must stay separate — otherwise the kitchen gets an
+  /// ambiguous "2x Burger — cheese, bacon" and can't tell which is which.
+  static bool _sameCartConfig(
+    MenuItem item,
+    List<String> options,
+    String notes,
+    CartItem line,
+  ) {
+    if (line.menuItem.id != item.id) return false;
+    if (line.allergyNotes != notes) return false;
+    if (line.selectedOptions.length != options.length) return false;
+    return line.selectedOptions.toSet().containsAll(options);
+  }
+
   void addToCart(
     MenuItem item,
     int qty,
     List<String> selectedOptions,
     String allergyNotes,
   ) {
-    final existingIndex = _cart.indexWhere((c) => c.menuItem.id == item.id);
+    final existingIndex = _cart.indexWhere(
+      (c) => _sameCartConfig(item, selectedOptions, allergyNotes, c),
+    );
     if (existingIndex > -1) {
       _cart[existingIndex].quantity += qty;
-      // Merge any new selected options
-      if (selectedOptions.isNotEmpty) {
-        _cart[existingIndex].selectedOptions.addAll(selectedOptions);
-      }
-      if (allergyNotes.isNotEmpty) {
-        _cart[existingIndex].allergyNotes = allergyNotes;
-      }
     } else {
       _cart.add(
         CartItem(
@@ -1369,17 +1385,19 @@ class FASTProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void removeFromCart(String itemId) {
-    _cart.removeWhere((c) => c.menuItem.id == itemId);
+  /// Removes one specific cart line (matched by identity) — never other
+  /// lines that happen to hold the same dish.
+  void removeFromCart(CartItem line) {
+    _cart.removeWhere((c) => identical(c, line));
     notifyListeners();
   }
 
-  void updateCartQuantity(String itemId, int qty) {
+  void updateCartQuantity(CartItem line, int qty) {
     if (qty <= 0) {
-      removeFromCart(itemId);
+      removeFromCart(line);
       return;
     }
-    final index = _cart.indexWhere((c) => c.menuItem.id == itemId);
+    final index = _cart.indexWhere((c) => identical(c, line));
     if (index > -1) {
       _cart[index].quantity = qty;
     }
@@ -1640,12 +1658,22 @@ class FASTProvider extends ChangeNotifier {
 
   void toggleNotifPane(bool open) {
     _isNotifOpen = open;
-    if (open) {
-      for (var n in _notifications) {
+    if (open) markNotificationsRead();
+    notifyListeners();
+  }
+
+  /// Mark every notification read — called when the user opens the
+  /// notifications tab so the unread badge actually clears.
+  void markNotificationsRead() {
+    var changed = false;
+    for (var n in _notifications) {
+      if (!n.isRead) {
         n.isRead = true;
+        changed = true;
       }
-      _saveNotifications();
     }
+    if (!changed) return;
+    _saveNotifications();
     notifyListeners();
   }
 

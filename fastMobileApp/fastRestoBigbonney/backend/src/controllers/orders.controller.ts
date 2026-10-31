@@ -177,6 +177,13 @@ export const updateOrderTracking = async (req: Request, res: Response): Promise<
     return;
   }
 
+  // Terminal orders must not regress — a late in-flight patch could
+  // otherwise clear isReadyAtEntrance set by verify-pickup.
+  if (order.status === 'COMPLETED' || order.status === 'CANCELLED') {
+    res.json(order);
+    return;
+  }
+
   const updateData: Record<string, unknown> = {};
   if (data.gpsProgress !== undefined) updateData.gpsProgress = data.gpsProgress;
   if (data.isReadyAtEntrance !== undefined) updateData.isReadyAtEntrance = data.isReadyAtEntrance;
@@ -192,7 +199,8 @@ export const updateOrderTracking = async (req: Request, res: Response): Promise<
 
 export const verifyPickup = async (req: Request, res: Response): Promise<void> => {
   const id = req.params.id as string;
-  const { token } = verifyPickupSchema.parse(req.body);
+  const parsed = verifyPickupSchema.parse(req.body);
+  const token = parsed.token ?? parsed.pickupToken!;
 
   const order = await prisma.order.findUnique({
     where: { id },
@@ -430,8 +438,8 @@ export const signalClientDelay = async (req: Request, res: Response): Promise<vo
     data: {
       userId: order.restaurant.ownerId!,
       orderId: order.id,
-      title: 'Client en retard',
-      body: `Commande #${order.id.slice(-6)} — Le client aura ${delayMin} min de retard`,
+      title: 'Arrivée du client',
+      body: `Commande #${order.id.slice(-6)} — Le client arrive dans ~${delayMin} min`,
       type: 'INFO',
     },
   });

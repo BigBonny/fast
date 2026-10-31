@@ -657,6 +657,7 @@ class Order {
   String? prepStartedAt;
   int prepTimerSeconds;
   double gpsProgress; // 0 to 100
+  int clientDelayMin; // Client-reported ETA in minutes ("J'arrive dans X min")
   bool isBilledAnyway; // For cancelled orders where prep already started
   bool isUrgent; // Green to Orange to Red
   final String? groupCode;
@@ -683,6 +684,7 @@ class Order {
     this.prepStartedAt,
     this.prepTimerSeconds = 0,
     this.gpsProgress = 0.0,
+    this.clientDelayMin = 0,
     this.isBilledAnyway = false,
     this.isUrgent = false,
     this.groupCode,
@@ -710,6 +712,7 @@ class Order {
     'prepStartedAt': prepStartedAt,
     'prepTimerSeconds': prepTimerSeconds,
     'gpsProgress': gpsProgress,
+    'clientDelayMin': clientDelayMin,
     'isBilledAnyway': isBilledAnyway,
     'isUrgent': isUrgent,
     'groupCode': groupCode,
@@ -739,6 +742,7 @@ class Order {
     prepStartedAt: strOrNull(json['prepStartedAt']),
     prepTimerSeconds: json['prepTimerSeconds'] as int? ?? 0,
     gpsProgress: (json['gpsProgress'] as num?)?.toDouble() ?? 0.0,
+    clientDelayMin: json['clientDelayMin'] as int? ?? 0,
     isBilledAnyway: json['isBilledAnyway'] as bool? ?? false,
     isUrgent: json['isUrgent'] as bool? ?? false,
     groupCode: strOrNull(json['groupCode']),
@@ -790,6 +794,7 @@ class Order {
       prepStartedAt: strOrNull(json['prepStartedAt']),
       prepTimerSeconds: json['prepTimerSeconds'] as int? ?? 0,
       gpsProgress: (json['gpsProgress'] as num?)?.toDouble() ?? 0.0,
+      clientDelayMin: json['clientDelayMin'] as int? ?? 0,
       isBilledAnyway: json['isBilledAnyway'] as bool? ?? false,
       isUrgent: json['isUrgent'] as bool? ?? false,
       groupCode:

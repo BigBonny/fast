@@ -44,6 +44,10 @@ class RealtimeService {
           .enableReconnection()
           .setReconnectionDelay(2000)
           .setReconnectionDelayMax(15000)
+          // Vercel's serverless deploy can't hold a socket — give up
+          // after a few tries instead of retrying forever (polling +
+          // FCM carry the live updates anyway).
+          .setReconnectionAttempts(5)
           .build(),
       );
     } catch (e) {

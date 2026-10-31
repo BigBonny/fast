@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
@@ -19,6 +20,10 @@ class PushService {
 
   bool _ready = false;
   String? _lastToken;
+
+  /// Called when the user taps a push notification (background or cold
+  /// start). Receives the FCM `data` payload — `orderId` when set.
+  void Function(Map<String, dynamic> data)? onOpen;
 
   /// Initialize Firebase + FCM for this signed-in user. Safe to call on
   /// every login/cold start — heavy work happens once per process.
@@ -52,6 +57,19 @@ class PushService {
           body: n.body ?? '',
         );
       });
+
+      // Taps from the system tray: warm background opens come through
+      // the stream; the cold-start tap comes back once via
+      // getInitialMessage and must be deferred until the shell exists.
+      FirebaseMessaging.onMessageOpenedApp.listen(
+        (message) => onOpen?.call(message.data),
+      );
+      final initial = await messaging.getInitialMessage();
+      if (initial != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          onOpen?.call(initial.data);
+        });
+      }
     } catch (e) {
       if (kDebugMode) debugPrint('[FCM] setup failed: $e');
     }
