@@ -764,6 +764,25 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
 
     const isTestKey = env.stripeSecretKey.startsWith('sk_test_');
     let accountId = restaurant.stripeAccountId;
+    // The stored Connect account may belong to a different Stripe
+    // platform (we migrated live accounts — old test acct_ IDs don't
+    // exist there). Verify it before building an onboarding link;
+    // a stale ID falls through to fresh-account creation below.
+    if (accountId && !isTestKey) {
+      try {
+        await stripe.accounts.retrieve(accountId);
+      } catch {
+        accountId = null;
+        await prisma.restaurant.update({
+          where: { id: restaurant.id },
+          data: {
+            stripeAccountId: null,
+            stripeChargesEnabled: false,
+            stripePayoutsEnabled: false,
+          },
+        });
+      }
+    }
     // In test mode the platform-collected shortcut below creates/updates
     // the account — no need to spawn an Express account first.
     if (!accountId && !isTestKey) {
