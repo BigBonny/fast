@@ -40,6 +40,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final Set<String> _cuisineTypes = {'Burger'};
   String _city = '';
   final _cityOnboardingCtrl = TextEditingController();
+  // Controllers, not bare onSaved: controller-less fields lose their
+  // text when the form rebuilds (loading state, step change), which is
+  // exactly how an empty restaurant name reached the API.
+  final _managerNameCtrl = TextEditingController();
+  final _restoNameCtrl = TextEditingController();
   double _normalPrepTime = 15;
   double _rushPrepTime = 25;
 
@@ -85,6 +90,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     'Cuisine antillaise & créole',
     'Autres',
   ];
+
+  @override
+  void dispose() {
+    _cityOnboardingCtrl.dispose();
+    _managerNameCtrl.dispose();
+    _restoNameCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -188,10 +201,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
-    _formKey.currentState!.save();
-    // Belt & suspenders: a name-less restaurant is rejected by the API
-    // (400 "Nom requis") — catch it here with a field-level message.
-    if (_restoName.trim().isEmpty) {
+    // Read controllers directly — authoritative source of what the
+    // user typed, immune to form-save/rebuild ordering.
+    _managerFirstName = _managerNameCtrl.text.trim();
+    _restoName = _restoNameCtrl.text.trim();
+    _city = _cityOnboardingCtrl.text.trim();
+    if (_restoName.isEmpty) {
       setState(() => _formError = tr(context, 'required_f'));
       return;
     }
@@ -459,23 +474,24 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           SizedBox(height: 24),
           TextFormField(
+            controller: _managerNameCtrl,
             style: TextStyle(color: context.fast.t1),
             decoration: InputDecoration(
               labelText: tr(context, 'manager_name'),
               labelStyle: TextStyle(color: context.fast.t2),
             ),
-            onSaved: (val) => _managerFirstName = val ?? '',
           ),
           SizedBox(height: 16),
           TextFormField(
+            controller: _restoNameCtrl,
             style: TextStyle(color: context.fast.t1),
             decoration: InputDecoration(
               labelText: tr(context, 'resto_name_lbl'),
               labelStyle: TextStyle(color: context.fast.t2),
             ),
-            validator: (val) =>
-                val == null || val.isEmpty ? tr(context, 'required_f') : null,
-            onSaved: (val) => _restoName = val ?? '',
+            validator: (val) => val == null || val.trim().isEmpty
+                ? tr(context, 'required_f')
+                : null,
           ),
           SizedBox(height: 16),
           AddressAutocompleteField(
