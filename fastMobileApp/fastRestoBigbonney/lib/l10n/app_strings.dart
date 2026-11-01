@@ -222,8 +222,7 @@ class AppStrings {
     'reservation_too_soon':
         'Choisissez un horaire à au moins 30 minutes dans le futur',
     'no_reservations': 'Aucune réservation',
-    'no_reservations_hint':
-        'Réservez une table depuis la page d’un restaurant',
+    'no_reservations_hint': 'Réservez une table depuis la page d’un restaurant',
     'seating_capacity': 'Capacité d’accueil (places)',
     'seating_cap_hint': 'max {n} pers.',
     'report_review': 'Signaler cet avis',
@@ -242,7 +241,8 @@ class AppStrings {
     'ai_suggest_desc': 'Proposer une description (IA)',
     'verify_phone_first': 'Vérifiez votre numéro avant de créer le compte',
     'reservation_only': 'Réservation uniquement',
-    'reservation_only_sub': 'Les clients réservent une table au lieu de commander',
+    'reservation_only_sub':
+        'Les clients réservent une table au lieu de commander',
     'my_position': 'Ma position',
     'locating': 'Localisation…',
     'subtotal': 'Sous-total du panier',
@@ -358,10 +358,13 @@ class AppStrings {
     'del': 'Supprimer',
     'retry': 'Réessayer',
     'add': 'Ajouter',
-    'custom_category_hint': 'Votre catégorie (ex. Congolais, Marocain, Food truck…)',
+    'custom_category_hint':
+        'Votre catégorie (ex. Congolais, Marocain, Food truck…)',
     'food_truck': 'Food truck',
-    'food_truck_sub': 'Camion itinérant — les clients suivent vos emplacements par jour',
-    'truck_schedule_hint': 'Indiquez l’adresse (ou le lieu) où vous serez chaque jour. Laissez vide les jours sans service.',
+    'food_truck_sub':
+        'Camion itinérant — les clients suivent vos emplacements par jour',
+    'truck_schedule_hint':
+        'Indiquez l’adresse (ou le lieu) où vous serez chaque jour. Laissez vide les jours sans service.',
     'truck_stop_hint': 'Adresse ou lieu (ex. Marché de Champigny)',
     'truck_today': 'Aujourd’hui :',
     'truck_not_today': 'Pas de service aujourd’hui',
@@ -525,23 +528,28 @@ class AppStrings {
     'back': 'Retour',
     'ci1_t': 'Retrouvez vos restaurants préférés',
     'ci1_ta': 'vos restaurants',
-    'ci1_d': 'Retrouvez tout le menu de vos restaurants préférés. Commandez, payez et réservez. Votre commande sera prête tout juste quand vous arrivez.',
+    'ci1_d':
+        'Retrouvez tout le menu de vos restaurants préférés. Commandez, payez et réservez. Votre commande sera prête tout juste quand vous arrivez.',
     'ci2_t': 'Ne faites plus la queue',
     'ci2_ta': 'plus la queue',
-    'ci2_d': 'Choisissez votre menu dans l\'application. Le chef sait exactement quand vous arrivez et prépare vos plats tout juste au bon moment. Aucune précuisson, aucun plat en avance, aucune perte de qualité.',
+    'ci2_d':
+        'Choisissez votre menu dans l\'application. Le chef sait exactement quand vous arrivez et prépare vos plats tout juste au bon moment. Aucune précuisson, aucun plat en avance, aucune perte de qualité.',
     'ci3_t': 'FAST, chaque minute compte.',
     'ci3_ta': 'chaque minute compte.',
     'ci3_d': 'Découvrez tous nos avantages dans l\'application.',
     'ci3_welcome': 'Bienvenue sur FAST !',
-    'pi1_t': 'Plus de visibilité, plus de clients, augmentation du chiffre d\'affaires.',
+    'pi1_t':
+        'Plus de visibilité, plus de clients, augmentation du chiffre d\'affaires.',
     'pi1_ta': 'plus de clients,',
     'pi1_d': 'Faites connaître votre restaurant autour de vous sur FAST.',
     'pi2_t': 'Votre menu en quelques secondes.',
     'pi2_ta': 'en quelques secondes.',
-    'pi2_d': 'Photographiez simplement votre carte, notre IA l\'intègre automatiquement dans votre application.',
+    'pi2_d':
+        'Photographiez simplement votre carte, notre IA l\'intègre automatiquement dans votre application.',
     'pi3_t': 'Gagnez du temps, simplifiez votre service.',
     'pi3_ta': 'simplifiez votre service.',
-    'pi3_d': 'Les clients commandent et paient sur l\'application. Vous recevez les commandes en temps réel et vous vous concentrez sur la cuisine.',
+    'pi3_d':
+        'Les clients commandent et paient sur l\'application. Vous recevez les commandes en temps réel et vous vous concentrez sur la cuisine.',
     'pi3_w': 'Bienvenue sur FAST Pro !',
     'req_resto_cta': 'Demander ce restaurant',
     'req_resto_title': 'Suggérer un restaurant',
@@ -562,25 +570,36 @@ class AppStrings {
     'req_st_onboarded': 'Inscrit',
     'req_st_declined': 'Refusé',
     'notif_arrive_title': 'Vous êtes arrivé !',
-    'notif_arrive_body': '{n} — votre commande vous attend, montrez votre code de retrait.',
+    'notif_arrive_body':
+        '{n} — votre commande vous attend, montrez votre code de retrait.',
     'geo_tracking_title': 'Suivi de commande',
-    'geo_tracking_body': 'FAST suit votre position pour vous alerter à l’arrivée au restaurant.',
+    'geo_tracking_body':
+        'FAST suit votre position pour vous alerter à l’arrivée au restaurant.',
     'notif_eta5': 'J’arrive dans 5 min',
     'notif_eta15': 'Dans 15 min',
     'notif_order_preparing_title': 'Top départ !',
-    'notif_order_preparing_body': 'Le restaurant lance votre commande — indiquez quand vous arrivez.',
+    'notif_order_preparing_body':
+        'Le restaurant lance votre commande — indiquez quand vous arrivez.',
     'notif_order_ready_title': 'Repas prêt !',
-    'notif_order_ready_body': 'Votre commande vous attend chez {n} — indiquez votre arrivée.',
+    'notif_order_ready_body':
+        'Votre commande vous attend chez {n} — indiquez votre arrivée.',
     'notif_order_cancelled_title': 'Commande annulée',
     'notif_order_cancelled_body': 'Votre commande chez {n} a été annulée.',
     'notif_off_banner': 'Notifications désactivées sur cet appareil',
     'notif_enable': 'Activer',
     'notif_test_send': 'Envoyer un test',
     'notif_test_body': 'Ceci est une notification de test.',
+    'assistant_title': 'Assistant FAST',
+    'assistant_greeting':
+        'Salut ! Je suis l’assistant FAST. Un plat, un resto, une question sur votre commande ?',
+    'assistant_hint': 'Posez votre question…',
+    'assistant_err': 'Désolé, je n’arrive pas à répondre pour le moment.',
     'notif_reminder_title': 'Votre commande vous attend',
-    'notif_reminder_body': 'Elle est prête chez {n} — récupérez-la pendant qu’elle est chaude, et prévenez le restaurant si vous avez du retard.',
+    'notif_reminder_body':
+        'Elle est prête chez {n} — récupérez-la pendant qu’elle est chaude, et prévenez le restaurant si vous avez du retard.',
     'legal_identity': 'Identité légale',
-    'identity_help': 'Ces informations pré-remplissent votre compte Stripe — vous n’aurez à les saisir qu’ici.',
+    'identity_help':
+        'Ces informations pré-remplissent votre compte Stripe — vous n’aurez à les saisir qu’ici.',
     'siret_lbl': 'SIRET',
     'phone_lbl': 'Téléphone du restaurant',
     'owner_dob_lbl': 'Date de naissance du responsable',
@@ -987,7 +1006,8 @@ class AppStrings {
     'guest_badge': 'INVITÉ',
     'menu_soldout_sub': 'Menu — ruptures uniquement',
     'notif_new_order_title': 'Nouvelle commande !',
-    'notif_new_order_body': '{n} article(s) — {total} € à préparer. Ouvrez FAST Pro pour l\'accepter.',
+    'notif_new_order_body':
+        '{n} article(s) — {total} € à préparer. Ouvrez FAST Pro pour l\'accepter.',
     'apple_signin': 'Se connecter avec Apple',
     'network_error': 'Connexion impossible. Vérifiez votre connexion internet.',
     'request_timeout': 'Le serveur met trop de temps à répondre. Réessayez.',
@@ -1293,10 +1313,12 @@ class AppStrings {
     'del': 'Delete',
     'retry': 'Retry',
     'add': 'Add',
-    'custom_category_hint': 'Your category (e.g. Congolese, Moroccan, Food truck…)',
+    'custom_category_hint':
+        'Your category (e.g. Congolese, Moroccan, Food truck…)',
     'food_truck': 'Food truck',
     'food_truck_sub': 'Mobile truck — customers follow your daily locations',
-    'truck_schedule_hint': 'Enter the address (or spot) where you\'ll be each day. Leave blank on days off.',
+    'truck_schedule_hint':
+        'Enter the address (or spot) where you\'ll be each day. Leave blank on days off.',
     'truck_stop_hint': 'Address or spot (e.g. Champigny market)',
     'truck_today': 'Today:',
     'truck_not_today': 'Not out today',
@@ -1458,10 +1480,12 @@ class AppStrings {
     'back': 'Back',
     'ci1_t': 'Find your favorite restaurants',
     'ci1_ta': 'your favorite',
-    'ci1_d': 'Browse the full menus of your favorite restaurants. Order, pay and book. Your order will be ready just as you arrive.',
+    'ci1_d':
+        'Browse the full menus of your favorite restaurants. Order, pay and book. Your order will be ready just as you arrive.',
     'ci2_t': 'Never wait in line',
     'ci2_ta': 'in line',
-    'ci2_d': 'Choose your menu in the app. The chef knows exactly when you arrive and prepares your dishes just in time. No pre-cooking, no early plating, no loss of quality.',
+    'ci2_d':
+        'Choose your menu in the app. The chef knows exactly when you arrive and prepares your dishes just in time. No pre-cooking, no early plating, no loss of quality.',
     'ci3_t': 'FAST, every minute counts.',
     'ci3_ta': 'every minute counts.',
     'ci3_d': 'Discover all our benefits in the app.',
@@ -1471,10 +1495,12 @@ class AppStrings {
     'pi1_d': 'Get your restaurant discovered around you on FAST.',
     'pi2_t': 'Your menu in seconds.',
     'pi2_ta': 'in seconds.',
-    'pi2_d': 'Just photograph your menu — our AI builds it automatically in your app.',
+    'pi2_d':
+        'Just photograph your menu — our AI builds it automatically in your app.',
     'pi3_t': 'Save time, simplify your service.',
     'pi3_ta': 'simplify your service.',
-    'pi3_d': 'Customers order and pay in the app. You get orders in real time and focus on the kitchen.',
+    'pi3_d':
+        'Customers order and pay in the app. You get orders in real time and focus on the kitchen.',
     'pi3_w': 'Welcome to FAST Pro!',
     'req_resto_cta': 'Request this restaurant',
     'req_resto_title': 'Suggest a restaurant',
@@ -1497,23 +1523,33 @@ class AppStrings {
     'notif_arrive_title': 'You\'ve arrived!',
     'notif_arrive_body': '{n} — your order is waiting, show your pickup code.',
     'geo_tracking_title': 'Order tracking',
-    'geo_tracking_body': 'FAST tracks your position to alert you when you reach the restaurant.',
+    'geo_tracking_body':
+        'FAST tracks your position to alert you when you reach the restaurant.',
     'notif_eta5': 'I’ll be there in 5 min',
     'notif_eta15': 'In 15 min',
     'notif_order_preparing_title': 'Order started!',
-    'notif_order_preparing_body': 'The kitchen just started your order — let them know when you’ll arrive.',
+    'notif_order_preparing_body':
+        'The kitchen just started your order — let them know when you’ll arrive.',
     'notif_order_ready_title': 'Order ready!',
-    'notif_order_ready_body': 'Your order is waiting at {n} — let them know your ETA.',
+    'notif_order_ready_body':
+        'Your order is waiting at {n} — let them know your ETA.',
     'notif_order_cancelled_title': 'Order cancelled',
     'notif_order_cancelled_body': 'Your order at {n} has been cancelled.',
     'notif_off_banner': 'Notifications are off on this device',
     'notif_enable': 'Enable',
     'notif_test_send': 'Send a test',
     'notif_test_body': 'This is a test notification.',
+    'assistant_title': 'FAST Assistant',
+    'assistant_greeting':
+        'Hi! I’m the FAST assistant — ask me about dishes, restaurants or your order.',
+    'assistant_hint': 'Ask me anything…',
+    'assistant_err': 'Sorry, I can’t answer right now.',
     'notif_reminder_title': 'Your order is still waiting',
-    'notif_reminder_body': 'It’s ready at {n} — pick it up while it’s hot, and warn the restaurant if you’re running late.',
+    'notif_reminder_body':
+        'It’s ready at {n} — pick it up while it’s hot, and warn the restaurant if you’re running late.',
     'legal_identity': 'Legal identity',
-    'identity_help': 'These details pre-fill your Stripe account — you only enter them here.',
+    'identity_help':
+        'These details pre-fill your Stripe account — you only enter them here.',
     'siret_lbl': 'SIRET',
     'phone_lbl': 'Restaurant phone',
     'owner_dob_lbl': 'Representative date of birth',
@@ -1908,7 +1944,8 @@ class AppStrings {
     'guest_badge': 'GUEST',
     'menu_soldout_sub': 'Menu — sold-out only',
     'notif_new_order_title': 'New order!',
-    'notif_new_order_body': '{n} item(s) — €{total} to prepare. Open FAST Pro to accept it.',
+    'notif_new_order_body':
+        '{n} item(s) — €{total} to prepare. Open FAST Pro to accept it.',
     'apple_signin': 'Sign in with Apple',
     'network_error': 'Connection failed. Check your internet connection.',
     'request_timeout': 'The server is taking too long to respond. Try again.',
@@ -2170,8 +2207,10 @@ class AppStrings {
     'add': 'Ekle',
     'custom_category_hint': 'Kategoriniz (örn. Kongolu, Faslı, Food truck…)',
     'food_truck': 'Food truck',
-    'food_truck_sub': 'Gezici kamyon — müşteriler günlük konumlarınızı takip eder',
-    'truck_schedule_hint': 'Her gün nerede olacağınızı (adres veya yer) yazın. Kapalı günleri boş bırakın.',
+    'food_truck_sub':
+        'Gezici kamyon — müşteriler günlük konumlarınızı takip eder',
+    'truck_schedule_hint':
+        'Her gün nerede olacağınızı (adres veya yer) yazın. Kapalı günleri boş bırakın.',
     'truck_stop_hint': 'Adres veya yer (örn. Champigny pazarı)',
     'truck_today': 'Bugün:',
     'truck_not_today': 'Bugün servis yok',
@@ -2335,10 +2374,12 @@ class AppStrings {
     'back': 'Geri',
     'ci1_t': 'Sevdiğiniz restoranları bulun',
     'ci1_ta': 'restoranları',
-    'ci1_d': 'Sevdiğiniz restoranların tüm menüsüne ulaşın. Sipariş verin, ödeyin ve rezervasyon yapın. Siparişiniz siz geldiğinizde hazır olacak.',
+    'ci1_d':
+        'Sevdiğiniz restoranların tüm menüsüne ulaşın. Sipariş verin, ödeyin ve rezervasyon yapın. Siparişiniz siz geldiğinizde hazır olacak.',
     'ci2_t': 'Artık sıra beklemeyin',
     'ci2_ta': 'sıra',
-    'ci2_d': 'Uygulamada menünüzü seçin. Şef tam olarak ne zaman geleceğinizi bilir ve yemeklerinizi tam zamanında hazırlar. Önceden pişirme yok, erken hazırlanan tabak yok, kalite kaybı yok.',
+    'ci2_d':
+        'Uygulamada menünüzü seçin. Şef tam olarak ne zaman geleceğinizi bilir ve yemeklerinizi tam zamanında hazırlar. Önceden pişirme yok, erken hazırlanan tabak yok, kalite kaybı yok.',
     'ci3_t': 'FAST, her dakika önemli.',
     'ci3_ta': 'her dakika önemli.',
     'ci3_d': 'Uygulamadaki tüm avantajlarımızı keşfedin.',
@@ -2348,10 +2389,12 @@ class AppStrings {
     'pi1_d': 'Restoranınızı çevrenizdekilere FAST ile tanıtın.',
     'pi2_t': 'Menünüz saniyeler içinde.',
     'pi2_ta': 'saniyeler içinde.',
-    'pi2_d': 'Kartınızın fotoğrafını çekin, yapay zekamız onu uygulamanıza otomatik aktarır.',
+    'pi2_d':
+        'Kartınızın fotoğrafını çekin, yapay zekamız onu uygulamanıza otomatik aktarır.',
     'pi3_t': 'Zaman kazanın, servisinizi kolaylaştırın.',
     'pi3_ta': 'servisinizi kolaylaştırın.',
-    'pi3_d': 'Müşteriler uygulamadan sipariş verir ve öder. Siparişleri anlık alır, mutfağa odaklanırsınız.',
+    'pi3_d':
+        'Müşteriler uygulamadan sipariş verir ve öder. Siparişleri anlık alır, mutfağa odaklanırsınız.',
     'pi3_w': 'FAST Pro\'ya hoş geldiniz!',
     'req_resto_cta': 'Bu restoranı iste',
     'req_resto_title': 'Restoran öner',
@@ -2374,13 +2417,16 @@ class AppStrings {
     'notif_arrive_title': 'Geldiniz!',
     'notif_arrive_body': '{n} — siparişiniz hazır, teslim kodunuzu gösterin.',
     'geo_tracking_title': 'Sipariş takibi',
-    'geo_tracking_body': 'FAST, restorana ulaştığınızda sizi bilgilendirmek için konumunuzu izliyor.',
+    'geo_tracking_body':
+        'FAST, restorana ulaştığınızda sizi bilgilendirmek için konumunuzu izliyor.',
     'notif_eta5': '5 dakikaya geliyorum',
     'notif_eta15': '15 dakikaya',
     'notif_order_preparing_title': 'Sipariş hazırlanıyor!',
-    'notif_order_preparing_body': 'Mutfak siparişinizi hazırlamaya başladı — ne zaman geleceğinizi bildirin.',
+    'notif_order_preparing_body':
+        'Mutfak siparişinizi hazırlamaya başladı — ne zaman geleceğinizi bildirin.',
     'notif_order_ready_title': 'Sipariş hazır!',
-    'notif_order_ready_body': 'Siparişiniz {n} adresinde sizi bekliyor — varışınızı bildirin.',
+    'notif_order_ready_body':
+        'Siparişiniz {n} adresinde sizi bekliyor — varışınızı bildirin.',
     'notif_order_cancelled_title': 'Sipariş iptal edildi',
     'notif_order_cancelled_body': '{n} adresindeki siparişiniz iptal edildi.',
     'notif_off_banner': 'Bu cihazda bildirimler kapalı',
@@ -2388,9 +2434,11 @@ class AppStrings {
     'notif_test_send': 'Test gönder',
     'notif_test_body': 'Bu bir test bildirimidir.',
     'notif_reminder_title': 'Siparişiniz sizi bekliyor',
-    'notif_reminder_body': '{n} adresinde hazır — sıcakken alın, gecikecekseniz restorana haber verin.',
+    'notif_reminder_body':
+        '{n} adresinde hazır — sıcakken alın, gecikecekseniz restorana haber verin.',
     'legal_identity': 'Yasal kimlik',
-    'identity_help': 'Bu bilgiler Stripe hesabınızı önceden doldurur — yalnızca burada girmeniz yeterli.',
+    'identity_help':
+        'Bu bilgiler Stripe hesabınızı önceden doldurur — yalnızca burada girmeniz yeterli.',
     'siret_lbl': 'SIRET',
     'phone_lbl': 'Restoran telefonu',
     'owner_dob_lbl': 'Sorumlu kişinin doğum tarihi',
@@ -2671,7 +2719,8 @@ class AppStrings {
     'normal_time': 'Normal Süre',
     'rush_time': 'Rush Modu Süresi',
     'stripe_active': 'Stripe Connect aktif — ödemeler açık',
-    'stripe_pending': 'Stripe aktivasyonu sürüyor — bir dakika sonra tekrar deneyin.',
+    'stripe_pending':
+        'Stripe aktivasyonu sürüyor — bir dakika sonra tekrar deneyin.',
     'stripe_connected': 'Hesap bağlandı — ödeme aktivasyonunu tamamlayın',
     'stripe_required': 'Stripe Connect ayarlanmadı — ödeme almak için gerekli',
     'restaurant_not_connected':
@@ -2781,18 +2830,24 @@ class AppStrings {
     'guest_badge': 'MİSAFİR',
     'menu_soldout_sub': 'Menü — yalnızca tükenenler',
     'notif_new_order_title': 'Yeni sipariş!',
-    'notif_new_order_body': '{n} ürün — hazırlanacak {total} €. Kabul etmek için FAST Pro\'yu açın.',
+    'notif_new_order_body':
+        '{n} ürün — hazırlanacak {total} €. Kabul etmek için FAST Pro\'yu açın.',
     'apple_signin': 'Apple ile giriş yap',
     'network_error': 'Bağlantı kurulamadı. İnternet bağlantınızı kontrol edin.',
     'request_timeout': 'Sunucu yanıt vermiyor. Tekrar deneyin.',
     'allergy_note': 'Alerjilerinizi veya önlemlerinizi buraya yazın…',
     'leave_kitchen': 'Mutfaktan çık',
-    'camera_permission_hint': 'Ayarlar\'dan kameraya izin verin, sonra tekrar deneyin. Fotoğraf da içe aktarabilirsiniz.',
-    'camera_unavailable': 'Kamera kullanılamıyor. Tekrar deneyin veya fotoğraf içe aktarın.',
+    'camera_permission_hint':
+        'Ayarlar\'dan kameraya izin verin, sonra tekrar deneyin. Fotoğraf da içe aktarabilirsiniz.',
+    'camera_unavailable':
+        'Kamera kullanılamıyor. Tekrar deneyin veya fotoğraf içe aktarın.',
     'scan_failed': 'Menü içe aktarılamadı',
-    'scan_image_too_large': 'Fotoğraf çok büyük. Daha küçük bir fotoğraf seçin.',
-    'scan_unavailable': 'Menü analiz servisi kullanılamıyor. Daha sonra tekrar deneyin veya yemeklerinizi elle ekleyin.',
-    'scan_no_items': 'Okunabilir yemek bulunamadı. İsimleri ve fiyatları çerçevede tutun ve yavaş çekin.',
+    'scan_image_too_large':
+        'Fotoğraf çok büyük. Daha küçük bir fotoğraf seçin.',
+    'scan_unavailable':
+        'Menü analiz servisi kullanılamıyor. Daha sonra tekrar deneyin veya yemeklerinizi elle ekleyin.',
+    'scan_no_items':
+        'Okunabilir yemek bulunamadı. İsimleri ve fiyatları çerçevede tutun ve yavaş çekin.',
     'scan_save_failed': 'Bulunan yemekler kaydedilemedi. Tekrar deneyin.',
     'open_settings': 'Ayarları aç',
     'choose_photo': 'Fotoğraf içe aktar',
@@ -2802,22 +2857,27 @@ class AppStrings {
     'accept_in': 'Şu sürede kabul et:',
     'card_add': 'Kart ekle',
     'no_saved_cards': 'Kayıtlı kart yok',
-    'payment_unavailable': 'Ödemeler henüz ayarlanmadı. Daha sonra tekrar deneyin.',
+    'payment_unavailable':
+        'Ödemeler henüz ayarlanmadı. Daha sonra tekrar deneyin.',
     'card_expires': 'Son kullanma: {n}',
-    'card_setup_info': 'Kartınız Stripe\'ta güvenle saklanır. Ödeme alınmayacak.',
+    'card_setup_info':
+        'Kartınız Stripe\'ta güvenle saklanır. Ödeme alınmayacak.',
     'address_add': 'Adres ekle',
     'address_label': 'Adres adı',
     'address_default': 'Varsayılan adres',
-    'email_verification_unavailable': 'E-posta doğrulama henüz yok. Adresinizi kişisel bilgilerinizden değiştirebilirsiniz.',
+    'email_verification_unavailable':
+        'E-posta doğrulama henüz yok. Adresinizi kişisel bilgilerinizden değiştirebilirsiniz.',
     'rush_confirm_title': 'Yoğun modu etkinleştir?',
-    'rush_confirm_desc': 'Hazırlık süreleri uzayacak ve müşteriler sipariş vermeden önce bilgilendirilecek.',
+    'rush_confirm_desc':
+        'Hazırlık süreleri uzayacak ve müşteriler sipariş vermeden önce bilgilendirilecek.',
     'rush_duration': 'YOĞUNLUK SÜRESİ',
     'rush_until_off': 'Kapatılana kadar',
     'rush_activate_cta': 'Yoğun modu etkinleştir',
     'rush_deactivate_cta': 'Yoğun modu kapat',
     'rush_off_title': 'Yoğun modu kapat?',
     'rush_off_desc': 'Normal hazırlık sürelerine dön.',
-    'rush_off_desc_timed': '{m} dk kaldı — normal sürelere dönmek için kapatın.',
+    'rush_off_desc_timed':
+        '{m} dk kaldı — normal sürelere dönmek için kapatın.',
     'rush_remaining': '{m} dk kaldı',
     'orders_realtime_hint': 'Yeni siparişler burada gerçek zamanlı görünecek.',
     'welcome_sub': 'Zaman kazanmaya iki saniye uzaktasınız.',
@@ -3085,7 +3145,8 @@ class AppStrings {
     'custom_category_hint': 'فئتك (مثال: كونغولي، مغربي، شاحنة طعام…)',
     'food_truck': 'شاحنة طعام',
     'food_truck_sub': 'شاحنة متنقلة — الزبائن يتابعون مواقعك اليومية',
-    'truck_schedule_hint': 'أدخل العنوان (أو المكان) الذي ستكون فيه كل يوم. اتركه فارغًا في أيام الإغلاق.',
+    'truck_schedule_hint':
+        'أدخل العنوان (أو المكان) الذي ستكون فيه كل يوم. اتركه فارغًا في أيام الإغلاق.',
     'truck_stop_hint': 'العنوان أو المكان (مثال: سوق شامبيني)',
     'truck_today': 'اليوم:',
     'truck_not_today': 'لا توجد خدمة اليوم',
@@ -3244,10 +3305,12 @@ class AppStrings {
     'back': 'رجوع',
     'ci1_t': 'اعثر على مطاعمك المفضلة',
     'ci1_ta': 'مطاعمك المفضلة',
-    'ci1_d': 'تصفح قوائم مطاعمك المفضلة كاملة. اطلب وادفع واحجز. سيكون طلبك جاهزاً تماماً عند وصولك.',
+    'ci1_d':
+        'تصفح قوائم مطاعمك المفضلة كاملة. اطلب وادفع واحجز. سيكون طلبك جاهزاً تماماً عند وصولك.',
     'ci2_t': 'لا داعي للانتظار في الطابور',
     'ci2_ta': 'الطابور',
-    'ci2_d': 'اختر قائمتك من التطبيق. يعرف الشيف بالضبط وقت وصولك ويُحضّر أطباقك في اللحظة المناسبة. لا طهي مسبق، ولا أطباق جاهزة قبل وقتها، ولا فقدان للجودة.',
+    'ci2_d':
+        'اختر قائمتك من التطبيق. يعرف الشيف بالضبط وقت وصولك ويُحضّر أطباقك في اللحظة المناسبة. لا طهي مسبق، ولا أطباق جاهزة قبل وقتها، ولا فقدان للجودة.',
     'ci3_t': 'FAST، كل دقيقة مهمة.',
     'ci3_ta': 'كل دقيقة مهمة.',
     'ci3_d': 'اكتشفوا كل مزايانا في التطبيق.',
@@ -3257,10 +3320,12 @@ class AppStrings {
     'pi1_d': 'عرّف الزبائن القريبين بمطعمك عبر FAST.',
     'pi2_t': 'قائمتك في ثوانٍ.',
     'pi2_ta': 'في ثوانٍ.',
-    'pi2_d': 'صوّر قائمتك ببساطة، وسيدمجها الذكاء الاصطناعي تلقائياً في تطبيقك.',
+    'pi2_d':
+        'صوّر قائمتك ببساطة، وسيدمجها الذكاء الاصطناعي تلقائياً في تطبيقك.',
     'pi3_t': 'وفّر الوقت وبسّط خدمتك.',
     'pi3_ta': 'بسّط خدمتك.',
-    'pi3_d': 'يختار العملاء ويطلبون ويدفعون عبر التطبيق. تصلك الطلبات فورياً وتركّز على المطبخ.',
+    'pi3_d':
+        'يختار العملاء ويطلبون ويدفعون عبر التطبيق. تصلك الطلبات فورياً وتركّز على المطبخ.',
     'pi3_w': 'FAST Pro! مرحباً بك في',
     'req_resto_cta': 'اطلب هذا المطعم',
     'req_resto_title': 'اقترح مطعماً',
@@ -3297,7 +3362,8 @@ class AppStrings {
     'notif_test_send': 'إرسال اختبار',
     'notif_test_body': 'هذا إشعار تجريبي.',
     'notif_reminder_title': 'طلبك ما زال بانتظارك',
-    'notif_reminder_body': 'إنه جاهز لدى {n} — استلمه وهو ساخن، وأخبر المطعم إذا تأخرت.',
+    'notif_reminder_body':
+        'إنه جاهز لدى {n} — استلمه وهو ساخن، وأخبر المطعم إذا تأخرت.',
     'legal_identity': 'الهوية القانونية',
     'identity_help': 'هذه المعلومات تعبئ حساب Stripe مسبقًا — تدخلها هنا فقط.',
     'siret_lbl': 'SIRET',
@@ -3676,18 +3742,22 @@ class AppStrings {
     'guest_badge': 'ضيف',
     'menu_soldout_sub': 'القائمة — النفاد فقط',
     'notif_new_order_title': 'طلب جديد!',
-    'notif_new_order_body': '{n} عنصر — {total} € للتحضير. افتح FAST Pro لقبوله.',
+    'notif_new_order_body':
+        '{n} عنصر — {total} € للتحضير. افتح FAST Pro لقبوله.',
     'apple_signin': 'تسجيل الدخول عبر Apple',
     'network_error': 'تعذّر الاتصال. تحقق من اتصالك بالإنترنت.',
     'request_timeout': 'الخادم يستغرق وقتًا طويلاً للرد. حاول مرة أخرى.',
     'allergy_note': 'اكتب هنا حساسياتك أو احتياطاتك…',
     'leave_kitchen': 'مغادرة المطبخ',
-    'camera_permission_hint': 'اسمح بالكاميرا في الإعدادات ثم أعد المحاولة. يمكنك أيضًا استيراد صورة.',
+    'camera_permission_hint':
+        'اسمح بالكاميرا في الإعدادات ثم أعد المحاولة. يمكنك أيضًا استيراد صورة.',
     'camera_unavailable': 'الكاميرا غير متاحة. أعد المحاولة أو استورد صورة.',
     'scan_failed': 'تعذّر استيراد القائمة',
     'scan_image_too_large': 'الصورة كبيرة جدًا. اختر صورة أصغر.',
-    'scan_unavailable': 'خدمة تحليل القوائم غير متاحة. أعد المحاولة لاحقًا أو أضف أطباقك يدويًا.',
-    'scan_no_items': 'لم يتم العثور على أطباق مقروءة. أبقِ الأسماء والأسعار داخل الإطار وصوّر ببطء.',
+    'scan_unavailable':
+        'خدمة تحليل القوائم غير متاحة. أعد المحاولة لاحقًا أو أضف أطباقك يدويًا.',
+    'scan_no_items':
+        'لم يتم العثور على أطباق مقروءة. أبقِ الأسماء والأسعار داخل الإطار وصوّر ببطء.',
     'scan_save_failed': 'تعذّر حفظ الأطباق المكتشفة. أعد المحاولة.',
     'open_settings': 'فتح الإعدادات',
     'choose_photo': 'استيراد صورة',
@@ -3703,7 +3773,8 @@ class AppStrings {
     'address_add': 'إضافة عنوان',
     'address_label': 'اسم العنوان',
     'address_default': 'العنوان الافتراضي',
-    'email_verification_unavailable': 'التحقق من البريد الإلكتروني غير متاح بعد. يمكنك تعديل بريدك في معلوماتك الشخصية.',
+    'email_verification_unavailable':
+        'التحقق من البريد الإلكتروني غير متاح بعد. يمكنك تعديل بريدك في معلوماتك الشخصية.',
     'rush_confirm_title': 'تفعيل وضع الذروة؟',
     'rush_confirm_desc': 'ستزداد أوقات التحضير وسيُعلم العملاء بذلك قبل الطلب.',
     'rush_duration': 'مدة الذروة',
@@ -3712,7 +3783,8 @@ class AppStrings {
     'rush_deactivate_cta': 'إيقاف وضع الذروة',
     'rush_off_title': 'إيقاف وضع الذروة؟',
     'rush_off_desc': 'العودة إلى أوقات التحضير العادية.',
-    'rush_off_desc_timed': 'متبقٍ {m} دقيقة — أوقفه للعودة إلى الأوقات العادية.',
+    'rush_off_desc_timed':
+        'متبقٍ {m} دقيقة — أوقفه للعودة إلى الأوقات العادية.',
     'rush_remaining': 'متبقٍ {m} دقيقة',
     'orders_realtime_hint': 'ستظهر الطلبات الجديدة هنا في الوقت الفعلي.',
     'welcome_sub': 'أنت على بعد ثانيتين من توفير الوقت.',
@@ -3980,10 +4052,13 @@ class AppStrings {
     'del': 'Eliminar',
     'retry': 'Reintentar',
     'add': 'Añadir',
-    'custom_category_hint': 'Tu categoría (ej. Congoleña, Marroquí, Food truck…)',
+    'custom_category_hint':
+        'Tu categoría (ej. Congoleña, Marroquí, Food truck…)',
     'food_truck': 'Food truck',
-    'food_truck_sub': 'Camión itinerante — los clientes siguen tus ubicaciones diarias',
-    'truck_schedule_hint': 'Indica la dirección (o el lugar) donde estarás cada día. Deja vacío los días sin servicio.',
+    'food_truck_sub':
+        'Camión itinerante — los clientes siguen tus ubicaciones diarias',
+    'truck_schedule_hint':
+        'Indica la dirección (o el lugar) donde estarás cada día. Deja vacío los días sin servicio.',
     'truck_stop_hint': 'Dirección o lugar (ej. Mercado de Champigny)',
     'truck_today': 'Hoy:',
     'truck_not_today': 'Sin servicio hoy',
@@ -4148,10 +4223,12 @@ class AppStrings {
     'back': 'Atrás',
     'ci1_t': 'Encuentra tus restaurantes favoritos',
     'ci1_ta': 'restaurantes',
-    'ci1_d': 'Consulta el menú completo de tus restaurantes favoritos. Pide, paga y reserva. Tu pedido estará listo justo cuando llegues.',
+    'ci1_d':
+        'Consulta el menú completo de tus restaurantes favoritos. Pide, paga y reserva. Tu pedido estará listo justo cuando llegues.',
     'ci2_t': 'No más hacer cola',
     'ci2_ta': 'hacer cola',
-    'ci2_d': 'Elige tu menú en la aplicación. El chef sabe exactamente cuándo llegas y prepara tus platos justo a tiempo. Sin cocción previa, sin platos adelantados, sin pérdida de calidad.',
+    'ci2_d':
+        'Elige tu menú en la aplicación. El chef sabe exactamente cuándo llegas y prepara tus platos justo a tiempo. Sin cocción previa, sin platos adelantados, sin pérdida de calidad.',
     'ci3_t': 'FAST, cada minuto cuenta.',
     'ci3_ta': 'cada minuto cuenta.',
     'ci3_d': 'Descubre todas nuestras ventajas en la aplicación.',
@@ -4161,10 +4238,12 @@ class AppStrings {
     'pi1_d': 'Da a conocer tu restaurante a tu alrededor con FAST.',
     'pi2_t': 'Tu menú en segundos.',
     'pi2_ta': 'en segundos.',
-    'pi2_d': 'Simplemente fotografía tu carta: nuestra IA la integra automáticamente en tu aplicación.',
+    'pi2_d':
+        'Simplemente fotografía tu carta: nuestra IA la integra automáticamente en tu aplicación.',
     'pi3_t': 'Gana tiempo, simplifica tu servicio.',
     'pi3_ta': 'simplifica tu servicio.',
-    'pi3_d': 'Los clientes piden y pagan desde la app. Recibes los pedidos en tiempo real y te concentras en la cocina.',
+    'pi3_d':
+        'Los clientes piden y pagan desde la app. Recibes los pedidos en tiempo real y te concentras en la cocina.',
     'pi3_w': '¡Bienvenido a FAST Pro!',
     'req_resto_cta': 'Solicitar este restaurante',
     'req_resto_title': 'Sugerir un restaurante',
@@ -4185,13 +4264,16 @@ class AppStrings {
     'req_st_onboarded': 'Registrado',
     'req_st_declined': 'Rechazado',
     'notif_arrive_title': '¡Has llegado!',
-    'notif_arrive_body': '{n} — tu pedido te espera, muestra tu código de recogida.',
+    'notif_arrive_body':
+        '{n} — tu pedido te espera, muestra tu código de recogida.',
     'geo_tracking_title': 'Seguimiento del pedido',
-    'geo_tracking_body': 'FAST sigue tu posición para avisarte al llegar al restaurante.',
+    'geo_tracking_body':
+        'FAST sigue tu posición para avisarte al llegar al restaurante.',
     'notif_eta5': 'Llego en 5 min',
     'notif_eta15': 'En 15 min',
     'notif_order_preparing_title': '¡Pedido en marcha!',
-    'notif_order_preparing_body': 'La cocina empezó tu pedido — avisa cuándo llegas.',
+    'notif_order_preparing_body':
+        'La cocina empezó tu pedido — avisa cuándo llegas.',
     'notif_order_ready_title': '¡Pedido listo!',
     'notif_order_ready_body': 'Tu pedido te espera en {n} — indica tu llegada.',
     'notif_order_cancelled_title': 'Pedido cancelado',
@@ -4201,9 +4283,11 @@ class AppStrings {
     'notif_test_send': 'Enviar una prueba',
     'notif_test_body': 'Esto es una notificación de prueba.',
     'notif_reminder_title': 'Tu pedido te sigue esperando',
-    'notif_reminder_body': 'Está listo en {n} — recógelo caliente y avisa si llegas tarde.',
+    'notif_reminder_body':
+        'Está listo en {n} — recógelo caliente y avisa si llegas tarde.',
     'legal_identity': 'Identidad legal',
-    'identity_help': 'Estos datos prerrellenan tu cuenta de Stripe — solo los introduces aquí.',
+    'identity_help':
+        'Estos datos prerrellenan tu cuenta de Stripe — solo los introduces aquí.',
     'siret_lbl': 'SIRET',
     'phone_lbl': 'Teléfono del restaurante',
     'owner_dob_lbl': 'Fecha de nacimiento del responsable',
@@ -4486,7 +4570,8 @@ class AppStrings {
     'normal_time': 'Tiempo normal',
     'rush_time': 'Tiempo Modo Rush',
     'stripe_active': 'Stripe Connect activo — pagos habilitados',
-    'stripe_pending': 'Activación de Stripe en curso — inténtalo de nuevo en un minuto.',
+    'stripe_pending':
+        'Activación de Stripe en curso — inténtalo de nuevo en un minuto.',
     'stripe_connected': 'Cuenta conectada — termina de activar los pagos',
     'stripe_required':
         'Stripe Connect no configurado — necesario para recibir pagos',
@@ -4599,19 +4684,26 @@ class AppStrings {
     'guest_badge': 'INVITADO',
     'menu_soldout_sub': 'Menú — solo agotados',
     'notif_new_order_title': '¡Nuevo pedido!',
-    'notif_new_order_body': '{n} artículo(s) — {total} € por preparar. Abre FAST Pro para aceptarlo.',
+    'notif_new_order_body':
+        '{n} artículo(s) — {total} € por preparar. Abre FAST Pro para aceptarlo.',
     'apple_signin': 'Iniciar sesión con Apple',
     'network_error': 'No se pudo conectar. Revisa tu conexión a internet.',
     'request_timeout': 'El servidor tarda demasiado. Inténtalo de nuevo.',
     'allergy_note': 'Escribe aquí tus alergias o precauciones…',
     'leave_kitchen': 'Salir de la cocina',
-    'camera_permission_hint': 'Permite la cámara en ajustes y vuelve a intentarlo. También puedes importar una foto.',
-    'camera_unavailable': 'La cámara no está disponible. Reintenta o importa una foto.',
+    'camera_permission_hint':
+        'Permite la cámara en ajustes y vuelve a intentarlo. También puedes importar una foto.',
+    'camera_unavailable':
+        'La cámara no está disponible. Reintenta o importa una foto.',
     'scan_failed': 'No se pudo importar el menú',
-    'scan_image_too_large': 'La foto es demasiado grande. Elige una más pequeña.',
-    'scan_unavailable': 'El servicio de análisis de menús no está disponible. Reintenta más tarde o añade tus platos manualmente.',
-    'scan_no_items': 'No se detectó ningún plato legible. Mantén nombres y precios en el encuadre y graba despacio.',
-    'scan_save_failed': 'No se pudieron guardar los platos detectados. Reintenta.',
+    'scan_image_too_large':
+        'La foto es demasiado grande. Elige una más pequeña.',
+    'scan_unavailable':
+        'El servicio de análisis de menús no está disponible. Reintenta más tarde o añade tus platos manualmente.',
+    'scan_no_items':
+        'No se detectó ningún plato legible. Mantén nombres y precios en el encuadre y graba despacio.',
+    'scan_save_failed':
+        'No se pudieron guardar los platos detectados. Reintenta.',
     'open_settings': 'Abrir ajustes',
     'choose_photo': 'Importar foto',
     'with_friends': 'CON MIS AMIGOS',
@@ -4620,24 +4712,30 @@ class AppStrings {
     'accept_in': 'Aceptar en:',
     'card_add': 'Añadir tarjeta',
     'no_saved_cards': 'No hay tarjetas guardadas',
-    'payment_unavailable': 'Los pagos aún no están configurados. Reintenta más tarde.',
+    'payment_unavailable':
+        'Los pagos aún no están configurados. Reintenta más tarde.',
     'card_expires': 'Caduca {n}',
-    'card_setup_info': 'Tu tarjeta se guarda de forma segura en Stripe. No se cobrará nada.',
+    'card_setup_info':
+        'Tu tarjeta se guarda de forma segura en Stripe. No se cobrará nada.',
     'address_add': 'Añadir dirección',
     'address_label': 'Nombre de la dirección',
     'address_default': 'Dirección predeterminada',
-    'email_verification_unavailable': 'La verificación por correo aún no está disponible. Puedes cambiar tu email en tu información personal.',
+    'email_verification_unavailable':
+        'La verificación por correo aún no está disponible. Puedes cambiar tu email en tu información personal.',
     'rush_confirm_title': '¿Activar modo Rush?',
-    'rush_confirm_desc': 'Los tiempos de preparación aumentarán y los clientes serán informados antes de pedir.',
+    'rush_confirm_desc':
+        'Los tiempos de preparación aumentarán y los clientes serán informados antes de pedir.',
     'rush_duration': 'DURACIÓN DEL RUSH',
     'rush_until_off': 'Hasta desactivarlo',
     'rush_activate_cta': 'Activar modo Rush',
     'rush_deactivate_cta': 'Desactivar modo Rush',
     'rush_off_title': '¿Desactivar modo Rush?',
     'rush_off_desc': 'Volver a los tiempos de preparación normales.',
-    'rush_off_desc_timed': 'Quedan {m} min — desactiva para volver a los tiempos normales.',
+    'rush_off_desc_timed':
+        'Quedan {m} min — desactiva para volver a los tiempos normales.',
     'rush_remaining': 'Quedan {m} min',
-    'orders_realtime_hint': 'Los pedidos nuevos aparecerán aquí en tiempo real.',
+    'orders_realtime_hint':
+        'Los pedidos nuevos aparecerán aquí en tiempo real.',
     'welcome_sub': 'Estás a dos segundos de ganar tiempo.',
     'saving': 'Guardando…',
     'edit': 'Editar',
@@ -4902,10 +5000,13 @@ class AppStrings {
     'del': 'Excluir',
     'retry': 'Tentar novamente',
     'add': 'Adicionar',
-    'custom_category_hint': 'A sua categoria (ex. Congolesa, Marroquina, Food truck…)',
+    'custom_category_hint':
+        'A sua categoria (ex. Congolesa, Marroquina, Food truck…)',
     'food_truck': 'Food truck',
-    'food_truck_sub': 'Camião itinerante — os clientes seguem os seus locais diários',
-    'truck_schedule_hint': 'Indique o endereço (ou local) onde estará cada dia. Deixe vazio nos dias sem serviço.',
+    'food_truck_sub':
+        'Camião itinerante — os clientes seguem os seus locais diários',
+    'truck_schedule_hint':
+        'Indique o endereço (ou local) onde estará cada dia. Deixe vazio nos dias sem serviço.',
     'truck_stop_hint': 'Endereço ou local (ex. Mercado de Champigny)',
     'truck_today': 'Hoje:',
     'truck_not_today': 'Sem serviço hoje',
@@ -5069,10 +5170,12 @@ class AppStrings {
     'back': 'Voltar',
     'ci1_t': 'Encontre os seus restaurantes favoritos',
     'ci1_ta': 'restaurantes',
-    'ci1_d': 'Veja o menu completo dos seus restaurantes favoritos. Peça, pague e reserve. O seu pedido estará pronto quando chegar.',
+    'ci1_d':
+        'Veja o menu completo dos seus restaurantes favoritos. Peça, pague e reserve. O seu pedido estará pronto quando chegar.',
     'ci2_t': 'Nunca mais espere na fila',
     'ci2_ta': 'na fila',
-    'ci2_d': 'Escolha o seu menu na aplicação. O chef sabe exatamente quando chega e prepara os seus pratos no momento certo. Sem cozinhar antes, sem pratos adiantados, sem perda de qualidade.',
+    'ci2_d':
+        'Escolha o seu menu na aplicação. O chef sabe exatamente quando chega e prepara os seus pratos no momento certo. Sem cozinhar antes, sem pratos adiantados, sem perda de qualidade.',
     'ci3_t': 'FAST, cada minuto conta.',
     'ci3_ta': 'cada minuto conta.',
     'ci3_d': 'Descubra todas as nossas vantagens na aplicação.',
@@ -5082,10 +5185,12 @@ class AppStrings {
     'pi1_d': 'Dê a conhecer o seu restaurante à sua volta com o FAST.',
     'pi2_t': 'O seu menu em segundos.',
     'pi2_ta': 'em segundos.',
-    'pi2_d': 'Fotografe simplesmente a sua ementa — a nossa IA integra-a automaticamente na sua aplicação.',
+    'pi2_d':
+        'Fotografe simplesmente a sua ementa — a nossa IA integra-a automaticamente na sua aplicação.',
     'pi3_t': 'Ganhe tempo, simplifique o seu serviço.',
     'pi3_ta': 'simplifique o seu serviço.',
-    'pi3_d': 'Os clientes pedem e pagam na aplicação. Recebe os pedidos em tempo real e concentra-se na cozinha.',
+    'pi3_d':
+        'Os clientes pedem e pagam na aplicação. Recebe os pedidos em tempo real e concentra-se na cozinha.',
     'pi3_w': 'Bem-vindo ao FAST Pro!',
     'req_resto_cta': 'Pedir este restaurante',
     'req_resto_title': 'Sugerir um restaurante',
@@ -5106,15 +5211,19 @@ class AppStrings {
     'req_st_onboarded': 'Registado',
     'req_st_declined': 'Recusado',
     'notif_arrive_title': 'Chegou!',
-    'notif_arrive_body': '{n} — o seu pedido está à espera, mostre o código de levantamento.',
+    'notif_arrive_body':
+        '{n} — o seu pedido está à espera, mostre o código de levantamento.',
     'geo_tracking_title': 'Acompanhamento do pedido',
-    'geo_tracking_body': 'A FAST acompanha a sua posição para o alertar quando chegar ao restaurante.',
+    'geo_tracking_body':
+        'A FAST acompanha a sua posição para o alertar quando chegar ao restaurante.',
     'notif_eta5': 'Chego em 5 min',
     'notif_eta15': 'Em 15 min',
     'notif_order_preparing_title': 'Pedido iniciado!',
-    'notif_order_preparing_body': 'A cozinha começou o seu pedido — diga quando chega.',
+    'notif_order_preparing_body':
+        'A cozinha começou o seu pedido — diga quando chega.',
     'notif_order_ready_title': 'Pedido pronto!',
-    'notif_order_ready_body': 'O seu pedido espera-o em {n} — indique a sua chegada.',
+    'notif_order_ready_body':
+        'O seu pedido espera-o em {n} — indique a sua chegada.',
     'notif_order_cancelled_title': 'Pedido cancelado',
     'notif_order_cancelled_body': 'O seu pedido em {n} foi cancelado.',
     'notif_off_banner': 'Notificações desativadas neste dispositivo',
@@ -5122,9 +5231,11 @@ class AppStrings {
     'notif_test_send': 'Enviar um teste',
     'notif_test_body': 'Isto é uma notificação de teste.',
     'notif_reminder_title': 'O seu pedido continua à espera',
-    'notif_reminder_body': 'Está pronto em {n} — levante-o quente e avise se se atrasar.',
+    'notif_reminder_body':
+        'Está pronto em {n} — levante-o quente e avise se se atrasar.',
     'legal_identity': 'Identidade legal',
-    'identity_help': 'Estes dados preenchem previamente a sua conta Stripe — só os introduz aqui.',
+    'identity_help':
+        'Estes dados preenchem previamente a sua conta Stripe — só os introduz aqui.',
     'siret_lbl': 'SIRET',
     'phone_lbl': 'Telefone do restaurante',
     'owner_dob_lbl': 'Data de nascimento do responsável',
@@ -5408,7 +5519,8 @@ class AppStrings {
     'normal_time': 'Tempo normal',
     'rush_time': 'Tempo Modo Rush',
     'stripe_active': 'Stripe Connect ativo — pagamentos ativados',
-    'stripe_pending': 'Ativação do Stripe em curso — tenta novamente dentro de um minuto.',
+    'stripe_pending':
+        'Ativação do Stripe em curso — tenta novamente dentro de um minuto.',
     'stripe_connected': 'Conta ligada — conclui a ativação dos pagamentos',
     'stripe_required':
         'Stripe Connect não configurado — necessário para receber pagamentos',
@@ -5520,19 +5632,26 @@ class AppStrings {
     'guest_badge': 'CONVIDADO',
     'menu_soldout_sub': 'Menu — só esgotados',
     'notif_new_order_title': 'Novo pedido!',
-    'notif_new_order_body': '{n} artigo(s) — {total} € a preparar. Abra o FAST Pro para aceitar.',
+    'notif_new_order_body':
+        '{n} artigo(s) — {total} € a preparar. Abra o FAST Pro para aceitar.',
     'apple_signin': 'Iniciar sessão com Apple',
     'network_error': 'Falha na ligação. Verifique a sua ligação à internet.',
     'request_timeout': 'O servidor demora muito a responder. Tente novamente.',
     'allergy_note': 'Escreva aqui as suas alergias ou precauções…',
     'leave_kitchen': 'Sair da cozinha',
-    'camera_permission_hint': 'Permita a câmera nas definições e tente novamente. Também pode importar uma foto.',
-    'camera_unavailable': 'A câmera não está disponível. Tente novamente ou importe uma foto.',
+    'camera_permission_hint':
+        'Permita a câmera nas definições e tente novamente. Também pode importar uma foto.',
+    'camera_unavailable':
+        'A câmera não está disponível. Tente novamente ou importe uma foto.',
     'scan_failed': 'Não foi possível importar o menu',
-    'scan_image_too_large': 'A foto é demasiado grande. Escolha uma mais pequena.',
-    'scan_unavailable': 'O serviço de análise de menus está indisponível. Tente mais tarde ou adicione os pratos manualmente.',
-    'scan_no_items': 'Nenhum prato legível detetado. Mantenha nomes e preços no enquadramento e filme devagar.',
-    'scan_save_failed': 'Não foi possível guardar os pratos detetados. Tente novamente.',
+    'scan_image_too_large':
+        'A foto é demasiado grande. Escolha uma mais pequena.',
+    'scan_unavailable':
+        'O serviço de análise de menus está indisponível. Tente mais tarde ou adicione os pratos manualmente.',
+    'scan_no_items':
+        'Nenhum prato legível detetado. Mantenha nomes e preços no enquadramento e filme devagar.',
+    'scan_save_failed':
+        'Não foi possível guardar os pratos detetados. Tente novamente.',
     'open_settings': 'Abrir definições',
     'choose_photo': 'Importar foto',
     'with_friends': 'COM OS AMIGOS',
@@ -5541,22 +5660,27 @@ class AppStrings {
     'accept_in': 'Aceitar em:',
     'card_add': 'Adicionar cartão',
     'no_saved_cards': 'Sem cartões guardados',
-    'payment_unavailable': 'Os pagamentos ainda não estão configurados. Tente mais tarde.',
+    'payment_unavailable':
+        'Os pagamentos ainda não estão configurados. Tente mais tarde.',
     'card_expires': 'Expira {n}',
-    'card_setup_info': 'O seu cartão é guardado com segurança na Stripe. Nenhum pagamento será cobrado.',
+    'card_setup_info':
+        'O seu cartão é guardado com segurança na Stripe. Nenhum pagamento será cobrado.',
     'address_add': 'Adicionar morada',
     'address_label': 'Nome da morada',
     'address_default': 'Morada predefinida',
-    'email_verification_unavailable': 'A verificação de e-mail ainda não está disponível. Pode alterar o e-mail nas suas informações pessoais.',
+    'email_verification_unavailable':
+        'A verificação de e-mail ainda não está disponível. Pode alterar o e-mail nas suas informações pessoais.',
     'rush_confirm_title': 'Ativar modo Rush?',
-    'rush_confirm_desc': 'Os tempos de preparação aumentarão e os clientes serão informados antes de pedir.',
+    'rush_confirm_desc':
+        'Os tempos de preparação aumentarão e os clientes serão informados antes de pedir.',
     'rush_duration': 'DURAÇÃO DO RUSH',
     'rush_until_off': 'Até desativar',
     'rush_activate_cta': 'Ativar modo Rush',
     'rush_deactivate_cta': 'Desativar modo Rush',
     'rush_off_title': 'Desativar modo Rush?',
     'rush_off_desc': 'Voltar aos tempos de preparação normais.',
-    'rush_off_desc_timed': 'Restam {m} min — desative para voltar aos tempos normais.',
+    'rush_off_desc_timed':
+        'Restam {m} min — desative para voltar aos tempos normais.',
     'rush_remaining': 'Restam {m} min',
     'orders_realtime_hint': 'Os novos pedidos aparecerão aqui em tempo real.',
     'welcome_sub': 'Está a dois segundos de ganhar tempo.',
@@ -5824,10 +5948,13 @@ class AppStrings {
     'del': 'Elimina',
     'retry': 'Riprova',
     'add': 'Aggiungi',
-    'custom_category_hint': 'La tua categoria (es. Congolese, Marocchina, Food truck…)',
+    'custom_category_hint':
+        'La tua categoria (es. Congolese, Marocchina, Food truck…)',
     'food_truck': 'Food truck',
-    'food_truck_sub': 'Camion itinerante — i clienti seguono le tue posizioni giornaliere',
-    'truck_schedule_hint': 'Indica l\'indirizzo (o il luogo) dove sarai ogni giorno. Lascia vuoto nei giorni di chiusura.',
+    'food_truck_sub':
+        'Camion itinerante — i clienti seguono le tue posizioni giornaliere',
+    'truck_schedule_hint':
+        'Indica l\'indirizzo (o il luogo) dove sarai ogni giorno. Lascia vuoto nei giorni di chiusura.',
     'truck_stop_hint': 'Indirizzo o luogo (es. Mercato di Champigny)',
     'truck_today': 'Oggi:',
     'truck_not_today': 'Nessun servizio oggi',
@@ -5992,10 +6119,12 @@ class AppStrings {
     'back': 'Indietro',
     'ci1_t': 'Trova i tuoi ristoranti preferiti',
     'ci1_ta': 'ristoranti',
-    'ci1_d': 'Sfoglia il menu completo dei tuoi ristoranti preferiti. Ordina, paga e prenota. Il tuo ordine sarà pronto proprio quando arrivi.',
+    'ci1_d':
+        'Sfoglia il menu completo dei tuoi ristoranti preferiti. Ordina, paga e prenota. Il tuo ordine sarà pronto proprio quando arrivi.',
     'ci2_t': 'Basta fare la fila',
     'ci2_ta': 'la fila',
-    'ci2_d': 'Scegli il tuo menu nell\'app. Lo chef sa esattamente quando arrivi e prepara i tuoi piatti al momento giusto. Nessuna precottura, nessun piatto anticipato, nessuna perdita di qualità.',
+    'ci2_d':
+        'Scegli il tuo menu nell\'app. Lo chef sa esattamente quando arrivi e prepara i tuoi piatti al momento giusto. Nessuna precottura, nessun piatto anticipato, nessuna perdita di qualità.',
     'ci3_t': 'FAST, ogni minuto conta.',
     'ci3_ta': 'ogni minuto conta.',
     'ci3_d': 'Scopri tutti i nostri vantaggi nell\'app.',
@@ -6005,10 +6134,12 @@ class AppStrings {
     'pi1_d': 'Fai conoscere il tuo ristorante intorno a te su FAST.',
     'pi2_t': 'Il tuo menu in pochi secondi.',
     'pi2_ta': 'in pochi secondi.',
-    'pi2_d': 'Fotografa semplicemente il tuo menù: la nostra IA lo integra automaticamente nella tua app.',
+    'pi2_d':
+        'Fotografa semplicemente il tuo menù: la nostra IA lo integra automaticamente nella tua app.',
     'pi3_t': 'Risparmia tempo, semplifica il servizio.',
     'pi3_ta': 'semplifica il servizio.',
-    'pi3_d': 'I clienti ordinano e pagano dall\'app. Ricevi gli ordini in tempo reale e ti concentri sulla cucina.',
+    'pi3_d':
+        'I clienti ordinano e pagano dall\'app. Ricevi gli ordini in tempo reale e ti concentri sulla cucina.',
     'pi3_w': 'Benvenuto su FAST Pro!',
     'req_resto_cta': 'Richiedi questo ristorante',
     'req_resto_title': 'Suggerisci un ristorante',
@@ -6029,15 +6160,19 @@ class AppStrings {
     'req_st_onboarded': 'Registrato',
     'req_st_declined': 'Rifiutato',
     'notif_arrive_title': 'Sei arrivato!',
-    'notif_arrive_body': '{n} — il tuo ordine ti aspetta, mostra il codice di ritiro.',
+    'notif_arrive_body':
+        '{n} — il tuo ordine ti aspetta, mostra il codice di ritiro.',
     'geo_tracking_title': 'Monitoraggio ordine',
-    'geo_tracking_body': 'FAST segue la tua posizione per avvisarti quando arrivi al ristorante.',
+    'geo_tracking_body':
+        'FAST segue la tua posizione per avvisarti quando arrivi al ristorante.',
     'notif_eta5': 'Arrivo in 5 min',
     'notif_eta15': 'Tra 15 min',
     'notif_order_preparing_title': 'Ordine avviato!',
-    'notif_order_preparing_body': 'La cucina ha iniziato il tuo ordine — segnala quando arrivi.',
+    'notif_order_preparing_body':
+        'La cucina ha iniziato il tuo ordine — segnala quando arrivi.',
     'notif_order_ready_title': 'Ordine pronto!',
-    'notif_order_ready_body': 'Il tuo ordine ti aspetta da {n} — segnala il tuo arrivo.',
+    'notif_order_ready_body':
+        'Il tuo ordine ti aspetta da {n} — segnala il tuo arrivo.',
     'notif_order_cancelled_title': 'Ordine annullato',
     'notif_order_cancelled_body': 'Il tuo ordine da {n} è stato annullato.',
     'notif_off_banner': 'Notifiche disattivate su questo dispositivo',
@@ -6045,9 +6180,11 @@ class AppStrings {
     'notif_test_send': 'Invia un test',
     'notif_test_body': 'Questa è una notifica di test.',
     'notif_reminder_title': 'Il tuo ordine ti aspetta ancora',
-    'notif_reminder_body': 'È pronto da {n} — ritiralo caldo e avvisa se fai tardi.',
+    'notif_reminder_body':
+        'È pronto da {n} — ritiralo caldo e avvisa se fai tardi.',
     'legal_identity': 'Identità legale',
-    'identity_help': 'Questi dati precompilano il tuo account Stripe — li inserisci solo qui.',
+    'identity_help':
+        'Questi dati precompilano il tuo account Stripe — li inserisci solo qui.',
     'siret_lbl': 'SIRET',
     'phone_lbl': 'Telefono del ristorante',
     'owner_dob_lbl': 'Data di nascita del rappresentante',
@@ -6443,18 +6580,25 @@ class AppStrings {
     'guest_badge': 'OSPITE',
     'menu_soldout_sub': 'Menu — solo esauriti',
     'notif_new_order_title': 'Nuovo ordine!',
-    'notif_new_order_body': '{n} articolo/i — {total} € da preparare. Apri FAST Pro per accettarlo.',
+    'notif_new_order_body':
+        '{n} articolo/i — {total} € da preparare. Apri FAST Pro per accettarlo.',
     'apple_signin': 'Accedi con Apple',
-    'network_error': 'Connessione non riuscita. Controlla la tua connessione internet.',
+    'network_error':
+        'Connessione non riuscita. Controlla la tua connessione internet.',
     'request_timeout': 'Il server impiega troppo tempo. Riprova.',
     'allergy_note': 'Scrivi qui le tue allergie o precauzioni…',
     'leave_kitchen': 'Esci dalla cucina',
-    'camera_permission_hint': 'Autorizza la fotocamera nelle impostazioni e riprova. Puoi anche importare una foto.',
-    'camera_unavailable': 'Fotocamera non disponibile. Riprova o importa una foto.',
+    'camera_permission_hint':
+        'Autorizza la fotocamera nelle impostazioni e riprova. Puoi anche importare una foto.',
+    'camera_unavailable':
+        'Fotocamera non disponibile. Riprova o importa una foto.',
     'scan_failed': 'Impossibile importare il menu',
-    'scan_image_too_large': 'La foto è troppo grande. Scegli una foto più piccola.',
-    'scan_unavailable': 'Il servizio di analisi dei menu non è disponibile. Riprova più tardi o aggiungi i piatti manualmente.',
-    'scan_no_items': 'Nessun piatto leggibile rilevato. Tieni nomi e prezzi nell\'inquadratura e riprendi lentamente.',
+    'scan_image_too_large':
+        'La foto è troppo grande. Scegli una foto più piccola.',
+    'scan_unavailable':
+        'Il servizio di analisi dei menu non è disponibile. Riprova più tardi o aggiungi i piatti manualmente.',
+    'scan_no_items':
+        'Nessun piatto leggibile rilevato. Tieni nomi e prezzi nell\'inquadratura e riprendi lentamente.',
     'scan_save_failed': 'Impossibile salvare i piatti rilevati. Riprova.',
     'open_settings': 'Apri impostazioni',
     'choose_photo': 'Importa foto',
@@ -6464,22 +6608,27 @@ class AppStrings {
     'accept_in': 'Accetta entro:',
     'card_add': 'Aggiungi carta',
     'no_saved_cards': 'Nessuna carta salvata',
-    'payment_unavailable': 'I pagamenti non sono ancora configurati. Riprova più tardi.',
+    'payment_unavailable':
+        'I pagamenti non sono ancora configurati. Riprova più tardi.',
     'card_expires': 'Scade il {n}',
-    'card_setup_info': 'La tua carta è salvata in modo sicuro su Stripe. Nessun addebito.',
+    'card_setup_info':
+        'La tua carta è salvata in modo sicuro su Stripe. Nessun addebito.',
     'address_add': 'Aggiungi indirizzo',
     'address_label': 'Nome dell\'indirizzo',
     'address_default': 'Indirizzo predefinito',
-    'email_verification_unavailable': 'La verifica e-mail non è ancora disponibile. Puoi modificare l\'indirizzo nelle tue informazioni personali.',
+    'email_verification_unavailable':
+        'La verifica e-mail non è ancora disponibile. Puoi modificare l\'indirizzo nelle tue informazioni personali.',
     'rush_confirm_title': 'Attivare la modalità Rush?',
-    'rush_confirm_desc': 'I tempi di preparazione aumenteranno e i clienti ne saranno avvisati prima di ordinare.',
+    'rush_confirm_desc':
+        'I tempi di preparazione aumenteranno e i clienti ne saranno avvisati prima di ordinare.',
     'rush_duration': 'DURATA DEL RUSH',
     'rush_until_off': 'Fino alla disattivazione',
     'rush_activate_cta': 'Attiva modalità Rush',
     'rush_deactivate_cta': 'Disattiva modalità Rush',
     'rush_off_title': 'Disattivare la modalità Rush?',
     'rush_off_desc': 'Ritorno ai tempi di preparazione normali.',
-    'rush_off_desc_timed': 'Mancano {m} min — disattiva per tornare ai tempi normali.',
+    'rush_off_desc_timed':
+        'Mancano {m} min — disattiva per tornare ai tempi normali.',
     'rush_remaining': 'Ancora {m} min',
     'orders_realtime_hint': 'I nuovi ordini appariranno qui in tempo reale.',
     'welcome_sub': 'Sei a due secondi dal risparmiare tempo.',

@@ -13,6 +13,7 @@ import {
 import { ArrowLeft, MapPin, Plus, Home, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import AddressAutocomplete from "@/components/AddressAutocomplete";
 
 export default function AddressesPage() {
   const router = useRouter();
@@ -118,12 +119,10 @@ export default function AddressesPage() {
               aria-label="Nom de l'adresse"
               className="w-full bg-gray-50 dark:bg-gray-800 dark:text-white rounded-xl px-4 py-3 text-sm border border-gray-200 dark:border-gray-700 outline-none focus:border-emerald-400"
             />
-            <input
+            <AddressAutocomplete
               value={line}
-              onChange={(e) => setLine(e.target.value)}
+              onChange={setLine}
               placeholder="Adresse complète"
-              aria-label="Adresse complète"
-              className="w-full bg-gray-50 dark:bg-gray-800 dark:text-white rounded-xl px-4 py-3 text-sm border border-gray-200 dark:border-gray-700 outline-none focus:border-emerald-400"
             />
             <Button type="submit" disabled={!label.trim() || !line.trim()} className="w-full rounded-xl">
               Enregistrer

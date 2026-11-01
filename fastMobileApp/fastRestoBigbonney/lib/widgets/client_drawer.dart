@@ -4,6 +4,7 @@ import '../provider.dart';
 import '../l10n/app_strings.dart';
 import '../providers/auth_provider.dart';
 import '../screens/account_screen.dart';
+import '../screens/assistant_screen.dart';
 import '../theme.dart';
 import '../l10n/tr.dart';
 
@@ -196,6 +197,20 @@ class ClientDrawer extends StatelessWidget {
                     },
                   ),
                   _settingsItem(context, provider),
+                  _item(
+                    context,
+                    icon: Icons.auto_awesome,
+                    iconColor: const Color(0xFFF59E0B),
+                    label: provider.tr('assistant_title'),
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const AssistantScreen(),
+                        ),
+                      );
+                    },
+                  ),
                   _item(
                     context,
                     icon: Icons.favorite_border,
