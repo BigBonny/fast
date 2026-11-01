@@ -189,6 +189,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
     _formKey.currentState!.save();
+    // Belt & suspenders: a name-less restaurant is rejected by the API
+    // (400 "Nom requis") — catch it here with a field-level message.
+    if (_restoName.trim().isEmpty) {
+      setState(() => _formError = tr(context, 'required_f'));
+      return;
+    }
     setState(() {
       _formLoading = true;
       _formError = null;
