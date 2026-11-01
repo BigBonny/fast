@@ -11,6 +11,7 @@ import 'pro_intro_slides.dart';
 import '../../widgets/intro_carousel.dart';
 import '../../theme.dart';
 import '../../l10n/tr.dart';
+import '../../widgets/address_autocomplete_field.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -38,6 +39,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   String _restoName = '';
   final Set<String> _cuisineTypes = {'Burger'};
   String _city = '';
+  final _cityOnboardingCtrl = TextEditingController();
   double _normalPrepTime = 15;
   double _rushPrepTime = 25;
 
@@ -138,7 +140,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     if (auth.user?.restaurant != null) {
       final restoId = auth.user!.restaurant!['id'] as String?;
       if (restoId != null) {
-        await prov.updateSettings(RestaurantSettings.fromApiJson(auth.user!.restaurant!));
+        await prov.updateSettings(
+          RestaurantSettings.fromApiJson(auth.user!.restaurant!),
+        );
         await prov.loadFromApi(restaurantId: restoId);
         return true;
       }
@@ -468,13 +472,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             onSaved: (val) => _restoName = val ?? '',
           ),
           SizedBox(height: 16),
-          TextFormField(
-            style: TextStyle(color: context.fast.t1),
-            decoration: InputDecoration(
-              labelText: tr(context, 'city'),
-              labelStyle: TextStyle(color: context.fast.t2),
-            ),
-            onSaved: (val) => _city = val ?? '',
+          AddressAutocompleteField(
+            controller: _cityOnboardingCtrl,
+            label: tr(context, 'city'),
+            onChanged: (v) => _city = v,
+            onSelected: (s) => _city = s.label,
           ),
           SizedBox(height: 16),
           Text(
@@ -621,8 +623,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               onPressed: auth.isBusy
                   ? null
                   : () async {
-                      final ok =
-                          await auth.redeemInviteCode(codeCtrl.text.trim());
+                      final ok = await auth.redeemInviteCode(
+                        codeCtrl.text.trim(),
+                      );
                       if (ok && ctx.mounted) {
                         Navigator.pop(ctx);
                         _finishOnboarding();

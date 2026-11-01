@@ -13,6 +13,7 @@ import '../../theme.dart';
 import '../../l10n/tr.dart';
 import '../../widgets/fast_ui.dart';
 import '../assistant_screen.dart';
+import '../../widgets/address_autocomplete_field.dart';
 
 class RestoSettingsScreen extends StatefulWidget {
   const RestoSettingsScreen({super.key});
@@ -522,10 +523,15 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
         SizedBox(height: 24),
         _section(tr(context, 'contact_bank')),
         _field(tr(context, 'city'), _cityCtrl),
-        _field(
-          tr(context, 'full_address'),
-          _addressCtrl,
-          hint: tr(context, 'addr_example'),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: AddressAutocompleteField(
+            controller: _addressCtrl,
+            label: tr(context, 'full_address'),
+            onSelected: (s) {
+              if (_cityCtrl.text.trim().isEmpty) _cityCtrl.text = s.city;
+            },
+          ),
         ),
         _field('IBAN', _ibanCtrl, hint: 'FR76 **** **** **** **** 1234'),
 
@@ -784,27 +790,9 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: TextField(
-                      controller: _truckDayCtrls[d],
-                      style: TextStyle(color: context.fast.t1, fontSize: 13),
-                      decoration: InputDecoration(
-                        hintText: tr(context, 'truck_stop_hint'),
-                        hintStyle: TextStyle(
-                          color: context.fast.t3,
-                          fontSize: 12,
-                        ),
-                        isDense: true,
-                        filled: true,
-                        fillColor: context.fast.card,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(color: context.fast.line),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(color: context.fast.line),
-                        ),
-                      ),
+                    child: AddressAutocompleteField(
+                      controller: _truckDayCtrls[d]!,
+                      label: tr(context, 'truck_stop_hint'),
                     ),
                   ),
                 ],

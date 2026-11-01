@@ -9,12 +9,14 @@ class AddressAutocompleteField extends StatefulWidget {
   final TextEditingController controller;
   final String? label;
   final void Function(PlaceSuggestion suggestion)? onSelected;
+  final void Function(String value)? onChanged;
 
   const AddressAutocompleteField({
     super.key,
     required this.controller,
     this.label,
     this.onSelected,
+    this.onChanged,
   });
 
   @override
@@ -34,6 +36,7 @@ class _AddressAutocompleteFieldState extends State<AddressAutocompleteField> {
   }
 
   void _onChanged(String value) {
+    widget.onChanged?.call(value);
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 450), () async {
       if (value.trim().length < 3) {
@@ -114,6 +117,7 @@ class _AddressAutocompleteFieldState extends State<AddressAutocompleteField> {
                   onTap: () {
                     widget.controller.text = s.label;
                     setState(() => _suggestions = []);
+                    widget.onChanged?.call(s.label);
                     widget.onSelected?.call(s);
                   },
                 );
