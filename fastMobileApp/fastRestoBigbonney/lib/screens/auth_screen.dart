@@ -159,7 +159,9 @@ class _AuthScreenState extends State<AuthScreen>
     if (_smsRequired && !_phoneVerified) {
       // The spec requires verified phone before account creation.
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.read<FASTProvider>().tr('verify_phone_first'))),
+        SnackBar(
+          content: Text(context.read<FASTProvider>().tr('verify_phone_first')),
+        ),
       );
       return;
     }
@@ -446,52 +448,62 @@ class _AuthScreenState extends State<AuthScreen>
           const SizedBox(height: 16),
           Consumer<AuthProvider>(
             builder: (context, auth, _) {
-              return OutlinedButton(
-                onPressed: auth.isBusy
-                    ? null
-                    : () async {
-                        final ok = await auth.signInWithGoogle(
-                          role: widget.initialRole ?? 'CLIENT',
-                        );
-                        if (ok && mounted) _navigateToShell();
-                      },
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  side: BorderSide(color: context.fast.line),
-                  shape: RoundedRectangleBorder(
+              return SizedBox(
+                height: 48,
+                child: Material(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  child: InkWell(
                     borderRadius: BorderRadius.circular(8),
+                    onTap: auth.isBusy
+                        ? null
+                        : () async {
+                            final ok = await auth.signInWithGoogle(
+                              role: widget.initialRole ?? 'CLIENT',
+                            );
+                            if (ok && mounted) _navigateToShell();
+                          },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFFDADCE0)),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Google "G" — four brand colors, at the same
+                          // optical weight as the Apple glyph next to it.
+                          SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: RichText(
+                              textAlign: TextAlign.center,
+                              text: const TextSpan(
+                                text: 'G',
+                                style: TextStyle(
+                                  fontSize: 19,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF4285F4),
+                                  height: 1,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            fast.tr('google'),
+                            style: const TextStyle(
+                              color: Color(0xFF3C4043),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15,
+                              letterSpacing: 0.1,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 22,
-                      height: 22,
-                      alignment: Alignment.center,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF4285F4),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Text(
-                        'G',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Text(
-                      fast.tr('google'),
-                      style: TextStyle(
-                        color: context.fast.t1,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
                 ),
               );
             },
@@ -610,9 +622,7 @@ class _AuthScreenState extends State<AuthScreen>
                     onPressed: _smsBusy ? null : _requestSmsCode,
                     icon: const Icon(Icons.sms_outlined, size: 16),
                     label: Text(
-                      _smsSent
-                          ? fast.tr('resend_code')
-                          : fast.tr('send_code'),
+                      _smsSent ? fast.tr('resend_code') : fast.tr('send_code'),
                     ),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFFF59E0B),
@@ -642,9 +652,7 @@ class _AuthScreenState extends State<AuthScreen>
                             fillColor: context.fast.card,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
-                                color: context.fast.line,
-                              ),
+                              borderSide: BorderSide(color: context.fast.line),
                             ),
                           ),
                         ),
