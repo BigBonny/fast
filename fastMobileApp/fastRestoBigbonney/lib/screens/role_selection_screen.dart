@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'auth_screen.dart';
 import '../provider.dart';
+import '../l10n/app_strings.dart';
+import '../theme.dart';
 import '../widgets/fast_glow_background.dart';
 
 class RoleSelectionScreen extends StatelessWidget {
@@ -23,6 +25,36 @@ class RoleSelectionScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  // Language picker — reachable before login so users can
+                  // switch before they ever see the auth form.
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: PopupMenuButton<String>(
+                      tooltip: '',
+                      icon: const Icon(
+                        Icons.language,
+                        color: Colors.white70,
+                        size: 22,
+                      ),
+                      color: context.fast.card,
+                      initialValue: fast.appLanguage,
+                      onSelected: (v) => fast.setAppLanguage(v),
+                      itemBuilder: (_) => AppStrings.languages
+                          .map(
+                            (l) => PopupMenuItem(
+                              value: l.$1,
+                              child: Text(
+                                l.$2,
+                                style: TextStyle(
+                                  color: context.fast.t1,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  ),
                   const SizedBox(height: 40),
 
                   // "Bienvenue sur FAST" headline — FAST restyled big + orange
