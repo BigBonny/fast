@@ -165,7 +165,7 @@ class _HomeScreenState extends State<HomeScreen>
                             // lockup: bolt inside a gradient badge, wordmark
                             // burning amber→ember, tagline breathing below.
                             Positioned(
-                              top: statusBar + 6,
+                              top: statusBar * 0.4,
                               left: 0,
                               right: 0,
                               child: Column(
@@ -173,36 +173,18 @@ class _HomeScreenState extends State<HomeScreen>
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Container(
-                                        width: 30,
-                                        height: 30,
-                                        decoration: BoxDecoration(
-                                          gradient: const LinearGradient(
-                                            begin: Alignment.topLeft,
-                                            end: Alignment.bottomRight,
-                                            colors: [
-                                              Color(0xFFFBBF24),
-                                              Color(0xFFD97706),
-                                            ],
+                                      const Icon(
+                                        Icons.bolt,
+                                        color: Color(0xFFFBBF24),
+                                        size: 30,
+                                        shadows: [
+                                          Shadow(
+                                            color: Color(0x99F59E0B),
+                                            blurRadius: 16,
                                           ),
-                                          borderRadius: BorderRadius.circular(
-                                            10,
-                                          ),
-                                          boxShadow: const [
-                                            BoxShadow(
-                                              color: Color(0x66F59E0B),
-                                              blurRadius: 14,
-                                              offset: Offset(0, 4),
-                                            ),
-                                          ],
-                                        ),
-                                        child: const Icon(
-                                          Icons.bolt,
-                                          color: Color(0xFF1A1425),
-                                          size: 20,
-                                        ),
+                                        ],
                                       ),
-                                      const SizedBox(width: 8),
+                                      const SizedBox(width: 2),
                                       AnimatedBuilder(
                                         animation: _brandShine,
                                         builder: (context, _) {
@@ -235,8 +217,8 @@ class _HomeScreenState extends State<HomeScreen>
                                               style: TextStyle(
                                                 fontWeight: FontWeight.w900,
                                                 fontStyle: FontStyle.italic,
-                                                fontSize: 30,
-                                                letterSpacing: 1.6,
+                                                fontSize: 38,
+                                                letterSpacing: 1.2,
                                                 color: Colors.white,
                                                 shadows: [
                                                   Shadow(
@@ -250,16 +232,28 @@ class _HomeScreenState extends State<HomeScreen>
                                           );
                                         },
                                       ),
+                                      const SizedBox(width: 2),
+                                      const Icon(
+                                        Icons.bolt,
+                                        color: Color(0xFFFBBF24),
+                                        size: 30,
+                                        shadows: [
+                                          Shadow(
+                                            color: Color(0x99F59E0B),
+                                            blurRadius: 16,
+                                          ),
+                                        ],
+                                      ),
                                     ],
                                   ),
-                                  const SizedBox(height: 6),
+                                  const SizedBox(height: 2),
                                   const Text(
                                     'CHAQUE MINUTE COMPTE',
                                     style: TextStyle(
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: 3.8,
-                                      color: Color(0x99FBBF24),
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                      letterSpacing: 3.2,
+                                      color: Color(0xB3FBBF24),
                                     ),
                                   ),
                                 ],
@@ -273,7 +267,7 @@ class _HomeScreenState extends State<HomeScreen>
                             Positioned(
                               left: 20,
                               right: 0,
-                              top: statusBar + 76,
+                              top: statusBar + 50,
                               child: FractionallySizedBox(
                                 alignment: Alignment.centerLeft,
                                 widthFactor:
