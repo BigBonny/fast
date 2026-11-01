@@ -114,15 +114,14 @@ export const assistantChat = async (req: Request, res: Response): Promise<void> 
   }
 };
 
-// ─── Address autocomplete (OpenStreetMap Nominatim) ─────────
-// Free, no API key. We proxy it so the UA/contact policy stays
-// server-side and both clients get the same trimmed payload.
+// ─── Address autocomplete (Base Adresse Nationale) ──────────
+// France's official address database — far better French street
+// coverage than Nominatim. Free, no key, geo-biased like Places:
+// optional lat/lon boosts nearby results first.
 
-interface NominatimHit {
-  display_name: string;
-  lat: string;
-  lon: string;
-  address?: { city?: string; town?: string; village?: string };
+interface BanFeature {
+  geometry: { coordinates: [number, number] };
+  properties: { label?: string; city?: string };
 }
 
 export const locationAutocomplete = async (req: Request, res: Response): Promise<void> => {
@@ -131,26 +130,34 @@ export const locationAutocomplete = async (req: Request, res: Response): Promise
     res.json({ suggestions: [] });
     return;
   }
+  const lat = Number(req.query.lat);
+  const lon = Number(req.query.lon);
+  const bias =
+    Number.isFinite(lat) && Number.isFinite(lon)
+      ? `&lat=${lat}&lon=${lon}`
+      : '';
   try {
     const url =
-      'https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1' +
-      `&limit=6&accept-language=fr&countrycodes=fr&q=${encodeURIComponent(q)}`;
+      'https://api-adresse.data.gouv.fr/search/?autocomplete=1&limit=6' +
+      `&q=${encodeURIComponent(q)}${bias}`;
     const response = await fetch(url, {
-      headers: { 'User-Agent': 'FAST-App/1.0 (contact: support@fast-eat-now.com)' },
+      headers: { Accept: 'application/json' },
       signal: AbortSignal.timeout(8000),
     });
     if (!response.ok) {
       res.json({ suggestions: [] });
       return;
     }
-    const hits = (await response.json()) as NominatimHit[];
+    const data = (await response.json()) as { features?: BanFeature[] };
     res.json({
-      suggestions: hits.map((h) => ({
-        label: h.display_name,
-        lat: Number(h.lat),
-        lng: Number(h.lon),
-        city: h.address?.city ?? h.address?.town ?? h.address?.village ?? '',
-      })),
+      suggestions: (data.features ?? [])
+        .filter((f) => f.properties?.label && f.geometry?.coordinates)
+        .map((f) => ({
+          label: f.properties.label,
+          lat: f.geometry.coordinates[1],
+          lng: f.geometry.coordinates[0],
+          city: f.properties.city ?? '',
+        })),
     });
   } catch {
     res.json({ suggestions: [] });
