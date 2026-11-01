@@ -134,7 +134,7 @@ export const locationAutocomplete = async (req: Request, res: Response): Promise
   try {
     const url =
       'https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1' +
-      `&limit=6&accept-language=fr&q=${encodeURIComponent(q)}`;
+      `&limit=6&accept-language=fr&countrycodes=fr&q=${encodeURIComponent(q)}`;
     const response = await fetch(url, {
       headers: { 'User-Agent': 'FAST-App/1.0 (contact: support@fast-eat-now.com)' },
       signal: AbortSignal.timeout(8000),
