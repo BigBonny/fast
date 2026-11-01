@@ -592,6 +592,8 @@ class AppStrings {
     'assistant_title': 'Assistant FAST',
     'assistant_greeting':
         'Salut ! Je suis l’assistant FAST. Un plat, un resto, une question sur votre commande ?',
+    'assistant_greeting_pro':
+        'Bonjour ! Je suis l’assistant FAST Pro — menu, commandes, staff, stats ou Stripe, posez-moi vos questions.',
     'assistant_hint': 'Posez votre question…',
     'assistant_err': 'Désolé, je n’arrive pas à répondre pour le moment.',
     'notif_reminder_title': 'Votre commande vous attend',
@@ -1542,6 +1544,8 @@ class AppStrings {
     'assistant_title': 'FAST Assistant',
     'assistant_greeting':
         'Hi! I’m the FAST assistant — ask me about dishes, restaurants or your order.',
+    'assistant_greeting_pro':
+        'Hello! I’m the FAST Pro assistant — menus, orders, staff, stats or Stripe, ask away.',
     'assistant_hint': 'Ask me anything…',
     'assistant_err': 'Sorry, I can’t answer right now.',
     'notif_reminder_title': 'Your order is still waiting',

@@ -16,13 +16,27 @@ Règles :
 - Pour les questions techniques de compte ou de paiement précises, renvoie vers le support.
 - Pas de contenu offensant, pas de réponses hors-sujet — ramène toujours à FAST poliment.`;
 
+const PRO_SYSTEM_PROMPT = `Tu es l'assistant FAST Pro, l'outil de gestion du restaurant partenaire de l'app FAST (click-and-collect : les clients commandent et viennent retirer).
+
+Règles :
+- Réponds dans la langue de l'utilisateur, court et concret (3-4 phrases max sauf liste demandée).
+- Tu aides sur : gérer le menu et les photos IA, les commandes (accepter/refuser/rembourser), le tableau cuisine, les réservations, inviter staff/guest, les statistiques, la disponibilité, les retraits QR, les paiements Stripe Connect et les versements.
+- Ne JAMAIS inventer de chiffres de vente, statuts de commande ou soldes Stripe. Pour les questions précises de compte Stripe, renvoie vers les paramètres (section Stripe) ou le support.
+- Pas de contenu offensant, pas de hors-sujet — ramène à FAST Pro poliment.`;
+
 interface ChatMessage {
   role: 'user' | 'model';
   text: string;
 }
 
 export const assistantChat = async (req: Request, res: Response): Promise<void> => {
-  const { message, history } = req.body as { message?: string; history?: ChatMessage[] };
+  const { message, history, audience } = req.body as {
+    message?: string;
+    history?: ChatMessage[];
+    audience?: string;
+  };
+  const systemPrompt =
+    audience === 'pro' ? PRO_SYSTEM_PROMPT : SYSTEM_PROMPT;
   if (!message || typeof message !== 'string' || !message.trim() || message.length > 1000) {
     res.status(400).json({ error: 'Message requis (max 1000 caractères)' });
     return;
@@ -72,7 +86,7 @@ export const assistantChat = async (req: Request, res: Response): Promise<void> 
         signal: AbortSignal.timeout(20000),
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+          systemInstruction: { parts: [{ text: systemPrompt }] },
           contents: [
             ...(context ? [{ role: 'user', parts: [{ text: context }] }, { role: 'model', parts: [{ text: 'Compris, je connais le catalogue FAST.' }] }] : []),
             ...safeHistory,

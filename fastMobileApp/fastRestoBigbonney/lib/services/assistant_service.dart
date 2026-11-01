@@ -23,11 +23,14 @@ class AssistantService {
   final _api = ApiClient();
   final List<Map<String, String>> _history = [];
 
+  bool pro = false;
+
   Future<String> chat(String message) async {
     final data = await _api.post(
       '/assistant/chat',
       body: {
         'message': message,
+        'audience': pro ? 'pro' : 'client',
         'history': _history
             .map((m) => {'role': m['role'], 'text': m['text']})
             .toList(),
