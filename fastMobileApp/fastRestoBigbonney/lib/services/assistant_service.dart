@@ -1,4 +1,5 @@
 import '../api/api_client.dart';
+import 'location_service.dart';
 
 class PlaceSuggestion {
   final String label;
@@ -47,8 +48,15 @@ class AssistantService {
 
   Future<List<PlaceSuggestion>> searchPlaces(String query) async {
     if (query.trim().length < 3) return const [];
+    // Geo-bias: the cached GPS fix (if any) pushes nearby matches
+    // first — same trick Google Places uses for relevance.
+    var bias = '';
+    try {
+      final pos = await LocationService.instance.getCurrentLocation();
+      if (pos != null) bias = '&lat=${pos.latitude}&lon=${pos.longitude}';
+    } catch (_) {}
     final data = await _api.get(
-      '/assistant/places?q=${Uri.encodeComponent(query)}',
+      '/assistant/places?q=${Uri.encodeComponent(query)}$bias',
     );
     final list =
         (data as Map<String, dynamic>)['suggestions'] as List<dynamic>? ??
