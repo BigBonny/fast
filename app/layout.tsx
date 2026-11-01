@@ -4,6 +4,7 @@ import { inter, bebas } from "./fonts";
 import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/toaster";
 import Layout from "@/components/Layout";
+import AssistantChat from "@/components/AssistantChat";
 
 export const metadata: Metadata = {
   title: "FAST - Chaque minute compte",
@@ -41,6 +42,7 @@ export default function RootLayout({
             {children}
           </Layout>
           <Toaster />
+          <AssistantChat />
         </Providers>
       </body>
     </html>

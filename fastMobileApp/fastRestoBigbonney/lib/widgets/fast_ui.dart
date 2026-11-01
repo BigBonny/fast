@@ -35,23 +35,20 @@ class FastTap extends StatefulWidget {
   State<FastTap> createState() => _FastTapState();
 }
 
-class _FastTapState extends State<FastTap>
-    with SingleTickerProviderStateMixin {
+class _FastTapState extends State<FastTap> with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 90),
     reverseDuration: const Duration(milliseconds: 220),
   );
-  late final Animation<double> _scale = Tween<double>(
-    begin: 1.0,
-    end: widget.pressedScale,
-  ).animate(
-    CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOutCubic,
-      reverseCurve: Curves.elasticOut,
-    ),
-  );
+  late final Animation<double> _scale =
+      Tween<double>(begin: 1.0, end: widget.pressedScale).animate(
+        CurvedAnimation(
+          parent: _controller,
+          curve: Curves.easeOutCubic,
+          reverseCurve: Curves.elasticOut,
+        ),
+      );
 
   @override
   void dispose() {
@@ -108,23 +105,18 @@ class FastButton extends StatelessWidget {
 
     final (bg, fg, border, glow) = switch (kind) {
       FastButtonKind.primary => (
-          FASTBrand.accentGradient,
-          FASTBrand.onAmber,
-          null,
-          FASTBrand.amber.withValues(alpha: enabled ? 0.35 : 0.0),
-        ),
-      FastButtonKind.soft => (
-          null,
-          FASTBrand.amberDeep,
-          null,
-          null,
-        ),
+        FASTBrand.accentGradient,
+        FASTBrand.onAmber,
+        null,
+        FASTBrand.amber.withValues(alpha: enabled ? 0.35 : 0.0),
+      ),
+      FastButtonKind.soft => (null, FASTBrand.amberDeep, null, null),
       FastButtonKind.outline => (
-          null,
-          fast.t1,
-          Border.all(color: fast.line),
-          null,
-        ),
+        null,
+        fast.t1,
+        Border.all(color: fast.line),
+        null,
+      ),
       FastButtonKind.ghost => (null, FASTBrand.amberDeep, null, null),
     };
 
@@ -170,8 +162,7 @@ class FastButton extends StatelessWidget {
         child: Container(
           height: height,
           width: expand ? double.infinity : null,
-          padding:
-              expand ? null : const EdgeInsets.symmetric(horizontal: 20),
+          padding: expand ? null : const EdgeInsets.symmetric(horizontal: 20),
           alignment: Alignment.center,
           decoration: BoxDecoration(
             gradient: bg,
@@ -180,7 +171,8 @@ class FastButton extends StatelessWidget {
               FastButtonKind.primary => FASTBrand.amber,
               _ => Colors.transparent,
             },
-            border: border ??
+            border:
+                border ??
                 (kind == FastButtonKind.soft
                     ? Border.all(color: fast.amberSoftBorder)
                     : null),
@@ -233,9 +225,7 @@ class _FastStaggerState extends State<FastStagger>
   late final Animation<Offset> _slide = Tween<Offset>(
     begin: const Offset(0, 0.05),
     end: Offset.zero,
-  ).animate(
-    CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-  );
+  ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
 
   @override
   void initState() {
@@ -288,8 +278,7 @@ class _FastShimmerState extends State<FastShimmer>
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final base = isDark ? const Color(0xFF222227) : const Color(0xFFE9E6E0);
-    final shine =
-        isDark ? const Color(0xFF34343B) : const Color(0xFFFBFAF7);
+    final shine = isDark ? const Color(0xFF34343B) : const Color(0xFFFBFAF7);
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
@@ -422,8 +411,9 @@ class FastGlassCard extends StatelessWidget {
         child: Container(
           padding: padding,
           decoration: BoxDecoration(
-            color: (isDark ? Colors.black : Colors.white)
-                .withValues(alpha: isDark ? 0.42 : 0.62),
+            color: (isDark ? Colors.black : Colors.white).withValues(
+              alpha: isDark ? 0.42 : 0.62,
+            ),
             borderRadius: BorderRadius.circular(radius),
             border: Border.all(
               color: Colors.white.withValues(alpha: isDark ? 0.10 : 0.5),
@@ -687,7 +677,8 @@ class _FastNavBarState extends State<FastNavBar>
                           for (var i = 0; i < widget.items.length; i++)
                             Expanded(
                               child: KeyedSubtree(
-                                key: widget.itemKeys != null &&
+                                key:
+                                    widget.itemKeys != null &&
                                         i < widget.itemKeys!.length
                                     ? widget.itemKeys![i]
                                     : null,
@@ -731,9 +722,7 @@ class _FastNavBarState extends State<FastNavBar>
                   children: [
                     item.customIcon ??
                         Icon(
-                          t > 0.5
-                              ? (item.activeIcon ?? item.icon)
-                              : item.icon,
+                          t > 0.5 ? (item.activeIcon ?? item.icon) : item.icon,
                           color: color,
                           size: 22,
                         ),
@@ -871,10 +860,7 @@ class FastSwitch extends StatelessWidget {
                       height: size * 0.72,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(
-                          color: fast.t3,
-                          width: size * 0.14,
-                        ),
+                        border: Border.all(color: fast.t3, width: size * 0.14),
                       ),
                     ),
                   ),
@@ -934,10 +920,7 @@ class FastSwitchTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 title,
-                if (subtitle != null) ...[
-                  const SizedBox(height: 2),
-                  subtitle!,
-                ],
+                if (subtitle != null) ...[const SizedBox(height: 2), subtitle!],
               ],
             ),
           ),
@@ -975,8 +958,10 @@ class _FastSwipeDeleteState extends State<FastSwipeDelete>
   static const _reveal = 110.0;
   static const _commit = -80.0;
 
-  late final AnimationController _dx =
-      AnimationController.unbounded(vsync: this, value: 0);
+  late final AnimationController _dx = AnimationController.unbounded(
+    vsync: this,
+    value: 0,
+  );
 
   @override
   void dispose() {
@@ -1020,10 +1005,8 @@ class _FastSwipeDeleteState extends State<FastSwipeDelete>
           ),
           AnimatedBuilder(
             animation: _dx,
-            builder: (ctx, child) => Transform.translate(
-              offset: Offset(_dx.value, 0),
-              child: child,
-            ),
+            builder: (ctx, child) =>
+                Transform.translate(offset: Offset(_dx.value, 0), child: child),
             child: widget.child,
           ),
         ],
@@ -1066,8 +1049,7 @@ class FastParallax extends StatelessWidget {
         final itemCenter = vertical
             ? o.dy + box.size.height / 2
             : o.dx + box.size.width / 2;
-        final progress =
-            ((itemCenter - extent / 2) / extent).clamp(-1.0, 1.0);
+        final progress = ((itemCenter - extent / 2) / extent).clamp(-1.0, 1.0);
         final shift = -progress * maxShift;
         return Transform.translate(
           offset: vertical ? Offset(0, shift) : Offset(shift, 0),
@@ -1114,8 +1096,7 @@ class _FastShakeState extends State<FastShake>
     return AnimatedBuilder(
       animation: _ctrl,
       builder: (ctx, child) {
-        final dx =
-            math.sin(_ctrl.value * math.pi * 6) * (1 - _ctrl.value) * 10;
+        final dx = math.sin(_ctrl.value * math.pi * 6) * (1 - _ctrl.value) * 10;
         return Transform.translate(offset: Offset(dx, 0), child: child);
       },
       child: widget.child,
