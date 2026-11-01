@@ -12,6 +12,7 @@ import '../../services/payment_service.dart';
 import '../../theme.dart';
 import '../../l10n/tr.dart';
 import '../../widgets/fast_ui.dart';
+import '../assistant_screen.dart';
 
 class RestoSettingsScreen extends StatefulWidget {
   const RestoSettingsScreen({super.key});
@@ -238,9 +239,10 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
         _allowDineIn = data['allowDineIn'] as bool? ?? false;
         _reservationsEnabled = data['reservationsEnabled'] as bool? ?? false;
         _reservationOnly = data['reservationOnly'] as bool? ?? false;
-        _dineInFeeCtrl.text =
-            ((data['dineInFee'] as num?)?.toDouble() ?? 0).toStringAsFixed(2);
-        _seatingCtrl.text = '${(data['seatingCapacity'] as num?)?.toInt() ?? 0}';
+        _dineInFeeCtrl.text = ((data['dineInFee'] as num?)?.toDouble() ?? 0)
+            .toStringAsFixed(2);
+        _seatingCtrl.text =
+            '${(data['seatingCapacity'] as num?)?.toInt() ?? 0}';
         _isFoodTruck = data['isFoodTruck'] as bool? ?? false;
         final stops = data['truckStops'] as List<dynamic>? ?? [];
         for (final s in stops) {
@@ -474,6 +476,19 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
         SizedBox(height: 24),
         _section(tr(context, 'customization')),
         _buildThemePicker(),
+        SizedBox(height: 12),
+        OutlinedButton.icon(
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const AssistantScreen(pro: true)),
+          ),
+          icon: const Icon(Icons.auto_awesome),
+          label: Text(tr(context, 'assistant_title')),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: const Color(0xFF00C8B3),
+            side: const BorderSide(color: Color(0xFF00C8B3)),
+            padding: const EdgeInsets.symmetric(vertical: 14),
+          ),
+        ),
 
         SizedBox(height: 24),
         _section(tr(context, 'stripe_payments')),
@@ -805,11 +820,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
           onChanged: (v) => setState(() => _allowDineIn = v),
         ),
         if (_allowDineIn)
-          _field(
-            'Frais sur place (€)',
-            _dineInFeeCtrl,
-            hint: '0.00',
-          ),
+          _field('Frais sur place (€)', _dineInFeeCtrl, hint: '0.00'),
         FastSwitchTile(
           title: Text(
             tr(context, 'reservations'),
@@ -822,11 +833,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
           }),
         ),
         if (_reservationsEnabled) ...[
-          _field(
-            tr(context, 'seating_capacity'),
-            _seatingCtrl,
-            hint: '40',
-          ),
+          _field(tr(context, 'seating_capacity'), _seatingCtrl, hint: '40'),
           FastSwitchTile(
             title: Text(
               tr(context, 'reservation_only'),
@@ -916,10 +923,17 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
         // deletable from the app — Pro accounts included.
         TextButton.icon(
           onPressed: _confirmDeleteAccount,
-          icon: const Icon(Icons.delete_outline, color: Color(0xFFEF4444), size: 18),
+          icon: const Icon(
+            Icons.delete_outline,
+            color: Color(0xFFEF4444),
+            size: 18,
+          ),
           label: Text(
             tr(context, 'del_my_account'),
-            style: const TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              color: Color(0xFFEF4444),
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ],
@@ -933,7 +947,11 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
         backgroundColor: context.fast.card,
         title: Text(
           tr(context, 'del_account_q'),
-          style: const TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.bold, fontSize: 14),
+          style: const TextStyle(
+            color: Color(0xFFEF4444),
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
         ),
         content: Text(
           tr(context, 'del_account_warn'),
@@ -942,7 +960,10 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(tr(context, 'cancel'), style: TextStyle(color: context.fast.t3)),
+            child: Text(
+              tr(context, 'cancel'),
+              style: TextStyle(color: context.fast.t3),
+            ),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -955,7 +976,9 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
                 Navigator.of(context).popUntil((route) => route.isFirst);
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(auth.error ?? tr(context, 'del_fail'))),
+                  SnackBar(
+                    content: Text(auth.error ?? tr(context, 'del_fail')),
+                  ),
                 );
               }
             },
@@ -964,7 +987,10 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
               foregroundColor: Colors.white,
               elevation: 0,
             ),
-            child: Text(tr(context, 'del'), style: const TextStyle(fontWeight: FontWeight.bold)),
+            child: Text(
+              tr(context, 'del'),
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -1117,10 +1143,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
           borderRadius: BorderRadius.circular(6),
           borderSide: BorderSide(color: context.fast.faint),
         ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 4,
-          vertical: 8,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       ),
     );
   }

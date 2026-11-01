@@ -13,7 +13,8 @@ class _Msg {
 
 /// In-app FAST assistant — a lightweight chat over /api/assistant/chat.
 class AssistantScreen extends StatefulWidget {
-  const AssistantScreen({super.key});
+  const AssistantScreen({super.key, this.pro = false});
+  final bool pro;
 
   @override
   State<AssistantScreen> createState() => _AssistantScreenState();
@@ -28,7 +29,16 @@ class _AssistantScreenState extends State<AssistantScreen> {
   @override
   void initState() {
     super.initState();
-    _messages.add(_Msg(tr(context, 'assistant_greeting'), false));
+    AssistantService.instance.pro = widget.pro;
+    _messages.add(
+      _Msg(
+        tr(
+          context,
+          widget.pro ? 'assistant_greeting_pro' : 'assistant_greeting',
+        ),
+        false,
+      ),
+    );
   }
 
   @override
