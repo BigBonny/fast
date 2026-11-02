@@ -723,9 +723,11 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
       controller: {
         fees: { payer: 'application' },
         // This platform isn't approved to collect losses — Stripe
-        // requires losses_collector 'stripe' (their own error message).
+        // requires losses_collector 'stripe', and stripe-collected
+        // losses can't pair with an express dashboard → Standard-style
+        // accounts with the full dashboard.
         losses: { payments: 'stripe' },
-        stripe_dashboard: { type: 'express' },
+        stripe_dashboard: { type: 'full' },
       },
       country: 'FR',
       email: owner?.email,
