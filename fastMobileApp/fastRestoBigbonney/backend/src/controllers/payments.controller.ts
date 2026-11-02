@@ -716,7 +716,15 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
     const ownerAddress = (restaurant.ownerAddress || '').trim();
 
     const buildCreateParams = (withIban: boolean): Stripe.AccountCreateParams => ({
-      type: 'express',
+      // New platforms reject the legacy `type: 'express'` — controller
+      // properties are the modern equivalent: Express dashboard access,
+      // platform pays fees, platform liable for losses, Stripe collects
+      // requirements (hosted onboarding links).
+      controller: {
+        fees: { payer: 'application' },
+        losses: { payments: 'application' },
+        stripe_dashboard: { type: 'express' },
+      },
       country: 'FR',
       email: owner?.email,
       capabilities: {
