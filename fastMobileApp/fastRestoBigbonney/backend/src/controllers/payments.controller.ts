@@ -722,7 +722,9 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
       // requirements (hosted onboarding links).
       controller: {
         fees: { payer: 'application' },
-        losses: { payments: 'application' },
+        // This platform isn't approved to collect losses — Stripe
+        // requires losses_collector 'stripe' (their own error message).
+        losses: { payments: 'stripe' },
         stripe_dashboard: { type: 'express' },
       },
       country: 'FR',
