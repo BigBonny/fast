@@ -721,7 +721,9 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
       // platform pays fees, platform liable for losses, Stripe collects
       // requirements (hosted onboarding links).
       controller: {
-        fees: { payer: 'application' },
+        // Full dashboard (Standard-style) accounts must pay their own
+        // Stripe fees — 'application' is rejected by the API.
+        fees: { payer: 'account' },
         // This platform isn't approved to collect losses — Stripe
         // requires losses_collector 'stripe', and stripe-collected
         // losses can't pair with an express dashboard → Standard-style
