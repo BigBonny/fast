@@ -1028,6 +1028,9 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
       });
       return;
     }
+    // Stripe errors reach the client but were invisible in server
+    // logs — log them so Connect failures are actually diagnosable.
+    console.error('[Stripe] connect account-link failed:', message);
     res.status(500).json({ error: message });
   }
 };
