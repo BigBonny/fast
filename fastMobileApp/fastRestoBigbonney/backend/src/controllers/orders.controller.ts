@@ -64,6 +64,8 @@ async function refundPaidOrder(
   // have no transfer_data and Stripe 400s on reverse_transfer.
   const pi = await stripe.paymentIntents.retrieve(paymentIntentId);
   const hasDestinationTransfer = !!pi.transfer_data?.destination;
+  const refundAppFee =
+    options?.includeServiceFee === true && hasDestinationTransfer;
 
   await stripe.refunds.create(
     {
@@ -72,14 +74,15 @@ async function refundPaidOrder(
       // Destination charge — pull the money back from the connected
       // account rather than paying the refund from the platform balance.
       ...(hasDestinationTransfer ? { reverse_transfer: true } : {}),
-      // The platform fee only goes back when the customer is fully refunded.
-      ...(options?.includeServiceFee ? { refund_application_fee: true } : {}),
+      // The platform fee only goes back when the customer is fully
+      // refunded AND the charge actually had one (destination charges).
+      ...(refundAppFee ? { refund_application_fee: true } : {}),
     },
     // Retries replay the same refund instead of charging a second one.
     // Params go in the key — a key reused with different parameters is
     // rejected outright by Stripe (burned idempotency keys can't recur).
     {
-      idempotencyKey: `order-refund-${order.id}-${refundAmountCents}-${hasDestinationTransfer ? 'rt' : 'p'}`,
+      idempotencyKey: `order-refund-${order.id}-${refundAmountCents}-${hasDestinationTransfer ? 'rt' : 'p'}${refundAppFee ? '-raf' : '-n'}`,
     },
   );
 
