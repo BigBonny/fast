@@ -229,9 +229,14 @@ export const createCheckoutSession = async (req: Request, res: Response): Promis
       return;
     }
 
+    // Demo restaurant skips Connect entirely — charges land on the
+    // platform account (no transfer_data since it has no acct ID).
+    const isDemoRestaurant =
+      env.demoRestaurantId !== '' && restaurant.id === env.demoRestaurantId;
+
     // Payments must go to the restaurant's own Connect account — refuse
     // checkout while it's incomplete instead of collecting on the platform.
-    if (!restaurant.stripeAccountId || !restaurant.stripeChargesEnabled) {
+    if (!isDemoRestaurant && (!restaurant.stripeAccountId || !restaurant.stripeChargesEnabled)) {
       if (restaurant.stripeAccountId) {
         // The stored flag can lag behind onboarding; refresh before refusing.
         try {
@@ -690,7 +695,17 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
       res.status(404).json({ error: 'Restaurant introuvable' });
       return;
     }
+    // Demo restaurant — already "connected", no Stripe onboarding needed.
+    if (env.demoRestaurantId !== '' && restaurant.id === env.demoRestaurantId) {
+      res.json({ connected: true });
+      return;
+    }
     const owner = await prisma.user.findUnique({ where: { id: req.user!.userId } });
+    // Hosted onboarding follows the app's language when the client sends it.
+    const lang =
+      typeof req.body?.language === 'string' && /^[a-z]{2}$/.test(req.body.language)
+        ? req.body.language
+        : 'fr';
 
     // Everything the owner already typed into FAST — passed at ACCOUNT
     // CREATION, not via update: Express accounts collect requirements
@@ -1027,7 +1042,7 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
       },
     });
 
-    res.json({ url: accountLink.url, accountId });
+    res.json({ url: `${accountLink.url}&locale=${lang}`, accountId });
   } catch (err) {
     const message = (err as Error).message;
     // The FAST platform account itself hasn't finished Stripe activation —
@@ -1055,6 +1070,11 @@ export const getConnectStatus = async (req: Request, res: Response): Promise<voi
       return;
     }
     if (!restaurant.stripeAccountId) {
+      // Demo restaurant reports as connected without an account.
+      if (env.demoRestaurantId !== '' && restaurant.id === env.demoRestaurantId) {
+        res.json({ connected: true, chargesEnabled: true, payoutsEnabled: false });
+        return;
+      }
       res.json({ connected: false, chargesEnabled: false, payoutsEnabled: false });
       return;
     }

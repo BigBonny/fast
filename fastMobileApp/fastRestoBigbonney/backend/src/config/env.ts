@@ -36,6 +36,9 @@ export const env = {
   twilioFromNumber: process.env.TWILIO_FROM_NUMBER || '',
   stripeSecretKey: process.env.STRIPE_SECRET_KEY || '',
   stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY || '',
+  // Demo/screenshot restaurant — treated as Stripe-connected without
+  // onboarding; charges land on the platform account (no transfer).
+  demoRestaurantId: process.env.FAST_DEMO_RESTAURANT_ID || '',
   // Optional Apple Pay merchant id — PaymentSheet only offers Apple Pay
   // when this is set, so the feature stays dormant until Apple-side
   // setup (merchant id + entitlement + profile) is done.

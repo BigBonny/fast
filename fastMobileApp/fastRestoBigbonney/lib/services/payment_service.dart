@@ -37,10 +37,10 @@ class StripePaymentConfig {
     final merchant = json['applePayMerchantId'];
     return StripePaymentConfig(
       publishableKey: json['publishableKey'] as String? ?? '',
-      merchantCountryCode:
-          json['merchantCountryCode'] as String? ?? 'fr',
-      applePayMerchantId:
-          merchant is String && merchant.isNotEmpty ? merchant : null,
+      merchantCountryCode: json['merchantCountryCode'] as String? ?? 'fr',
+      applePayMerchantId: merchant is String && merchant.isNotEmpty
+          ? merchant
+          : null,
       googlePayEnabled: json['googlePayEnabled'] as bool? ?? false,
       googlePayTestEnv: json['googlePayTestEnv'] as bool? ?? true,
     );
@@ -168,8 +168,13 @@ class PaymentService {
     return Order.fromApiJson(data as Map<String, dynamic>);
   }
 
-  Future<Map<String, dynamic>> createConnectAccountLink() async {
-    final data = await _api.post(ApiConfig.stripeConnectAccountLink, body: {});
+  Future<Map<String, dynamic>> createConnectAccountLink({
+    String? language,
+  }) async {
+    final data = await _api.post(
+      ApiConfig.stripeConnectAccountLink,
+      body: {if (language != null) 'language': language},
+    );
     return data as Map<String, dynamic>;
   }
 
