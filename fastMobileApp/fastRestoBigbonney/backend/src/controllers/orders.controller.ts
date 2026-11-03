@@ -75,9 +75,12 @@ async function refundPaidOrder(
       // The platform fee only goes back when the customer is fully refunded.
       ...(options?.includeServiceFee ? { refund_application_fee: true } : {}),
     },
-    // Retries after a network blip replay the same refund instead of
-    // charging a second one.
-    { idempotencyKey: `order-refund-${order.id}` },
+    // Retries replay the same refund instead of charging a second one.
+    // Params go in the key — a key reused with different parameters is
+    // rejected outright by Stripe (burned idempotency keys can't recur).
+    {
+      idempotencyKey: `order-refund-${order.id}-${refundAmountCents}-${hasDestinationTransfer ? 'rt' : 'p'}`,
+    },
   );
 
   await prisma.order.update({
