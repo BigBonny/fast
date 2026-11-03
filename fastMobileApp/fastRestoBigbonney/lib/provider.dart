@@ -293,6 +293,9 @@ class FASTProvider extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('fast_view_as_client', value);
+    // Switching to client view after Pro edits — pull fresh data so
+    // menu changes show instead of the list cached at login.
+    if (value) loadFromApi();
   }
 
   Future<void> setAppLanguage(String code) async {
@@ -379,12 +382,12 @@ class FASTProvider extends ChangeNotifier {
   Set<String>? _seenNotificationIds;
 
   static String _apiStatus(OrderStatus s) => switch (s) {
-        OrderStatus.placed => 'PLACED',
-        OrderStatus.preparing => 'PREPARING',
-        OrderStatus.readyForPickup => 'READY_FOR_PICKUP',
-        OrderStatus.completed => 'COMPLETED',
-        OrderStatus.cancelled => 'CANCELLED',
-      };
+    OrderStatus.placed => 'PLACED',
+    OrderStatus.preparing => 'PREPARING',
+    OrderStatus.readyForPickup => 'READY_FOR_PICKUP',
+    OrderStatus.completed => 'COMPLETED',
+    OrderStatus.cancelled => 'CANCELLED',
+  };
 
   /// Diff freshly fetched orders against the baseline and surface status
   /// changes as system notifications — the production backend has no
@@ -405,11 +408,10 @@ class FASTProvider extends ChangeNotifier {
   static List<Order> changedOrderStatuses(
     Map<String, OrderStatus> baseline,
     List<Order> orders,
-  ) =>
-      orders.where((o) {
-        final prev = baseline[o.id];
-        return prev != null && prev != o.status;
-      }).toList();
+  ) => orders.where((o) {
+    final prev = baseline[o.id];
+    return prev != null && prev != o.status;
+  }).toList();
 
   /// Pure: notifications worth a system banner — unseen, unread, and not a
   /// status update (those are handled interactively by the order diff).
@@ -417,16 +419,15 @@ class FASTProvider extends ChangeNotifier {
   static List<PushNotification> freshNotifications(
     Set<String> seen,
     List<PushNotification> notifications,
-  ) =>
-      notifications
-          .where(
-            (n) =>
-                n.id.isNotEmpty &&
-                !seen.contains(n.id) &&
-                !n.isRead &&
-                n.type != 'status',
-          )
-          .toList();
+  ) => notifications
+      .where(
+        (n) =>
+            n.id.isNotEmpty &&
+            !seen.contains(n.id) &&
+            !n.isRead &&
+            n.type != 'status',
+      )
+      .toList();
 
   /// Same idea for backend-created notifications (payment confirmed,
   /// request contacted, …): anything unseen becomes a system banner.
@@ -491,10 +492,7 @@ class FASTProvider extends ChangeNotifier {
     push.onAction ??= _onNotificationAction;
     realtime.connect(_userId);
     unawaited(
-      push.init(
-        eta5Label: tr('notif_eta5'),
-        eta15Label: tr('notif_eta15'),
-      ),
+      push.init(eta5Label: tr('notif_eta5'), eta15Label: tr('notif_eta15')),
     );
 
     // Push tap → land on the order list (client shell ignores the call
@@ -511,9 +509,7 @@ class FASTProvider extends ChangeNotifier {
       onArrival: (order, restaurant) {
         LocalPushService.instance.show(
           title: tr('notif_arrive_title'),
-          body: tr(
-            'notif_arrive_body',
-          ).replaceAll('{n}', restaurant.name),
+          body: tr('notif_arrive_body').replaceAll('{n}', restaurant.name),
         );
       },
     );
@@ -668,6 +664,19 @@ class FASTProvider extends ChangeNotifier {
     );
   }
 
+  /// Re-fetch one restaurant (fresh menuItems) when its detail screen
+  /// opens — menu edits show without waiting for a full reload.
+  Future<void> refreshRestaurant(String id) async {
+    try {
+      final fresh = await _restaurantService.getRestaurant(id);
+      final i = _restaurants.indexWhere((r) => r.id == id);
+      if (i >= 0 && !_disposed) {
+        _restaurants[i] = fresh;
+        notifyListeners();
+      }
+    } catch (_) {}
+  }
+
   /// Load all data from the backend API
   Future<void> loadFromApi() async {
     final generation = _requestGeneration;
@@ -743,10 +752,9 @@ class FASTProvider extends ChangeNotifier {
   }
 
   bool get _hasActiveOrders => _orders.any(
-        (o) =>
-            o.status != OrderStatus.completed &&
-            o.status != OrderStatus.cancelled,
-      );
+    (o) =>
+        o.status != OrderStatus.completed && o.status != OrderStatus.cancelled,
+  );
 
   /// Stop periodic order polling
   void stopOrderPolling() {
@@ -1075,7 +1083,9 @@ class FASTProvider extends ChangeNotifier {
         final id = normalizeCategoryId(label);
         if (seen.contains(id) || !label.toLowerCase().contains(kw)) continue;
         seen.add(id);
-        results.add(CategoryItem(id: 'custom:$label', name: label, icon: '🏷️'));
+        results.add(
+          CategoryItem(id: 'custom:$label', name: label, icon: '🏷️'),
+        );
       }
     }
     return results;
@@ -1319,8 +1329,7 @@ class FASTProvider extends ChangeNotifier {
     return _selectedRestaurant?.deliveryFee ?? 2.99;
   }
 
-  double get cartTotal =>
-      _cart.isEmpty ? 0.0 : cartSubtotal + cartDeliveryFee;
+  double get cartTotal => _cart.isEmpty ? 0.0 : cartSubtotal + cartDeliveryFee;
 
   void setFulfillmentType(FulfillmentType type) {
     _fulfillmentType = type;

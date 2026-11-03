@@ -41,6 +41,12 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
   void initState() {
     super.initState();
     _scroll.addListener(_onScroll);
+    // Fresh menu on every open — the list cache can lag behind Pro edits.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<FASTProvider>().refreshRestaurant(widget.restaurant.id);
+      }
+    });
   }
 
   @override
@@ -136,9 +142,7 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
           decoration: BoxDecoration(
             color: active ? amber : context.fast.card,
             borderRadius: BorderRadius.circular(999),
-            border: Border.all(
-              color: active ? amber : context.fast.line,
-            ),
+            border: Border.all(color: active ? amber : context.fast.line),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -214,11 +218,7 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
                   shape: BoxShape.circle,
                   border: Border.all(color: context.fast.line),
                 ),
-                child: Icon(
-                  Icons.arrow_back,
-                  size: 16,
-                  color: context.fast.t1,
-                ),
+                child: Icon(Icons.arrow_back, size: 16, color: context.fast.t1),
               ),
             ),
           ],
@@ -258,413 +258,432 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-        // Restaurant Banner Header
-        Stack(
-          children: [
-            FastImage(
-              rest.image,
-              height: 160,
-              width: double.infinity,
-              cacheWidth: 500,
-              placeholder: Container(height: 160, color: context.fast.cardHigh),
-            ),
-            // Gradient Overlay
-            Positioned.fill(
-              child: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.black54,
-                      Colors.transparent,
-                      Colors.black87,
-                    ],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                ),
-              ),
-            ),
-            // Back Button
-            PositionedDirectional(
-              top: 12,
-              start: 12,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: context.fast.bg.withValues(alpha: 0.8),
-                  shape: BoxShape.circle,
-                ),
-                child: IconButton(
-                  onPressed: () {
-                    provider.selectRestaurant(null);
-                    provider.navigateToScreen('home');
-                  },
-                  icon: Icon(
-                    Icons.arrow_back,
-                    color: context.fast.t1,
-                    size: 20,
-                  ),
-                ),
-              ),
-            ),
-            // Favorite heart
-            PositionedDirectional(
-              top: 12,
-              end: 12,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: context.fast.bg.withValues(alpha: 0.8),
-                  shape: BoxShape.circle,
-                ),
-                child: IconButton(
-                  onPressed: () => provider.toggleFavorite(rest.id),
-                  icon: Icon(
-                    provider.isFavorite(rest.id)
-                        ? Icons.favorite
-                        : Icons.favorite_border,
-                    color: provider.isFavorite(rest.id)
-                        ? const Color(0xFFEF4444)
-                        : context.fast.t1,
-                    size: 20,
-                  ),
-                ),
-              ),
-            ),
-            // Stories entry — Snapchat-style menu viewer
-            if (rest.menu.any(
-              (m) =>
-                  m.available && (m.image.isNotEmpty || m.videoUrl.isNotEmpty),
-            ))
-              PositionedDirectional(
-                top: 64,
-                end: 12,
-                child: GestureDetector(
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => StoryViewerScreen(restaurant: rest),
+              // Restaurant Banner Header
+              Stack(
+                children: [
+                  FastImage(
+                    rest.image,
+                    height: 160,
+                    width: double.infinity,
+                    cacheWidth: 500,
+                    placeholder: Container(
+                      height: 160,
+                      color: context.fast.cardHigh,
                     ),
                   ),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.55),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.white24),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.play_circle_fill,
-                          color: Colors.white,
-                          size: 14,
+                  // Gradient Overlay
+                  Positioned.fill(
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.black54,
+                            Colors.transparent,
+                            Colors.black87,
+                          ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
                         ),
-                        const SizedBox(width: 5),
+                      ),
+                    ),
+                  ),
+                  // Back Button
+                  PositionedDirectional(
+                    top: 12,
+                    start: 12,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: context.fast.bg.withValues(alpha: 0.8),
+                        shape: BoxShape.circle,
+                      ),
+                      child: IconButton(
+                        onPressed: () {
+                          provider.selectRestaurant(null);
+                          provider.navigateToScreen('home');
+                        },
+                        icon: Icon(
+                          Icons.arrow_back,
+                          color: context.fast.t1,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Favorite heart
+                  PositionedDirectional(
+                    top: 12,
+                    end: 12,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: context.fast.bg.withValues(alpha: 0.8),
+                        shape: BoxShape.circle,
+                      ),
+                      child: IconButton(
+                        onPressed: () => provider.toggleFavorite(rest.id),
+                        icon: Icon(
+                          provider.isFavorite(rest.id)
+                              ? Icons.favorite
+                              : Icons.favorite_border,
+                          color: provider.isFavorite(rest.id)
+                              ? const Color(0xFFEF4444)
+                              : context.fast.t1,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Stories entry — Snapchat-style menu viewer
+                  if (rest.menu.any(
+                    (m) =>
+                        m.available &&
+                        (m.image.isNotEmpty || m.videoUrl.isNotEmpty),
+                  ))
+                    PositionedDirectional(
+                      top: 64,
+                      end: 12,
+                      child: GestureDetector(
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => StoryViewerScreen(restaurant: rest),
+                          ),
+                        ),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.55),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: Colors.white24),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.play_circle_fill,
+                                color: Colors.white,
+                                size: 14,
+                              ),
+                              const SizedBox(width: 5),
+                              Text(
+                                provider.tr('stories'),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  // Title & Info
+                  Positioned(
+                    bottom: 16,
+                    left: 16,
+                    right: 16,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF59E0B),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            '⚡ CLICK & COLLECT',
+                            style: TextStyle(
+                              fontSize: 8,
+                              fontWeight: FontWeight.bold,
+                              color: FASTBrand.onAmber,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 6),
                         Text(
-                          provider.tr('stories'),
+                          rest.name,
                           style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w900,
                             color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ],
                     ),
                   ),
-                ),
-              ),
-            // Title & Info
-            Positioned(
-              bottom: 16,
-              left: 16,
-              right: 16,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF59E0B),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      '⚡ CLICK & COLLECT',
-                      style: TextStyle(
-                        fontSize: 8,
-                        fontWeight: FontWeight.bold,
-                        color: FASTBrand.onAmber,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 6),
-                  Text(
-                    rest.name,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                    ),
-                  ),
                 ],
               ),
-            ),
-          ],
-        ),
 
-        // Restaurant Meta Info Section
-        Padding(
-          padding: EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Meta chips
-              Row(
-                children: [
-                  Icon(Icons.star, color: Color(0xFFF59E0B), size: 16),
-                  SizedBox(width: 4),
-                  Text(
-                    '${rest.rating} (${provider.tr('reviews').replaceAll('{n}', '${rest.reviewsCount}')})',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                      color: context.fast.t1,
-                    ),
-                  ),
-                  SizedBox(width: 12),
-                  Icon(
-                    Icons.access_time_filled,
-                    color: context.fast.t2,
-                    size: 14,
-                  ),
-                  SizedBox(width: 4),
-                  Text(
-                    provider
-                        .tr('prep_time')
-                        .replaceAll('{n}', '${rest.pickupPrepTime}'),
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                      color: context.fast.t2,
-                    ),
-                  ),
-                  SizedBox(width: 12),
-                  Icon(Icons.location_on, color: context.fast.t2, size: 14),
-                  SizedBox(width: 4),
-                  Text(
-                    '${provider.getRealDistance(rest).toStringAsFixed(1)} km',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                      color: context.fast.t2,
-                    ),
-                  ),
-                ],
-              ),
-              if (rest.reservationsEnabled) ...[
-                const SizedBox(height: 10),
-                SizedBox(
-                  width: double.infinity,
-                  height: 44,
-                  child: OutlinedButton.icon(
-                    onPressed: () => _showReservationSheet(context, rest),
-                    icon: const Icon(Icons.event_seat, size: 18),
-                    label: Text(provider.tr('reserve_table')),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFF00C8B3),
-                      side: const BorderSide(color: Color(0xFF00C8B3)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      textStyle: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-              const SizedBox(height: 10),
-              // F08 — anyone can tap; the backend only accepts the review
-              // once the user has a completed order here. The sheet surfaces
-              // that message instead of failing silently.
-              SizedBox(
-                width: double.infinity,
-                height: 44,
-                child: OutlinedButton.icon(
-                  onPressed: () => _showReviewSheet(context, provider, rest),
-                  icon: const Icon(
-                    Icons.star_outline_rounded,
-                    size: 18,
-                    color: Color(0xFFF59E0B),
-                  ),
-                  label: Text(provider.tr('leave_review')),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFFF59E0B),
-                    side: const BorderSide(color: Color(0xFFF59E0B)),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    textStyle: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-              ),
-              if (!rest.paymentsReady) ...[
-                const SizedBox(height: 10),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF59E0B).withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: const Color(0xFFF59E0B).withValues(alpha: 0.5),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.schedule,
-                        color: Color(0xFFF59E0B),
-                        size: 14,
-                      ),
-                      const SizedBox(width: 6),
-                      Flexible(
-                        child: Text(
-                          provider.tr('restaurant_not_connected'),
-                          style: const TextStyle(
-                            color: Color(0xFFF59E0B),
-                            fontSize: 11,
+              // Restaurant Meta Info Section
+              Padding(
+                padding: EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Meta chips
+                    Row(
+                      children: [
+                        Icon(Icons.star, color: Color(0xFFF59E0B), size: 16),
+                        SizedBox(width: 4),
+                        Text(
+                          '${rest.rating} (${provider.tr('reviews').replaceAll('{n}', '${rest.reviewsCount}')})',
+                          style: TextStyle(
                             fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                            color: context.fast.t1,
+                          ),
+                        ),
+                        SizedBox(width: 12),
+                        Icon(
+                          Icons.access_time_filled,
+                          color: context.fast.t2,
+                          size: 14,
+                        ),
+                        SizedBox(width: 4),
+                        Text(
+                          provider
+                              .tr('prep_time')
+                              .replaceAll('{n}', '${rest.pickupPrepTime}'),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                            color: context.fast.t2,
+                          ),
+                        ),
+                        SizedBox(width: 12),
+                        Icon(
+                          Icons.location_on,
+                          color: context.fast.t2,
+                          size: 14,
+                        ),
+                        SizedBox(width: 4),
+                        Text(
+                          '${provider.getRealDistance(rest).toStringAsFixed(1)} km',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                            color: context.fast.t2,
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (rest.reservationsEnabled) ...[
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 44,
+                        child: OutlinedButton.icon(
+                          onPressed: () => _showReservationSheet(context, rest),
+                          icon: const Icon(Icons.event_seat, size: 18),
+                          label: Text(provider.tr('reserve_table')),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF00C8B3),
+                            side: const BorderSide(color: Color(0xFF00C8B3)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            textStyle: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
                         ),
                       ),
                     ],
-                  ),
-                ),
-              ],
-              SizedBox(height: 12),
-              // Description
-              Text(
-                rest.description,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: context.fast.t2,
-                  height: 1.4,
-                ),
-              ),
-              SizedBox(height: 8),
-              // Address
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(Icons.map, color: context.fast.t3, size: 14),
-                  SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      rest.address,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: context.fast.t3,
-                        fontFamily: 'monospace',
+                    const SizedBox(height: 10),
+                    // F08 — anyone can tap; the backend only accepts the review
+                    // once the user has a completed order here. The sheet surfaces
+                    // that message instead of failing silently.
+                    SizedBox(
+                      width: double.infinity,
+                      height: 44,
+                      child: OutlinedButton.icon(
+                        onPressed: () =>
+                            _showReviewSheet(context, provider, rest),
+                        icon: const Icon(
+                          Icons.star_outline_rounded,
+                          size: 18,
+                          color: Color(0xFFF59E0B),
+                        ),
+                        label: Text(provider.tr('leave_review')),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFFF59E0B),
+                          side: const BorderSide(color: Color(0xFFF59E0B)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          textStyle: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              // Food truck — weekly stops so customers can follow the truck
-              if (rest.isFoodTruck) ...[
-                SizedBox(height: 10),
-                _buildTruckSchedule(context, rest),
-              ],
-              SizedBox(height: 12),
-
-              // Mini Map (MapLibre GL + OpenFreeMap)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: SizedBox(
-                  height: 130,
-                  child: MapLibreMap(
-                    options: MapOptions(
-                      initStyle: openFreeMapStyle,
-                      initCenter: geo(rest.latitude, rest.longitude),
-                      initZoom: 15.0,
-                      gestures: const MapGestures.none(),
-                    ),
-                    onEvent: (event) async {
-                      if (event case MapEventStyleLoaded()) {
-                        await registerMapMarkers(event.style);
-                      }
-                    },
-                    layers: [
-                      MarkerLayer(
-                        points: [
-                          Feature(
-                            geometry: Point(geo(rest.latitude, rest.longitude)),
+                    if (!rest.paymentsReady) ...[
+                      const SizedBox(height: 10),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(
+                            0xFFF59E0B,
+                          ).withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: const Color(
+                              0xFFF59E0B,
+                            ).withValues(alpha: 0.5),
                           ),
-                        ],
-                        iconImage: 'marker_restaurant',
-                        iconSize: 0.2,
-                        iconAnchor: IconAnchor.center,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.schedule,
+                              color: Color(0xFFF59E0B),
+                              size: 14,
+                            ),
+                            const SizedBox(width: 6),
+                            Flexible(
+                              child: Text(
+                                provider.tr('restaurant_not_connected'),
+                                style: const TextStyle(
+                                  color: Color(0xFFF59E0B),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
-                  ),
-                ),
-              ),
-              SizedBox(height: 12),
-              Semantics(
-                button: true,
-                label: provider.tr('gmaps'),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton.icon(
-                    onPressed: () => _openGoogleMapsDirections(context, rest),
-                    icon: Icon(Icons.directions_walk, size: 20),
-                    label: Text(tr(context, 'itinerary')),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFFF59E0B),
-                      foregroundColor: FASTBrand.onAmber,
-                      elevation: 0,
-                      textStyle: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0.4,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                    SizedBox(height: 12),
+                    // Description
+                    Text(
+                      rest.description,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: context.fast.t2,
+                        height: 1.4,
                       ),
                     ),
+                    SizedBox(height: 8),
+                    // Address
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.map, color: context.fast.t3, size: 14),
+                        SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            rest.address,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: context.fast.t3,
+                              fontFamily: 'monospace',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    // Food truck — weekly stops so customers can follow the truck
+                    if (rest.isFoodTruck) ...[
+                      SizedBox(height: 10),
+                      _buildTruckSchedule(context, rest),
+                    ],
+                    SizedBox(height: 12),
+
+                    // Mini Map (MapLibre GL + OpenFreeMap)
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: SizedBox(
+                        height: 130,
+                        child: MapLibreMap(
+                          options: MapOptions(
+                            initStyle: openFreeMapStyle,
+                            initCenter: geo(rest.latitude, rest.longitude),
+                            initZoom: 15.0,
+                            gestures: const MapGestures.none(),
+                          ),
+                          onEvent: (event) async {
+                            if (event case MapEventStyleLoaded()) {
+                              await registerMapMarkers(event.style);
+                            }
+                          },
+                          layers: [
+                            MarkerLayer(
+                              points: [
+                                Feature(
+                                  geometry: Point(
+                                    geo(rest.latitude, rest.longitude),
+                                  ),
+                                ),
+                              ],
+                              iconImage: 'marker_restaurant',
+                              iconSize: 0.2,
+                              iconAnchor: IconAnchor.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 12),
+                    Semantics(
+                      button: true,
+                      label: provider.tr('gmaps'),
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton.icon(
+                          onPressed: () =>
+                              _openGoogleMapsDirections(context, rest),
+                          icon: Icon(Icons.directions_walk, size: 20),
+                          label: Text(tr(context, 'itinerary')),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFFF59E0B),
+                            foregroundColor: FASTBrand.onAmber,
+                            elevation: 0,
+                            textStyle: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.4,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              Divider(color: context.fast.line, height: 1),
+
+              // Menu title
+              Padding(
+                padding: EdgeInsets.fromLTRB(16, 20, 16, 8),
+                child: Text(
+                  provider.tr('menu_items'),
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.0,
+                    color: context.fast.t3,
                   ),
                 ),
               ),
-            ],
-          ),
-        ),
-
-        Divider(color: context.fast.line, height: 1),
-
-        // Menu title
-        Padding(
-          padding: EdgeInsets.fromLTRB(16, 20, 16, 8),
-          child: Text(
-            provider.tr('menu_items'),
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.0,
-              color: context.fast.t3,
-            ),
-          ),
-        ),
             ],
           ),
         ),
@@ -683,43 +702,45 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-        // Menu — grouped under clean category sections
-        if (rest.menu.isEmpty)
-          Padding(
-            padding: EdgeInsets.all(32),
-            child: Center(
-              child: Text(
-                provider.tr('no_items'),
-                style: TextStyle(color: context.fast.t3),
-              ),
-            ),
-          )
-        else
-          ..._buildMenuSections(context, provider, rest),
+              // Menu — grouped under clean category sections
+              if (rest.menu.isEmpty)
+                Padding(
+                  padding: EdgeInsets.all(32),
+                  child: Center(
+                    child: Text(
+                      provider.tr('no_items'),
+                      style: TextStyle(color: context.fast.t3),
+                    ),
+                  ),
+                )
+              else
+                ..._buildMenuSections(context, provider, rest),
 
-        // Reviews — each comment is reportable (F09 moderation)
-        if (rest.reviews.isNotEmpty) ...[
-          Divider(color: context.fast.line, height: 32),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-            child: Text(
-              provider.tr('reviews').replaceAll('{n}', '${rest.reviewsCount}'),
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.0,
-                color: context.fast.t3,
-              ),
-            ),
-          ),
-          ...rest.reviews.map(
-            (r) => Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-              child: _buildReviewCard(context, provider, r),
-            ),
-          ),
-        ],
-        const SizedBox(height: 120),
+              // Reviews — each comment is reportable (F09 moderation)
+              if (rest.reviews.isNotEmpty) ...[
+                Divider(color: context.fast.line, height: 32),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                  child: Text(
+                    provider
+                        .tr('reviews')
+                        .replaceAll('{n}', '${rest.reviewsCount}'),
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.0,
+                      color: context.fast.t3,
+                    ),
+                  ),
+                ),
+                ...rest.reviews.map(
+                  (r) => Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+                    child: _buildReviewCard(context, provider, r),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 120),
             ],
           ),
         ),
@@ -839,7 +860,9 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
       return 1;
     }
     if (c.contains('dessert') || c.contains('sucr')) return 2;
-    if (c.contains('boisson') || c.contains('drink') || c.contains('beverage')) {
+    if (c.contains('boisson') ||
+        c.contains('drink') ||
+        c.contains('beverage')) {
       return 3;
     }
     if (c.isEmpty) return 99;
@@ -1003,16 +1026,16 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
     try {
       await ReviewService().reportReview(r.id);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(provider.tr('report_sent'))),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(provider.tr('report_sent'))));
       }
     } catch (_) {
       // Duplicate reports return 409 — treat as already sent.
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(provider.tr('report_sent'))),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(provider.tr('report_sent'))));
       }
     }
   }
@@ -1575,11 +1598,7 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
-                    '${tr(context, 'truck_today')} ${[
-                      rest.todayStop!.label,
-                      rest.todayStop!.address,
-                      rest.todayStop!.city,
-                    ].where((p) => p.isNotEmpty).join(', ')}',
+                    '${tr(context, 'truck_today')} ${[rest.todayStop!.label, rest.todayStop!.address, rest.todayStop!.city].where((p) => p.isNotEmpty).join(', ')}',
                     style: const TextStyle(
                       color: Color(0xFF00C8B3),
                       fontSize: 12,
@@ -1674,10 +1693,7 @@ class _ReservationSheetState extends State<_ReservationSheet> {
   }
 
   Future<void> _pickTime() async {
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: _time,
-    );
+    final picked = await showTimePicker(context: context, initialTime: _time);
     if (picked != null) setState(() => _time = picked);
   }
 
@@ -1789,10 +1805,10 @@ class _ReservationSheetState extends State<_ReservationSheet> {
               if (widget.restaurant.seatingCapacity > 0) ...[
                 const SizedBox(width: 8),
                 Text(
-                  tr(context, 'seating_cap_hint').replaceAll(
-                    '{n}',
-                    '${widget.restaurant.seatingCapacity}',
-                  ),
+                  tr(
+                    context,
+                    'seating_cap_hint',
+                  ).replaceAll('{n}', '${widget.restaurant.seatingCapacity}'),
                   style: TextStyle(color: context.fast.t3, fontSize: 10),
                 ),
               ],
@@ -1930,9 +1946,9 @@ class _ReviewSheetState extends State<_ReviewSheet> {
       );
       if (mounted) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(tr(context, 'review_sent_ok'))),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(tr(context, 'review_sent_ok'))));
       }
     } catch (e) {
       if (mounted) {
