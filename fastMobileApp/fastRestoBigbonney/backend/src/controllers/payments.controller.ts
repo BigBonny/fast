@@ -737,7 +737,9 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
         card_payments: { requested: true },
         transfers: { requested: true },
       },
-      business_type: 'company',
+      // No SIRET → onboard as individual (auto-entrepreneur): Stripe
+      // skips company fields and only asks personal ID + IBAN.
+      business_type: siren ? 'company' : 'individual',
       business_profile: {
         name: restaurant.name,
         mcc: '5812', // eating places / restaurants
@@ -750,21 +752,24 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
             }
           : undefined,
       },
-      company: {
-        name: restaurant.name,
-        registration_number: siren || undefined,
-        phone: restaurant.phone || undefined,
-        address: restaurant.address
-          ? {
-              line1: restaurant.address,
-              city: restaurant.city || undefined,
-              country: 'FR',
-            }
-          : undefined,
-      },
-      // No `individual` here: with business_type 'company' Stripe rejects
-      // it outright, and Express collects the representative in the hosted
-      // flow regardless.
+      // `company` only when it's actually a company — Stripe rejects
+      // the field on individual accounts.
+      ...(siren
+        ? {
+            company: {
+              name: restaurant.name,
+              registration_number: siren,
+              phone: restaurant.phone || undefined,
+              address: restaurant.address
+                ? {
+                    line1: restaurant.address,
+                    city: restaurant.city || undefined,
+                    country: 'FR',
+                  }
+                : undefined,
+            },
+          }
+        : {}),
       external_account: withIban
         ? {
             object: 'bank_account',
