@@ -43,9 +43,10 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
     _scroll.addListener(_onScroll);
     // Fresh menu on every open — the list cache can lag behind Pro edits.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        context.read<FASTProvider>().refreshRestaurant(widget.restaurant.id);
-      }
+      if (!mounted) return;
+      final prov = context.read<FASTProvider>();
+      final id = prov.selectedRestaurant?.id;
+      if (id != null) prov.refreshRestaurant(id);
     });
   }
 
