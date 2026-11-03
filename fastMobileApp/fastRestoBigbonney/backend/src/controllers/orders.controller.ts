@@ -59,13 +59,19 @@ async function refundPaidOrder(
   );
   if (refundAmountCents <= 0) return;
 
+  // Only reverse a transfer when one exists — charges that went fully
+  // to the platform (demo restaurant, or a restaurant without Connect)
+  // have no transfer_data and Stripe 400s on reverse_transfer.
+  const pi = await stripe.paymentIntents.retrieve(paymentIntentId);
+  const hasDestinationTransfer = !!pi.transfer_data?.destination;
+
   await stripe.refunds.create(
     {
       payment_intent: paymentIntentId,
       amount: refundAmountCents,
       // Destination charge — pull the money back from the connected
       // account rather than paying the refund from the platform balance.
-      reverse_transfer: true,
+      ...(hasDestinationTransfer ? { reverse_transfer: true } : {}),
       // The platform fee only goes back when the customer is fully refunded.
       ...(options?.includeServiceFee ? { refund_application_fee: true } : {}),
     },
