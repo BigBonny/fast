@@ -4,6 +4,7 @@ import { createRestaurantSchema, updateRestaurantSchema } from '../utils/validat
 import { geocodeAddress } from '../utils/geocoding';
 import { safeEmitNotificationToUser } from '../services/realtime';
 import { getRestaurantIdForUser } from '../middleware/auth';
+import { env } from '../config/env';
 
 async function applyGeocoding(
   data: { address?: string; city?: string; latitude?: number; longitude?: number },
@@ -20,7 +21,9 @@ async function applyGeocoding(
 
 function publicRestaurant(restaurant: Record<string, unknown>): Record<string, unknown> {
   const result = { ...restaurant };
-  result.paymentsReady = Boolean(restaurant.stripeAccountId && restaurant.stripeChargesEnabled);
+  result.paymentsReady =
+    Boolean(restaurant.stripeAccountId && restaurant.stripeChargesEnabled) ||
+    restaurant.id === env.demoRestaurantId;
   for (const key of ['ownerId', 'managerIban', 'ownerBirthDate', 'ownerAddress', 'stripeAccountId', 'stripeChargesEnabled', 'stripePayoutsEnabled', 'payoutFrequency', 'staffInviteCode']) {
     delete result[key];
   }
