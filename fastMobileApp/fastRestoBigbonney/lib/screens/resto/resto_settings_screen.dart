@@ -156,7 +156,9 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
   Future<void> _configureStripeConnect() async {
     setState(() => _connectLoading = true);
     try {
-      final link = await _paymentService.createConnectAccountLink();
+      final link = await _paymentService.createConnectAccountLink(
+        language: context.read<FASTProvider>().appLanguage,
+      );
       final url = link['url'] as String?;
       if (url != null) {
         // In-app webview — the owner stays inside FAST while completing
