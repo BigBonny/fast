@@ -95,8 +95,12 @@ export const updateOrderTrackingSchema = z.object({
   // Client reports progress as 0-100 (percent of the walked route).
   gpsProgress: z.number().min(0).max(100).optional(),
   isReadyAtEntrance: z.boolean().optional(),
-}).refine((data) => data.gpsProgress !== undefined || data.isReadyAtEntrance !== undefined, {
-  message: 'Au moins un champ requis (gpsProgress ou isReadyAtEntrance)',
+  // Client's live position — used to compute the walking ETA the
+  // restaurant sees on the order card.
+  latitude: z.number().min(-90).max(90).optional(),
+  longitude: z.number().min(-180).max(180).optional(),
+}).refine((data) => data.gpsProgress !== undefined || data.isReadyAtEntrance !== undefined || data.latitude !== undefined, {
+  message: 'Au moins un champ requis (gpsProgress, isReadyAtEntrance ou position)',
 });
 
 export const verifyPickupSchema = z.object({

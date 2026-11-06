@@ -9,6 +9,7 @@ import {
   verifyPickupSchema,
 } from '../utils/validation';
 import { isValidStatusTransition, STATUS_LABELS } from '../utils/orderStatus';
+import { distanceKm } from '../utils/deliveryHelpers';
 import {
   safeEmitNotificationToUser,
   safeEmitOrderStatusToUser,
@@ -183,6 +184,9 @@ export const updateOrderTracking = async (req: Request, res: Response): Promise<
 
   const order = await prisma.order.findFirst({
     where: { id, userId: req.user!.userId },
+    include: {
+      restaurant: { select: { latitude: true, longitude: true } },
+    },
   });
   if (!order) {
     res.status(404).json({ error: 'Commande introuvable' });
@@ -199,6 +203,24 @@ export const updateOrderTracking = async (req: Request, res: Response): Promise<
   const updateData: Record<string, unknown> = {};
   if (data.gpsProgress !== undefined) updateData.gpsProgress = data.gpsProgress;
   if (data.isReadyAtEntrance !== undefined) updateData.isReadyAtEntrance = data.isReadyAtEntrance;
+
+  // Live walking ETA for the restaurant: client position → straight-line
+  // km ÷ 5 km/h walk ≈ minutes. Stored in clientDelayMin — the same field
+  // the Pro card's "client ETA" chip displays.
+  if (
+    data.latitude !== undefined &&
+    data.longitude !== undefined &&
+    order.fulfillmentType === 'PICKUP'
+  ) {
+    const km = distanceKm(
+      order.restaurant.latitude,
+      order.restaurant.longitude,
+      data.latitude,
+      data.longitude,
+    );
+    const walkMin = Math.min(60, Math.max(1, Math.ceil(km * 12)));
+    updateData.clientDelayMin = walkMin;
+  }
 
   const updated = await prisma.order.update({
     where: { id },
