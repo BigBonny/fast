@@ -39,6 +39,12 @@ export const env = {
   // Demo/screenshot restaurant — treated as Stripe-connected without
   // onboarding; charges land on the platform account (no transfer).
   demoRestaurantId: process.env.FAST_DEMO_RESTAURANT_ID || '',
+  // Comma-separated restaurant IDs also exempt from Connect onboarding —
+  // their charges stay on the platform account.
+  platformCollectRestaurantIds: (process.env.FAST_PLATFORM_COLLECT_RESTAURANT_IDS || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean),
   // Optional Apple Pay merchant id — PaymentSheet only offers Apple Pay
   // when this is set, so the feature stays dormant until Apple-side
   // setup (merchant id + entitlement + profile) is done.
