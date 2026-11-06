@@ -167,6 +167,47 @@ class _QRVerificationScreenState extends State<QRVerificationScreen>
                 fontWeight: FontWeight.w600,
               ),
             ),
+            if (order.pickupToken != null) ...[
+              SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: const Color(0xFFF59E0B).withValues(alpha: 0.4),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      tr(context, 'pickup_code_lbl'),
+                      style: TextStyle(fontSize: 11, color: context.fast.t3),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      pickupCodeFromToken(order.pickupToken!),
+                      style: const TextStyle(
+                        fontFamily: 'monospace',
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFFF59E0B),
+                        letterSpacing: 2.0,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 6),
+              Text(
+                tr(context, 'pickup_code_hint'),
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 11, color: context.fast.t3),
+              ),
+            ],
             SizedBox(height: 24),
             Container(
               padding: EdgeInsets.all(16),

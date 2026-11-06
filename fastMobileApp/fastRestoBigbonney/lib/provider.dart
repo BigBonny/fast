@@ -492,7 +492,11 @@ class FASTProvider extends ChangeNotifier {
     push.onAction ??= _onNotificationAction;
     realtime.connect(_userId);
     unawaited(
-      push.init(eta5Label: tr('notif_eta5'), eta15Label: tr('notif_eta15')),
+      push.init(
+        eta5Label: tr('notif_eta5'),
+        eta15Label: tr('notif_eta15'),
+        departLabel: tr('je_parts'),
+      ),
     );
 
     // Push tap → land on the order list (client shell ignores the call
@@ -510,6 +514,14 @@ class FASTProvider extends ChangeNotifier {
         LocalPushService.instance.show(
           title: tr('notif_arrive_title'),
           body: tr('notif_arrive_body').replaceAll('{n}', restaurant.name),
+        );
+      },
+      onNear: (order, restaurant) {
+        LocalPushService.instance.showDepartPrompt(
+          title: tr('near_detected_title'),
+          body: tr('near_detected_body').replaceAll('{n}', restaurant.name),
+          orderId: order.id,
+          actionLabel: tr('je_parts'),
         );
       },
     );
@@ -620,9 +632,14 @@ class FASTProvider extends ChangeNotifier {
     }
   }
 
-  /// Notification action tap → relay the client's ETA to the restaurant.
+  /// Notification action tap → relay the client's ETA to the restaurant,
+  /// or handle "Je pars" from the proximity prompt.
   void _onNotificationAction(String actionId, String? orderId) {
     if (orderId == null) return;
+    if (actionId == LocalPushService.departAction) {
+      unawaited(_onDepart(orderId));
+      return;
+    }
     final delayMin = switch (actionId) {
       LocalPushService.eta5Action => 5,
       LocalPushService.eta15Action => 15,
@@ -630,6 +647,28 @@ class FASTProvider extends ChangeNotifier {
     };
     if (delayMin == 0) return;
     unawaited(_orderService.signalDelay(orderId, delayMin));
+  }
+
+  /// "Je pars" — client confirmed they're heading to pickup. Fire an
+  /// initial tracking patch so the restaurant card flips to en-route
+  /// (yellow) immediately, then open the orders screen where live
+  /// tracking takes over.
+  Future<void> _onDepart(String orderId) async {
+    final pos = await LocationService.instance.getCurrentLocation(
+      forceRefresh: true,
+    );
+    if (pos != null) {
+      try {
+        await _orderService.updateTracking(
+          orderId: orderId,
+          gpsProgress: 1,
+          latitude: pos.latitude,
+          longitude: pos.longitude,
+        );
+        updateOrderTrackingLocally(orderId, gpsProgress: 1);
+      } catch (_) {}
+    }
+    navigateToScreen('commandes');
   }
 
   void syncPoints(int points) {
@@ -672,6 +711,9 @@ class FASTProvider extends ChangeNotifier {
       final i = _restaurants.indexWhere((r) => r.id == id);
       if (i >= 0 && !_disposed) {
         _restaurants[i] = fresh;
+        // _selectedRestaurant holds a reference to the list entry —
+        // without this the open detail screen keeps showing stale data.
+        if (_selectedRestaurant?.id == id) _selectedRestaurant = fresh;
         notifyListeners();
       }
     } catch (_) {}
