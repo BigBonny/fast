@@ -455,7 +455,7 @@ class Restaurant {
     reviewsCount: json['reviewsCount'] as int? ?? 0,
     reviews:
         (json['reviews'] as List<dynamic>?)
-            ?.map((e) => Review.fromJson(e as Map<String, dynamic>))
+            ?.map((e) => Review.fromApiJson(e as Map<String, dynamic>))
             .toList() ??
         [],
     pickupPrepTime: json['pickupPrepTime'] as int? ?? 15,
@@ -813,6 +813,21 @@ class Order {
   }
 
   bool get isDelivery => fulfillmentType == FulfillmentType.delivery;
+}
+
+// Short human-readable pickup code ("XXXX-FAST") derived from the QR
+// token — must match backend/src/utils/pickupToken.ts exactly.
+String pickupCodeFromToken(String token) {
+  var hash = 0;
+  for (final c in token.codeUnits) {
+    hash = (hash * 31 + c) & 0xFFFFFFFF;
+  }
+  const alphabet = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  final buf = StringBuffer();
+  for (var i = 0; i < 4; i++) {
+    buf.write(alphabet[(hash >> (i * 8)) % alphabet.length]);
+  }
+  return '${buf.toString()}-FAST';
 }
 
 class PushNotification {

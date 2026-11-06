@@ -25,15 +25,21 @@ class LocalPushService {
   static const String _channelDesc =
       'Commandes, restaurants et mises à jour FAST';
   static const String etaCategory = 'fast_order_eta';
+  static const String departCategory = 'fast_order_depart';
   static const String eta5Action = 'eta5';
   static const String eta15Action = 'eta15';
+  static const String departAction = 'depart';
 
   /// Deterministic id per order for scheduled reminders (cancel on
   /// completion without tracking a map).
   static int reminderIdFor(String orderId) =>
       0x40000000 + (orderId.hashCode & 0x3FFFFFFF);
 
-  Future<void> init({String eta5Label = '', String eta15Label = ''}) async {
+  Future<void> init({
+    String eta5Label = '',
+    String eta15Label = '',
+    String departLabel = '',
+  }) async {
     if (_initialized || kIsWeb) return;
     _initialized = true;
 
@@ -46,6 +52,13 @@ class LocalPushService {
             actions: [
               DarwinNotificationAction.plain(eta5Action, eta5Label),
               DarwinNotificationAction.plain(eta15Action, eta15Label),
+            ],
+            options: {DarwinNotificationCategoryOption.hiddenPreviewShowTitle},
+          ),
+          DarwinNotificationCategory(
+            departCategory,
+            actions: [
+              DarwinNotificationAction.plain(departAction, departLabel),
             ],
             options: {DarwinNotificationCategoryOption.hiddenPreviewShowTitle},
           ),
@@ -143,7 +156,10 @@ class LocalPushService {
     } catch (_) {}
   }
 
-  NotificationDetails _details({List<AndroidNotificationAction>? actions}) =>
+  NotificationDetails _details({
+    List<AndroidNotificationAction>? actions,
+    String? category,
+  }) =>
       NotificationDetails(
         android: AndroidNotificationDetails(
           _channelId,
@@ -154,7 +170,9 @@ class LocalPushService {
           actions: actions,
         ),
         iOS: DarwinNotificationDetails(
-          categoryIdentifier: actions != null ? etaCategory : null,
+          categoryIdentifier: actions != null
+              ? (category ?? etaCategory)
+              : null,
           // Without these, iOS swallows the notification whenever the app
           // is in the foreground — the exact case for a kitchen iPad left
           // open on the orders screen.
@@ -205,6 +223,30 @@ class LocalPushService {
             AndroidNotificationAction(eta5Action, eta5Label),
             AndroidNotificationAction(eta15Action, eta15Label),
           ],
+        ),
+        payload: orderId,
+      );
+    } catch (_) {}
+  }
+
+  /// "On a détecté que vous êtes proche" prompt with a single
+  /// "Je pars" action — tapping it relays departure to the backend.
+  Future<void> showDepartPrompt({
+    required String title,
+    required String body,
+    required String orderId,
+    required String actionLabel,
+  }) async {
+    if (!_initialized) return;
+    await requestPermission();
+    try {
+      await _plugin.show(
+        id: _nextId++,
+        title: title,
+        body: body,
+        notificationDetails: _details(
+          actions: [AndroidNotificationAction(departAction, actionLabel)],
+          category: departCategory,
         ),
         payload: orderId,
       );

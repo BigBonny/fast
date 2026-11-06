@@ -18,6 +18,7 @@ class RestoOrdersScreen extends StatefulWidget {
 class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
   Timer? _uiTimer;
   final _orderService = OrderService();
+  final Set<String> _expandedOrders = {};
 
   @override
   void initState() {
@@ -104,6 +105,7 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
 
   void _showQrScanDialog(Order order) {
     final controller = MobileScannerController();
+    final codeController = TextEditingController();
     var handled = false;
 
     showDialog(
@@ -115,21 +117,70 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
           style: TextStyle(color: context.fast.t1),
         ),
         content: SizedBox(
-          height: 280,
-          width: 280,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: MobileScanner(
-              controller: controller,
-              onDetect: (capture) async {
-                if (handled) return;
-                final code = capture.barcodes.firstOrNull?.rawValue;
-                if (code == null || code.isEmpty) return;
-                handled = true;
-                Navigator.pop(dialogContext);
-                await _verifyPickup(order, code);
-              },
-            ),
+          height: 400,
+          width: 300,
+          child: Column(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: SizedBox(
+                  height: 240,
+                  width: 280,
+                  child: MobileScanner(
+                    controller: controller,
+                    onDetect: (capture) async {
+                      if (handled) return;
+                      final code = capture.barcodes.firstOrNull?.rawValue;
+                      if (code == null || code.isEmpty) return;
+                      handled = true;
+                      Navigator.pop(dialogContext);
+                      await _verifyPickup(order, code);
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: codeController,
+                      textCapitalization: TextCapitalization.characters,
+                      style: TextStyle(color: context.fast.t1, fontSize: 14),
+                      decoration: InputDecoration(
+                        hintText: tr(context, 'enter_code'),
+                        hintStyle: TextStyle(color: context.fast.t3),
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      onSubmitted: (v) async {
+                        if (v.trim().isEmpty || handled) return;
+                        handled = true;
+                        Navigator.pop(dialogContext);
+                        await _verifyPickup(order, v.trim());
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: const Icon(Icons.check, color: Color(0xFF10B981)),
+                    onPressed: () async {
+                      final v = codeController.text.trim();
+                      if (v.isEmpty || handled) return;
+                      handled = true;
+                      Navigator.pop(dialogContext);
+                      await _verifyPickup(order, v);
+                    },
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
         actions: [
@@ -299,7 +350,8 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
       statusColor = Color(0xFF3B82F6);
     }
 
-    // Client proximity — live gpsProgress pushed by the client app
+    // Client proximity — live gpsProgress pushed by the client app.
+    // Yellow = client just started moving toward us (en route, early).
     Color? proxColor;
     String? proxLabel;
     if (order.fulfillmentType == FulfillmentType.pickup) {
@@ -309,17 +361,26 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
       } else if (order.gpsProgress >= 40) {
         proxColor = const Color(0xFFF97316);
         proxLabel = tr(context, 'prox_close');
+      } else if (order.gpsProgress > 0) {
+        proxColor = const Color(0xFFFACC15);
+        proxLabel = tr(context, 'prox_far');
       } else {
         proxColor = const Color(0xFF10B981);
         proxLabel = tr(context, 'prox_far');
       }
     }
     final Color accentColor = proxColor ?? statusColor;
+    final bool enRouteYellow =
+        proxColor == const Color(0xFFFACC15);
 
     return Container(
       margin: EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: context.fast.card,
+        color: enRouteYellow
+            ? const Color(
+                0xFFFACC15,
+              ).withValues(alpha: 0.08)
+            : context.fast.card,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: accentColor.withValues(alpha: proxColor != null ? 0.9 : 0.5),
@@ -414,51 +475,112 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ...order.items.map(
-                  (item) => Padding(
-                    padding: EdgeInsets.only(bottom: 8.0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${item.quantity}x',
-                          style: TextStyle(
-                            color: context.fast.t1,
-                            fontWeight: FontWeight.bold,
+                if (!_expandedOrders.contains(order.id))
+                  InkWell(
+                    onTap: () =>
+                        setState(() => _expandedOrders.add(order.id)),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.receipt_long,
+                            size: 16,
+                            color: context.fast.t3,
                           ),
-                        ),
-                        SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                item.menuItem.name,
-                                style: TextStyle(color: context.fast.t1),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              tr(
+                                context,
+                                'articles_count',
+                              ).replaceAll('{n}', '${order.items.length}'),
+                              style: TextStyle(
+                                color: context.fast.t2,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
                               ),
-                              if (item.selectedOptions.isNotEmpty)
-                                Text(
-                                  item.selectedOptions.join(', '),
-                                  style: TextStyle(
-                                    color: context.fast.t2,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              if (item.allergyNotes.isNotEmpty)
-                                Text(
-                                  '${tr(context, 'note_lbl')}: ${item.allergyNotes}',
-                                  style: const TextStyle(
-                                    color: Color(0xFFEF4444),
-                                    fontSize: 12,
-                                  ),
-                                ),
-                            ],
+                            ),
                           ),
-                        ),
-                      ],
+                          Text(
+                            tr(context, 'see_details'),
+                            style: const TextStyle(
+                              color: FASTPro.teal,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Icon(
+                            Icons.expand_more,
+                            size: 18,
+                            color: FASTPro.teal,
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                else ...[
+                  ...order.items.map(
+                    (item) => Padding(
+                      padding: EdgeInsets.only(bottom: 8.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${item.quantity}x',
+                            style: TextStyle(
+                              color: context.fast.t1,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item.menuItem.name,
+                                  style: TextStyle(color: context.fast.t1),
+                                ),
+                                if (item.selectedOptions.isNotEmpty)
+                                  Text(
+                                    item.selectedOptions.join(', '),
+                                    style: TextStyle(
+                                      color: context.fast.t2,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                if (item.allergyNotes.isNotEmpty)
+                                  Text(
+                                    '${tr(context, 'note_lbl')}: ${item.allergyNotes}',
+                                    style: const TextStyle(
+                                      color: Color(0xFFEF4444),
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton.icon(
+                      onPressed: () => setState(
+                        () => _expandedOrders.remove(order.id),
+                      ),
+                      icon: const Icon(Icons.expand_less, size: 16),
+                      label: Text(
+                        tr(context, 'reduce'),
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                    ),
+                  ),
+                ],
                 if (order.fulfillmentType == FulfillmentType.pickup) ...[
                   const SizedBox(height: 4),
                   // Base44-style approach bar: teal → magenta gradient fill

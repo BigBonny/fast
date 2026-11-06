@@ -20,14 +20,17 @@ class ProximityService {
   static final ProximityService instance = ProximityService._();
 
   static const double triggerRadiusMeters = 250;
+  static const double nearRadiusMeters = 800;
   static const int _distanceFilterMeters = 30;
 
   StreamSubscription<Position>? _sub;
   final Set<String> _notified = {};
+  final Set<String> _nearNotified = {};
 
   List<Order> Function()? _orders;
   List<Restaurant> Function()? _restaurants;
   void Function(Order order, Restaurant restaurant)? _onArrival;
+  void Function(Order order, Restaurant restaurant)? _onNear;
 
   /// Shown on Android's persistent foreground-service notification while
   /// tracking is active (required for background location on Android).
@@ -42,12 +45,14 @@ class ProximityService {
     required List<Order> Function() orders,
     required List<Restaurant> Function() restaurants,
     required void Function(Order, Restaurant) onArrival,
+    void Function(Order, Restaurant)? onNear,
     String foregroundTitle = 'FAST',
     String foregroundBody = 'Tracking your pickup',
   }) {
     _orders = orders;
     _restaurants = restaurants;
     _onArrival = onArrival;
+    _onNear = onNear;
     _fgTitle = foregroundTitle;
     _fgBody = foregroundBody;
   }
@@ -137,15 +142,28 @@ class ProximityService {
   }
 
   void _onPosition(Position p) {
+    final orders = _orders?.call() ?? const <Order>[];
+    final restaurants = _restaurants?.call() ?? const <Restaurant>[];
     for (final (order, restaurant) in evaluateArrivals(
       p.latitude,
       p.longitude,
-      _orders?.call() ?? const <Order>[],
-      _restaurants?.call() ?? const <Restaurant>[],
+      orders,
+      restaurants,
       _notified,
     )) {
       _notified.add(order.id);
       _onArrival?.call(order, restaurant);
+    }
+    for (final (order, restaurant) in evaluateArrivals(
+      p.latitude,
+      p.longitude,
+      orders,
+      restaurants,
+      _nearNotified,
+      radiusMeters: nearRadiusMeters,
+    )) {
+      _nearNotified.add(order.id);
+      _onNear?.call(order, restaurant);
     }
   }
 
@@ -163,8 +181,9 @@ class ProximityService {
     double lng,
     List<Order> orders,
     List<Restaurant> restaurants,
-    Set<String> alreadyNotified,
-  ) {
+    Set<String> alreadyNotified, {
+    double radiusMeters = triggerRadiusMeters,
+  }) {
     final hits = <(Order, Restaurant)>[];
     for (final order in orders) {
       if (alreadyNotified.contains(order.id)) continue;
@@ -191,7 +210,7 @@ class ProximityService {
         LatLng(lat, lng),
         LatLng(restaurant.latitude, restaurant.longitude),
       );
-      if (distanceKm * 1000 <= triggerRadiusMeters) {
+      if (distanceKm * 1000 <= radiusMeters) {
         hits.add((order, restaurant));
       }
     }
@@ -204,13 +223,18 @@ class ProximityService {
   }
 
   /// Forget notified orders so a future pickup can alert again.
-  void reset() => _notified.clear();
+  void reset() {
+    _notified.clear();
+    _nearNotified.clear();
+  }
 
   void stop() {
     _pause();
     _orders = null;
     _restaurants = null;
     _onArrival = null;
+    _onNear = null;
     _notified.clear();
+    _nearNotified.clear();
   }
 }
