@@ -232,7 +232,7 @@ export const createCheckoutSession = async (req: Request, res: Response): Promis
     // Demo restaurant skips Connect entirely — charges land on the
     // platform account (no transfer_data since it has no acct ID).
     const isDemoRestaurant =
-      env.demoRestaurantId !== '' && restaurant.id === env.demoRestaurantId;
+      restaurant.id === env.demoRestaurantId || env.platformCollectRestaurantIds.includes(restaurant.id);
 
     // Payments must go to the restaurant's own Connect account — refuse
     // checkout while it's incomplete instead of collecting on the platform.
@@ -696,7 +696,7 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
       return;
     }
     // Demo restaurant — already "connected", no Stripe onboarding needed.
-    if (env.demoRestaurantId !== '' && restaurant.id === env.demoRestaurantId) {
+    if (restaurant.id === env.demoRestaurantId || env.platformCollectRestaurantIds.includes(restaurant.id)) {
       res.json({ connected: true });
       return;
     }
@@ -1071,7 +1071,7 @@ export const getConnectStatus = async (req: Request, res: Response): Promise<voi
     }
     if (!restaurant.stripeAccountId) {
       // Demo restaurant reports as connected without an account.
-      if (env.demoRestaurantId !== '' && restaurant.id === env.demoRestaurantId) {
+      if (restaurant.id === env.demoRestaurantId || env.platformCollectRestaurantIds.includes(restaurant.id)) {
         res.json({ connected: true, chargesEnabled: true, payoutsEnabled: false });
         return;
       }

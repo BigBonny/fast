@@ -23,7 +23,8 @@ function publicRestaurant(restaurant: Record<string, unknown>): Record<string, u
   const result = { ...restaurant };
   result.paymentsReady =
     Boolean(restaurant.stripeAccountId && restaurant.stripeChargesEnabled) ||
-    restaurant.id === env.demoRestaurantId;
+    restaurant.id === env.demoRestaurantId ||
+    env.platformCollectRestaurantIds.includes(restaurant.id as string);
   for (const key of ['ownerId', 'managerIban', 'ownerBirthDate', 'ownerAddress', 'stripeAccountId', 'stripeChargesEnabled', 'stripePayoutsEnabled', 'payoutFrequency', 'staffInviteCode']) {
     delete result[key];
   }
