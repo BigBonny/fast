@@ -10,6 +10,7 @@ import {
 } from '../utils/validation';
 import { isValidStatusTransition, STATUS_LABELS } from '../utils/orderStatus';
 import { distanceKm } from '../utils/deliveryHelpers';
+import { pickupCodeFromToken } from '../utils/pickupToken';
 import {
   safeEmitNotificationToUser,
   safeEmitOrderStatusToUser,
@@ -185,7 +186,13 @@ export const updateOrderTracking = async (req: Request, res: Response): Promise<
   const order = await prisma.order.findFirst({
     where: { id, userId: req.user!.userId },
     include: {
-      restaurant: { select: { latitude: true, longitude: true } },
+      restaurant: {
+        select: {
+          latitude: true,
+          longitude: true,
+          ownerId: true,
+        },
+      },
     },
   });
   if (!order) {
@@ -220,6 +227,33 @@ export const updateOrderTracking = async (req: Request, res: Response): Promise<
     );
     const walkMin = Math.min(60, Math.max(1, Math.ceil(km * 12)));
     updateData.clientDelayMin = walkMin;
+
+    // Client just started moving (first nonzero progress patch) — tell
+    // the restaurant they're en route and let the client know the prep
+    // window. Fires once: gpsProgress only crosses 0→>0 a single time.
+    if (order.gpsProgress === 0 && (data.gpsProgress ?? 0) > 0) {
+      const enRoute = await prisma.notification.create({
+        data: {
+          userId: order.restaurant.ownerId!,
+          orderId: order.id,
+          title: 'Client en route',
+          body: `Commande #${order.id.slice(-6)} — arrivée estimée dans ~${walkMin} min`,
+          type: 'STATUS',
+        },
+      });
+      safeEmitNotificationToUser(order.restaurant.ownerId!, enRoute);
+
+      const prep = await prisma.notification.create({
+        data: {
+          userId: order.userId,
+          orderId: order.id,
+          title: 'Vous êtes en route',
+          body: `Le restaurant peut commencer la préparation — arrivée estimée dans ~${walkMin} min.`,
+          type: 'INFO',
+        },
+      });
+      safeEmitNotificationToUser(order.userId, prep);
+    }
   }
 
   const updated = await prisma.order.update({
@@ -258,7 +292,12 @@ export const verifyPickup = async (req: Request, res: Response): Promise<void> =
     return;
   }
 
-  if (!order.pickupToken || order.pickupToken !== token) {
+  // Accepts the full QR token OR the short "XXXX-FAST" code shown
+  // alongside it — both derive from the same stored token.
+  const validToken =
+    order.pickupToken != null &&
+    (order.pickupToken === token || pickupCodeFromToken(order.pickupToken) === token.toUpperCase());
+  if (!validToken) {
     res.status(400).json({ error: 'Token de retrait invalide' });
     return;
   }
