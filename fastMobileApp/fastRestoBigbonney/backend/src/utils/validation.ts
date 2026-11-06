@@ -104,10 +104,12 @@ export const updateOrderTrackingSchema = z.object({
 });
 
 export const verifyPickupSchema = z.object({
-  // The app sends `pickupToken`; `token` kept for older clients/tools.
+  // The app sends `pickupToken` (full QR value) or `code` (XXXX-FAST);
+  // `token` kept for older clients/tools.
   token: z.string().optional(),
   pickupToken: z.string().optional(),
-}).refine((data) => (data.token ?? data.pickupToken)?.length, {
+  code: z.string().optional(),
+}).refine((data) => (data.token ?? data.pickupToken ?? data.code)?.length, {
   message: 'Token requis',
 });
 

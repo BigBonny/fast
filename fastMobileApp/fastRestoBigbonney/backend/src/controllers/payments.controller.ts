@@ -198,6 +198,14 @@ async function createPaidOrderFromCheckout(
           safeEmitNotificationToUser(result.restaurantOwnerId!, notification);
         }
         safeEmitNotificationToUser(result.order.userId, clientNotification);
+
+        // Auto-accept: orders go straight to PREPARING unless the
+        // restaurant closes within 30 min (or today is a closed day —
+        // then it needs a human decision). No openingHours → auto-accept.
+        const autoAccepted = await maybeAutoAccept(result.order);
+        if (autoAccepted) {
+          safeEmitOrderToRestaurant(result.order.restaurantId, autoAccepted);
+        }
       }
 
       return result.order;
@@ -209,6 +217,53 @@ async function createPaidOrderFromCheckout(
     }
   }
   throw new Error('Could not create paid order');
+}
+
+// Returns the order flipped to PREPARING when safe, else null.
+// "Safe" = restaurant has no closing time configured, today isn't a
+// closed day, and it's not within 30 min of closing.
+async function maybeAutoAccept(order: {
+  id: string;
+  status: string;
+  restaurant: { openingHours: unknown };
+}): Promise<unknown | null> {
+  if (order.status !== 'PLACED') return null;
+  const hours = order.restaurant.openingHours as
+    | Record<string, string>
+    | null
+    | undefined;
+  if (!hours || typeof hours !== 'object') {
+    return flipToPreparing(order.id);
+  }
+  const now = new Date();
+  const isoDay = now.getDay() === 0 ? 7 : now.getDay(); // ISO 1-7
+  const today = hours[String(isoDay)];
+  if (!today || today === 'closed' || !today.includes('-')) {
+    // Closed today or unparseable → human decides.
+    if (today === 'closed') return null;
+    return flipToPreparing(order.id);
+  }
+  const closeStr = today.split('-')[1]?.trim();
+  const m = closeStr?.match(/^(\d{1,2}):(\d{2})$/);
+  if (!m) return flipToPreparing(order.id);
+  const closeMin = Number(m[1]) * 60 + Number(m[2]);
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  // Handles overnight hours crudely: if close < open it's past midnight.
+  const minutesToClose = closeMin <= nowMin ? closeMin + 1440 - nowMin : closeMin - nowMin;
+  if (minutesToClose <= 30) return null; // too close to closing — manual accept
+  return flipToPreparing(order.id);
+}
+
+async function flipToPreparing(orderId: string) {
+  return prisma.order.update({
+    where: { id: orderId },
+    data: { status: 'PREPARING', prepStartedAt: new Date() },
+    include: {
+      items: { include: { menuItem: true } },
+      restaurant: true,
+      groupOrder: { select: { code: true, status: true } },
+    },
+  });
 }
 
 export const createCheckoutSession = async (req: Request, res: Response): Promise<void> => {
