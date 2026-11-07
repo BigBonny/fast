@@ -298,7 +298,10 @@ class _RestoMainShellState extends State<RestoMainShell> {
               ),
             ],
           ),
-          bottomNavigationBar: FastNavBar(
+          bottomNavigationBar: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1180),
+              child: FastNavBar(
             accent: FASTPro.teal,
             surface: FASTPro.header,
             line: const Color(0xFF1E293B),
@@ -345,6 +348,8 @@ class _RestoMainShellState extends State<RestoMainShell> {
                 label: tr(context, 'nav_profile'),
               ),
             ],
+              ),
+            ),
           ),
         ),
         if (_showTutorial)
