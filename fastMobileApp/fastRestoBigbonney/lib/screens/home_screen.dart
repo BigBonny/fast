@@ -1016,10 +1016,11 @@ class _HomeScreenState extends State<HomeScreen>
         else
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            // Wide screens (tablets, landscape phones) get two cards per
-            // row — heights vary with dietary tags so a fixed-aspect grid
-            // would overflow; pairing keeps each card at natural height.
-            child: MediaQuery.sizeOf(context).width > 700
+            // Tablets get two cards per row — heights vary with dietary
+            // tags so a fixed-aspect grid would overflow; pairing keeps
+            // each card at natural height. shortestSide (not width) so
+            // phones in landscape keep the single column.
+            child: MediaQuery.sizeOf(context).shortestSide > 600
                 ? Column(
                     children: [
                       for (var i = 0; i < filteredRest.length; i += 2)

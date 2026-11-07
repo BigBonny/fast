@@ -106,9 +106,10 @@ class _CartScreenState extends State<CartScreen> {
       }
     });
 
-    // Wide screens split the page: items + options on the left, the
+    // Tablets split the page: items + options on the left, the
     // checkout/receipt card on the right like a desktop checkout.
-    final wideCart = MediaQuery.sizeOf(context).width > 760;
+    // shortestSide keeps landscape phones on the single column.
+    final wideCart = MediaQuery.sizeOf(context).shortestSide > 600;
 
     final optionsSection = Column(
       crossAxisAlignment: CrossAxisAlignment.start,

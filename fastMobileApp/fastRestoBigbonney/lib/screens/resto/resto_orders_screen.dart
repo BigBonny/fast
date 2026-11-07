@@ -414,7 +414,8 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
     Widget Function(Order) build,
   ) {
     if (orders.isEmpty) return const [];
-    if (MediaQuery.sizeOf(context).width <= 980) {
+    final size = MediaQuery.sizeOf(context);
+    if (size.shortestSide <= 600 || size.width <= 980) {
       return orders.map(build).toList();
     }
     final out = <Widget>[];
