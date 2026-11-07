@@ -32,6 +32,24 @@ class ProximityService {
   void Function(Order order, Restaurant restaurant)? _onArrival;
   void Function(Order order, Restaurant restaurant)? _onNear;
 
+  /// Live tracking uplink: fires (at most every 20s per order) once the
+  /// client is actually moving toward the restaurant — this is what
+  /// keeps the Pro card live even with the app backgrounded.
+  void Function(
+    String orderId,
+    double gpsProgress,
+    double latitude,
+    double longitude,
+    bool readyAtEntrance,
+  )?
+  onTrack;
+
+  static const Duration _trackInterval = Duration(seconds: 20);
+  static const double _trackStartThreshold = 5; // % of route covered
+  final Map<String, double> _initialDistances = {};
+  final Map<String, DateTime> _lastTrackSent = {};
+  final Set<String> _trackStarted = {};
+
   /// Shown on Android's persistent foreground-service notification while
   /// tracking is active (required for background location on Android).
   String _fgTitle = 'FAST';
@@ -46,6 +64,14 @@ class ProximityService {
     required List<Restaurant> Function() restaurants,
     required void Function(Order, Restaurant) onArrival,
     void Function(Order, Restaurant)? onNear,
+    void Function(
+      String orderId,
+      double gpsProgress,
+      double latitude,
+      double longitude,
+      bool readyAtEntrance,
+    )?
+    onTrack,
     String foregroundTitle = 'FAST',
     String foregroundBody = 'Tracking your pickup',
   }) {
@@ -53,6 +79,7 @@ class ProximityService {
     _restaurants = restaurants;
     _onArrival = onArrival;
     _onNear = onNear;
+    this.onTrack = onTrack;
     _fgTitle = foregroundTitle;
     _fgBody = foregroundBody;
   }
@@ -165,6 +192,71 @@ class ProximityService {
       _nearNotified.add(order.id);
       _onNear?.call(order, restaurant);
     }
+    _pushTracking(p, orders, restaurants);
+  }
+
+  /// Straight-line progress toward each active pickup order. Patches
+  /// only start once the client has genuinely moved (≥5% closer than
+  /// their first fix) — GPS jitter at the start never flips the Pro
+  /// card to en-route. Once started, patches keep flowing (including
+  /// drops) until the order leaves the active set.
+  void _pushTracking(
+    Position p,
+    List<Order> orders,
+    List<Restaurant> restaurants,
+  ) {
+    if (onTrack == null) return;
+    final active = orders
+        .where(
+          (o) =>
+              !o.isDelivery &&
+              (o.status == OrderStatus.preparing ||
+                  o.status == OrderStatus.readyForPickup),
+        )
+        .toList();
+    final activeIds = active.map((o) => o.id).toSet();
+    _initialDistances.removeWhere((k, _) => !activeIds.contains(k));
+    _lastTrackSent.removeWhere((k, _) => !activeIds.contains(k));
+    _trackStarted.removeWhere((k) => !activeIds.contains(k));
+
+    final now = DateTime.now();
+    for (final order in active) {
+      Restaurant? restaurant;
+      for (final r in restaurants) {
+        if (r.id == order.restaurantId) {
+          restaurant = r;
+          break;
+        }
+      }
+      if (restaurant == null ||
+          (restaurant.latitude == 0 && restaurant.longitude == 0)) {
+        continue;
+      }
+      final distM =
+          LocationService.instance
+              .calculateDistance(
+                LatLng(p.latitude, p.longitude),
+                LatLng(restaurant.latitude, restaurant.longitude),
+              ) *
+          1000;
+      final initial = _initialDistances.putIfAbsent(order.id, () => distM);
+      final progress = initial > 1
+          ? ((1 - distM / initial) * 100).clamp(0.0, 100.0)
+          : 0.0;
+      if (progress >= _trackStartThreshold) _trackStarted.add(order.id);
+      if (!_trackStarted.contains(order.id)) continue;
+
+      final last = _lastTrackSent[order.id];
+      if (last != null && now.difference(last) < _trackInterval) continue;
+      _lastTrackSent[order.id] = now;
+      onTrack?.call(
+        order.id,
+        progress,
+        p.latitude,
+        p.longitude,
+        distM <= 120,
+      );
+    }
   }
 
   /// Pure permission gate (unit-testable): tracking starts for
@@ -226,6 +318,9 @@ class ProximityService {
   void reset() {
     _notified.clear();
     _nearNotified.clear();
+    _initialDistances.clear();
+    _lastTrackSent.clear();
+    _trackStarted.clear();
   }
 
   void stop() {
@@ -234,7 +329,11 @@ class ProximityService {
     _restaurants = null;
     _onArrival = null;
     _onNear = null;
+    onTrack = null;
     _notified.clear();
     _nearNotified.clear();
+    _initialDistances.clear();
+    _lastTrackSent.clear();
+    _trackStarted.clear();
   }
 }

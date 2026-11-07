@@ -1,5 +1,6 @@
 // lib/screens/restaurant_screen.dart
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:maplibre/maplibre.dart';
@@ -416,6 +417,31 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
                             color: Colors.white,
                           ),
                         ),
+                        if (rest.address.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.location_on,
+                                  color: Color(0xFFF59E0B),
+                                  size: 14,
+                                ),
+                                const SizedBox(width: 4),
+                                Flexible(
+                                  child: Text(
+                                    rest.address,
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                       ],
                     ),
                   ),
@@ -583,15 +609,19 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.map, color: context.fast.t3, size: 14),
-                        SizedBox(width: 6),
+                        const Icon(
+                          Icons.location_on,
+                          color: Color(0xFFF59E0B),
+                          size: 16,
+                        ),
+                        const SizedBox(width: 6),
                         Expanded(
                           child: Text(
                             rest.address,
                             style: TextStyle(
-                              fontSize: 11,
-                              color: context.fast.t3,
-                              fontFamily: 'monospace',
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: context.fast.t2,
                             ),
                           ),
                         ),
@@ -614,7 +644,12 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
                             initStyle: openFreeMapStyle,
                             initCenter: geo(rest.latitude, rest.longitude),
                             initZoom: 15.0,
-                            gestures: const MapGestures.none(),
+                            gestures: const MapGestures(
+                              rotate: false,
+                              pan: true,
+                              zoom: true,
+                              pitch: false,
+                            ),
                           ),
                           onEvent: (event) async {
                             if (event case MapEventStyleLoaded()) {
@@ -904,11 +939,17 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
     }
 
     final destination = hasValidCoordinates ? '$latitude,$longitude' : address;
-    final uri = Uri.https('www.google.com', '/maps/dir/', {
-      'api': '1',
-      'destination': destination,
-      'travelmode': 'walking',
-    });
+    // Apple Maps on iOS (native, no browser hop), Google elsewhere.
+    final uri = defaultTargetPlatform == TargetPlatform.iOS
+        ? Uri.https('maps.apple.com', '/', {
+            'daddr': destination,
+            'dirflg': 'w',
+          })
+        : Uri.https('www.google.com', '/maps/dir/', {
+            'api': '1',
+            'destination': destination,
+            'travelmode': 'walking',
+          });
 
     try {
       final didLaunch = await launchUrl(

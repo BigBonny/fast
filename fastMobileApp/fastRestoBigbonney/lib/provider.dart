@@ -524,6 +524,26 @@ class FASTProvider extends ChangeNotifier {
           actionLabel: tr('je_parts'),
         );
       },
+      onTrack: (orderId, progress, lat, lng, ready) {
+        unawaited(
+          _orderService
+              .updateTracking(
+                orderId: orderId,
+                gpsProgress: progress,
+                latitude: lat,
+                longitude: lng,
+                isReadyAtEntrance: ready ? true : null,
+              )
+              .then((_) {
+                updateOrderTrackingLocally(
+                  orderId,
+                  gpsProgress: progress,
+                  isReadyAtEntrance: ready ? true : null,
+                );
+              })
+              .catchError((_) {}),
+        );
+      },
     );
     ProximityService.instance.sync();
   }
