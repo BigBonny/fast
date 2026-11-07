@@ -17,6 +17,7 @@ import '../services/delivery_service.dart';
 import 'qr_screen.dart';
 import '../theme.dart';
 import '../widgets/fast_image.dart';
+import '../widgets/fast_ui.dart';
 import '../l10n/tr.dart';
 import '../services/reservation_service.dart';
 import '../api/api_exceptions.dart';
@@ -1603,7 +1604,7 @@ class _CommandesScreenState extends State<CommandesScreen>
 
     // Tablets get two history cards per row (shortestSide excludes
     // landscape phones, whose width alone would exceed the threshold).
-    if (MediaQuery.sizeOf(context).shortestSide > 600) {
+    if (fastIsTablet(MediaQuery.sizeOf(context))) {
       return ListView(
         padding: const EdgeInsets.all(16),
         children: [

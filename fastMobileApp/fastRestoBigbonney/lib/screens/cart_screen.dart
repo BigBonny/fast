@@ -106,10 +106,12 @@ class _CartScreenState extends State<CartScreen> {
       }
     });
 
-    // Tablets split the page: items + options on the left, the
+    // Wide tablets split the page: items + options on the left, the
     // checkout/receipt card on the right like a desktop checkout.
-    // shortestSide keeps landscape phones on the single column.
-    final wideCart = MediaQuery.sizeOf(context).shortestSide > 600;
+    // Requires real width too — on iPad portrait the checkout column
+    // would shrink to ~250px, too narrow for the payment form.
+    final cartSize = MediaQuery.sizeOf(context);
+    final wideCart = fastIsTablet(cartSize) && cartSize.width > 1000;
 
     final optionsSection = Column(
       crossAxisAlignment: CrossAxisAlignment.start,

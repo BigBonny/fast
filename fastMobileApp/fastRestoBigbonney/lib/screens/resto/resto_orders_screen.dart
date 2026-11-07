@@ -7,6 +7,7 @@ import '../../models.dart';
 import '../../services/order_service.dart';
 import '../../api/api_exceptions.dart';
 import '../../theme.dart';
+import '../../widgets/fast_ui.dart';
 import '../../l10n/tr.dart';
 
 class RestoOrdersScreen extends StatefulWidget {
@@ -415,7 +416,7 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
   ) {
     if (orders.isEmpty) return const [];
     final size = MediaQuery.sizeOf(context);
-    if (size.shortestSide <= 600 || size.width <= 980) {
+    if (!fastIsTablet(size) || size.width <= 980) {
       return orders.map(build).toList();
     }
     final out = <Widget>[];

@@ -478,7 +478,7 @@ class _MainShellState extends State<MainShell>
     // Tablets (iPad, large Android) get a left navigation rail instead of
     // the floating bottom pill — shortestSide >= 600 keeps phones in
     // landscape on the pill.
-    final useRail = MediaQuery.sizeOf(context).shortestSide >= 600;
+    final useRail = fastIsTablet(MediaQuery.sizeOf(context));
     final navIndex = _getBottomNavIndex(provider.currentScreen);
     void onNavTap(int i) =>
         provider.navigateToScreen(_getScreenFromIndex(i));
@@ -700,7 +700,9 @@ class _MainShellState extends State<MainShell>
             Positioned(
               left: useRail ? kFastNavRailWidth + 16 : 16,
               right: 16,
-              bottom: 104,
+              // Rail mode has no bottom pill — sit at the bottom edge
+              // instead of floating where the pill would be.
+              bottom: useRail ? 24 : 104,
               child: Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 848),
