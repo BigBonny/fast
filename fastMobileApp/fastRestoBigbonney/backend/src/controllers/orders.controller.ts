@@ -10,7 +10,7 @@ import {
 } from '../utils/validation';
 import { isValidStatusTransition, STATUS_LABELS } from '../utils/orderStatus';
 import { distanceKm } from '../utils/deliveryHelpers';
-import { pickupCodeFromToken } from '../utils/pickupToken';
+import { pickupTokenMatches } from '../utils/pickupToken';
 import {
   safeEmitNotificationToUser,
   safeEmitOrderStatusToUser,
@@ -179,6 +179,24 @@ export const getRestaurantOrders = async (req: Request, res: Response): Promise<
   res.json(orders);
 };
 
+/** What the client hears when they start walking: prep state vs. their ETA. */
+function clientEnRouteMessage(
+  order: { status: string; prepStartedAt: Date | null; prepTimerSeconds: number },
+  walkMin: number,
+): string {
+  if (order.status === 'READY_FOR_PICKUP') {
+    return `Votre commande est prête — arrivée estimée dans ~${walkMin} min.`;
+  }
+  if (order.status === 'PREPARING' && order.prepStartedAt) {
+    const elapsed = (Date.now() - order.prepStartedAt.getTime()) / 1000;
+    const remainingMin = Math.max(0, Math.ceil((order.prepTimerSeconds - elapsed) / 60));
+    return remainingMin > 0
+      ? `Le restaurant prépare votre commande — prête dans ~${remainingMin} min, vous arrivez dans ~${walkMin} min.`
+      : `Votre commande est presque prête — arrivée estimée dans ~${walkMin} min.`;
+  }
+  return `Le restaurant est prévenu — arrivée estimée dans ~${walkMin} min.`;
+}
+
 export const updateOrderTracking = async (req: Request, res: Response): Promise<void> => {
   const id = req.params.id as string;
   const data = updateOrderTrackingSchema.parse(req.body);
@@ -208,7 +226,12 @@ export const updateOrderTracking = async (req: Request, res: Response): Promise<
   }
 
   const updateData: Record<string, unknown> = {};
-  if (data.gpsProgress !== undefined) updateData.gpsProgress = data.gpsProgress;
+  if (data.gpsProgress !== undefined) {
+    // Once the client is en route the order stays en route — a later
+    // jittery 0 must not flip the Pro card back (and re-fire the push).
+    updateData.gpsProgress =
+      order.gpsProgress > 0 ? Math.max(1, data.gpsProgress) : data.gpsProgress;
+  }
   if (data.isReadyAtEntrance !== undefined) updateData.isReadyAtEntrance = data.isReadyAtEntrance;
 
   // Live walking ETA for the restaurant: client position → straight-line
@@ -248,7 +271,7 @@ export const updateOrderTracking = async (req: Request, res: Response): Promise<
           userId: order.userId,
           orderId: order.id,
           title: 'Vous êtes en route',
-          body: `Le restaurant peut commencer la préparation — arrivée estimée dans ~${walkMin} min.`,
+          body: clientEnRouteMessage(order, walkMin),
           type: 'INFO',
         },
       });
@@ -268,7 +291,7 @@ export const updateOrderTracking = async (req: Request, res: Response): Promise<
 export const verifyPickup = async (req: Request, res: Response): Promise<void> => {
   const id = req.params.id as string;
   const parsed = verifyPickupSchema.parse(req.body);
-  const token = parsed.token ?? parsed.pickupToken!;
+  const token = (parsed.token ?? parsed.pickupToken ?? parsed.code)!;
 
   const order = await prisma.order.findUnique({
     where: { id },
@@ -287,37 +310,72 @@ export const verifyPickup = async (req: Request, res: Response): Promise<void> =
     }
   }
 
-  if (order.status !== 'READY_FOR_PICKUP') {
-    res.status(409).json({ error: 'La commande doit être prête pour retrait' });
+  // The client can show up while the kitchen is still finishing — handing
+  // the bag over completes the order either way.
+  if (order.status !== 'READY_FOR_PICKUP' && order.status !== 'PREPARING') {
+    res.status(409).json({ error: 'Cette commande ne peut pas être remise' });
     return;
   }
 
   // Accepts the full QR token OR the short "XXXX-FAST" code shown
   // alongside it — both derive from the same stored token.
-  const validToken =
-    order.pickupToken != null &&
-    (order.pickupToken === token || pickupCodeFromToken(order.pickupToken) === token.toUpperCase());
-  if (!validToken) {
+  if (!pickupTokenMatches(order.pickupToken, token)) {
     res.status(400).json({ error: 'Token de retrait invalide' });
     return;
   }
 
+  res.json(await completePickup(order.id, order.userId));
+};
+
+/**
+ * Restaurant types/scans a code without picking the order first: find the
+ * matching active pickup order among this restaurant's orders.
+ */
+export const redeemPickupCode = async (req: Request, res: Response): Promise<void> => {
+  const parsed = verifyPickupSchema.parse(req.body);
+  const input = (parsed.code ?? parsed.pickupToken ?? parsed.token)!;
+
+  const restaurantId = await getRestaurantIdForUser(req.user!);
+  if (!restaurantId) {
+    res.status(403).json({ error: 'Accès refusé' });
+    return;
+  }
+
+  const candidates = await prisma.order.findMany({
+    where: {
+      restaurantId,
+      fulfillmentType: 'PICKUP',
+      status: { in: ['PREPARING', 'READY_FOR_PICKUP'] },
+      pickupToken: { not: null },
+    },
+    select: { id: true, userId: true, pickupToken: true },
+  });
+  const match = candidates.find((o) => pickupTokenMatches(o.pickupToken, input));
+  if (!match) {
+    res.status(404).json({ error: 'Aucune commande active ne correspond à ce code' });
+    return;
+  }
+
+  res.json(await completePickup(match.id, match.userId));
+};
+
+async function completePickup(orderId: string, userId: string) {
   const updated = await prisma.$transaction(async (tx) => {
     const result = await tx.order.update({
-      where: { id },
+      where: { id: orderId },
       data: { status: 'COMPLETED', isReadyAtEntrance: true },
       include: orderInclude,
     });
 
     await tx.user.update({
-      where: { id: order.userId },
+      where: { id: userId },
       data: { points: { increment: 10 } },
     });
 
     const statusNotification = await tx.notification.create({
       data: {
-        userId: order.userId,
-        orderId: order.id,
+        userId,
+        orderId,
         title: STATUS_LABELS.COMPLETED,
         body: 'Votre commande a été récupérée avec succès.',
         type: 'SUCCESS',
@@ -326,8 +384,8 @@ export const verifyPickup = async (req: Request, res: Response): Promise<void> =
 
     const ratingNotification = await tx.notification.create({
       data: {
-        userId: order.userId,
-        orderId: order.id,
+        userId,
+        orderId,
         title: 'Notez votre commande',
         body: 'Comment s\'est passée votre expérience ? Laissez un avis.',
         type: 'RATING',
@@ -337,15 +395,11 @@ export const verifyPickup = async (req: Request, res: Response): Promise<void> =
     return { order: result, statusNotification, ratingNotification };
   });
 
-  safeEmitOrderStatusToUser(order.userId, {
-    orderId: order.id,
-    status: 'COMPLETED',
-  });
-  safeEmitNotificationToUser(order.userId, updated.statusNotification);
-  safeEmitNotificationToUser(order.userId, updated.ratingNotification);
-
-  res.json(updated.order);
-};
+  safeEmitOrderStatusToUser(userId, { orderId, status: 'COMPLETED' });
+  safeEmitNotificationToUser(userId, updated.statusNotification);
+  safeEmitNotificationToUser(userId, updated.ratingNotification);
+  return updated.order;
+}
 
 export const updateOrderStatus = async (req: Request, res: Response): Promise<void> => {
   const id = req.params.id as string;

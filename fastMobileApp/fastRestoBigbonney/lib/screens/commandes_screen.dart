@@ -2,6 +2,8 @@
 
 import 'dart:async';
 import 'dart:math';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:maplibre/maplibre.dart';
@@ -11,7 +13,6 @@ import '../provider.dart';
 import '../models.dart';
 import '../services/map_helper.dart';
 import '../services/location_service.dart';
-import '../services/order_service.dart';
 import '../services/delivery_service.dart';
 import 'qr_screen.dart';
 import '../theme.dart';
@@ -30,7 +31,6 @@ class CommandesScreen extends StatefulWidget {
 class _CommandesScreenState extends State<CommandesScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
-  final _orderService = OrderService();
   final _deliveryService = DeliveryService();
 
   // Delivery tracking
@@ -331,6 +331,11 @@ class _CommandesScreenState extends State<CommandesScreen>
               // placed so the client always has it when they arrive.
               if (!activeOrder.isDelivery &&
                   activeOrder.status != OrderStatus.cancelled) ...[
+                if (!isCompleted &&
+                    activeOrder.gpsProgress <= 0 &&
+                    (activeOrder.status == OrderStatus.preparing ||
+                        activeOrder.status == OrderStatus.readyForPickup))
+                  _buildDepartCard(context, provider, activeOrder),
                 _buildQRButton(context, activeOrder),
                 if (activeOrder.pickupToken != null)
                   Padding(
@@ -623,6 +628,13 @@ class _CommandesScreenState extends State<CommandesScreen>
       child: Stack(
         children: [
           MapLibreMap(
+            // Claim drags before the surrounding scroll view does —
+            // otherwise the map is visible but can't be panned/zoomed.
+            gestureRecognizers: {
+              Factory<OneSequenceGestureRecognizer>(
+                () => EagerGestureRecognizer(),
+              ),
+            },
             options: MapOptions(
               initStyle: openFreeMapStyle,
               initCenter: geo(midLat, midLon),
@@ -857,24 +869,10 @@ class _CommandesScreenState extends State<CommandesScreen>
                 now.difference(_lastTrackingPatch!) >
                     const Duration(seconds: 20)) {
               _lastTrackingPatch = now;
+              // Map/user-dot refresh only. The restaurant uplink lives in
+              // ProximityService (single source, keeps working when the
+              // app is backgrounded) — two uploaders would fight.
               provider.fetchUserLocation();
-              // Same ≥5% gate as the background tracker — GPS jitter at
-              // the pickup point must not flip the order to en-route.
-              final pct = progress >= 0.05 ? progress * 100 : 0.0;
-              try {
-                await _orderService.updateTracking(
-                  orderId: order.id,
-                  gpsProgress: pct,
-                  latitude: pos.latitude,
-                  longitude: pos.longitude,
-                  isReadyAtEntrance: progress >= 0.92,
-                );
-                provider.updateOrderTrackingLocally(
-                  order.id,
-                  gpsProgress: pct,
-                  isReadyAtEntrance: progress >= 0.92,
-                );
-              } catch (_) {}
             }
 
             if (mounted) setState(() {});
@@ -971,6 +969,82 @@ class _CommandesScreenState extends State<CommandesScreen>
                 ),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  bool _departing = false;
+
+  /// "Je pars" — tells the restaurant the client is leaving now, so the
+  /// kitchen can time the order. Hidden once the order is en route.
+  Widget _buildDepartCard(
+    BuildContext context,
+    FASTProvider provider,
+    Order order,
+  ) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF00C8B3).withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFF00C8B3).withValues(alpha: 0.4),
+        ),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.directions_walk, color: Color(0xFF00C8B3)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              provider.tr('depart_prompt'),
+              style: TextStyle(
+                color: context.fast.t1,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                height: 1.3,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          ElevatedButton(
+            onPressed: _departing
+                ? null
+                : () async {
+                    final messenger = ScaffoldMessenger.of(context);
+                    final fast = context.read<FASTProvider>();
+                    setState(() => _departing = true);
+                    final ok = await provider.departForOrder(
+                      order.id,
+                      navigate: false,
+                    );
+                    if (!mounted) return;
+                    setState(() => _departing = false);
+                    messenger.showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          fast.tr(ok ? 'depart_ok' : 'depart_fail'),
+                        ),
+                      ),
+                    );
+                  },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF00C8B3),
+              foregroundColor: Colors.white,
+            ),
+            child: _departing
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : Text(provider.tr('je_parts')),
           ),
         ],
       ),

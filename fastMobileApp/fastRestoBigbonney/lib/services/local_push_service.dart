@@ -20,6 +20,16 @@ class LocalPushService {
   /// (actionId, payload = orderId).
   void Function(String actionId, String? payload)? onAction;
 
+  (String, String?)? _pendingLaunchAction;
+
+  /// Replays an action that cold-started the app, once [onAction] is wired.
+  void consumeLaunchAction() {
+    final pending = _pendingLaunchAction;
+    if (pending == null || onAction == null) return;
+    _pendingLaunchAction = null;
+    onAction!(pending.$1, pending.$2);
+  }
+
   static const String _channelId = 'fast_updates';
   static const String _channelName = 'FAST';
   static const String _channelDesc =
@@ -29,6 +39,12 @@ class LocalPushService {
   static const String eta5Action = 'eta5';
   static const String eta15Action = 'eta15';
   static const String departAction = 'depart';
+
+  // Actions must open the app: without this both platforms route the tap
+  // to a background isolate we don't register, and the tap is lost.
+  static const Set<DarwinNotificationActionOption> _foreground = {
+    DarwinNotificationActionOption.foreground,
+  };
 
   /// Deterministic id per order for scheduled reminders (cancel on
   /// completion without tracking a map).
@@ -50,15 +66,27 @@ class LocalPushService {
           DarwinNotificationCategory(
             etaCategory,
             actions: [
-              DarwinNotificationAction.plain(eta5Action, eta5Label),
-              DarwinNotificationAction.plain(eta15Action, eta15Label),
+              DarwinNotificationAction.plain(
+                eta5Action,
+                eta5Label,
+                options: _foreground,
+              ),
+              DarwinNotificationAction.plain(
+                eta15Action,
+                eta15Label,
+                options: _foreground,
+              ),
             ],
             options: {DarwinNotificationCategoryOption.hiddenPreviewShowTitle},
           ),
           DarwinNotificationCategory(
             departCategory,
             actions: [
-              DarwinNotificationAction.plain(departAction, departLabel),
+              DarwinNotificationAction.plain(
+                departAction,
+                departLabel,
+                options: _foreground,
+              ),
             ],
             options: {DarwinNotificationCategoryOption.hiddenPreviewShowTitle},
           ),
@@ -76,6 +104,18 @@ class LocalPushService {
           }
         },
       );
+
+      // Action tapped while the app was terminated: the response arrives
+      // as launch details instead of the callback above.
+      final launch = await _plugin.getNotificationAppLaunchDetails();
+      final launchResponse = launch?.notificationResponse;
+      if ((launch?.didNotificationLaunchApp ?? false) &&
+          launchResponse?.actionId?.isNotEmpty == true) {
+        _pendingLaunchAction = (
+          launchResponse!.actionId!,
+          launchResponse.payload,
+        );
+      }
 
       final androidImpl = _plugin
           .resolvePlatformSpecificImplementation<
@@ -220,8 +260,16 @@ class LocalPushService {
         body: body,
         notificationDetails: _details(
           actions: [
-            AndroidNotificationAction(eta5Action, eta5Label),
-            AndroidNotificationAction(eta15Action, eta15Label),
+            AndroidNotificationAction(
+              eta5Action,
+              eta5Label,
+              showsUserInterface: true,
+            ),
+            AndroidNotificationAction(
+              eta15Action,
+              eta15Label,
+              showsUserInterface: true,
+            ),
           ],
         ),
         payload: orderId,
@@ -245,7 +293,11 @@ class LocalPushService {
         title: title,
         body: body,
         notificationDetails: _details(
-          actions: [AndroidNotificationAction(departAction, actionLabel)],
+          actions: [AndroidNotificationAction(
+              departAction,
+              actionLabel,
+              showsUserInterface: true,
+            )],
           category: departCategory,
         ),
         payload: orderId,
