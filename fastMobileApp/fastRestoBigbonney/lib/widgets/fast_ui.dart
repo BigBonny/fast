@@ -789,6 +789,11 @@ class _FastNavBarState extends State<FastNavBar>
   }
 }
 
+/// Tablet detection shared by every responsive layout — based on the
+/// device's shorter side so phones in landscape (wide but short) always
+/// resolve to the phone layout. iPad mini portrait (744) and up count.
+bool fastIsTablet(Size size) => size.shortestSide > 600;
+
 /// Fixed width of [FastNavRail] — shells inset their content by this on
 /// tablet-width screens.
 const double kFastNavRailWidth = 92;

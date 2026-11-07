@@ -1020,7 +1020,7 @@ class _HomeScreenState extends State<HomeScreen>
             // tags so a fixed-aspect grid would overflow; pairing keeps
             // each card at natural height. shortestSide (not width) so
             // phones in landscape keep the single column.
-            child: MediaQuery.sizeOf(context).shortestSide > 600
+            child: fastIsTablet(MediaQuery.sizeOf(context))
                 ? Column(
                     children: [
                       for (var i = 0; i < filteredRest.length; i += 2)

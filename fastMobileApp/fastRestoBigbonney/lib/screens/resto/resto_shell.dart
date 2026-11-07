@@ -156,7 +156,7 @@ class _RestoMainShellState extends State<RestoMainShell> {
     final tutorial = _tutorialSteps[_tutorialStep];
 
     // Tablets get a left navigation rail instead of the bottom pill.
-    final useRail = MediaQuery.sizeOf(context).shortestSide >= 600;
+    final useRail = fastIsTablet(MediaQuery.sizeOf(context));
     void onNavTap(int i) {
       if (i == 2) {
         _showRushSheet(provider);
