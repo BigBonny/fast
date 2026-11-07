@@ -327,11 +327,45 @@ class _CommandesScreenState extends State<CommandesScreen>
               ),
               const SizedBox(height: 20),
 
-              // QR Verification button — pickup only
+              // Pickup code/QR — visible from the moment the order is
+              // placed so the client always has it when they arrive.
               if (!activeOrder.isDelivery &&
-                  (activeOrder.status == OrderStatus.readyForPickup ||
-                      isCompleted))
+                  activeOrder.status != OrderStatus.cancelled) ...[
                 _buildQRButton(context, activeOrder),
+                if (activeOrder.pickupToken != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(
+                            0xFFF59E0B,
+                          ).withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: const Color(
+                              0xFFF59E0B,
+                            ).withValues(alpha: 0.4),
+                          ),
+                        ),
+                        child: Text(
+                          pickupCodeFromToken(activeOrder.pickupToken!),
+                          style: const TextStyle(
+                            fontFamily: 'monospace',
+                            fontSize: 15,
+                            fontWeight: FontWeight.w900,
+                            color: Color(0xFFF59E0B),
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
 
               // Cancellation trigger
               if (!isCompleted && !isCancelled)
@@ -824,17 +858,20 @@ class _CommandesScreenState extends State<CommandesScreen>
                     const Duration(seconds: 20)) {
               _lastTrackingPatch = now;
               provider.fetchUserLocation();
+              // Same ≥5% gate as the background tracker — GPS jitter at
+              // the pickup point must not flip the order to en-route.
+              final pct = progress >= 0.05 ? progress * 100 : 0.0;
               try {
                 await _orderService.updateTracking(
                   orderId: order.id,
-                  gpsProgress: progress * 100,
+                  gpsProgress: pct,
                   latitude: pos.latitude,
                   longitude: pos.longitude,
                   isReadyAtEntrance: progress >= 0.92,
                 );
                 provider.updateOrderTrackingLocally(
                   order.id,
-                  gpsProgress: progress * 100,
+                  gpsProgress: pct,
                   isReadyAtEntrance: progress >= 0.92,
                 );
               } catch (_) {}
