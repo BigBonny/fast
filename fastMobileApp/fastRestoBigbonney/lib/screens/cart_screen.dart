@@ -106,6 +106,36 @@ class _CartScreenState extends State<CartScreen> {
       }
     });
 
+    // Wide screens split the page: items + options on the left, the
+    // checkout/receipt card on the right like a desktop checkout.
+    final wideCart = MediaQuery.sizeOf(context).width > 760;
+
+    final optionsSection = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (provider.activeGroupId == null && rest.deliveryEnabled)
+          _buildFulfillmentSelector(provider),
+
+        if (provider.fulfillmentType == FulfillmentType.delivery) ...[
+          const SizedBox(height: 16),
+          _buildDeliveryAddressSection(provider),
+        ] else ...[
+          SizedBox(height: 20),
+          Text(
+            tr(context, 'walk_time_title'),
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.0,
+              color: context.fast.t3,
+            ),
+          ),
+          const SizedBox(height: 12),
+          _buildWalkTimeSelector(context, rest.pickupPrepTime),
+        ],
+      ],
+    );
+
     return SingleChildScrollView(
       padding: EdgeInsets.all(16),
       child: Column(
@@ -159,33 +189,30 @@ class _CartScreenState extends State<CartScreen> {
 
           SizedBox(height: 20),
 
-          if (provider.activeGroupId == null && rest.deliveryEnabled)
-            _buildFulfillmentSelector(provider),
+          SizedBox(height: 20),
 
-          if (provider.fulfillmentType == FulfillmentType.delivery) ...[
-            const SizedBox(height: 16),
-            _buildDeliveryAddressSection(provider),
-          ] else ...[
-            SizedBox(height: 20),
-            Text(
-              tr(context, 'walk_time_title'),
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.0,
-                color: context.fast.t3,
-              ),
+          if (!wideCart) ...[
+            optionsSection,
+            const SizedBox(height: 20),
+
+            // Secure payment Form and receipt breakdown
+            _isProcessing
+                ? _buildProcessingCard()
+                : _buildCheckoutFormCard(context, provider),
+          ] else
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(flex: 3, child: optionsSection),
+                const SizedBox(width: 24),
+                Expanded(
+                  flex: 2,
+                  child: _isProcessing
+                      ? _buildProcessingCard()
+                      : _buildCheckoutFormCard(context, provider),
+                ),
+              ],
             ),
-            const SizedBox(height: 12),
-            _buildWalkTimeSelector(context, rest.pickupPrepTime),
-          ],
-
-          const SizedBox(height: 20),
-
-          // Secure payment Form and receipt breakdown
-          _isProcessing
-              ? _buildProcessingCard()
-              : _buildCheckoutFormCard(context, provider),
 
           const SizedBox(height: 80),
         ],

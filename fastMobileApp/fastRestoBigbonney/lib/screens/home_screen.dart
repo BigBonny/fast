@@ -1016,15 +1016,53 @@ class _HomeScreenState extends State<HomeScreen>
         else
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: filteredRest.length,
-              itemBuilder: (context, index) {
-                final rest = filteredRest[index];
-                return _buildRestaurantCard(context, provider, rest, index);
-              },
-            ),
+            // Wide screens (tablets, landscape phones) get two cards per
+            // row — heights vary with dietary tags so a fixed-aspect grid
+            // would overflow; pairing keeps each card at natural height.
+            child: MediaQuery.sizeOf(context).width > 700
+                ? Column(
+                    children: [
+                      for (var i = 0; i < filteredRest.length; i += 2)
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: _buildRestaurantCard(
+                                context,
+                                provider,
+                                filteredRest[i],
+                                i,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: i + 1 < filteredRest.length
+                                  ? _buildRestaurantCard(
+                                      context,
+                                      provider,
+                                      filteredRest[i + 1],
+                                      i + 1,
+                                    )
+                                  : const SizedBox.shrink(),
+                            ),
+                          ],
+                        ),
+                    ],
+                  )
+                : ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: filteredRest.length,
+                    itemBuilder: (context, index) {
+                      final rest = filteredRest[index];
+                      return _buildRestaurantCard(
+                        context,
+                        provider,
+                        rest,
+                        index,
+                      );
+                    },
+                  ),
           ),
 
         const SizedBox(height: 80), // bottom offset for basket

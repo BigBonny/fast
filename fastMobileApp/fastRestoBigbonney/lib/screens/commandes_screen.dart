@@ -1601,6 +1601,37 @@ class _CommandesScreenState extends State<CommandesScreen>
       );
     }
 
+    // Wide screens get two history cards per row.
+    if (MediaQuery.sizeOf(context).width > 700) {
+      return ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          for (var i = 0; i < orders.length; i += 2)
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: _buildOrderHistoryCard(
+                    context,
+                    provider,
+                    orders[i],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: i + 1 < orders.length
+                      ? _buildOrderHistoryCard(
+                          context,
+                          provider,
+                          orders[i + 1],
+                        )
+                      : const SizedBox.shrink(),
+                ),
+              ],
+            ),
+        ],
+      );
+    }
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: orders.length,
