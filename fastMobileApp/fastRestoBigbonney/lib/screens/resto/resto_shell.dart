@@ -286,7 +286,16 @@ class _RestoMainShellState extends State<RestoMainShell> {
               _StripeSetupBanner(
                 onSetup: () => setState(() => _currentIndex = 3),
               ),
-              Expanded(child: _pages[_currentIndex]),
+              Expanded(
+                // Pro screens get a wider column — order boards and stats
+                // benefit from the extra room on tablets.
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1180),
+                    child: _pages[_currentIndex],
+                  ),
+                ),
+              ),
             ],
           ),
           bottomNavigationBar: FastNavBar(
