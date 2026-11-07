@@ -871,9 +871,10 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
           physics: const NeverScrollableScrollPhysics(),
           padding: const EdgeInsets.symmetric(horizontal: 12),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            // Tablets get an extra column — the shell caps content at
-            // 880px, so 3 across still leaves roomy cards.
-            crossAxisCount: MediaQuery.sizeOf(context).width > 700 ? 3 : 2,
+            // Tablets get an extra column — shortestSide keeps phones in
+            // landscape on the phone layout (their width exceeds 700).
+            crossAxisCount:
+                MediaQuery.sizeOf(context).shortestSide > 600 ? 3 : 2,
             mainAxisSpacing: 10,
             crossAxisSpacing: 10,
             childAspectRatio: 0.68,

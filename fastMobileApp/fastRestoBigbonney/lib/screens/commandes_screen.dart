@@ -1601,8 +1601,9 @@ class _CommandesScreenState extends State<CommandesScreen>
       );
     }
 
-    // Wide screens get two history cards per row.
-    if (MediaQuery.sizeOf(context).width > 700) {
+    // Tablets get two history cards per row (shortestSide excludes
+    // landscape phones, whose width alone would exceed the threshold).
+    if (MediaQuery.sizeOf(context).shortestSide > 600) {
       return ListView(
         padding: const EdgeInsets.all(16),
         children: [
