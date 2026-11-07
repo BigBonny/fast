@@ -555,8 +555,16 @@ class _MainShellState extends State<MainShell>
       ),
       body: Stack(
         children: [
-          // Screen content
-          Positioned.fill(child: activeBody),
+          // Screen content — centered column on tablets so cards and
+          // lists don't stretch edge-to-edge on a 13" display.
+          Positioned.fill(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 880),
+                child: activeBody,
+              ),
+            ),
+          ),
 
           // Top iOS-style toast overlay
           if (_toastVisible)
