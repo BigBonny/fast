@@ -870,11 +870,8 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           padding: const EdgeInsets.symmetric(horizontal: 12),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            // 3 columns only when the effective content column is wide
-            // enough (~260px+ per card). Portrait tablets stay at 2 —
-            // their column is ~620-710px after the rail and padding.
-            crossAxisCount: _menuGridColumns(context),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
             mainAxisSpacing: 10,
             crossAxisSpacing: 10,
             childAspectRatio: 0.68,
@@ -1116,17 +1113,6 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
 
   /// F04 — menu card: photo on top, name, short description, final price
   /// and a "+" add button. Two cards per row.
-  /// Menu grid columns from the *effective* content width — the shell
-  /// caps content at 880px and the rail eats 92px on tablets, so raw
-  /// screen width would overestimate. Phones always get 2.
-  int _menuGridColumns(BuildContext context) {
-    final size = MediaQuery.sizeOf(context);
-    if (!fastIsTablet(size)) return 2;
-    final contentW =
-        (size.width - kFastNavRailWidth).clamp(0.0, 880.0) - 24;
-    return contentW > 780 ? 3 : 2;
-  }
-
   Widget _buildMenuItemCard(
     BuildContext context,
     FASTProvider provider,

@@ -71,12 +71,7 @@ class _HomeScreenState extends State<HomeScreen>
                       // The hero extends under the floating AppBar; the brand
                       // mark sits level with the nav icons, like the reference.
                       final statusBar = MediaQuery.of(context).padding.top;
-                      // Short screens (phones in landscape) get a slimmer
-                      // hero so it doesn't eat half the viewport.
-                      final heroBody =
-                          MediaQuery.sizeOf(context).height < 520
-                          ? 190.0
-                          : 292.0;
+                      const heroBody = 292.0;
                       final heroHeight = statusBar + heroBody;
                       // The photo owns the lower-right; measured from the
                       // reference it spans ~60% of the width at natural aspect.
@@ -1016,54 +1011,15 @@ class _HomeScreenState extends State<HomeScreen>
         else
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            // Tablets get two cards per row — heights vary with dietary
-            // tags so a fixed-aspect grid would overflow; pairing keeps
-            // each card at natural height. shortestSide (not width) so
-            // phones in landscape keep the single column.
-            child: fastIsTablet(MediaQuery.sizeOf(context))
-                ? Column(
-                    children: [
-                      for (var i = 0; i < filteredRest.length; i += 2)
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: _buildRestaurantCard(
-                                context,
-                                provider,
-                                filteredRest[i],
-                                i,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: i + 1 < filteredRest.length
-                                  ? _buildRestaurantCard(
-                                      context,
-                                      provider,
-                                      filteredRest[i + 1],
-                                      i + 1,
-                                    )
-                                  : const SizedBox.shrink(),
-                            ),
-                          ],
-                        ),
-                    ],
-                  )
-                : ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: filteredRest.length,
-                    itemBuilder: (context, index) {
-                      final rest = filteredRest[index];
-                      return _buildRestaurantCard(
-                        context,
-                        provider,
-                        rest,
-                        index,
-                      );
-                    },
-                  ),
+            child: ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: filteredRest.length,
+              itemBuilder: (context, index) {
+                final rest = filteredRest[index];
+                return _buildRestaurantCard(context, provider, rest, index);
+              },
+            ),
           ),
 
         const SizedBox(height: 80), // bottom offset for basket

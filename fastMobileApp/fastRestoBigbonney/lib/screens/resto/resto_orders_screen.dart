@@ -7,7 +7,6 @@ import '../../models.dart';
 import '../../services/order_service.dart';
 import '../../api/api_exceptions.dart';
 import '../../theme.dart';
-import '../../widgets/fast_ui.dart';
 import '../../l10n/tr.dart';
 
 class RestoOrdersScreen extends StatefulWidget {
@@ -384,7 +383,7 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                 ),
               ),
             ),
-          ..._orderCards(context, activeOrders, (o) => _buildOrderCard(o, rProv)),
+          ...activeOrders.map((o) => _buildOrderCard(o, rProv)),
 
           if (billedCancelledOrders.isNotEmpty) ...[
             SizedBox(height: 32),
@@ -399,44 +398,11 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            ..._orderCards(context, billedCancelledOrders, _buildCancelledCard),
+            ...billedCancelledOrders.map((o) => _buildCancelledCard(o)),
           ],
         ],
       ),
     );
-  }
-
-  /// Order cards flow two-per-row on wide screens (tablets, landscape);
-  /// single column otherwise. Cards keep natural height — pairing avoids
-  /// the overflow a fixed-aspect grid would cause.
-  List<Widget> _orderCards(
-    BuildContext context,
-    List<Order> orders,
-    Widget Function(Order) build,
-  ) {
-    if (orders.isEmpty) return const [];
-    final size = MediaQuery.sizeOf(context);
-    if (!fastIsTablet(size) || size.width <= 980) {
-      return orders.map(build).toList();
-    }
-    final out = <Widget>[];
-    for (var i = 0; i < orders.length; i += 2) {
-      out.add(
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(child: build(orders[i])),
-            const SizedBox(width: 12),
-            Expanded(
-              child: i + 1 < orders.length
-                  ? build(orders[i + 1])
-                  : const SizedBox.shrink(),
-            ),
-          ],
-        ),
-      );
-    }
-    return out;
   }
 
   Widget _buildOrderCard(Order order, RestoProvider rProv) {
