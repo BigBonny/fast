@@ -475,6 +475,42 @@ class _MainShellState extends State<MainShell>
         break;
     }
 
+    // Tablets (iPad, large Android) get a left navigation rail instead of
+    // the floating bottom pill — shortestSide >= 600 keeps phones in
+    // landscape on the pill.
+    final useRail = MediaQuery.sizeOf(context).shortestSide >= 600;
+    final navIndex = _getBottomNavIndex(provider.currentScreen);
+    void onNavTap(int i) =>
+        provider.navigateToScreen(_getScreenFromIndex(i));
+    final navItems = <FastNavItem>[
+      FastNavItem(
+        icon: Icons.restaurant_outlined,
+        activeIcon: Icons.restaurant,
+        label: provider.tr('nav_restaurants'),
+      ),
+      FastNavItem(
+        icon: Icons.shopping_bag_outlined,
+        activeIcon: Icons.shopping_bag,
+        label: provider.tr('nav_cart'),
+        badge: provider.cartCount,
+      ),
+      FastNavItem(
+        icon: Icons.assignment_outlined,
+        activeIcon: Icons.assignment,
+        label: provider.tr('nav_orders'),
+        dot: provider.orders.any(
+          (o) =>
+              o.status != OrderStatus.completed &&
+              o.status != OrderStatus.cancelled,
+        ),
+      ),
+      FastNavItem(
+        icon: Icons.group_outlined,
+        activeIcon: Icons.group,
+        label: provider.tr('nav_group'),
+      ),
+    ];
+
     final onHome = provider.currentScreen == 'home';
 
     return Scaffold(
@@ -556,8 +592,13 @@ class _MainShellState extends State<MainShell>
       body: Stack(
         children: [
           // Screen content — centered column on tablets so cards and
-          // lists don't stretch edge-to-edge on a 13" display.
-          Positioned.fill(
+          // lists don't stretch edge-to-edge on a 13" display. In rail
+          // mode the column starts after the sidebar.
+          Positioned(
+            top: 0,
+            bottom: 0,
+            right: 0,
+            left: useRail ? kFastNavRailWidth : 0,
             child: Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 880),
@@ -570,7 +611,7 @@ class _MainShellState extends State<MainShell>
           if (_toastVisible)
             Positioned(
               top: 0,
-              left: 0,
+              left: useRail ? kFastNavRailWidth : 0,
               right: 0,
               child: SafeArea(
                 child: Padding(
@@ -657,7 +698,7 @@ class _MainShellState extends State<MainShell>
               provider.cartCount > 0 &&
               provider.selectedRestaurant != null)
             Positioned(
-              left: 16,
+              left: useRail ? kFastNavRailWidth + 16 : 16,
               right: 16,
               bottom: 104,
               child: Center(
@@ -753,43 +794,31 @@ class _MainShellState extends State<MainShell>
                 ),
               ),
             ),
+
+          // Tablet sidebar — replaces the bottom pill on wide screens.
+          if (useRail)
+            Positioned(
+              top: 0,
+              bottom: 0,
+              left: 0,
+              width: kFastNavRailWidth,
+              child: FastNavRail(
+                currentIndex: navIndex,
+                onTap: onNavTap,
+                items: navItems,
+              ),
+            ),
         ],
       ),
-      bottomNavigationBar: Center(
+      bottomNavigationBar: useRail
+          ? null
+          : Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 880),
           child: FastNavBar(
-        currentIndex: _getBottomNavIndex(provider.currentScreen),
-        onTap: (index) =>
-            provider.navigateToScreen(_getScreenFromIndex(index)),
-        items: [
-          FastNavItem(
-            icon: Icons.restaurant_outlined,
-            activeIcon: Icons.restaurant,
-            label: provider.tr('nav_restaurants'),
-          ),
-          FastNavItem(
-            icon: Icons.shopping_bag_outlined,
-            activeIcon: Icons.shopping_bag,
-            label: provider.tr('nav_cart'),
-            badge: provider.cartCount,
-          ),
-          FastNavItem(
-            icon: Icons.assignment_outlined,
-            activeIcon: Icons.assignment,
-            label: provider.tr('nav_orders'),
-            dot: provider.orders.any(
-              (o) =>
-                  o.status != OrderStatus.completed &&
-                  o.status != OrderStatus.cancelled,
-            ),
-          ),
-          FastNavItem(
-            icon: Icons.group_outlined,
-            activeIcon: Icons.group,
-            label: provider.tr('nav_group'),
-          ),
-        ],
+        currentIndex: navIndex,
+        onTap: onNavTap,
+        items: navItems,
           ),
         ),
       ),

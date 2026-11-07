@@ -155,6 +155,51 @@ class _RestoMainShellState extends State<RestoMainShell> {
     final provider = Provider.of<RestoProvider>(context);
     final tutorial = _tutorialSteps[_tutorialStep];
 
+    // Tablets get a left navigation rail instead of the bottom pill.
+    final useRail = MediaQuery.sizeOf(context).shortestSide >= 600;
+    void onNavTap(int i) {
+      if (i == 2) {
+        _showRushSheet(provider);
+        return;
+      }
+      setState(() => _currentIndex = _navMap[i]);
+    }
+
+    final navItems = <FastNavItem>[
+      FastNavItem(
+        icon: Icons.receipt_long_outlined,
+        activeIcon: Icons.receipt_long,
+        label: tr(context, 'nav_orders'),
+      ),
+      FastNavItem(
+        icon: Icons.restaurant_menu_outlined,
+        activeIcon: Icons.restaurant_menu,
+        label: tr(context, 'menu'),
+      ),
+      FastNavItem(
+        icon: Icons.warning_rounded,
+        label: 'RUSH',
+        customIcon: _rushButton(provider),
+      ),
+      FastNavItem(
+        icon: Icons.settings_outlined,
+        activeIcon: Icons.settings,
+        label: tr(context, 'nav_settings'),
+      ),
+      FastNavItem(
+        icon: Icons.storefront_outlined,
+        activeIcon: Icons.storefront,
+        label: tr(context, 'nav_profile'),
+      ),
+    ];
+    final navKeys = <Key?>[
+      _ordersKey,
+      _menuKey,
+      _statsKey,
+      _settingsKey,
+      _profileKey,
+    ];
+
     return Stack(
       children: [
         Scaffold(
@@ -264,7 +309,21 @@ class _RestoMainShellState extends State<RestoMainShell> {
             onNavigate: (index) => setState(() => _currentIndex = index),
             onReplayTutorial: _startTutorial,
           ),
-          body: Column(
+          body: Row(
+            children: [
+              if (useRail)
+                FastNavRail(
+                  currentIndex: _navIndex,
+                  onTap: onNavTap,
+                  accent: FASTPro.teal,
+                  surface: FASTPro.header,
+                  line: const Color(0xFF1E293B),
+                  inactive: const Color(0xFF94A3B8),
+                  itemKeys: navKeys,
+                  items: navItems,
+                ),
+              Expanded(
+                child: Column(
             children: [
               if (provider.isRushMode)
                 Container(
@@ -297,8 +356,13 @@ class _RestoMainShellState extends State<RestoMainShell> {
                 ),
               ),
             ],
+                ),
+              ),
+            ],
           ),
-          bottomNavigationBar: Center(
+          bottomNavigationBar: useRail
+              ? null
+              : Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 1180),
               child: FastNavBar(
@@ -307,47 +371,9 @@ class _RestoMainShellState extends State<RestoMainShell> {
             line: const Color(0xFF1E293B),
             inactive: const Color(0xFF94A3B8),
             currentIndex: _navIndex,
-            onTap: (i) {
-              if (i == 2) {
-                _showRushSheet(provider);
-                return;
-              }
-              setState(() => _currentIndex = _navMap[i]);
-            },
-            itemKeys: [
-              _ordersKey,
-              _menuKey,
-              _statsKey,
-              _settingsKey,
-              _profileKey,
-            ],
-            items: [
-              FastNavItem(
-                icon: Icons.receipt_long_outlined,
-                activeIcon: Icons.receipt_long,
-                label: tr(context, 'nav_orders'),
-              ),
-              FastNavItem(
-                icon: Icons.restaurant_menu_outlined,
-                activeIcon: Icons.restaurant_menu,
-                label: tr(context, 'menu'),
-              ),
-              FastNavItem(
-                icon: Icons.warning_rounded,
-                label: 'RUSH',
-                customIcon: _rushButton(provider),
-              ),
-              FastNavItem(
-                icon: Icons.settings_outlined,
-                activeIcon: Icons.settings,
-                label: tr(context, 'nav_settings'),
-              ),
-              FastNavItem(
-                icon: Icons.storefront_outlined,
-                activeIcon: Icons.storefront,
-                label: tr(context, 'nav_profile'),
-              ),
-            ],
+            onTap: onNavTap,
+            itemKeys: navKeys,
+            items: navItems,
               ),
             ),
           ),

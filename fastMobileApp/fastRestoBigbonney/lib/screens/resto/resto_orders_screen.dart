@@ -213,20 +213,71 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
     }
   }
 
-  /// Code typed (or QR scanned) from the top bar — no need to find the
-  /// order card first; the backend matches it among active pickups.
-  Future<void> _redeemCode(String code) async {
-    try {
-      final updated = await _orderService.redeemPickup(code);
-      if (!mounted) return;
-      final rProv = context.read<RestoProvider>();
-      for (final o in rProv.restoOrders) {
-        if (o.id == updated.id) o.status = updated.status;
-      }
-      _onHandoverDone();
-    } catch (e) {
-      _showHandoverError(e);
+  /// Typed pickup code entry — no camera. Used from the "Valider un
+  /// code" button under each order card's scan-QR action.
+  void _showCodeDialog(Order order) {
+    final codeController = TextEditingController();
+    var handled = false;
+
+    Future<void> submit(BuildContext dialogContext) async {
+      final v = codeController.text.trim();
+      if (handled || v.isEmpty) return;
+      handled = true;
+      Navigator.pop(dialogContext);
+      await _verifyPickup(order, v);
     }
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: context.fast.card,
+        title: Text(
+          tr(context, 'redeem_code'),
+          style: TextStyle(color: context.fast.t1),
+        ),
+        content: SizedBox(
+          width: 300,
+          child: TextField(
+            controller: codeController,
+            autofocus: true,
+            textCapitalization: TextCapitalization.characters,
+            style: TextStyle(
+              color: context.fast.t1,
+              fontSize: 20,
+              fontFamily: 'monospace',
+              fontWeight: FontWeight.bold,
+              letterSpacing: 2,
+            ),
+            textAlign: TextAlign.center,
+            decoration: InputDecoration(
+              hintText: '1234-FAST',
+              hintStyle: TextStyle(color: context.fast.t3),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            onSubmitted: (_) => submit(dialogContext),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(
+              tr(context, 'cancel'),
+              style: TextStyle(color: context.fast.t2),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => submit(dialogContext),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF10B981),
+              foregroundColor: Colors.white,
+            ),
+            child: Text(tr(context, 'validate_lbl')),
+          ),
+        ],
+      ),
+    ).whenComplete(codeController.dispose);
   }
 
   void _onHandoverDone() {
@@ -244,94 +295,6 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
         ? e.message
         : tr(context, 'qr_invalid');
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
-  }
-
-  void _showRedeemDialog() {
-    final controller = MobileScannerController();
-    final codeController = TextEditingController();
-    var handled = false;
-
-    Future<void> submit(BuildContext dialogContext, String value) async {
-      if (handled || value.trim().isEmpty) return;
-      handled = true;
-      Navigator.pop(dialogContext);
-      await _redeemCode(value.trim());
-    }
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: context.fast.card,
-        title: Text(
-          tr(context, 'redeem_code'),
-          style: TextStyle(color: context.fast.t1),
-        ),
-        content: SizedBox(
-          width: 300,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: codeController,
-                autofocus: true,
-                textCapitalization: TextCapitalization.characters,
-                style: TextStyle(
-                  color: context.fast.t1,
-                  fontSize: 20,
-                  fontFamily: 'monospace',
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 2,
-                ),
-                textAlign: TextAlign.center,
-                decoration: InputDecoration(
-                  hintText: '1234-FAST',
-                  hintStyle: TextStyle(color: context.fast.t3),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                onSubmitted: (v) => submit(dialogContext, v),
-              ),
-              const SizedBox(height: 12),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: SizedBox(
-                  height: 200,
-                  width: 280,
-                  child: MobileScanner(
-                    controller: controller,
-                    onDetect: (capture) {
-                      final code = capture.barcodes.firstOrNull?.rawValue;
-                      if (code != null) submit(dialogContext, code);
-                    },
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(
-              tr(context, 'cancel'),
-              style: TextStyle(color: context.fast.t2),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () => submit(dialogContext, codeController.text),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF10B981),
-              foregroundColor: Colors.white,
-            ),
-            child: Text(tr(context, 'validate_lbl')),
-          ),
-        ],
-      ),
-    ).whenComplete(() {
-      controller.dispose();
-      codeController.dispose();
-    });
   }
 
   @override
@@ -396,27 +359,6 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
               ),
             ],
           ),
-          SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: ElevatedButton.icon(
-              onPressed: _showRedeemDialog,
-              icon: const Icon(Icons.qr_code_scanner, size: 20),
-              label: Text(tr(context, 'redeem_code')),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF10B981),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                textStyle: const TextStyle(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-          ),
           SizedBox(height: 16),
           if (activeOrders.isEmpty)
             Center(
@@ -441,7 +383,7 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                 ),
               ),
             ),
-          ...activeOrders.map((o) => _buildOrderCard(o, rProv)),
+          ..._orderCards(context, activeOrders, (o) => _buildOrderCard(o, rProv)),
 
           if (billedCancelledOrders.isNotEmpty) ...[
             SizedBox(height: 32),
@@ -456,11 +398,43 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            ...billedCancelledOrders.map((o) => _buildCancelledCard(o)),
+            ..._orderCards(context, billedCancelledOrders, _buildCancelledCard),
           ],
         ],
       ),
     );
+  }
+
+  /// Order cards flow two-per-row on wide screens (tablets, landscape);
+  /// single column otherwise. Cards keep natural height — pairing avoids
+  /// the overflow a fixed-aspect grid would cause.
+  List<Widget> _orderCards(
+    BuildContext context,
+    List<Order> orders,
+    Widget Function(Order) build,
+  ) {
+    if (orders.isEmpty) return const [];
+    if (MediaQuery.sizeOf(context).width <= 980) {
+      return orders.map(build).toList();
+    }
+    final out = <Widget>[];
+    for (var i = 0; i < orders.length; i += 2) {
+      out.add(
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: build(orders[i])),
+            const SizedBox(width: 12),
+            Expanded(
+              child: i + 1 < orders.length
+                  ? build(orders[i + 1])
+                  : const SizedBox.shrink(),
+            ),
+          ],
+        ),
+      );
+    }
+    return out;
   }
 
   Widget _buildOrderCard(Order order, RestoProvider rProv) {
@@ -892,37 +866,71 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                 ],
 
                 if (order.status == OrderStatus.preparing)
-                  Row(
+                  Column(
                     children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () => _markReady(order),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF3B82F6),
-                            foregroundColor: Colors.white,
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: () => _markReady(order),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF3B82F6),
+                                foregroundColor: Colors.white,
+                              ),
+                              child: Text(tr(context, 'ready_serve')),
+                            ),
                           ),
-                          child: Text(tr(context, 'ready_serve')),
-                        ),
+                          if (order.fulfillmentType ==
+                              FulfillmentType.pickup) ...[
+                            const SizedBox(width: 8),
+                            IconButton.outlined(
+                              tooltip: tr(context, 'scan_qr_title'),
+                              onPressed: () => _showQrScanDialog(order),
+                              icon: const Icon(
+                                Icons.qr_code_scanner,
+                                color: Color(0xFF10B981),
+                              ),
+                            ),
+                            IconButton.outlined(
+                              tooltip: tr(context, 'redeem_code'),
+                              onPressed: () => _showCodeDialog(order),
+                              icon: const Icon(
+                                Icons.pin_outlined,
+                                color: Color(0xFF10B981),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
-                      const SizedBox(width: 12),
-                      if (order.fulfillmentType == FulfillmentType.pickup) ...[
-                        IconButton.outlined(
-                          tooltip: tr(context, 'redeem_code'),
-                          onPressed: () => _showQrScanDialog(order),
-                          icon: const Icon(
-                            Icons.qr_code_scanner,
-                            color: Color(0xFF10B981),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () => _refuseOrder(order),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFFEF4444),
+                                side: const BorderSide(
+                                  color: Color(0xFFEF4444),
+                                ),
+                              ),
+                              child: Text(tr(context, 'decline')),
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                      ],
-                      OutlinedButton(
-                        onPressed: () => _cancelOrder(order, true),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFFEF4444),
-                          side: const BorderSide(color: Color(0xFFEF4444)),
-                        ),
-                        child: Text(tr(context, 'cancel_billed')),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () => _cancelOrder(order, true),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFFEF4444),
+                                side: const BorderSide(
+                                  color: Color(0xFFEF4444),
+                                ),
+                              ),
+                              child: Text(tr(context, 'cancel_billed')),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -974,6 +982,28 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                             backgroundColor: const Color(0xFF10B981),
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: () => _showCodeDialog(order),
+                          icon: const Icon(Icons.pin_outlined, size: 18),
+                          label: Text(
+                            tr(context, 'redeem_code'),
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF10B981),
+                            side: const BorderSide(
+                              color: Color(0xFF10B981),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
