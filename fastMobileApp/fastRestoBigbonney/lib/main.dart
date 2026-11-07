@@ -660,7 +660,10 @@ class _MainShellState extends State<MainShell>
               left: 16,
               right: 16,
               bottom: 104,
-              child: GestureDetector(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 848),
+                  child: GestureDetector(
                 onTap: () => provider.navigateToScreen('cart'),
                 child: Container(
                   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -746,11 +749,16 @@ class _MainShellState extends State<MainShell>
                     ],
                   ),
                 ),
+                  ),
+                ),
               ),
             ),
         ],
       ),
-      bottomNavigationBar: FastNavBar(
+      bottomNavigationBar: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 880),
+          child: FastNavBar(
         currentIndex: _getBottomNavIndex(provider.currentScreen),
         onTap: (index) =>
             provider.navigateToScreen(_getScreenFromIndex(index)),
@@ -782,6 +790,8 @@ class _MainShellState extends State<MainShell>
             label: provider.tr('nav_group'),
           ),
         ],
+          ),
+        ),
       ),
     );
   }
