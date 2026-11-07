@@ -492,11 +492,13 @@ class FASTProvider extends ChangeNotifier {
     push.onAction ??= _onNotificationAction;
     realtime.connect(_userId);
     unawaited(
-      push.init(
-        eta5Label: tr('notif_eta5'),
-        eta15Label: tr('notif_eta15'),
-        departLabel: tr('je_parts'),
-      ),
+      push
+          .init(
+            eta5Label: tr('notif_eta5'),
+            eta15Label: tr('notif_eta15'),
+            departLabel: tr('je_parts'),
+          )
+          .then((_) => push.consumeLaunchAction()),
     );
 
     // Push tap → land on the order list (client shell ignores the call
@@ -657,7 +659,7 @@ class FASTProvider extends ChangeNotifier {
   void _onNotificationAction(String actionId, String? orderId) {
     if (orderId == null) return;
     if (actionId == LocalPushService.departAction) {
-      unawaited(_onDepart(orderId));
+      unawaited(departForOrder(orderId));
       return;
     }
     final delayMin = switch (actionId) {
@@ -673,10 +675,11 @@ class FASTProvider extends ChangeNotifier {
   /// initial tracking patch so the restaurant card flips to en-route
   /// (yellow) immediately, then open the orders screen where live
   /// tracking takes over.
-  Future<void> _onDepart(String orderId) async {
+  Future<bool> departForOrder(String orderId, {bool navigate = true}) async {
     final pos = await LocationService.instance.getCurrentLocation(
       forceRefresh: true,
     );
+    var sent = false;
     if (pos != null) {
       try {
         await _orderService.updateTracking(
@@ -686,9 +689,11 @@ class FASTProvider extends ChangeNotifier {
           longitude: pos.longitude,
         );
         updateOrderTrackingLocally(orderId, gpsProgress: 1);
+        sent = true;
       } catch (_) {}
     }
-    navigateToScreen('commandes');
+    if (navigate) navigateToScreen('commandes');
+    return sent;
   }
 
   void syncPoints(int points) {

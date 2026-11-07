@@ -99,4 +99,14 @@ class OrderService {
     );
     return Order.fromApiJson(data as Map<String, dynamic>);
   }
+
+  /// Cashier enters/scans a code without choosing the order — the backend
+  /// finds the matching active pickup order and completes it.
+  Future<Order> redeemPickup(String code) async {
+    final data = await _api.post(
+      ApiConfig.redeemPickup,
+      body: {'code': code},
+    );
+    return Order.fromApiJson(data as Map<String, dynamic>);
+  }
 }

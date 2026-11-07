@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../resto_provider.dart';
 import '../../models.dart';
 import '../../services/order_service.dart';
+import '../../api/api_exceptions.dart';
 import '../../theme.dart';
 import '../../l10n/tr.dart';
 
@@ -206,19 +207,131 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
         pickupToken: token,
       );
       order.status = updated.status;
-      if (mounted) {
-        setState(() {});
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(tr(context, 'handover_ok'))));
-      }
-    } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(tr(context, 'qr_invalid'))));
-      }
+      _onHandoverDone();
+    } catch (e) {
+      _showHandoverError(e);
     }
+  }
+
+  /// Code typed (or QR scanned) from the top bar — no need to find the
+  /// order card first; the backend matches it among active pickups.
+  Future<void> _redeemCode(String code) async {
+    try {
+      final updated = await _orderService.redeemPickup(code);
+      if (!mounted) return;
+      final rProv = context.read<RestoProvider>();
+      for (final o in rProv.restoOrders) {
+        if (o.id == updated.id) o.status = updated.status;
+      }
+      _onHandoverDone();
+    } catch (e) {
+      _showHandoverError(e);
+    }
+  }
+
+  void _onHandoverDone() {
+    if (!mounted) return;
+    setState(() {});
+    unawaited(context.read<RestoProvider>().refreshOrders());
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(tr(context, 'handover_ok'))));
+  }
+
+  void _showHandoverError(Object e) {
+    if (!mounted) return;
+    final msg = e is ApiException && e.message.isNotEmpty
+        ? e.message
+        : tr(context, 'qr_invalid');
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  void _showRedeemDialog() {
+    final controller = MobileScannerController();
+    final codeController = TextEditingController();
+    var handled = false;
+
+    Future<void> submit(BuildContext dialogContext, String value) async {
+      if (handled || value.trim().isEmpty) return;
+      handled = true;
+      Navigator.pop(dialogContext);
+      await _redeemCode(value.trim());
+    }
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: context.fast.card,
+        title: Text(
+          tr(context, 'redeem_code'),
+          style: TextStyle(color: context.fast.t1),
+        ),
+        content: SizedBox(
+          width: 300,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: codeController,
+                autofocus: true,
+                textCapitalization: TextCapitalization.characters,
+                style: TextStyle(
+                  color: context.fast.t1,
+                  fontSize: 20,
+                  fontFamily: 'monospace',
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 2,
+                ),
+                textAlign: TextAlign.center,
+                decoration: InputDecoration(
+                  hintText: '1234-FAST',
+                  hintStyle: TextStyle(color: context.fast.t3),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                onSubmitted: (v) => submit(dialogContext, v),
+              ),
+              const SizedBox(height: 12),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: SizedBox(
+                  height: 200,
+                  width: 280,
+                  child: MobileScanner(
+                    controller: controller,
+                    onDetect: (capture) {
+                      final code = capture.barcodes.firstOrNull?.rawValue;
+                      if (code != null) submit(dialogContext, code);
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(
+              tr(context, 'cancel'),
+              style: TextStyle(color: context.fast.t2),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => submit(dialogContext, codeController.text),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF10B981),
+              foregroundColor: Colors.white,
+            ),
+            child: Text(tr(context, 'validate_lbl')),
+          ),
+        ],
+      ),
+    ).whenComplete(() {
+      controller.dispose();
+      codeController.dispose();
+    });
   }
 
   @override
@@ -283,6 +396,27 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
               ),
             ],
           ),
+          SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton.icon(
+              onPressed: _showRedeemDialog,
+              icon: const Icon(Icons.qr_code_scanner, size: 20),
+              label: Text(tr(context, 'redeem_code')),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF10B981),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                textStyle: const TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ),
           SizedBox(height: 16),
           if (activeOrders.isEmpty)
             Center(
@@ -345,13 +479,16 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
     }
     Color statusColor = context.fast.faint;
     if (order.status == OrderStatus.placed) statusColor = Color(0xFF10B981);
-    if (order.status == OrderStatus.preparing) statusColor = Color(0xFFF59E0B);
+    // Violet, not amber: yellow is reserved for "client is on the way" so
+    // a freshly auto-accepted order never looks en route.
+    if (order.status == OrderStatus.preparing) statusColor = Color(0xFF8B5CF6);
     if (order.status == OrderStatus.readyForPickup) {
       statusColor = Color(0xFF3B82F6);
     }
 
-    // Client proximity — live gpsProgress pushed by the client app.
-    // Yellow = client just started moving toward us (en route, early).
+    // Client proximity — live gpsProgress pushed by the client app only
+    // once they have genuinely started moving (or tapped "Je pars").
+    // Yellow = en route, orange = close, red = at the door.
     Color? proxColor;
     String? proxLabel;
     if (order.fulfillmentType == FulfillmentType.pickup) {
@@ -365,13 +502,11 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
         proxColor = const Color(0xFFFACC15);
         proxLabel = tr(context, 'prox_far');
       } else {
-        proxColor = const Color(0xFF10B981);
-        proxLabel = tr(context, 'prox_far');
+        proxLabel = tr(context, 'client_not_left');
       }
     }
     final Color accentColor = proxColor ?? statusColor;
-    final bool enRouteYellow =
-        proxColor == const Color(0xFFFACC15);
+    final bool enRouteYellow = proxColor == const Color(0xFFFACC15);
 
     return Container(
       margin: EdgeInsets.only(bottom: 16),
@@ -425,7 +560,7 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: proxColor,
+                      color: proxColor ?? context.fast.faint,
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
@@ -770,6 +905,17 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                         ),
                       ),
                       const SizedBox(width: 12),
+                      if (order.fulfillmentType == FulfillmentType.pickup) ...[
+                        IconButton.outlined(
+                          tooltip: tr(context, 'redeem_code'),
+                          onPressed: () => _showQrScanDialog(order),
+                          icon: const Icon(
+                            Icons.qr_code_scanner,
+                            color: Color(0xFF10B981),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
                       OutlinedButton(
                         onPressed: () => _cancelOrder(order, true),
                         style: OutlinedButton.styleFrom(

@@ -16,3 +16,19 @@ export function pickupCodeFromToken(token: string): string {
   }
   return `${code}-FAST`;
 }
+
+/** Normalise what a cashier types: " 3f9k fast " / "3F9K" → "3F9K-FAST". */
+export function normalizePickupCode(input: string): string {
+  const raw = input.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  // Only strip the suffix when something precedes it — "FAST" alone is a
+  // valid 4-letter core.
+  const core = raw.length > 4 && raw.endsWith('FAST') ? raw.slice(0, -4) : raw;
+  return `${core}-FAST`;
+}
+
+/** Matches either the full QR token or the short typed code. */
+export function pickupTokenMatches(storedToken: string | null, input: string): boolean {
+  if (!storedToken || !input.trim()) return false;
+  if (storedToken === input.trim()) return true;
+  return pickupCodeFromToken(storedToken) === normalizePickupCode(input);
+}

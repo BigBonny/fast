@@ -44,11 +44,7 @@ class ProximityService {
   )?
   onTrack;
 
-  static const Duration _trackInterval = Duration(seconds: 20);
-  static const double _trackStartThreshold = 5; // % of route covered
-  final Map<String, double> _initialDistances = {};
-  final Map<String, DateTime> _lastTrackSent = {};
-  final Set<String> _trackStarted = {};
+  final PickupTracker tracker = PickupTracker();
 
   /// Shown on Android's persistent foreground-service notification while
   /// tracking is active (required for background location on Android).
@@ -190,16 +186,16 @@ class ProximityService {
       radiusMeters: nearRadiusMeters,
     )) {
       _nearNotified.add(order.id);
+      // Already walking (Je pars tapped, or movement detected) — asking
+      // "are you leaving?" would be noise.
+      if (order.gpsProgress > 0 || tracker.isStarted(order.id)) continue;
       _onNear?.call(order, restaurant);
     }
     _pushTracking(p, orders, restaurants);
   }
 
-  /// Straight-line progress toward each active pickup order. Patches
-  /// only start once the client has genuinely moved (≥5% closer than
-  /// their first fix) — GPS jitter at the start never flips the Pro
-  /// card to en-route. Once started, patches keep flowing (including
-  /// drops) until the order leaves the active set.
+  /// Live uplink for every active pickup order. [PickupTracker] decides
+  /// when the client has genuinely started moving and throttles patches.
   void _pushTracking(
     Position p,
     List<Order> orders,
@@ -214,49 +210,42 @@ class ProximityService {
                   o.status == OrderStatus.readyForPickup),
         )
         .toList();
-    final activeIds = active.map((o) => o.id).toSet();
-    _initialDistances.removeWhere((k, _) => !activeIds.contains(k));
-    _lastTrackSent.removeWhere((k, _) => !activeIds.contains(k));
-    _trackStarted.removeWhere((k) => !activeIds.contains(k));
+    tracker.retainOnly(active.map((o) => o.id).toSet());
 
     final now = DateTime.now();
     for (final order in active) {
-      Restaurant? restaurant;
-      for (final r in restaurants) {
-        if (r.id == order.restaurantId) {
-          restaurant = r;
-          break;
-        }
-      }
-      if (restaurant == null ||
-          (restaurant.latitude == 0 && restaurant.longitude == 0)) {
-        continue;
-      }
+      final restaurant = _restaurantFor(order, restaurants);
+      if (restaurant == null) continue;
       final distM =
-          LocationService.instance
-              .calculateDistance(
-                LatLng(p.latitude, p.longitude),
-                LatLng(restaurant.latitude, restaurant.longitude),
-              ) *
+          LocationService.instance.calculateDistance(
+            LatLng(p.latitude, p.longitude),
+            LatLng(restaurant.latitude, restaurant.longitude),
+          ) *
           1000;
-      final initial = _initialDistances.putIfAbsent(order.id, () => distM);
-      final progress = initial > 1
-          ? ((1 - distM / initial) * 100).clamp(0.0, 100.0)
-          : 0.0;
-      if (progress >= _trackStartThreshold) _trackStarted.add(order.id);
-      if (!_trackStarted.contains(order.id)) continue;
-
-      final last = _lastTrackSent[order.id];
-      if (last != null && now.difference(last) < _trackInterval) continue;
-      _lastTrackSent[order.id] = now;
+      final progress = tracker.update(
+        order.id,
+        distanceMeters: distM,
+        serverProgress: order.gpsProgress,
+        now: now,
+      );
+      if (progress == null) continue;
       onTrack?.call(
         order.id,
         progress,
         p.latitude,
         p.longitude,
-        distM <= 120,
+        distM <= PickupTracker.entranceMeters,
       );
     }
+  }
+
+  static Restaurant? _restaurantFor(Order order, List<Restaurant> all) {
+    for (final r in all) {
+      if (r.id == order.restaurantId) {
+        return (r.latitude == 0 && r.longitude == 0) ? null : r;
+      }
+    }
+    return null;
   }
 
   /// Pure permission gate (unit-testable): tracking starts for
@@ -318,9 +307,7 @@ class ProximityService {
   void reset() {
     _notified.clear();
     _nearNotified.clear();
-    _initialDistances.clear();
-    _lastTrackSent.clear();
-    _trackStarted.clear();
+    tracker.clear();
   }
 
   void stop() {
@@ -332,8 +319,91 @@ class ProximityService {
     onTrack = null;
     _notified.clear();
     _nearNotified.clear();
-    _initialDistances.clear();
-    _lastTrackSent.clear();
-    _trackStarted.clear();
+    tracker.clear();
+  }
+}
+
+
+/// Pure movement gate for one device (unit-testable, no GPS/plugins).
+///
+/// Progress is straight-line: how much closer than the first fix the client
+/// is. Tracking only "starts" after a real, sustained move — the smoothed
+/// distance must be ≥5% of the way AND ≥100 m closer on two consecutive
+/// fixes — so GPS jitter while sitting at a table never flips the
+/// restaurant's card to en-route. If the server already shows the order en
+/// route (Je pars, or a previous app session) it resumes immediately,
+/// reconstructing the starting distance from that progress.
+class PickupTracker {
+  static const double startPercent = 5;
+  static const double startMeters = 100;
+  static const int confirmations = 2;
+  static const double entranceMeters = 120;
+  static const Duration interval = Duration(seconds: 20);
+
+  final Map<String, double> _initial = {};
+  final Map<String, double> _smoothed = {};
+  final Map<String, int> _confirmed = {};
+  final Map<String, DateTime> _lastSent = {};
+  final Set<String> _started = {};
+
+  bool isStarted(String orderId) => _started.contains(orderId);
+
+  /// Returns the progress (0-100) to upload now, or null to stay quiet.
+  double? update(
+    String orderId, {
+    required double distanceMeters,
+    required double serverProgress,
+    required DateTime now,
+  }) {
+    final initial = _initial.putIfAbsent(orderId, () {
+      if (serverProgress > 0 && serverProgress < 100) {
+        return distanceMeters / (1 - serverProgress / 100);
+      }
+      return distanceMeters;
+    });
+    if (serverProgress > 0) _started.add(orderId);
+
+    if (!_started.contains(orderId)) {
+      final prev = _smoothed[orderId];
+      final smooth = prev == null
+          ? distanceMeters
+          : prev * 0.5 + distanceMeters * 0.5;
+      _smoothed[orderId] = smooth;
+      final moved = initial - smooth;
+      final pct = initial > 1 ? moved / initial * 100 : 0.0;
+      if (moved >= startMeters && pct >= startPercent) {
+        final n = (_confirmed[orderId] ?? 0) + 1;
+        _confirmed[orderId] = n;
+        if (n >= confirmations) _started.add(orderId);
+      } else {
+        _confirmed[orderId] = 0;
+      }
+      if (!_started.contains(orderId)) return null;
+    }
+
+    final progress = initial > 1
+        ? ((1 - distanceMeters / initial) * 100).clamp(0.0, 100.0)
+        : 0.0;
+    final last = _lastSent[orderId];
+    if (last != null && now.difference(last) < interval) return null;
+    _lastSent[orderId] = now;
+    // Started orders never report 0 — the backend treats >0 as en route.
+    return progress < 1 ? 1 : progress.toDouble();
+  }
+
+  void retainOnly(Set<String> activeIds) {
+    _initial.removeWhere((k, _) => !activeIds.contains(k));
+    _smoothed.removeWhere((k, _) => !activeIds.contains(k));
+    _confirmed.removeWhere((k, _) => !activeIds.contains(k));
+    _lastSent.removeWhere((k, _) => !activeIds.contains(k));
+    _started.removeWhere((k) => !activeIds.contains(k));
+  }
+
+  void clear() {
+    _initial.clear();
+    _smoothed.clear();
+    _confirmed.clear();
+    _lastSent.clear();
+    _started.clear();
   }
 }

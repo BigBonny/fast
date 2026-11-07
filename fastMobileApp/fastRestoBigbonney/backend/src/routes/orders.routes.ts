@@ -7,6 +7,7 @@ import {
   updateOrderStatus,
   updateOrderTracking,
   verifyPickup,
+  redeemPickupCode,
   cancelMyOrder,
   signalClientDelay,
   setFastFeedback,
@@ -25,6 +26,8 @@ router.post('/:id/feedback', authenticate, asyncHandler(setFastFeedback));
 
 // Restaurant (before /:id to avoid conflict)
 router.get('/restaurant', authenticate, requireRestaurantAccess('STAFF'), asyncHandler(getRestaurantOrders));
+// Cashier types the client's XXXX-FAST code without opening the order first.
+router.post('/redeem-pickup', authenticate, requireRestaurantAccess('STAFF'), asyncHandler(redeemPickupCode));
 // GUEST (kitchen/cook accounts) can work the order board — accept, prep, ready.
 // Stats/payouts/settings stay STAFF+ only.
 router.patch('/:id/status', authenticate, requireRestaurantAccess('STAFF'), asyncHandler(updateOrderStatus));

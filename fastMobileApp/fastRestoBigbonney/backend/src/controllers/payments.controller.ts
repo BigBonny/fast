@@ -5,6 +5,7 @@ import { prisma } from '../services/prisma';
 import { placeOrderSchema } from '../utils/validation';
 import { computeCartPricing } from '../utils/cartPricing';
 import { generatePickupToken } from '../utils/pickupToken';
+import { prepMinutesFor, shouldAutoAccept } from '../utils/autoAccept';
 import { getStripeCustomerId } from './payment_methods.controller';
 import {
   distanceKm,
@@ -171,41 +172,61 @@ async function createPaidOrderFromCheckout(
       if (!result.order) throw new Error('Paid order not found');
 
       if (result.created) {
+        // Auto-accept (default): straight to PREPARING unless the
+        // restaurant is closed / outside hours / within 30 min of closing.
+        // Group orders wait for the host to submit, so never here.
+        const autoAccepted =
+          !result.order.groupOrderId &&
+          result.order.status === 'PLACED' &&
+          shouldAutoAccept(result.order.restaurant.openingHours)
+            ? await prisma.order.update({
+                where: { id: result.order.id },
+                data: {
+                  status: 'PREPARING',
+                  prepStartedAt: new Date(),
+                  prepTimerSeconds:
+                    prepMinutesFor(result.order.restaurant, result.order.items) * 60,
+                },
+                include: {
+                  items: { include: { menuItem: true } },
+                  restaurant: true,
+                  groupOrder: { select: { code: true, status: true } },
+                },
+              })
+            : null;
+        const finalOrder = autoAccepted ?? result.order;
+        const prepMin = Math.round((finalOrder.prepTimerSeconds ?? 0) / 60);
+
         const clientNotification = await prisma.notification.create({
           data: {
-            userId: result.order.userId,
-            orderId: result.order.id,
+            userId: finalOrder.userId,
+            orderId: finalOrder.id,
             title: 'Commande payée',
-            body: result.order.groupOrderId
+            body: finalOrder.groupOrderId
               ? 'Votre part est payée — la commande part dès que l’hôte envoie le groupe.'
-              : `Commande #${result.order.id.slice(-6)} payée — en attente d'acceptation par le restaurant.`,
+              : autoAccepted
+                ? `Commande #${finalOrder.id.slice(-6)} acceptée — prête dans ~${prepMin} min.`
+                : `Commande #${finalOrder.id.slice(-6)} payée — en attente d'acceptation par le restaurant.`,
             type: 'SUCCESS',
           },
         });
         // Group orders only reach the kitchen once the host submits —
         // the per-payment "new order" push stays off for them.
-        if (!result.order.groupOrderId) {
+        if (!finalOrder.groupOrderId) {
           const notification = await prisma.notification.create({
             data: {
               userId: result.restaurantOwnerId!,
-              orderId: result.order.id,
-              title: 'Nouvelle commande payée !',
-              body: `Commande #${result.order.id.slice(-6)} — ${result.order.items.length} article(s)`,
+              orderId: finalOrder.id,
+              title: autoAccepted ? 'Nouvelle commande — en préparation' : 'Nouvelle commande à accepter !',
+              body: `Commande #${finalOrder.id.slice(-6)} — ${finalOrder.items.length} article(s)`,
               type: 'STATUS',
             },
           });
-          safeEmitOrderToRestaurant(result.order.restaurantId, result.order);
+          safeEmitOrderToRestaurant(finalOrder.restaurantId, finalOrder);
           safeEmitNotificationToUser(result.restaurantOwnerId!, notification);
         }
-        safeEmitNotificationToUser(result.order.userId, clientNotification);
-
-        // Auto-accept: orders go straight to PREPARING unless the
-        // restaurant closes within 30 min (or today is a closed day —
-        // then it needs a human decision). No openingHours → auto-accept.
-        const autoAccepted = await maybeAutoAccept(result.order);
-        if (autoAccepted) {
-          safeEmitOrderToRestaurant(result.order.restaurantId, autoAccepted);
-        }
+        safeEmitNotificationToUser(finalOrder.userId, clientNotification);
+        return finalOrder;
       }
 
       return result.order;
@@ -217,53 +238,6 @@ async function createPaidOrderFromCheckout(
     }
   }
   throw new Error('Could not create paid order');
-}
-
-// Returns the order flipped to PREPARING when safe, else null.
-// "Safe" = restaurant has no closing time configured, today isn't a
-// closed day, and it's not within 30 min of closing.
-async function maybeAutoAccept(order: {
-  id: string;
-  status: string;
-  restaurant: { openingHours: unknown };
-}): Promise<unknown | null> {
-  if (order.status !== 'PLACED') return null;
-  const hours = order.restaurant.openingHours as
-    | Record<string, string>
-    | null
-    | undefined;
-  if (!hours || typeof hours !== 'object') {
-    return flipToPreparing(order.id);
-  }
-  const now = new Date();
-  const isoDay = now.getDay() === 0 ? 7 : now.getDay(); // ISO 1-7
-  const today = hours[String(isoDay)];
-  if (!today || today === 'closed' || !today.includes('-')) {
-    // Closed today or unparseable → human decides.
-    if (today === 'closed') return null;
-    return flipToPreparing(order.id);
-  }
-  const closeStr = today.split('-')[1]?.trim();
-  const m = closeStr?.match(/^(\d{1,2}):(\d{2})$/);
-  if (!m) return flipToPreparing(order.id);
-  const closeMin = Number(m[1]) * 60 + Number(m[2]);
-  const nowMin = now.getHours() * 60 + now.getMinutes();
-  // Handles overnight hours crudely: if close < open it's past midnight.
-  const minutesToClose = closeMin <= nowMin ? closeMin + 1440 - nowMin : closeMin - nowMin;
-  if (minutesToClose <= 30) return null; // too close to closing — manual accept
-  return flipToPreparing(order.id);
-}
-
-async function flipToPreparing(orderId: string) {
-  return prisma.order.update({
-    where: { id: orderId },
-    data: { status: 'PREPARING', prepStartedAt: new Date() },
-    include: {
-      items: { include: { menuItem: true } },
-      restaurant: true,
-      groupOrder: { select: { code: true, status: true } },
-    },
-  });
 }
 
 export const createCheckoutSession = async (req: Request, res: Response): Promise<void> => {

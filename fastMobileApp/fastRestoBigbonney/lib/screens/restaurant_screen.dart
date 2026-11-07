@@ -1,6 +1,7 @@
 // lib/screens/restaurant_screen.dart
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:maplibre/maplibre.dart';
@@ -638,8 +639,14 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: SizedBox(
-                        height: 130,
+                        height: 180,
                         child: MapLibreMap(
+                          // Claim drags before the page scroll does.
+                          gestureRecognizers: {
+                            Factory<OneSequenceGestureRecognizer>(
+                              () => EagerGestureRecognizer(),
+                            ),
+                          },
                           options: MapOptions(
                             initStyle: openFreeMapStyle,
                             initCenter: geo(rest.latitude, rest.longitude),

@@ -49,6 +49,7 @@ class ApiConfig {
   static String order(String id) => '/orders/$id';
   static String updateOrderTracking(String id) => '/orders/$id/tracking';
   static String verifyPickup(String id) => '/orders/$id/verify-pickup';
+  static const String redeemPickup = '/orders/redeem-pickup';
   static String orderDelivery(String orderId) => '/deliveries/order/$orderId';
 
   // Payments
