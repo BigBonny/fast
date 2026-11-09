@@ -38,3 +38,18 @@ backend/dist
 graphify-out/
 
 .vercel
+
+# Signing keys and credentials (second layer; nested .gitignores also cover these)
+*.jks
+*.keystore
+*.p8
+*.p12
+*.mobileprovision
+key.properties
+
+# Personal / client documents and reference images: keep out of the repo
+fastMobileApp/*.pdf
+fastMobileApp/*.zip
+fastMobileApp/howitLooksnow/
+fastMobileApp/inspiration/
+fastMobileApp/fastRestoBigbonney/backend/.git.bak/
