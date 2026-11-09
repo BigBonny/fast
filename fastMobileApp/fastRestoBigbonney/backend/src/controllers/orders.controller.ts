@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import Stripe from 'stripe';
 import { OrderStatus } from '@prisma/client';
 import { prisma } from '../services/prisma';
 import {
@@ -16,84 +15,14 @@ import {
   safeEmitNotificationToUser,
   safeEmitOrderStatusToUser,
 } from '../services/realtime';
-import { env } from '../config/env';
 import { getRestaurantIdForUser } from '../middleware/auth';
-
-function stripeClient(): Stripe | null {
-  if (!env.stripeSecretKey) return null;
-  return new Stripe(env.stripeSecretKey);
-}
+import { isRefundablePaymentStatus, refundPaidOrder } from '../services/stripeRefunds';
 
 const orderInclude = {
   items: { include: { menuItem: true } },
   restaurant: { select: { id: true, name: true, image: true, ownerId: true } },
   groupOrder: { select: { code: true, status: true } },
 };
-
-async function refundPaidOrder(
-  order: {
-    id: string;
-    paymentStatus: string;
-    stripePaymentIntentId: string | null;
-    stripeCheckoutSessionId: string | null;
-    total: number;
-    serviceFee: number;
-  },
-  // Restaurant declines refund the whole paid amount; client self-cancel
-  // keeps the service fee (existing policy).
-  options?: { includeServiceFee?: boolean },
-): Promise<void> {
-  if (order.paymentStatus !== 'PAID') return;
-
-  const stripe = stripeClient();
-  if (!stripe) return;
-
-  let paymentIntentId = order.stripePaymentIntentId;
-  if (!paymentIntentId && order.stripeCheckoutSessionId) {
-    const session = await stripe.checkout.sessions.retrieve(order.stripeCheckoutSessionId);
-    paymentIntentId = typeof session.payment_intent === 'string'
-      ? session.payment_intent
-      : session.payment_intent?.id ?? null;
-  }
-  if (!paymentIntentId) return;
-
-  const refundAmountCents = Math.round(
-    (options?.includeServiceFee ? order.total : order.total - order.serviceFee) * 100,
-  );
-  if (refundAmountCents <= 0) return;
-
-  // Only reverse a transfer when one exists — charges that went fully
-  // to the platform (demo restaurant, or a restaurant without Connect)
-  // have no transfer_data and Stripe 400s on reverse_transfer.
-  const pi = await stripe.paymentIntents.retrieve(paymentIntentId);
-  const hasDestinationTransfer = !!pi.transfer_data?.destination;
-  const refundAppFee =
-    options?.includeServiceFee === true && hasDestinationTransfer;
-
-  await stripe.refunds.create(
-    {
-      payment_intent: paymentIntentId,
-      amount: refundAmountCents,
-      // Destination charge — pull the money back from the connected
-      // account rather than paying the refund from the platform balance.
-      ...(hasDestinationTransfer ? { reverse_transfer: true } : {}),
-      // The platform fee only goes back when the customer is fully
-      // refunded AND the charge actually had one (destination charges).
-      ...(refundAppFee ? { refund_application_fee: true } : {}),
-    },
-    // Retries replay the same refund instead of charging a second one.
-    // Params go in the key — a key reused with different parameters is
-    // rejected outright by Stripe (burned idempotency keys can't recur).
-    {
-      idempotencyKey: `order-refund-${order.id}-${refundAmountCents}-${hasDestinationTransfer ? 'rt' : 'p'}${refundAppFee ? '-raf' : '-n'}`,
-    },
-  );
-
-  await prisma.order.update({
-    where: { id: order.id },
-    data: { paymentStatus: 'REFUNDED' },
-  });
-}
 
 export const placeOrder = async (req: Request, res: Response): Promise<void> => {
   placeOrderSchema.parse(req.body);
@@ -325,7 +254,12 @@ export const verifyPickup = async (req: Request, res: Response): Promise<void> =
     return;
   }
 
-  res.json(await completePickup(order.id, order.userId));
+  const completed = await completePickup(order.id, order.userId);
+  if (!completed) {
+    res.status(409).json({ error: 'Cette commande a déjà été remise' });
+    return;
+  }
+  res.json(completed);
 };
 
 /**
@@ -357,14 +291,29 @@ export const redeemPickupCode = async (req: Request, res: Response): Promise<voi
     return;
   }
 
-  res.json(await completePickup(match.id, match.userId));
+  const completed = await completePickup(match.id, match.userId);
+  if (!completed) {
+    res.status(409).json({ error: 'Cette commande a déjà été remise' });
+    return;
+  }
+  res.json(completed);
 };
 
+/**
+ * Marks a handed-over order COMPLETED and grants the loyalty points.
+ * Returns null when the order is no longer PREPARING/READY_FOR_PICKUP
+ * (for example two cashiers scanned the same code at once): only the first
+ * scan completes it, so points and notifications are granted once.
+ */
 async function completePickup(orderId: string, userId: string) {
   const updated = await prisma.$transaction(async (tx) => {
-    const result = await tx.order.update({
-      where: { id: orderId },
+    const claimed = await tx.order.updateMany({
+      where: { id: orderId, status: { in: ['PREPARING', 'READY_FOR_PICKUP'] } },
       data: { status: 'COMPLETED', isReadyAtEntrance: true },
+    });
+    if (claimed.count !== 1) return null;
+    const result = await tx.order.findUniqueOrThrow({
+      where: { id: orderId },
       include: orderInclude,
     });
 
@@ -395,6 +344,8 @@ async function completePickup(orderId: string, userId: string) {
 
     return { order: result, statusNotification, ratingNotification };
   });
+
+  if (!updated) return null;
 
   safeEmitOrderStatusToUser(userId, { orderId, status: 'COMPLETED' });
   safeEmitNotificationToUser(userId, updated.statusNotification);
@@ -479,27 +430,53 @@ export const updateOrderStatus = async (req: Request, res: Response): Promise<vo
   if (data.status === 'CANCELLED' && data.isBilledAnyway) {
     updateData.isBilledAnyway = true;
   }
-  // A restaurant cancelling a paid order refunds the customer — same
-  // rule as client self-cancel. Only 'billed anyway' cancellations keep
-  // the money (preparation already started).
-  if (
-    data.status === 'CANCELLED' &&
-    !data.isBilledAnyway &&
-    order.paymentStatus === 'PAID'
-  ) {
-    await refundPaidOrder(order, { includeServiceFee: true });
-  }
   if (data.status === 'COMPLETED') {
     updateData.isReadyAtEntrance = true;
+  }
+
+  // Conditional update: only applies if nobody else moved the order since
+  // we read it (two cashiers, or a staff action racing a client cancel).
+  // Side effects below run only for the request that won.
+  const claimed = await prisma.order.updateMany({
+    where: { id, status: order.status },
+    data: updateData,
+  });
+  if (claimed.count !== 1) {
+    res.status(409).json({ error: 'La commande a changé entre-temps, rafraîchissez' });
+    return;
+  }
+
+  // A restaurant cancelling a paid order refunds the customer in full,
+  // including orders with a pending refund request. Only 'billed anyway'
+  // cancellations keep the money (preparation already started).
+  const refundOnCancel =
+    data.status === 'CANCELLED' &&
+    !data.isBilledAnyway &&
+    isRefundablePaymentStatus(order.paymentStatus);
+  if (refundOnCancel) {
+    try {
+      await refundPaidOrder(order, { includeServiceFee: true });
+    } catch (err) {
+      // Put the order back so staff can retry instead of leaving a
+      // cancelled-but-charged order.
+      await prisma.order.updateMany({
+        where: { id, status: 'CANCELLED' },
+        data: { status: order.status },
+      });
+      console.error('updateOrderStatus: refund failed', id, err);
+      res.status(502).json({ error: "Échec du remboursement, la commande n'a pas été annulée. Réessayez." });
+      return;
+    }
+  }
+  if (data.status === 'COMPLETED') {
     await prisma.user.update({
       where: { id: order.userId },
       data: { points: { increment: 10 } },
     });
   }
 
-  const updated = await prisma.order.update({
+  const updated = await prisma.order.findUnique({
     where: { id },
-    data: updateData,
     include: {
       items: { include: { menuItem: true } },
       restaurant: { omit: restaurantPrivateOmit },
@@ -520,7 +497,7 @@ export const updateOrderStatus = async (req: Request, res: Response): Promise<vo
           : data.status === 'CANCELLED'
             ? (data.isBilledAnyway
                 ? 'Commande annulée — la préparation était déjà commencée, elle reste facturée.'
-                : order.paymentStatus === 'PAID'
+                : refundOnCancel
                   ? 'Le restaurant n\'a pas pu honorer votre commande — remboursement en cours.'
                   : 'Le restaurant n\'a pas pu honorer votre commande.')
             : `Statut mis à jour : ${label}`,
@@ -646,27 +623,44 @@ export const cancelMyOrder = async (req: Request, res: Response): Promise<void> 
   }
 
   if (order.status !== 'PLACED') {
-    await prisma.order.update({
-      where: { id },
+    const billed = await prisma.order.updateMany({
+      where: { id, status: order.status },
       data: { status: 'CANCELLED', isBilledAnyway: true },
     });
+    if (billed.count !== 1) {
+      res.status(409).json({ error: 'La commande a changé entre-temps, rafraîchissez' });
+      return;
+    }
     res.json({ message: 'Commande annulée. La préparation avait commencé, le montant est facturé.' });
     return;
   }
 
-  if (order.paymentStatus === 'PAID') {
+  // Claim PLACED → CANCELLED first, so a restaurant accepting at the same
+  // moment can't start cooking an order we are refunding (or vice versa).
+  const claimed = await prisma.order.updateMany({
+    where: { id, status: 'PLACED' },
+    data: { status: 'CANCELLED' },
+  });
+  if (claimed.count !== 1) {
+    res.status(409).json({ error: "Le restaurant vient d'accepter la commande, rafraîchissez" });
+    return;
+  }
+
+  // Also covers orders with a pending refund request (REFUND_REQUESTED):
+  // the money is still held, so cancelling must give it back.
+  if (isRefundablePaymentStatus(order.paymentStatus)) {
     try {
       await refundPaidOrder(order);
     } catch (err) {
-      res.status(500).json({ error: `Échec du remboursement : ${(err as Error).message}` });
+      await prisma.order.updateMany({
+        where: { id, status: 'CANCELLED' },
+        data: { status: 'PLACED' },
+      });
+      console.error('cancelMyOrder: refund failed', id, err);
+      res.status(502).json({ error: "Échec du remboursement, la commande n'a pas été annulée. Réessayez." });
       return;
     }
   }
-
-  await prisma.order.update({
-    where: { id },
-    data: { status: 'CANCELLED' },
-  });
 
   res.json({ message: 'Commande annulée. Remboursement effectué (hors frais de service).' });
 };
