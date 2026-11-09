@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-const { shouldAutoAccept, parisClock, prepMinutesFor } = require('../src/utils/autoAccept');
+const { shouldAutoAccept, parisClock, prepMinutesFor, isValidDayHours } = require('../src/utils/autoAccept');
 const {
   generatePickupToken,
   pickupCodeFromToken,
@@ -18,11 +18,22 @@ test('Paris clock is used, not server UTC', () => {
   assert.equal(c.minutes, 22 * 60 + 45);
 });
 
-test('missing / empty / unreadable hours → auto-accept', () => {
-  assert.equal(shouldAutoAccept(null, paris('12:00')), true);
-  assert.equal(shouldAutoAccept({}, paris('12:00')), true);
-  assert.equal(shouldAutoAccept({ '1': '' }, paris('12:00')), true);
-  assert.equal(shouldAutoAccept({ '1': 'n/a' }, paris('12:00')), true);
+test('missing / empty / unreadable hours → manual (restaurant may be closed)', () => {
+  assert.equal(shouldAutoAccept(null, paris('12:00')), false);
+  assert.equal(shouldAutoAccept({}, paris('12:00')), false);
+  assert.equal(shouldAutoAccept({ '7': 'closed' }, paris('12:00')), false); // Monday not set
+  assert.equal(shouldAutoAccept({ '1': '' }, paris('12:00')), false);
+  assert.equal(shouldAutoAccept({ '1': 'n/a' }, paris('12:00')), false);
+  assert.equal(shouldAutoAccept({ '1': '11h00-14h00' }, paris('12:00')), false);
+});
+
+test('opening hours format validation', () => {
+  for (const ok of ['closed', 'Closed', '11:00-14:00', '9:00-22:00', '11:00-14:00,18:00-23:00', '18:00-02:00']) {
+    assert.equal(isValidDayHours(ok), true, ok);
+  }
+  for (const bad of ['', 'n/a', '11h00-14h00', '11:00', '11:00-14:00,', '25:00-26:00', '11:75-14:00']) {
+    assert.equal(isValidDayHours(bad), false, bad);
+  }
 });
 
 test('open well before closing → auto-accept', () => {

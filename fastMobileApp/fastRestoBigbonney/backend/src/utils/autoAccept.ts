@@ -21,10 +21,27 @@ export function parisClock(now: Date): { isoDay: number; minutes: number } {
   };
 }
 
+const RANGE_RE = /^(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})$/;
+
+/**
+ * A day's hours as stored: "closed" or comma-separated "HH:MM-HH:MM"
+ * ranges ("11:00-14:00,18:00-23:00"). Used to reject anything the
+ * auto-accept logic couldn't read.
+ */
+export function isValidDayHours(value: string): boolean {
+  const v = value.trim();
+  if (v.toLowerCase() === 'closed') return true;
+  const chunks = v.split(',');
+  return chunks.length > 0 && chunks.every((chunk) => {
+    const m = chunk.trim().match(RANGE_RE);
+    return !!m && [m[1], m[3]].every((h) => Number(h) <= 24) && [m[2], m[4]].every((mm) => Number(mm) < 60);
+  });
+}
+
 function parseRanges(value: string): Array<[number, number]> {
   const ranges: Array<[number, number]> = [];
   for (const chunk of value.split(',')) {
-    const m = chunk.trim().match(/^(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})$/);
+    const m = chunk.trim().match(RANGE_RE);
     if (!m) continue;
     const open = Number(m[1]) * 60 + Number(m[2]);
     let close = Number(m[3]) * 60 + Number(m[4]);
@@ -38,10 +55,12 @@ function parseRanges(value: string): Array<[number, number]> {
  * true  → accept automatically.
  * false → leave PLACED for the restaurant to decide (closed today, outside
  *         opening hours, or within 30 min of closing).
- * Missing or unreadable hours never block: auto-accept is the default.
+ * Missing or unreadable hours also return false: without known hours we
+ * can't tell the restaurant is open, so a human accepts the order (and
+ * unaccepted orders are cancelled and refunded, see staleOrders.ts).
  */
 export function shouldAutoAccept(openingHours: unknown, now: Date = new Date()): boolean {
-  if (!openingHours || typeof openingHours !== 'object' || Array.isArray(openingHours)) return true;
+  if (!openingHours || typeof openingHours !== 'object' || Array.isArray(openingHours)) return false;
   const hours = openingHours as Record<string, unknown>;
   const { isoDay, minutes } = parisClock(now);
 
@@ -56,10 +75,10 @@ export function shouldAutoAccept(openingHours: unknown, now: Date = new Date()):
   }
 
   const today = hours[String(isoDay)];
-  if (typeof today !== 'string' || today.trim() === '') return true;
+  if (typeof today !== 'string' || today.trim() === '') return false;
   if (today.trim().toLowerCase() === 'closed') return false;
   const ranges = parseRanges(today);
-  if (ranges.length === 0) return true;
+  if (ranges.length === 0) return false;
 
   for (const [open, close] of ranges) {
     if (minutes >= open && minutes < close) {
