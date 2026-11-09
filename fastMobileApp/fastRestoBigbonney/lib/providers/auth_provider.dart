@@ -8,6 +8,7 @@ import '../api/api_client.dart';
 import '../api/api_exceptions.dart';
 import '../models/auth_models.dart';
 import '../services/auth_service.dart';
+import '../services/push_service.dart';
 
 enum AuthState { idle, loading, authenticated, unauthenticated, error }
 
@@ -290,6 +291,11 @@ class AuthProvider extends ChangeNotifier {
     if (_isLoggingOut) return;
     _isLoggingOut = true;
     notifyListeners();
+
+    // Drop this device's push token on the server first, while the session
+    // is still valid; otherwise the backend keeps pushing to a logged-out
+    // phone. Best effort, capped at 2 s.
+    await PushService.instance.unregisterFromServer();
 
     // Fire-and-forget the backend logout with a short timeout.
     // We don't want to block the user if the network is slow.

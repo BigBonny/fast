@@ -332,7 +332,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
             const SizedBox(height: 8),
             _field(
               controller: _image,
-              label: 'URL image (optionnel)',
+              label: tr(context, 'image_url_optional'),
               icon: Icons.link,
             ),
           ],
@@ -606,6 +606,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                 } else {
                   try {
                     final s = await svc.addSupplement(widget.item!.id, n, p);
+                    if (!mounted) return;
                     setState(() => _supplements.add(s));
                   } catch (_) {
                     if (mounted) {
@@ -623,13 +624,16 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                 if (!existing.id.startsWith('local_')) {
                   try {
                     final s = await svc.updateSupplement(existing.id, n, p);
+                    if (!mounted) return;
                     setState(() {
                       final idx = _supplements.indexWhere(
                         (x) => x.id == existing.id,
                       );
                       if (idx != -1) _supplements[idx] = s;
                     });
-                  } catch (_) {}
+                  } catch (_) {
+                    if (mounted) _showSupplementError('error_save');
+                  }
                 } else {
                   setState(() {
                     final idx = _supplements.indexWhere(
@@ -647,7 +651,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
               }
             },
             child: Text(
-              existing == null ? 'Ajouter' : 'Sauvegarder',
+              tr(context, existing == null ? 'add' : 'save'),
               style: const TextStyle(
                 color: Color(0xFF00C8B3),
                 fontWeight: FontWeight.bold,
@@ -659,13 +663,29 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
     );
   }
 
+  /// Removes the supplement locally only once the server confirmed it.
+  /// Before, a failed delete (offline, 403) still hid it here while it
+  /// stayed visible to customers.
   Future<void> _deleteSupplement(MenuItemSupplement s) async {
     if (!s.id.startsWith('local_')) {
       try {
         await MenuService().deleteSupplement(s.id);
-      } catch (_) {}
+      } catch (_) {
+        if (mounted) _showSupplementError('delete_err');
+        return;
+      }
     }
+    if (!mounted) return;
     setState(() => _supplements.removeWhere((x) => x.id == s.id));
+  }
+
+  void _showSupplementError(String key) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(tr(context, key)),
+        backgroundColor: const Color(0xFFEF4444),
+      ),
+    );
   }
 
   @override

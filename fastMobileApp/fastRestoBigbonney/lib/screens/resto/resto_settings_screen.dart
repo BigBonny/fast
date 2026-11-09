@@ -1224,6 +1224,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
         );
         if (image != null) {
           final bytes = await image.readAsBytes();
+          if (!mounted) return;
           setState(() {
             _imageBase64 = 'data:image/jpeg;base64,${base64Encode(bytes)}';
           });

@@ -280,7 +280,9 @@ class _KitchenScreenState extends State<KitchenScreen> {
         statusLabel = fast.tr('status_new');
         break;
       case OrderStatus.preparing:
-        statusColor = const Color(0xFFF59E0B);
+        // Violet, not amber: yellow is reserved for "client is on the way"
+        // (same rule as the Pro order cards).
+        statusColor = const Color(0xFF8B5CF6);
         statusLabel = fast.tr('status_prep');
         break;
       default:
@@ -288,7 +290,10 @@ class _KitchenScreenState extends State<KitchenScreen> {
         statusLabel = fast.tr('status_ready');
     }
 
-    // Client proximity — green far / orange close / red at the door.
+    // Client proximity, same rules as the Pro order cards: gpsProgress is
+    // only sent once the client has really started moving (or tapped
+    // "Je pars"). Yellow = en route, orange = close, red = at the door;
+    // no colour while the client hasn't left.
     Color? proxColor;
     String? proxLabel;
     if (o.fulfillmentType == FulfillmentType.pickup) {
@@ -298,11 +303,14 @@ class _KitchenScreenState extends State<KitchenScreen> {
       } else if (o.gpsProgress >= 40) {
         proxColor = const Color(0xFFF97316);
         proxLabel = fast.tr('prox_close');
-      } else {
-        proxColor = const Color(0xFF10B981);
+      } else if (o.gpsProgress > 0) {
+        proxColor = const Color(0xFFFACC15);
         proxLabel = fast.tr('prox_far');
+      } else {
+        proxLabel = fast.tr('client_not_left');
       }
     }
+    final proxIsYellow = proxColor == const Color(0xFFFACC15);
     final accent = proxColor ?? statusColor;
 
     return Container(
@@ -357,13 +365,14 @@ class _KitchenScreenState extends State<KitchenScreen> {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: proxColor,
+                      color: proxColor ?? Colors.white24,
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       proxLabel,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        // Dark text on the yellow chip for contrast.
+                        color: proxIsYellow ? Colors.black : Colors.white,
                         fontWeight: FontWeight.w900,
                         fontSize: 10,
                       ),

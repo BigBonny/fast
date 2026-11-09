@@ -1738,12 +1738,12 @@ class _ReservationSheetState extends State<_ReservationSheet> {
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 60)),
     );
-    if (picked != null) setState(() => _date = picked);
+    if (picked != null && mounted) setState(() => _date = picked);
   }
 
   Future<void> _pickTime() async {
     final picked = await showTimePicker(context: context, initialTime: _time);
-    if (picked != null) setState(() => _time = picked);
+    if (picked != null && mounted) setState(() => _time = picked);
   }
 
   Future<void> _submit() async {

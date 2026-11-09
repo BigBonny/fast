@@ -234,7 +234,7 @@ class _FASTAppState extends State<FASTApp> with WidgetsBindingObserver {
   Future<void> _confirmStripeIntent(String intentId) async {
     if (!mounted) return;
     final auth = context.read<AuthProvider>();
-    if (!auth.isLoggedIn || auth.isRestaurant || auth.isLivreur) return;
+    if (!auth.isLoggedIn || auth.isRestaurant || (auth.isLivreur && kDriverModeEnabled)) return;
     final fastProv = context.read<FASTProvider>();
     final ok = await fastProv.confirmStripeIntent(intentId);
     if (ok && mounted) {
@@ -245,7 +245,7 @@ class _FASTAppState extends State<FASTApp> with WidgetsBindingObserver {
   Future<void> _confirmStripeSession(String sessionId) async {
     if (!mounted) return;
     final auth = context.read<AuthProvider>();
-    if (!auth.isLoggedIn || auth.isRestaurant || auth.isLivreur) return;
+    if (!auth.isLoggedIn || auth.isRestaurant || (auth.isLivreur && kDriverModeEnabled)) return;
     final fastProv = context.read<FASTProvider>();
     final ok = await fastProv.confirmStripeCheckout(sessionId);
     if (ok && mounted) {
@@ -367,7 +367,10 @@ class _FASTAppState extends State<FASTApp> with WidgetsBindingObserver {
       if (auth.isRestaurant && !fast.viewAsClient) {
         return const resto_onboarding.OnboardingScreen();
       }
-      if (auth.isLivreur) {
+      // The driver/livreur UI stays hidden unless the build opts in with
+      // --dart-define=FAST_DRIVER_MODE=true. A LIVREUR account in a normal
+      // build gets the customer app instead of the driver screens.
+      if (auth.isLivreur && kDriverModeEnabled) {
         return const DriverShell();
       }
       return const ClientIntroGate(child: MainShell());
@@ -376,6 +379,10 @@ class _FASTAppState extends State<FASTApp> with WidgetsBindingObserver {
     return const RoleSelectionScreen();
   }
 }
+
+/// Build-time switch for the hidden driver/livreur UI. Off unless the build
+/// passes --dart-define=FAST_DRIVER_MODE=true.
+const bool kDriverModeEnabled = bool.fromEnvironment('FAST_DRIVER_MODE');
 
 class _SplashScreen extends StatelessWidget {
   const _SplashScreen();
