@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { waitUntil } from '@vercel/functions';
 import { prisma } from '../services/prisma';
 import { createRestaurantSchema, updateRestaurantSchema } from '../utils/validation';
 import { geocodeAddress } from '../utils/geocoding';
@@ -243,6 +244,20 @@ async function notifyActiveOrderClients(
   body: string,
   type: 'RUSH' | 'FULL' | 'INFO',
 ): Promise<void> {
+  // Runs after the response (waitUntil), so it must never reject.
+  try {
+    await notifyActiveOrderClientsUnsafe(restaurantId, title, body, type);
+  } catch (err) {
+    console.error('notifyActiveOrderClients failed', restaurantId, restaurantName, err);
+  }
+}
+
+async function notifyActiveOrderClientsUnsafe(
+  restaurantId: string,
+  title: string,
+  body: string,
+  type: 'RUSH' | 'FULL' | 'INFO',
+): Promise<void> {
   const activeOrders = await prisma.order.findMany({
     where: {
       restaurantId,
@@ -286,21 +301,21 @@ export const toggleRushMode = async (req: Request, res: Response): Promise<void>
   });
 
   if (updated.isRushMode) {
-    void notifyActiveOrderClients(
+    waitUntil(notifyActiveOrderClients(
       restaurant.id,
       restaurant.name,
       `🔴 ${restaurant.name} est en RUSH`,
       `Le restaurant est actuellement en période de RUSH. Votre commande Fast est prise en compte, mais un léger délai supplémentaire peut être nécessaire.`,
       'RUSH',
-    );
+    ));
   } else {
-    void notifyActiveOrderClients(
+    waitUntil(notifyActiveOrderClients(
       restaurant.id,
       restaurant.name,
       `${restaurant.name} — retour à la normale`,
       `La période de RUSH est terminée. Votre commande sera préparée dans les délais habituels.`,
       'INFO',
-    );
+    ));
   }
 
   res.json({ isRushMode: updated.isRushMode });
@@ -324,13 +339,13 @@ export const toggleFullMode = async (req: Request, res: Response): Promise<void>
   });
 
   if (updated.isFull) {
-    void notifyActiveOrderClients(
+    waitUntil(notifyActiveOrderClients(
       restaurant.id,
       restaurant.name,
       `⚫ ${restaurant.name} est complet`,
       `Le restaurant est actuellement complet (plus de places disponibles sur place). Les commandes Fast à emporter restent possibles.`,
       'FULL',
-    );
+    ));
   }
 
   res.json({ isFull: updated.isFull });

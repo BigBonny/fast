@@ -2,7 +2,6 @@ import http from 'http';
 import app from './app';
 import { env } from './config/env';
 import { prisma } from './services/prisma';
-import { initRealtime } from './services/realtime';
 
 async function main() {
   // Test DB connection
@@ -15,11 +14,9 @@ async function main() {
   }
 
   const server = http.createServer(app);
-  initRealtime(server);
 
   server.listen(env.port, () => {
     console.log(`[Server] FAST API en écoute sur http://localhost:${env.port}`);
-    console.log(`[Server] WebSocket (Socket.IO) actif sur le même port`);
     console.log(`[Server] Environnement: ${env.nodeEnv}`);
   });
 }

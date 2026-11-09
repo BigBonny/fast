@@ -3,7 +3,6 @@ import { prisma } from '../services/prisma';
 import { updateDeliveryStatusSchema } from '../utils/validation';
 import {
   safeEmitNotificationToUser,
-  safeEmitOrderStatusToUser,
 } from '../services/realtime';
 
 const DELIVERY_STATUS_LABELS: Record<string, string> = {
@@ -133,11 +132,6 @@ export const acceptDelivery = async (req: Request, res: Response): Promise<void>
         },
       });
       safeEmitNotificationToUser(order.userId, notification);
-      safeEmitOrderStatusToUser(order.userId, {
-        orderId: updated.orderId,
-        status: 'DELIVERY_ACCEPTED',
-        deliveryStatus: 'ACCEPTED',
-      });
     }
   }
 
@@ -191,11 +185,6 @@ export const updateDeliveryStatus = async (req: Request, res: Response): Promise
         },
       });
       safeEmitNotificationToUser(order.userId, notification);
-      safeEmitOrderStatusToUser(order.userId, {
-        orderId: order.id,
-        status: order.status,
-        deliveryStatus: data.status,
-      });
 
       if (data.status === 'DELIVERED' && order.status !== 'COMPLETED') {
         await prisma.order.update({

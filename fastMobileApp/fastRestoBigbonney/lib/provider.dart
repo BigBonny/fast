@@ -18,7 +18,6 @@ import 'services/group_service.dart';
 import 'services/payment_service.dart';
 import 'services/local_push_service.dart';
 import 'services/proximity_service.dart';
-import 'services/realtime_service.dart';
 import 'services/push_service.dart';
 import 'api/api_exceptions.dart';
 import 'l10n/app_strings.dart';
@@ -144,7 +143,6 @@ class FASTProvider extends ChangeNotifier {
   void resetSession() {
     _requestGeneration++;
     stopOrderPolling();
-    RealtimeService.instance.disconnect();
     unawaited(PushService.instance.unregister());
     ProximityService.instance.stop();
     _surpriseTimer?.cancel();
@@ -377,7 +375,6 @@ class FASTProvider extends ChangeNotifier {
   /// Sync from AuthProvider after login
   /// Last status seen per order from the API. Null until the first fetch
   /// so cached/cold-start data never triggers a burst of notifications.
-  /// Also the dedupe point between the socket path and the polling path.
   Map<String, OrderStatus>? _orderStatusBaseline;
   Set<String>? _seenNotificationIds;
 
@@ -483,14 +480,12 @@ class FASTProvider extends ChangeNotifier {
     if (changed && !_disposed) notifyListeners();
   }
 
-  /// Realtime socket + GPS proximity — live notifications without polling.
+  /// Local notifications, push-tap routing and GPS proximity. Live order
+  /// updates come from FCM push plus [startOrderPolling]; there is no
+  /// socket (the serverless backend can't hold one).
   void _startRealtime() {
-    final realtime = RealtimeService.instance;
     final push = LocalPushService.instance;
-    realtime.onNotification ??= _onRealtimeNotification;
-    realtime.onOrderStatus ??= _onRealtimeOrderStatus;
     push.onAction ??= _onNotificationAction;
-    realtime.connect(_userId);
     unawaited(
       push
           .init(
@@ -550,36 +545,8 @@ class FASTProvider extends ChangeNotifier {
     ProximityService.instance.sync();
   }
 
-  /// A backend-created notification arrived over the socket: mirror it
-  /// into the in-app list and surface it as a system notification.
-  /// 'status' types are covered interactively by [ _onRealtimeOrderStatus ]
-  /// — showing them plainly too would double-notify.
-  void _onRealtimeNotification(PushNotification notification) {
-    if (notification.id.isNotEmpty &&
-        _notifications.any((n) => n.id == notification.id)) {
-      return;
-    }
-    _notifications.insert(0, notification);
-    _saveNotifications();
-    notifyListeners();
-    if (notification.type == 'status') return;
-    LocalPushService.instance.show(
-      title: notification.title,
-      body: notification.body,
-    );
-  }
-
-  /// Order kicked off / ready: interactive "say when you arrive"
-  /// notification, then a responsibility reminder if it stays unclaimed.
-  void _onRealtimeOrderStatus(String orderId, String status) {
-    // Record it first so the follow-up poll doesn't notify a second time.
-    _orderStatusBaseline?[orderId] = OrderStatus.fromApiJson(status);
-    _notifyOrderStatus(orderId, status);
-    unawaited(refreshOrders());
-  }
-
-  /// Interactive status notification (ETA actions + reminder). Shared by
-  /// the socket path and the polling diff.
+  /// Interactive status notification (ETA actions + reminder), driven by
+  /// the polling diff.
   void _notifyOrderStatus(String orderId, String status) {
     final push = LocalPushService.instance;
     final normalized = status.toUpperCase();
