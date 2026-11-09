@@ -581,17 +581,28 @@ class CartItem {
 
   /// Parse from backend API JSON format
   /// Backend selectedOptions is a JSON string "[]" not a List
+  ///
+  /// Order lines carry a `name` / `unitPrice` snapshot taken at checkout;
+  /// when present it wins over the live menu item, so past orders keep
+  /// showing what was actually bought and paid (supplements included).
   factory CartItem.fromApiJson(
     Map<String, dynamic> json, {
     MenuItem? menuItem,
-  }) => CartItem(
-    menuItem:
+  }) {
+    final live =
         menuItem ??
-        MenuItem.fromApiJson(json['menuItem'] as Map<String, dynamic>? ?? {}),
-    quantity: json['quantity'] as int? ?? 1,
-    selectedOptions: _parseSelectedOptions(json['selectedOptions']),
-    allergyNotes: json['allergyNotes'] as String? ?? '',
-  );
+        MenuItem.fromApiJson(json['menuItem'] as Map<String, dynamic>? ?? {});
+    final snapshotName = json['name'] as String?;
+    final snapshotPrice = (json['unitPrice'] as num?)?.toDouble();
+    return CartItem(
+      menuItem: (snapshotName == null && snapshotPrice == null)
+          ? live
+          : live.copyWith(name: snapshotName, price: snapshotPrice),
+      quantity: json['quantity'] as int? ?? 1,
+      selectedOptions: _parseSelectedOptions(json['selectedOptions']),
+      allergyNotes: json['allergyNotes'] as String? ?? '',
+    );
+  }
 
   static List<String> _parseSelectedOptions(dynamic options) {
     if (options == null) return [];

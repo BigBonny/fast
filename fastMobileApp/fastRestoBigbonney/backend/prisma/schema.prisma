@@ -372,6 +372,10 @@ model Order {
   reviews       Review[]
   notifications Notification[]
   delivery      Delivery?
+
+  @@index([restaurantId, status, createdAt])
+  @@index([userId, createdAt])
+  @@index([groupOrderId])
 }
 
 model CartItem {
@@ -381,9 +385,15 @@ model CartItem {
   quantity        Int
   selectedOptions String @default("") // JSON array string
   allergyNotes    String @default("")
+  // Snapshot taken at checkout so receipts and history don't change when
+  // the menu does. Null on lines created before the snapshot existed.
+  name            String?
+  unitPrice       Float?  // price paid per unit, supplements included
 
   order    Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   menuItem MenuItem @relation(fields: [menuItemId], references: [id])
+
+  @@index([orderId])
 }
 
 model PaymentCheckout {
@@ -444,6 +454,8 @@ model Notification {
 
   user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   order Order? @relation(fields: [orderId], references: [id])
+
+  @@index([userId, createdAt])
 }
 
 // ─── Group Orders ───────────────────────────────────────────

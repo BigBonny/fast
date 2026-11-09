@@ -62,6 +62,9 @@ async function createPaidOrderFromCheckout(
           quantity: number;
           selectedOptions?: string[];
           allergyNotes?: string;
+          // Present on checkouts created after the price snapshot was added.
+          unitPrice?: number;
+          menuItemName?: string;
         }>;
 
         if (checkout.groupOrderId) {
@@ -112,6 +115,8 @@ async function createPaidOrderFromCheckout(
                 quantity: item.quantity,
                 selectedOptions: JSON.stringify(item.selectedOptions || []),
                 allergyNotes: (item.allergyNotes || '').slice(0, 500),
+                name: item.menuItemName ?? null,
+                unitPrice: typeof item.unitPrice === 'number' ? item.unitPrice : null,
               })),
             },
           },
@@ -445,7 +450,9 @@ export const createCheckoutSession = async (req: Request, res: Response): Promis
       data: {
         userId: req.user!.userId,
         restaurantId: data.restaurantId,
-        itemsJson: JSON.stringify(data.items),
+        // Priced lines: the order snapshots name and unit price from here,
+        // i.e. what the customer was charged, not the menu at webhook time.
+        itemsJson: JSON.stringify(pricing.items),
         userWalkTimeMin: data.userWalkTimeMin,
         fulfillmentType,
         deliveryAddress: data.deliveryAddress?.trim() ?? '',

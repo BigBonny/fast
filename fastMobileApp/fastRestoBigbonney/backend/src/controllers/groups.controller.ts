@@ -554,9 +554,9 @@ export const getRestaurantGroupOrders = async (req: Request, res: Response): Pro
       order.items.map((item) => ({
         orderNumber: order.id?.slice(-6).toUpperCase(),
         userName: order.user?.name || 'Inconnu',
-        itemName: item.menuItem?.name || 'Article',
+        itemName: item.name ?? item.menuItem?.name ?? 'Article',
         quantity: item.quantity,
-        price: item.quantity * (item.menuItem?.price || 0),
+        price: item.quantity * (item.unitPrice ?? item.menuItem?.price ?? 0),
         selectedOptions: item.selectedOptions,
       }))
     );
@@ -585,9 +585,9 @@ export const getRestaurantGroupOrders = async (req: Request, res: Response): Pro
         total: o.total,
         status: o.status,
         items: o.items.map((item) => ({
-          name: item.menuItem?.name || 'Article',
+          name: item.name ?? item.menuItem?.name ?? 'Article',
           quantity: item.quantity,
-          price: item.quantity * (item.menuItem?.price || 0),
+          price: item.quantity * (item.unitPrice ?? item.menuItem?.price ?? 0),
         })),
       })),
     };
