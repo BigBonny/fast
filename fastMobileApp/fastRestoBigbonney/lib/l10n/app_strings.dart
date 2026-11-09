@@ -764,7 +764,7 @@ class AppStrings {
         'Chez FAST, notre politique d\'annulation est transparente et simple. Pas de petits caractères :',
     'cancel_case1': 'Cas 1 : Annulation avant préparation',
     'cancel_case1_desc':
-        'Remboursement intégral (hors frais de service 1,50 € utilisés pour le traitement).',
+        'Remboursement du prix du restaurant. Les frais de service FAST inclus dans le prix ne sont pas remboursés.',
     'cancel_case2': 'Cas 2 : Annulation après préparation',
     'cancel_case2_desc':
         'Débit total appliqué. La cuisine a déjà utilisé les ingrédients frais pour votre repas.',
@@ -1737,7 +1737,7 @@ class AppStrings {
         'At FAST, our cancellation policy is transparent and simple. No fine print:',
     'cancel_case1': 'Case 1: Cancellation before preparation',
     'cancel_case1_desc':
-        'Full refund (minus the €1.50 service fee used for processing).',
+        'The restaurant price is refunded. The FAST service fee, included in the price, is not refunded.',
     'cancel_case2': 'Case 2: Cancellation after preparation',
     'cancel_case2_desc':
         'Full charge applied. The kitchen already used the fresh ingredients for your meal.',
@@ -2651,7 +2651,7 @@ class AppStrings {
         'FAST\'te iptal politikamız şeffaf ve basittir. Küçük yazı yok:',
     'cancel_case1': 'Durum 1: Hazırlık öncesi iptal',
     'cancel_case1_desc':
-        'Tam iade (işlem için kullanılan 1,50 € hizmet bedeli hariç).',
+        'Restoranın fiyatı iade edilir. Fiyata dahil FAST hizmet bedeli iade edilmez.',
     'cancel_case2': 'Durum 2: Hazırlık sonrası iptal',
     'cancel_case2_desc':
         'Tam ücret uygulanır. Mutfak yemeğiniz için taze malzemeleri zaten kullandı.',
@@ -3605,7 +3605,7 @@ class AppStrings {
         'في FAST، سياسة الإلغاء لدينا واضحة وبسيطة. لا شروط خفية:',
     'cancel_case1': 'الحالة 1: إلغاء قبل التحضير',
     'cancel_case1_desc':
-        'استرداد كامل (باستثناء رسوم الخدمة 1.50 € المستخدمة للمعالجة).',
+        'يُسترد سعر المطعم. رسوم خدمة FAST المضمّنة في السعر غير قابلة للاسترداد.',
     'cancel_case2': 'الحالة 2: إلغاء بعد التحضير',
     'cancel_case2_desc':
         'يتم خصم المبلغ كاملاً. المطبخ استخدم المكونات الطازجة لوجبتك بالفعل.',
@@ -4564,7 +4564,7 @@ class AppStrings {
         'En FAST, nuestra política de cancelación es transparente y sencilla. Sin letra pequeña:',
     'cancel_case1': 'Caso 1: Cancelación antes de la preparación',
     'cancel_case1_desc':
-        'Reembolso íntegro (menos la tarifa de servicio de 1,50 € por gestión).',
+        'Se reembolsa el precio del restaurante. La tarifa de servicio FAST incluida en el precio no se reembolsa.',
     'cancel_case2': 'Caso 2: Cancelación tras la preparación',
     'cancel_case2_desc':
         'Cargo total aplicado. La cocina ya usó los ingredientes frescos para tu comida.',
@@ -5545,7 +5545,7 @@ class AppStrings {
         'No FAST, a nossa política de cancelamento é transparente e simples. Sem letras pequenas:',
     'cancel_case1': 'Caso 1: Cancelamento antes da preparação',
     'cancel_case1_desc':
-        'Reembolso total (exceto a taxa de serviço de 1,50 € usada no processamento).',
+        'O preço do restaurante é reembolsado. A taxa de serviço FAST incluída no preço não é reembolsada.',
     'cancel_case2': 'Caso 2: Cancelamento após a preparação',
     'cancel_case2_desc':
         'Débito total aplicado. A cozinha já usou os ingredientes frescos para a tua refeição.',
@@ -6526,7 +6526,7 @@ class AppStrings {
         'In FAST la nostra politica di cancellazione è trasparente e semplice. Nessuna clausola nascosta:',
     'cancel_case1': 'Caso 1: Cancellazione prima della preparazione',
     'cancel_case1_desc':
-        'Rimborso totale (esclusa la commissione di servizio di 1,50 € per la gestione).',
+        'Il prezzo del ristorante viene rimborsato. La commissione di servizio FAST inclusa nel prezzo non è rimborsata.',
     'cancel_case2': 'Caso 2: Cancellazione dopo la preparazione',
     'cancel_case2_desc':
         'Addebito totale applicato. La cucina ha già utilizzato gli ingredienti freschi per il tuo pasto.',
@@ -7457,7 +7457,7 @@ class AppStrings {
     'submit_review': '提交评价',
     'cancel_policy_intro': '在 FAST，我们的取消政策透明简单。没有隐藏条款：',
     'cancel_case1': '情况1：制作前取消',
-    'cancel_case1_desc': '全额退款（扣除 1.50 € 处理服务费）。',
+    'cancel_case1_desc': '退还餐厅价格。价格中包含的 FAST 服务费不予退还。',
     'cancel_case2': '情况2：制作后取消',
     'cancel_case2_desc': '将收取全额费用。厨房已使用新鲜食材制作您的餐食。',
     'cancel_policy': '取消政策',
