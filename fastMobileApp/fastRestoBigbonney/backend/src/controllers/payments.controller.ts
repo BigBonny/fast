@@ -415,7 +415,7 @@ export const createCheckoutSession = async (req: Request, res: Response): Promis
     }
 
     if (fulfillmentType === 'DELIVERY') {
-      if (!restaurant.deliveryEnabled) {
+      if (!env.deliveryEnabled || !restaurant.deliveryEnabled) {
         res.status(400).json({ error: 'Ce restaurant ne propose pas la livraison' });
         return;
       }

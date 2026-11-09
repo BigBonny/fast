@@ -27,6 +27,7 @@ function publicRestaurant(restaurant: Record<string, unknown>): Record<string, u
     Boolean(restaurant.stripeAccountId && restaurant.stripeChargesEnabled) ||
     restaurant.id === env.demoRestaurantId ||
     env.platformCollectRestaurantIds.includes(restaurant.id as string);
+  if (!env.deliveryEnabled) result.deliveryEnabled = false;
   for (const key of ['ownerId', ...RESTAURANT_OWNER_ONLY_FIELDS]) {
     delete result[key];
   }

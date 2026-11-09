@@ -17,6 +17,7 @@ import {
 } from '../services/realtime';
 import { getRestaurantIdForUser } from '../middleware/auth';
 import { isRefundablePaymentStatus, refundPaidOrder } from '../services/stripeRefunds';
+import { expireUnacceptedOrders } from '../services/staleOrders';
 
 const orderInclude = {
   items: { include: { menuItem: true } },
@@ -31,6 +32,9 @@ export const placeOrder = async (req: Request, res: Response): Promise<void> => 
 
 export const getOrder = async (req: Request, res: Response): Promise<void> => {
   const id = req.params.id as string;
+
+  // The customer's tracking screen polls this one order.
+  await expireUnacceptedOrders({ userId: req.user!.userId });
 
   const order = await prisma.order.findUnique({
     where: { id },
@@ -55,6 +59,8 @@ export const getOrder = async (req: Request, res: Response): Promise<void> => {
 
 export const getMyOrders = async (req: Request, res: Response): Promise<void> => {
   const { status } = req.query;
+
+  await expireUnacceptedOrders({ userId: req.user!.userId });
 
   const where: Record<string, unknown> = { userId: req.user!.userId };
   if (status && typeof status === 'string') {
@@ -83,6 +89,8 @@ export const getRestaurantOrders = async (req: Request, res: Response): Promise<
     res.status(404).json({ error: 'Restaurant introuvable' });
     return;
   }
+
+  await expireUnacceptedOrders({ restaurantId });
 
   const where: Record<string, unknown> = {
     restaurantId,

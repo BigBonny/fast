@@ -1,3 +1,4 @@
+import { isValidDayHours } from './autoAccept';
 import { z } from 'zod';
 
 // ─── Auth ───────────────────────────────────────────────────
@@ -78,7 +79,16 @@ export const updateRestaurantSchema = createRestaurantSchema.partial().extend({
   // starts pre-filled instead of asking the owner to type it all again.
   siret: z.string().max(20).optional(),
   phone: z.string().max(30).optional(),
-  openingHours: z.record(z.string(), z.string().max(20)).optional(),
+  // ISO weekday "1".."7" → "closed" or "HH:MM-HH:MM[,HH:MM-HH:MM]".
+  // Hours the server can't read would silently disable auto-accept.
+  openingHours: z
+    .record(
+      z.string().regex(/^[1-7]$/, 'Jour invalide'),
+      z.string().max(60).refine(isValidDayHours, {
+        message: 'Horaires invalides : utilisez le format 11:00-14:00 (ou 11:00-14:00,18:00-23:00)',
+      }),
+    )
+    .optional(),
   ownerBirthDate: z.string().max(10).optional(),
   ownerAddress: z.string().max(200).optional(),
 });

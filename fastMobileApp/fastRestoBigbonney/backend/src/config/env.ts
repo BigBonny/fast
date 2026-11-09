@@ -39,6 +39,14 @@ export const env = {
   // Demo/screenshot restaurant — treated as Stripe-connected without
   // onboarding; charges land on the platform account (no transfer).
   demoRestaurantId: process.env.FAST_DEMO_RESTAURANT_ID || '',
+  // Platform-wide delivery switch. Off unless FAST_DELIVERY_ENABLED=true:
+  // checkout refuses DELIVERY, restaurants report deliveryEnabled=false and
+  // the driver API answers 404. Each restaurant's own setting is kept, so
+  // flipping this back on restores what they had configured.
+  deliveryEnabled: process.env.FAST_DELIVERY_ENABLED === 'true',
+  // Minutes a paid order may wait for the restaurant to accept before it is
+  // cancelled and fully refunded (see services/staleOrders.ts).
+  acceptTimeoutMin: Math.max(5, parseInt(process.env.FAST_ACCEPT_TIMEOUT_MIN || '15', 10) || 15),
   // Comma-separated restaurant IDs also exempt from Connect onboarding —
   // their charges stay on the platform account.
   platformCollectRestaurantIds: (process.env.FAST_PLATFORM_COLLECT_RESTAURANT_IDS || '')

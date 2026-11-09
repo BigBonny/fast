@@ -150,9 +150,14 @@ app.use('/api/reviews', reviewsRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/groups', groupsRoutes);
-app.use('/api/deliveries', deliveriesRoutes);
+// Delivery is switched off platform-wide unless FAST_DELIVERY_ENABLED=true.
+const deliveryGate: express.RequestHandler = (_req, res, next) => {
+  if (env.deliveryEnabled) return next();
+  res.status(404).json({ error: 'Livraison indisponible' });
+};
+app.use('/api/deliveries', deliveryGate, deliveriesRoutes);
 app.use('/api/payments', paymentsRoutes);
-app.use('/api/drivers', driversRoutes);
+app.use('/api/drivers', deliveryGate, driversRoutes);
 app.use('/api/staff', staffRoutes);
 app.use('/api/addresses', addressesRoutes);
 app.use('/api/reservations', reservationsRoutes);
