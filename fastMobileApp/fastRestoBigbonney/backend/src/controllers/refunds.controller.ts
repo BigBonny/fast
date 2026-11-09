@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { prisma } from '../services/prisma';
 import { env } from '../config/env';
 import { getRestaurantIdForUser } from '../middleware/auth';
-import { safeEmitNotificationToUser } from '../services/realtime';
+import { notifyRestaurantTeam, safeEmitNotificationToUser } from '../services/realtime';
 import { refundPaidOrder } from '../services/stripeRefunds';
 
 // Client requests a refund for a paid order
@@ -66,7 +66,7 @@ export const requestRefund = async (req: Request, res: Response): Promise<void> 
       type: 'STATUS',
     },
   });
-  safeEmitNotificationToUser(order.restaurant.ownerId!, notification);
+  notifyRestaurantTeam(order.restaurantId, order.restaurant.ownerId!, notification);
 
   res.json({ message: 'Demande de remboursement envoyée au restaurant' });
 };

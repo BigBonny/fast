@@ -16,7 +16,7 @@ import {
 } from '../utils/deliveryHelpers';
 import {
   safeEmitNotificationToUser,
-  safeEmitOrderToRestaurant,
+  notifyRestaurantTeam,
 } from '../services/realtime';
 
 function stripeClient(): Stripe {
@@ -227,8 +227,7 @@ async function createPaidOrderFromCheckout(
               type: 'STATUS',
             },
           });
-          safeEmitOrderToRestaurant(finalOrder.restaurantId, finalOrder);
-          safeEmitNotificationToUser(result.restaurantOwnerId!, notification);
+          notifyRestaurantTeam(finalOrder.restaurantId, result.restaurantOwnerId!, notification);
         }
         safeEmitNotificationToUser(finalOrder.userId, clientNotification);
         return finalOrder;

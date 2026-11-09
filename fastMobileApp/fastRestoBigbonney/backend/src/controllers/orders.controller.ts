@@ -13,7 +13,7 @@ import { pickupTokenMatches } from '../utils/pickupToken';
 import { restaurantPrivateOmit } from '../utils/restaurantPrivacy';
 import {
   safeEmitNotificationToUser,
-  safeEmitOrderStatusToUser,
+  notifyRestaurantTeam,
 } from '../services/realtime';
 import { getRestaurantIdForUser } from '../middleware/auth';
 import { isRefundablePaymentStatus, refundPaidOrder } from '../services/stripeRefunds';
@@ -194,7 +194,7 @@ export const updateOrderTracking = async (req: Request, res: Response): Promise<
           type: 'STATUS',
         },
       });
-      safeEmitNotificationToUser(order.restaurant.ownerId!, enRoute);
+      notifyRestaurantTeam(order.restaurantId, order.restaurant.ownerId!, enRoute);
 
       const prep = await prisma.notification.create({
         data: {
@@ -347,7 +347,6 @@ async function completePickup(orderId: string, userId: string) {
 
   if (!updated) return null;
 
-  safeEmitOrderStatusToUser(userId, { orderId, status: 'COMPLETED' });
   safeEmitNotificationToUser(userId, updated.statusNotification);
   safeEmitNotificationToUser(userId, updated.ratingNotification);
   return updated.order;
@@ -505,10 +504,6 @@ export const updateOrderStatus = async (req: Request, res: Response): Promise<vo
     },
   });
 
-  safeEmitOrderStatusToUser(order.userId, {
-    orderId: order.id,
-    status: data.status,
-  });
   safeEmitNotificationToUser(order.userId, notification);
 
   if (data.status === 'COMPLETED') {
@@ -564,7 +559,7 @@ export const signalClientDelay = async (req: Request, res: Response): Promise<vo
       type: 'INFO',
     },
   });
-  safeEmitNotificationToUser(order.restaurant.ownerId!, notification);
+  notifyRestaurantTeam(order.restaurantId, order.restaurant.ownerId!, notification);
 
   res.json({ message: `Retard de ${delayMin} min signalé au restaurant` });
 };
@@ -599,6 +594,34 @@ export const setFastFeedback = async (req: Request, res: Response): Promise<void
   res.json({ message: 'Feedback enregistré', fastFeedback: feedback });
 };
 
+/**
+ * Tells the restaurant (owner inbox + push to owner and staff) that the
+ * customer cancelled. Before, a client cancel notified nobody, so the
+ * kitchen could keep cooking a cancelled order.
+ */
+async function notifyRestaurantOfClientCancel(
+  order: { id: string; restaurantId: string },
+  billed: boolean,
+): Promise<void> {
+  const restaurant = await prisma.restaurant.findUnique({
+    where: { id: order.restaurantId },
+    select: { ownerId: true },
+  });
+  if (!restaurant) return;
+  const notification = await prisma.notification.create({
+    data: {
+      userId: restaurant.ownerId,
+      orderId: order.id,
+      title: 'Commande annulée par le client',
+      body: billed
+        ? `Commande #${order.id.slice(-6)} — annulée pendant la préparation (facturée).`
+        : `Commande #${order.id.slice(-6)} — le client a annulé avant l'acceptation.`,
+      type: 'INFO',
+    },
+  });
+  notifyRestaurantTeam(order.restaurantId, restaurant.ownerId, notification);
+}
+
 export const cancelMyOrder = async (req: Request, res: Response): Promise<void> => {
   const id = req.params.id as string;
 
@@ -631,6 +654,7 @@ export const cancelMyOrder = async (req: Request, res: Response): Promise<void> 
       res.status(409).json({ error: 'La commande a changé entre-temps, rafraîchissez' });
       return;
     }
+    await notifyRestaurantOfClientCancel(order, true);
     res.json({ message: 'Commande annulée. La préparation avait commencé, le montant est facturé.' });
     return;
   }
@@ -662,5 +686,6 @@ export const cancelMyOrder = async (req: Request, res: Response): Promise<void> 
     }
   }
 
+  await notifyRestaurantOfClientCancel(order, false);
   res.json({ message: 'Commande annulée. Remboursement effectué (hors frais de service).' });
 };
