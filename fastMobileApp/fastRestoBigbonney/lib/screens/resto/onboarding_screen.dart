@@ -632,7 +632,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           textCapitalization: TextCapitalization.characters,
           decoration: InputDecoration(
             labelText: tr(context, 'invite_code'),
-            hintText: 'ABC123',
+            // Invite codes look like FAST-XXXX-XXXX (backend staff.controller).
+            hintText: 'FAST-XXXX-XXXX',
           ),
         ),
         actions: [

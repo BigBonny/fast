@@ -3,6 +3,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:url_launcher/url_launcher.dart';
+import '../l10n/app_strings.dart';
 
 /// System-level notifications shown by the app itself (no FCM needed):
 /// fired when a realtime socket event lands, or by the proximity watcher.
@@ -32,8 +33,7 @@ class LocalPushService {
 
   static const String _channelId = 'fast_updates';
   static const String _channelName = 'FAST';
-  static const String _channelDesc =
-      'Commandes, restaurants et mises à jour FAST';
+  static String get _channelDesc => AppStrings.trNow('notif_channel_desc');
   static const String etaCategory = 'fast_order_eta';
   static const String departCategory = 'fast_order_depart';
   static const String eta5Action = 'eta5';
@@ -122,7 +122,7 @@ class LocalPushService {
             AndroidFlutterLocalNotificationsPlugin
           >();
       await androidImpl?.createNotificationChannel(
-        const AndroidNotificationChannel(
+        AndroidNotificationChannel(
           _channelId,
           _channelName,
           description: _channelDesc,

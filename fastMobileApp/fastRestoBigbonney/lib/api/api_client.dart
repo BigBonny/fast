@@ -70,7 +70,7 @@ class ApiClient {
     } on http.ClientException {
       throw NetworkException();
     } on FormatException {
-      throw ApiException('Réponse serveur invalide', 0);
+      throw ApiException(AppStrings.trNow('err_invalid_response'), 0);
     }
   }
 
@@ -133,10 +133,16 @@ class ApiClient {
     return _handleResponse(response);
   }
 
-  Future<dynamic> delete(String endpoint) async {
+  Future<dynamic> delete(String endpoint, {Map<String, dynamic>? body}) async {
     final uri = Uri.parse('${ApiConfig.baseUrl}$endpoint');
     final response = await _guard(
-      () => http.delete(uri, headers: _headers).timeout(ApiConfig.timeout),
+      () => http
+          .delete(
+            uri,
+            headers: _headers,
+            body: body == null ? null : jsonEncode(body),
+          )
+          .timeout(ApiConfig.timeout),
     );
     return _handleResponse(response);
   }
@@ -186,9 +192,11 @@ class ApiClient {
       errorMessage =
           _errorText(body['error']) ??
           _errorText(body['message']) ??
-          'Erreur serveur';
+          AppStrings.trNow('err_server');
     } else {
-      errorMessage = 'Erreur serveur (${response.statusCode})';
+      errorMessage = AppStrings.trNow(
+        'err_server_code',
+      ).replaceAll('{code}', '${response.statusCode}');
     }
 
     if (body is Map<String, dynamic> && body['code'] is String) {

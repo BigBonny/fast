@@ -504,7 +504,7 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
             ),
           ),
           IconButton(
-            tooltip: 'Copy',
+            tooltip: tr(context, 'copy_code'),
             icon: const Icon(Icons.copy, size: 18, color: FASTPro.teal),
             onPressed: () {
               Clipboard.setData(ClipboardData(text: _inviteCode!));
@@ -512,13 +512,14 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
             },
           ),
           IconButton(
-            tooltip: 'Rotate',
+            tooltip: tr(context, 'rotate_code'),
             icon: const Icon(Icons.refresh, size: 18, color: FASTPro.teal),
             onPressed: () async {
               try {
                 final data = await _api.post(
                   '${ApiConfig.staffInviteCode}/rotate',
                 );
+                if (!mounted) return;
                 setState(() {
                   _inviteCode =
                       (data as Map<String, dynamic>)['code'] as String?;

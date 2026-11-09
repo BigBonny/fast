@@ -192,11 +192,12 @@ class _SavedAddressesScreenState extends State<SavedAddressesScreen> {
       await _api.delete(ApiConfig.savedAddress(address['id'] as String));
       if (mounted) await _load();
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         setState(
           () =>
               _error = e is ApiException ? e.message : tr(context, 'err_retry'),
         );
+      }
     }
   }
 

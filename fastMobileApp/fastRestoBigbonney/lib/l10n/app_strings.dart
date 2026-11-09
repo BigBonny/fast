@@ -1029,6 +1029,13 @@ class AppStrings {
     'network_error': 'Connexion impossible. Vérifiez votre connexion internet.',
     'request_timeout': 'Le serveur met trop de temps à répondre. Réessayez.',
     'allergy_note': 'Notez ici vos allergies ou précautions…',
+    'err_invalid_response': 'Réponse serveur invalide',
+    'err_server': 'Erreur serveur',
+    'err_server_code': 'Erreur serveur ({code})',
+    'image_url_optional': 'URL image (optionnel)',
+    'copy_code': 'Copier le code',
+    'rotate_code': 'Générer un nouveau code',
+    'notif_channel_desc': 'Commandes, restaurants et mises à jour FAST',
   };
 
   // ──────────────────────────── English ────────────────────────────
@@ -1984,6 +1991,13 @@ class AppStrings {
     'network_error': 'Connection failed. Check your internet connection.',
     'request_timeout': 'The server is taking too long to respond. Try again.',
     'allergy_note': 'List your allergies or precautions here…',
+    'err_invalid_response': 'Invalid server response',
+    'err_server': 'Server error',
+    'err_server_code': 'Server error ({code})',
+    'image_url_optional': 'Image URL (optional)',
+    'copy_code': 'Copy code',
+    'rotate_code': 'Generate a new code',
+    'notif_channel_desc': 'Orders, restaurants and FAST updates',
   };
 
   // ──────────────────────────── Turkish ────────────────────────────
@@ -2938,6 +2952,18 @@ class AppStrings {
     'send_review': 'Değerlendirmeyi gönder',
     'email_hint': 'adres@ornek.com',
     'fast_pro_account': 'FAST Pro hesabı',
+    'err_invalid_response': 'Geçersiz sunucu yanıtı',
+    'err_server': 'Sunucu hatası',
+    'err_server_code': 'Sunucu hatası ({code})',
+    'image_url_optional': 'Görsel URL (isteğe bağlı)',
+    'copy_code': 'Kodu kopyala',
+    'rotate_code': 'Yeni kod oluştur',
+    'notif_channel_desc': 'Siparişler, restoranlar ve FAST güncellemeleri',
+    'assistant_title': 'FAST Asistanı',
+    'assistant_greeting': 'Merhaba! Ben FAST asistanıyım — yemekleri, restoranları veya siparişinizi sorabilirsiniz.',
+    'assistant_greeting_pro': 'Merhaba! Ben FAST Pro asistanıyım — menüler, siparişler, personel, istatistikler veya Stripe hakkında sorabilirsiniz.',
+    'assistant_hint': 'Bir soru sorun…',
+    'assistant_err': 'Üzgünüm, şu anda yanıt veremiyorum.',
   };
 
   // ──────────────────────────── Arabic ────────────────────────────
@@ -3860,6 +3886,18 @@ class AppStrings {
     'send_review': 'إرسال التقييم',
     'email_hint': 'address@example.com',
     'fast_pro_account': 'حساب FAST Pro',
+    'err_invalid_response': 'استجابة غير صالحة من الخادم',
+    'err_server': 'خطأ في الخادم',
+    'err_server_code': 'خطأ في الخادم ({code})',
+    'image_url_optional': 'رابط الصورة (اختياري)',
+    'copy_code': 'نسخ الرمز',
+    'rotate_code': 'إنشاء رمز جديد',
+    'notif_channel_desc': 'الطلبات والمطاعم وتحديثات FAST',
+    'assistant_title': 'مساعد FAST',
+    'assistant_greeting': 'مرحبًا! أنا مساعد FAST — اسألني عن الأطباق أو المطاعم أو طلبك.',
+    'assistant_greeting_pro': 'مرحبًا! أنا مساعد FAST Pro — اسألني عن القوائم أو الطلبات أو الموظفين أو الإحصاءات أو Stripe.',
+    'assistant_hint': 'اطرح سؤالك…',
+    'assistant_err': 'عذرًا، لا أستطيع الإجابة الآن.',
   };
 
   // ──────────────────────────── Spanish ────────────────────────────
@@ -4824,6 +4862,18 @@ class AppStrings {
     'send_review': 'Enviar reseña',
     'email_hint': 'correo@ejemplo.com',
     'fast_pro_account': 'Cuenta FAST Pro',
+    'err_invalid_response': 'Respuesta del servidor no válida',
+    'err_server': 'Error del servidor',
+    'err_server_code': 'Error del servidor ({code})',
+    'image_url_optional': 'URL de la imagen (opcional)',
+    'copy_code': 'Copiar código',
+    'rotate_code': 'Generar un código nuevo',
+    'notif_channel_desc': 'Pedidos, restaurantes y novedades de FAST',
+    'assistant_title': 'Asistente FAST',
+    'assistant_greeting': '¡Hola! Soy el asistente de FAST: pregúntame por platos, restaurantes o tu pedido.',
+    'assistant_greeting_pro': '¡Hola! Soy el asistente de FAST Pro: menús, pedidos, personal, estadísticas o Stripe, pregunta lo que quieras.',
+    'assistant_hint': 'Haz tu pregunta…',
+    'assistant_err': 'Lo siento, no puedo responder en este momento.',
   };
 
   // ──────────────────────────── Portuguese ────────────────────────────
@@ -5786,6 +5836,18 @@ class AppStrings {
     'send_review': 'Enviar avaliação',
     'email_hint': 'endereco@exemplo.com',
     'fast_pro_account': 'Conta FAST Pro',
+    'err_invalid_response': 'Resposta do servidor inválida',
+    'err_server': 'Erro do servidor',
+    'err_server_code': 'Erro do servidor ({code})',
+    'image_url_optional': 'URL da imagem (opcional)',
+    'copy_code': 'Copiar código',
+    'rotate_code': 'Gerar um novo código',
+    'notif_channel_desc': 'Pedidos, restaurantes e novidades da FAST',
+    'assistant_title': 'Assistente FAST',
+    'assistant_greeting': 'Olá! Sou o assistente da FAST: pergunte sobre pratos, restaurantes ou o seu pedido.',
+    'assistant_greeting_pro': 'Olá! Sou o assistente da FAST Pro: menus, pedidos, equipa, estatísticas ou Stripe, pergunte à vontade.',
+    'assistant_hint': 'Faça a sua pergunta…',
+    'assistant_err': 'Desculpe, não consigo responder neste momento.',
   };
 
   // ──────────────────────────── Italian ────────────────────────────
@@ -6749,6 +6811,18 @@ class AppStrings {
     'send_review': 'Invia recensione',
     'email_hint': 'indirizzo@esempio.com',
     'fast_pro_account': 'Account FAST Pro',
+    'err_invalid_response': 'Risposta del server non valida',
+    'err_server': 'Errore del server',
+    'err_server_code': 'Errore del server ({code})',
+    'image_url_optional': 'URL immagine (facoltativo)',
+    'copy_code': 'Copia codice',
+    'rotate_code': 'Genera un nuovo codice',
+    'notif_channel_desc': 'Ordini, ristoranti e novità FAST',
+    'assistant_title': 'Assistente FAST',
+    'assistant_greeting': 'Ciao! Sono l’assistente FAST: chiedimi di piatti, ristoranti o del tuo ordine.',
+    'assistant_greeting_pro': 'Ciao! Sono l’assistente FAST Pro: menu, ordini, personale, statistiche o Stripe, chiedi pure.',
+    'assistant_hint': 'Fai la tua domanda…',
+    'assistant_err': 'Spiacente, al momento non riesco a rispondere.',
   };
 
   // ──────────────────────────── Chinese ────────────────────────────
@@ -7629,6 +7703,18 @@ class AppStrings {
     'send_review': '发送评价',
     'email_hint': 'address@example.com',
     'fast_pro_account': 'FAST Pro 账户',
+    'err_invalid_response': '服务器响应无效',
+    'err_server': '服务器错误',
+    'err_server_code': '服务器错误（{code}）',
+    'image_url_optional': '图片链接（可选）',
+    'copy_code': '复制邀请码',
+    'rotate_code': '生成新邀请码',
+    'notif_channel_desc': '订单、餐厅和 FAST 动态',
+    'assistant_title': 'FAST 助手',
+    'assistant_greeting': '你好！我是 FAST 助手，可以问我菜品、餐厅或你的订单。',
+    'assistant_greeting_pro': '你好！我是 FAST Pro 助手，菜单、订单、员工、数据或 Stripe 都可以问我。',
+    'assistant_hint': '请输入你的问题…',
+    'assistant_err': '抱歉，我现在无法回答。',
   };
 
   // ─────────── Essential keys — other languages ───────────

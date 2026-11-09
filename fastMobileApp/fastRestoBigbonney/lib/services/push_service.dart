@@ -75,6 +75,21 @@ class PushService {
     }
   }
 
+  /// Tells the backend to drop this device's token. Must run while the
+  /// session token is still valid, i.e. before the auth token is cleared
+  /// and before /auth/logout revokes the session. Never throws.
+  Future<void> unregisterFromServer() async {
+    final token = _lastToken;
+    if (token == null) return;
+    try {
+      await ApiClient()
+          .delete(ApiConfig.fcmToken, body: {'token': token})
+          .timeout(const Duration(seconds: 2));
+    } catch (_) {
+      // Best effort: a stale token only means failed pushes server-side.
+    }
+  }
+
   /// Forget this device at logout so pushes stop reaching it.
   Future<void> unregister() async {
     if (!_ready) return;

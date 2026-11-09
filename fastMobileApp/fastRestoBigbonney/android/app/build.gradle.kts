@@ -68,7 +68,9 @@ android {
         }
         release {
             // Signed with the release keystore when android/key.properties
-            // is present (locally + Codemagic); falls back to debug keys.
+            // is present (locally + Codemagic). Without it the build falls
+            // back to debug keys, which only the guard below allows
+            // (FAST_ALLOW_DEBUG_SIGNING=true) for quick local release runs.
             signingConfig = if (keystorePropertiesFile.exists())
                 signingConfigs.getByName("release")
             else
@@ -95,4 +97,22 @@ dependencies {
 
 flutter {
     source = "../.."
+}
+
+// A debug-signed "release" APK/AAB can't update installed builds, breaks
+// Google Sign-In (SHA mismatch) and is rejected by Play. Fail packaging
+// release artifacts without the release keystore, unless explicitly allowed.
+val allowDebugSigning = System.getenv("FAST_ALLOW_DEBUG_SIGNING") == "true"
+tasks.configureEach {
+    if (!keystorePropertiesFile.exists() && !allowDebugSigning &&
+        name.matches(Regex("(assemble|bundle|package)Release"))
+    ) {
+        doFirst {
+            throw GradleException(
+                "Release build without android/key.properties: it would be " +
+                    "debug-signed. Add the release keystore, or set " +
+                    "FAST_ALLOW_DEBUG_SIGNING=true for a local test build."
+            )
+        }
+    }
 }

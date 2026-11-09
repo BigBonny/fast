@@ -1631,7 +1631,7 @@ class FASTProvider extends ChangeNotifier {
       return true;
     } catch (e) {
       _orderError = _extractErrorMessage(e);
-      showToast('Erreur d\'annulation', _orderError!);
+      showToast(tr('cancel_err'), _orderError!);
       notifyListeners();
       return false;
     }

@@ -39,7 +39,10 @@ workflows:
               "$FAST_KEYSTORE_PASSWORD" "$FAST_KEYSTORE_PASSWORD" > android/key.properties
             echo "Release keystore configured"
           else
-            echo "FAST_KEYSTORE not set — falling back to debug signing"
+            # A debug-signed release can't update installed builds and
+            # breaks Google Sign-In, so fail instead of shipping one.
+            echo "FAST_KEYSTORE not set — refusing to build a debug-signed release" >&2
+            exit 1
           fi
       - name: Build APK
         script: |
