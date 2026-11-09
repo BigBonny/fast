@@ -6,8 +6,27 @@ const ALLOWED_PERIODS = new Set([7, 30, 90]);
 type RevenueOrder = {
   userId: string;
   subtotal: number;
+  serviceFee: number;
   createdAt: Date;
 };
+
+/**
+ * What the restaurant earns on an order: the customer subtotal minus FAST's
+ * markup (stored as `serviceFee`, already included in the subtotal). This
+ * matches the payout, unlike the raw subtotal.
+ */
+export const restaurantRevenue = (order: { subtotal: number; serviceFee: number }): number =>
+  Math.max(0, order.subtotal - order.serviceFee);
+
+const PARIS_DAY = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'Europe/Paris',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
+
+/** YYYY-MM-DD in Paris time, so an order at 00:30 counts for that day. */
+export const parisDayKey = (date: Date): string => PARIS_DAY.format(date);
 
 const percentageDelta = (current: number, previous: number): number | null => {
   if (previous === 0) return current === 0 ? 0 : null;
@@ -73,14 +92,14 @@ export const getStats = async (req: Request, res: Response): Promise<void> => {
         ...revenueOrderFilter,
         createdAt: { gte: periodStart, lt: periodEnd },
       },
-      select: { userId: true, subtotal: true, createdAt: true },
+      select: { userId: true, subtotal: true, serviceFee: true, createdAt: true },
     }),
     prisma.order.findMany({
       where: {
         ...revenueOrderFilter,
         createdAt: { gte: previousStart, lt: periodStart },
       },
-      select: { userId: true, subtotal: true, createdAt: true },
+      select: { userId: true, subtotal: true, serviceFee: true, createdAt: true },
     }),
     prisma.order.findMany({
       where: {
@@ -126,10 +145,10 @@ export const getStats = async (req: Request, res: Response): Promise<void> => {
   ]);
 
   const currentRevenue = roundMoney(
-    currentOrders.reduce((sum: number, order: RevenueOrder) => sum + order.subtotal, 0),
+    currentOrders.reduce((sum: number, order: RevenueOrder) => sum + restaurantRevenue(order), 0),
   );
   const previousRevenue = roundMoney(
-    previousOrders.reduce((sum: number, order: RevenueOrder) => sum + order.subtotal, 0),
+    previousOrders.reduce((sum: number, order: RevenueOrder) => sum + restaurantRevenue(order), 0),
   );
   const currentCustomerIds = new Set(currentOrders.map((order: RevenueOrder) => order.userId));
   const previousCustomerIds = new Set(previousOrders.map((order: RevenueOrder) => order.userId));
@@ -141,7 +160,7 @@ export const getStats = async (req: Request, res: Response): Promise<void> => {
   const recurringRevenue = roundMoney(
     currentOrders.reduce(
       (sum: number, order: RevenueOrder) =>
-        sum + (recurringCustomerIds.has(order.userId) ? order.subtotal : 0),
+        sum + (recurringCustomerIds.has(order.userId) ? restaurantRevenue(order) : 0),
       0,
     ),
   );
@@ -150,13 +169,13 @@ export const getStats = async (req: Request, res: Response): Promise<void> => {
   for (let index = 0; index < days; index += 1) {
     const date = new Date(periodStart);
     date.setUTCDate(date.getUTCDate() + index);
-    dailyMap.set(date.toISOString().slice(0, 10), { revenue: 0, orders: 0 });
+    dailyMap.set(parisDayKey(date), { revenue: 0, orders: 0 });
   }
   currentOrders.forEach((order: RevenueOrder) => {
-    const key = order.createdAt.toISOString().slice(0, 10);
+    const key = parisDayKey(order.createdAt);
     const day = dailyMap.get(key);
     if (day) {
-      day.revenue = roundMoney(day.revenue + order.subtotal);
+      day.revenue = roundMoney(day.revenue + restaurantRevenue(order));
       day.orders += 1;
     }
   });
@@ -254,21 +273,21 @@ export const exportStats = async (req: Request, res: Response): Promise<void> =>
       paymentStatus: 'PAID',
       createdAt: { gte: periodStart, lt: periodEnd },
     },
-    select: { subtotal: true, createdAt: true },
+    select: { subtotal: true, serviceFee: true, createdAt: true },
   });
 
   const dailyMap = new Map<string, { revenue: number; orders: number }>();
   for (let index = 0; index < days; index += 1) {
     const date = new Date(periodStart);
     date.setUTCDate(date.getUTCDate() + index);
-    dailyMap.set(date.toISOString().slice(0, 10), { revenue: 0, orders: 0 });
+    dailyMap.set(parisDayKey(date), { revenue: 0, orders: 0 });
   }
 
   orders.forEach((order) => {
-    const key = order.createdAt.toISOString().slice(0, 10);
+    const key = parisDayKey(order.createdAt);
     const day = dailyMap.get(key);
     if (day) {
-      day.revenue = roundMoney(day.revenue + order.subtotal);
+      day.revenue = roundMoney(day.revenue + restaurantRevenue(order));
       day.orders += 1;
     }
   });

@@ -18,51 +18,37 @@ export const createReview = async (req: Request, res: Response): Promise<void> =
     return;
   }
 
-  if (data.orderId) {
-    const existingReview = await prisma.review.findUnique({
-      where: {
-        userId_orderId: {
-          userId: req.user!.userId,
-          orderId: data.orderId,
-        },
-      },
+  // Every review belongs to one completed order: one review per order.
+  // Without an explicit order (older app versions), the most recent
+  // completed order not yet reviewed is used. Before, a missing orderId
+  // allowed unlimited reviews (NULLs bypass the unique index).
+  const requestedOrderId =
+    data.orderId ?? (typeof req.query.orderId === 'string' ? req.query.orderId : undefined);
+  const order = await prisma.order.findFirst({
+    where: {
+      ...(requestedOrderId ? { id: requestedOrderId } : {}),
+      userId: req.user!.userId,
+      restaurantId,
+      status: 'COMPLETED',
+      reviews: { none: { userId: req.user!.userId } },
+    },
+    orderBy: { createdAt: 'desc' },
+    select: { id: true },
+  });
+  if (!order) {
+    res.status(409).json({
+      error: requestedOrderId
+        ? 'Commande invalide, non récupérée ou déjà notée'
+        : 'Vous avez déjà noté toutes vos commandes récupérées dans ce restaurant',
     });
-    if (existingReview) {
-      res.status(409).json({ error: 'Vous avez déjà laissé un avis pour cette commande' });
-      return;
-    }
-
-    const order = await prisma.order.findFirst({
-      where: {
-        id: data.orderId,
-        userId: req.user!.userId,
-        restaurantId,
-        status: 'COMPLETED',
-      },
-    });
-    if (!order) {
-      res.status(403).json({ error: 'Commande invalide ou non complétée pour cet avis' });
-      return;
-    }
-  } else {
-    const completedOrder = await prisma.order.findFirst({
-      where: {
-        userId: req.user!.userId,
-        restaurantId,
-        status: 'COMPLETED',
-      },
-    });
-    if (!completedOrder) {
-      res.status(403).json({ error: 'Vous devez avoir une commande récupérée dans ce restaurant pour laisser un avis' });
-      return;
-    }
+    return;
   }
 
   const review = await prisma.review.create({
     data: {
       restaurantId,
       userId: req.user!.userId,
-      orderId: data.orderId ?? null,
+      orderId: order.id,
       userName: user.name,
       rating: data.rating,
       comment: data.comment || '',
@@ -83,12 +69,10 @@ export const createReview = async (req: Request, res: Response): Promise<void> =
     },
   });
 
-  if (data.orderId) {
-    await prisma.order.update({
-      where: { id: data.orderId },
-      data: { ratingSubmitted: true },
-    });
-  }
+  await prisma.order.update({
+    where: { id: order.id },
+    data: { ratingSubmitted: true },
+  });
 
   res.status(201).json(review);
 };
@@ -106,8 +90,13 @@ export const listReviews = async (req: Request, res: Response): Promise<void> =>
   res.json(reviews);
 };
 
-/** F09 — signalement d'un avis : flag pour modération, masqué des listes
- *  publiques et exclu de la moyenne recalculée. */
+/** Distinct users who must report a review before it is hidden. */
+export const REVIEW_HIDE_THRESHOLD = 3;
+
+/** F09 — signalement d'un avis. One report per user; the review is hidden
+ *  (and left out of the average) only once several different people have
+ *  reported it, so nobody — a competitor or the restaurant itself — can
+ *  hide a review alone. */
 export const reportReview = async (req: Request, res: Response): Promise<void> => {
   const id = req.params.id as string;
 
@@ -121,6 +110,16 @@ export const reportReview = async (req: Request, res: Response): Promise<void> =
     return;
   }
 
+  await prisma.reviewReport.upsert({
+    where: { reviewId_userId: { reviewId: id, userId: req.user!.userId } },
+    create: { reviewId: id, userId: req.user!.userId },
+    update: {},
+  });
+  const reporters = await prisma.reviewReport.count({ where: { reviewId: id } });
+  if (reporters < REVIEW_HIDE_THRESHOLD || review.isReported) {
+    res.json({ message: 'Avis signalé pour modération' });
+    return;
+  }
   await prisma.review.update({ where: { id }, data: { isReported: true } });
 
   const aggregations = await prisma.review.aggregate({

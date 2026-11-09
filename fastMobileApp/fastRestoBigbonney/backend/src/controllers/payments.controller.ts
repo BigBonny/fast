@@ -593,7 +593,9 @@ export const createCheckoutSession = async (req: Request, res: Response): Promis
       groupOrder: groupOrderResponse,
     });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    // Stripe and internal error text stays in the logs, not in the app.
+    console.error('[payments]', err);
+    res.status(500).json({ error: 'Erreur de paiement, veuillez réessayer' });
   }
 };
 
@@ -626,7 +628,9 @@ export const confirmCheckoutSession = async (req: Request, res: Response): Promi
       res.status(409).json(GROUP_CLOSED_RESPONSE);
       return;
     }
-    res.status(500).json({ error: (err as Error).message });
+    // Stripe and internal error text stays in the logs, not in the app.
+    console.error('[payments]', err);
+    res.status(500).json({ error: 'Erreur de paiement, veuillez réessayer' });
   }
 };
 
@@ -667,7 +671,9 @@ export const confirmPaymentIntent = async (req: Request, res: Response): Promise
       res.status(409).json(GROUP_CLOSED_RESPONSE);
       return;
     }
-    res.status(500).json({ error: (err as Error).message });
+    // Stripe and internal error text stays in the logs, not in the app.
+    console.error('[payments]', err);
+    res.status(500).json({ error: 'Erreur de paiement, veuillez réessayer' });
   }
 };
 
@@ -714,6 +720,25 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
       const intent = event.data.object as Stripe.PaymentIntent;
       if (intent.metadata?.checkoutId) {
         await createPaidOrderFromCheckout(intent.metadata.checkoutId, intent.id);
+      }
+    }
+
+    // Refunds made outside the app (Stripe dashboard) — keep the order in
+    // sync so it no longer shows as paid. Refunds the app makes itself
+    // already set REFUNDED; this update is then a no-op.
+    if (event.type === 'charge.refunded') {
+      const charge = event.data.object as Stripe.Charge;
+      const paymentIntentId = typeof charge.payment_intent === 'string'
+        ? charge.payment_intent
+        : charge.payment_intent?.id;
+      if (paymentIntentId && charge.amount_refunded > 0) {
+        await prisma.order.updateMany({
+          where: {
+            stripePaymentIntentId: paymentIntentId,
+            paymentStatus: { in: ['PAID', 'REFUND_REQUESTED'] },
+          },
+          data: { paymentStatus: 'REFUNDED', refundProcessedAt: new Date() },
+        });
       }
     }
 
@@ -1187,6 +1212,8 @@ export const getConnectStatus = async (req: Request, res: Response): Promise<voi
       payoutsEnabled: account.payouts_enabled,
     });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    // Stripe and internal error text stays in the logs, not in the app.
+    console.error('[payments]', err);
+    res.status(500).json({ error: 'Erreur de paiement, veuillez réessayer' });
   }
 };

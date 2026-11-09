@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'api_config.dart';
 import 'api_exceptions.dart';
@@ -152,6 +153,7 @@ class ApiClient {
     required String field,
     required String filePath,
     required String filename,
+    String? contentType,
   }) async {
     final uri = Uri.parse('${ApiConfig.baseUrl}$endpoint');
     final request = http.MultipartRequest('POST', uri)
@@ -161,6 +163,8 @@ class ApiClient {
           field,
           filePath,
           filename: filename,
+          contentType:
+              contentType == null ? null : MediaType.parse(contentType),
         ),
       );
     if (_token != null) {

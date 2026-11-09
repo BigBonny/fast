@@ -152,7 +152,7 @@ class _FASTAppState extends State<FASTApp> with WidgetsBindingObserver {
     final resto = context.read<RestoProvider>();
     if (auth.isLoggedIn && user != null && user.id != _sessionUserId) {
       _sessionUserId = user.id;
-      fast.resetSession();
+      fast.resetSession(userId: user.id);
       resto.resetSession();
       fast.syncFromAuth(
         id: user.id,

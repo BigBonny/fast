@@ -17,8 +17,15 @@ class ReviewService {
     required String restaurantId,
     required double rating,
     required String comment,
+    String? orderId,
   }) async {
-    final body = {'rating': rating, 'comment': comment};
+    // The order being rated; without it the server picks this customer's
+    // latest completed, unrated order at the restaurant.
+    final body = {
+      'rating': rating,
+      'comment': comment,
+      if (orderId != null && orderId.isNotEmpty) 'orderId': orderId,
+    };
     final data = await _api.post(
       ApiConfig.reviewsByRestaurant(restaurantId),
       body: body,

@@ -1,4 +1,4 @@
-import { prisma } from '../services/prisma';
+import { prisma, MENU_ITEM_WITH_BASE_PRICE } from '../services/prisma';
 
 export type CartItemInput = {
   menuItemId: string;
@@ -20,6 +20,7 @@ export async function computeCartPricing(
   const menuItemIds = [...new Set(items.map((i) => i.menuItemId))];
   const menuItems = await prisma.menuItem.findMany({
     where: { id: { in: menuItemIds }, restaurantId },
+    omit: MENU_ITEM_WITH_BASE_PRICE,
     include: { supplements: true },
   });
 

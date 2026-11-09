@@ -5,7 +5,7 @@ import fs from 'fs';
 import os from 'os';
 import crypto from 'crypto';
 import { env } from '../config/env';
-import { storeMedia } from '../services/storage';
+import { createSignedUpload, storeMedia } from '../services/storage';
 
 // On read-only filesystems (Vercel functions), fall back to the only
 // writable location — /tmp. Note: /tmp is ephemeral, so durable media
@@ -56,11 +56,13 @@ const EXT_FOR: Record<string, string> = {
   'video/x-m4v': '.m4v',
 };
 
+const MAX_UPLOAD_BYTES = 40 * 1024 * 1024;
+
 export const mediaUpload = multer({
   // Buffer in memory, then hand off to durable storage (services/storage).
   storage: multer.memoryStorage(),
   // 40 MB — short dish videos must fit; anything larger should be a link.
-  limits: { fileSize: 40 * 1024 * 1024 },
+  limits: { fileSize: MAX_UPLOAD_BYTES },
   fileFilter: (_req, file, cb) => {
     if (!ALLOWED_MIME.has(file.mimetype)) {
       cb(new Error('Type de fichier non supporté'));
@@ -87,5 +89,35 @@ export const uploadMedia = async (req: Request, res: Response): Promise<void> =>
     res
       .status(502)
       .json({ error: 'Stockage du fichier indisponible. Réessayez.' });
+  }
+};
+
+/**
+ * Step one of a direct upload: the client says what it will send and gets
+ * a one-time URL to PUT the file to, plus the public URL to save. Answers
+ * 501 when storage isn't configured, so the client falls back to POST /.
+ */
+export const signUpload = async (req: Request, res: Response): Promise<void> => {
+  const contentType = String(req.body?.contentType ?? '').toLowerCase();
+  const size = Number(req.body?.size);
+  if (!ALLOWED_MIME.has(contentType)) {
+    res.status(400).json({ error: 'Type de fichier non supporté' });
+    return;
+  }
+  if (!Number.isFinite(size) || size <= 0 || size > MAX_UPLOAD_BYTES) {
+    res.status(413).json({ error: 'Fichier trop volumineux (40 Mo maximum)' });
+    return;
+  }
+  const filename = `${Date.now()}-${crypto.randomBytes(6).toString('hex')}${EXT_FOR[contentType]}`;
+  try {
+    const signed = await createSignedUpload(filename);
+    if (!signed) {
+      res.status(501).json({ error: 'Envoi direct indisponible' });
+      return;
+    }
+    res.status(201).json(signed);
+  } catch (err) {
+    console.error('[uploads]', (err as Error).message);
+    res.status(502).json({ error: 'Stockage du fichier indisponible. Réessayez.' });
   }
 };

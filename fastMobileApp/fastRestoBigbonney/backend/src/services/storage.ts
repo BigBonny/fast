@@ -43,3 +43,36 @@ export async function storeMedia(
   fs.writeFileSync(path.join(localDir, filename), buffer);
   return `/uploads/${filename}`;
 }
+
+/**
+ * Signed upload URL for Supabase Storage, so the app sends the file
+ * straight to the bucket. Files can't pass through the API on Vercel:
+ * a function request body is capped at about 4.5 MB, far below a short
+ * dish video. Returns null when storage isn't configured (local dev).
+ */
+export async function createSignedUpload(
+  filename: string,
+): Promise<{ uploadUrl: string; publicUrl: string } | null> {
+  if (!storageConfigured()) return null;
+  const base = env.supabaseUrl.replace(/\/$/, '');
+  const objectPath = `${env.supabaseBucket}/${filename}`;
+  const resp = await fetch(`${base}/storage/v1/object/upload/sign/${objectPath}`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${env.supabaseServiceRoleKey}`,
+      apikey: env.supabaseServiceRoleKey,
+      'Content-Type': 'application/json',
+    },
+    body: '{}',
+  });
+  if (!resp.ok) {
+    const text = await resp.text();
+    throw new Error(`Storage sign failed: ${resp.status} ${text.slice(0, 200)}`);
+  }
+  const { url } = (await resp.json()) as { url?: string };
+  if (!url) throw new Error('Storage sign failed: no url');
+  return {
+    uploadUrl: `${base}/storage/v1${url.startsWith('/') ? url : `/${url}`}`,
+    publicUrl: `${base}/storage/v1/object/public/${objectPath}`,
+  };
+}

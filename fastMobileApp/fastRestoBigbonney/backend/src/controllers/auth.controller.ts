@@ -6,6 +6,7 @@ import { prisma } from '../services/prisma';
 import { env } from '../config/env';
 import { registerSchema, loginSchema, updateProfileSchema, changePasswordSchema, phoneRequestSchema, phoneVerifySchema } from '../utils/validation';
 import crypto from 'crypto';
+import { hitRateLimit, peekRateLimit, resetRateLimit } from '../services/rateLimitStore';
 
 const userWithLinks = { driverProfile: true, restaurant: true } as const;
 
@@ -35,6 +36,17 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
   const hashedPassword = await bcrypt.hash(data.password, env.bcryptRounds);
 
+  // The phone counts as verified only if a code for it was confirmed during
+  // this signup (the last 30 minutes).
+  const phoneVerified = data.phone
+    ? (await prisma.phoneVerification.count({
+        where: {
+          phone: data.phone.trim(),
+          consumedAt: { gt: new Date(Date.now() - 30 * 60_000) },
+        },
+      })) > 0
+    : false;
+
   const user = await prisma.user.create({
     data: {
       email: data.email,
@@ -42,6 +54,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       name: data.name,
       phone: data.phone,
       role: data.role,
+      phoneVerified,
     },
     include: { driverProfile: true },
   });
@@ -110,44 +123,47 @@ async function resolveStaffContext(user: { id: string; role: string }): Promise<
   return { role: user.role };
 }
 
+/**
+ * Wrong passwords are throttled per IP *and* account, never by locking the
+ * account itself: a hard lock lets anyone lock a victim out just by typing
+ * their email five times.
+ *
+ * - same IP + same account: `maxFailedLogins` tries per `lockoutMinutes`;
+ * - same account from any IP: a much higher ceiling per hour, which only a
+ *   distributed guessing attack reaches.
+ */
+const ACCOUNT_FAILURE_CEILING = 50;
+export function loginThrottleKeys(email: string, ip: string): { ipAccount: string; account: string } {
+  const normalized = email.trim().toLowerCase();
+  return { ipAccount: `login:${ip}:${normalized}`, account: `login-acct:${normalized}` };
+}
+
 export const login = async (req: Request, res: Response): Promise<void> => {
   const data = loginSchema.parse(req.body);
+  const keys = loginThrottleKeys(data.email, req.ip ?? '');
+
+  const [ipFailures, accountFailures] = await Promise.all([
+    peekRateLimit(keys.ipAccount),
+    peekRateLimit(keys.account),
+  ]);
+  if (ipFailures >= env.maxFailedLogins || accountFailures >= ACCOUNT_FAILURE_CEILING) {
+    res.status(429).json({ error: `Trop de tentatives. Réessayez dans ${env.lockoutMinutes} minutes.` });
+    return;
+  }
 
   const user = await findUserByEmail(data.email);
-  if (!user) {
+  const valid = user ? await bcrypt.compare(data.password, user.password) : false;
+  if (!user || !valid) {
+    // Unknown emails count too, so the reply never reveals which exist.
+    await Promise.all([
+      hitRateLimit(keys.ipAccount, env.lockoutMinutes * 60_000),
+      hitRateLimit(keys.account, 60 * 60_000),
+    ]);
     res.status(401).json({ error: 'Email ou mot de passe incorrect' });
     return;
   }
 
-  // Check account lockout
-  if (user.lockedUntil && user.lockedUntil > new Date()) {
-    const remaining = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000);
-    res.status(429).json({ error: `Compte temporairement verrouillé. Réessayez dans ${remaining} minute(s).` });
-    return;
-  }
-
-  const valid = await bcrypt.compare(data.password, user.password);
-  if (!valid) {
-    // Increment failed attempts
-    const failed = (user.failedLoginAttempts || 0) + 1;
-    const updateData: any = { failedLoginAttempts: failed };
-    if (failed >= env.maxFailedLogins) {
-      updateData.lockedUntil = new Date(Date.now() + env.lockoutMinutes * 60 * 1000);
-      updateData.failedLoginAttempts = 0;
-    }
-    await prisma.user.update({ where: { id: user.id }, data: updateData });
-
-    res.status(401).json({ error: 'Email ou mot de passe incorrect' });
-    return;
-  }
-
-  // Reset failed attempts on successful login
-  if (user.failedLoginAttempts !== 0 || user.lockedUntil) {
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { failedLoginAttempts: 0, lockedUntil: null },
-    });
-  }
+  await resetRateLimit(keys.ipAccount);
 
   // Resolve staff assignment (also heals legacy redeemed accounts whose
   // role was never switched from RESTAURANT).
@@ -370,6 +386,8 @@ export const deleteAccount = async (req: Request, res: Response): Promise<void> 
   const userId = req.user!.userId;
   await prisma.$transaction([
     prisma.notification.deleteMany({ where: { userId } }),
+    // Otherwise the phone keeps receiving this account's pushes.
+    prisma.deviceToken.deleteMany({ where: { userId } }),
     prisma.restaurant.updateMany({ where: { ownerId: userId }, data: { isActive: false } }),
     prisma.user.update({
       where: { id: userId },
@@ -389,12 +407,28 @@ export const deleteAccount = async (req: Request, res: Response): Promise<void> 
 export const updateProfile = async (req: Request, res: Response): Promise<void> => {
   const data = updateProfileSchema.parse(req.body);
 
-  // If email is being changed, ensure it's not already in use.
+  // Changing the login email takes the current password, so a stolen or
+  // forgotten-open session can't take over the account. (No email is sent
+  // to confirm the new address: the backend has no mail provider yet.)
   if (data.email) {
-    const existing = await findUserByEmail(data.email);
-    if (existing && existing.id !== req.user!.userId) {
-      res.status(409).json({ error: 'Cet email est déjà utilisé' });
+    const current = await prisma.user.findUnique({
+      where: { id: req.user!.userId },
+      select: { email: true, password: true },
+    });
+    if (!current) {
+      res.status(404).json({ error: 'Utilisateur introuvable' });
       return;
+    }
+    if (data.email !== current.email.toLowerCase()) {
+      if (!data.currentPassword || !(await bcrypt.compare(data.currentPassword, current.password))) {
+        res.status(403).json({ code: 'PASSWORD_REQUIRED', error: "Mot de passe actuel requis pour changer d'email" });
+        return;
+      }
+      const existing = await findUserByEmail(data.email);
+      if (existing && existing.id !== req.user!.userId) {
+        res.status(409).json({ error: 'Cet email est déjà utilisé' });
+        return;
+      }
     }
   }
 
@@ -426,12 +460,25 @@ export const changePassword = async (req: Request, res: Response): Promise<void>
   }
 
   const hashedPassword = await bcrypt.hash(data.newPassword, env.bcryptRounds);
-  await prisma.user.update({
+  // Bumping tokenVersion signs out every other device (someone who knew the
+  // old password). This device gets a fresh token so it stays signed in.
+  const updated = await prisma.user.update({
     where: { id: req.user!.userId },
-    data: { password: hashedPassword },
+    data: { password: hashedPassword, tokenVersion: { increment: 1 } },
   });
+  const token = jwt.sign(
+    {
+      userId: updated.id,
+      role: req.user!.role,
+      tokenVersion: updated.tokenVersion,
+      restaurantId: req.user!.restaurantId,
+      staffRole: req.user!.staffRole,
+    },
+    env.jwtSecret,
+    { expiresIn: env.jwtExpiresIn as string } as jwt.SignOptions,
+  );
 
-  res.json({ message: 'Mot de passe mis à jour' });
+  res.json({ message: 'Mot de passe mis à jour', token });
 };
 
 // ─── Phone verification (SMS OTP, F11) ──────────────────────
@@ -540,7 +587,9 @@ export const verifyPhoneCode = async (req: Request, res: Response): Promise<void
     where: { id: record.id },
     data: { consumedAt: new Date() },
   });
-  await prisma.user.updateMany({ where: { phone }, data: { phoneVerified: true } });
+  // Not applied to existing accounts here: anyone can type a number, so
+  // marking every account that uses it would verify strangers. The signup
+  // that follows reads this confirmed code (see register).
 
   res.json({ verified: true });
 };

@@ -1108,12 +1108,39 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
     );
   }
 
+  Future<void> _pickHour(TextEditingController ctrl) async {
+    final m = RegExp(r'^(\d{1,2}):(\d{2})$').firstMatch(ctrl.text.trim());
+    final initial = m == null
+        ? const TimeOfDay(hour: 9, minute: 0)
+        : TimeOfDay(
+            hour: int.parse(m.group(1)!).clamp(0, 23),
+            minute: int.parse(m.group(2)!).clamp(0, 59),
+          );
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: initial,
+      builder: (ctx, child) => MediaQuery(
+        data: MediaQuery.of(ctx).copyWith(alwaysUse24HourFormat: true),
+        child: child!,
+      ),
+    );
+    if (picked == null || !mounted) return;
+    setState(() {
+      ctrl.text =
+          '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+    });
+  }
+
   Widget _hourField(TextEditingController ctrl, int day) {
     final closed = _closedDays.contains(day);
+    // A picker instead of free typing: the server only accepts HH:MM, and
+    // auto-accept needs valid hours to know when the restaurant closes.
     return TextField(
       controller: ctrl,
       enabled: !closed,
-      keyboardType: TextInputType.datetime,
+      readOnly: true,
+      showCursor: false,
+      onTap: () => _pickHour(ctrl),
       style: TextStyle(
         color: closed ? context.fast.faint : context.fast.t1,
         fontSize: 12,

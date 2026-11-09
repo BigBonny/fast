@@ -91,24 +91,20 @@ if (env.nodeEnv === 'production') {
 
 // ─── Rate Limiting ──────────────────────────────────────────
 
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20, // 20 attempts per window
-  message: { error: 'Trop de tentatives. Réessayez dans 15 minutes.' },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
+// General flood guard, in memory per instance (a database check on every
+// request would slow the whole API). The limits that matter for security —
+// login, sign-up, AI assistant, invite codes — are shared across instances
+// in Postgres: see middleware/rateLimits.ts.
 const apiLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 100, // 100 requests per minute
   message: { error: 'Trop de requêtes. Réessayez plus tard.' },
   standardHeaders: true,
   legacyHeaders: false,
+  // Stripe must always reach the webhook, or paid orders go missing.
+  skip: (req) => req.path === '/payments/webhook',
 });
 
-// Apply rate limiters
-app.use('/api/auth', authLimiter);
 app.use('/api', apiLimiter);
 
 // ─── Logging ────────────────────────────────────────────────

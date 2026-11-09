@@ -8,7 +8,8 @@ import { refundPaidOrder } from '../services/stripeRefunds';
 // Client requests a refund for a paid order
 export const requestRefund = async (req: Request, res: Response): Promise<void> => {
   const id = req.params.id as string;
-  const { reason } = req.body as { reason?: string };
+  const rawReason = (req.body as { reason?: unknown })?.reason;
+  const reason = typeof rawReason === 'string' ? rawReason.trim().slice(0, 500) : '';
 
   const order = await prisma.order.findFirst({
     where: { id, userId: req.user!.userId },

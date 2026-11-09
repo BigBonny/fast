@@ -97,6 +97,9 @@ class FASTProvider extends ChangeNotifier {
   ThemeMode? _lastResolvedTheme;
   // Owners can flip to the client experience with the same account.
   bool _viewAsClient = false;
+  // Account that turned client mode on, so it survives a cold restart for
+  // that account only.
+  String? _viewAsClientUser;
   // Preferred interface language chosen at signup.
   String _appLanguage = 'fr';
   Set<String> _favoriteIds = {};
@@ -140,7 +143,8 @@ class FASTProvider extends ChangeNotifier {
     if (!_disposed) super.notifyListeners();
   }
 
-  void resetSession() {
+  /// [userId] is the account signing in (null on logout).
+  void resetSession({String? userId}) {
     _requestGeneration++;
     stopOrderPolling();
     unawaited(PushService.instance.unregister());
@@ -171,13 +175,23 @@ class FASTProvider extends ChangeNotifier {
     _isLoading = false;
     _error = null;
     _orderError = null;
-    // "Mode Client" is a session toggle — it must not leak across
-    // logout/login or a different account on the same device,
-    // otherwise a Pro account can get stuck landing on the client side.
-    _viewAsClient = false;
-    SharedPreferences.getInstance().then(
-      (prefs) => prefs.remove('fast_view_as_client'),
-    );
+    // "Mode Client" must not leak across logout/login or to a different
+    // account on the same device, otherwise a Pro account can get stuck
+    // landing on the client side. The same account reopening the app
+    // keeps it.
+    final keepClientMode = userId != null && userId == _viewAsClientUser;
+    if (!keepClientMode) {
+      _viewAsClient = false;
+      _viewAsClientUser = null;
+    }
+    SharedPreferences.getInstance().then((prefs) {
+      if (userId != null &&
+          prefs.getString('fast_view_as_client_user') == userId) {
+        return;
+      }
+      prefs.remove('fast_view_as_client');
+      prefs.remove('fast_view_as_client_user');
+    });
     notifyListeners();
     _loadFavorites();
   }
@@ -288,9 +302,15 @@ class FASTProvider extends ChangeNotifier {
   Future<void> setViewAsClient(bool value) async {
     if (_viewAsClient == value) return;
     _viewAsClient = value;
+    _viewAsClientUser = value && _userId.isNotEmpty ? _userId : null;
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('fast_view_as_client', value);
+    if (_viewAsClientUser != null) {
+      await prefs.setString('fast_view_as_client_user', _viewAsClientUser!);
+    } else {
+      await prefs.remove('fast_view_as_client_user');
+    }
     // Switching to client view after Pro edits — pull fresh data so
     // menu changes show instead of the list cached at login.
     if (value) loadFromApi();
@@ -906,7 +926,9 @@ class FASTProvider extends ChangeNotifier {
     _activeGroupId = null;
     _activeGroupCode = null;
     final themePref = prefs.getString('fast_theme_mode') ?? 'system';
-    _viewAsClient = prefs.getBool('fast_view_as_client') ?? false;
+    _viewAsClientUser = prefs.getString('fast_view_as_client_user');
+    _viewAsClient = _viewAsClientUser != null &&
+        (prefs.getBool('fast_view_as_client') ?? false);
     _appLanguage = prefs.getString('fast_app_language') ?? 'fr';
     // Hidden languages (hi/bn/ur/bm/wo/ln) keep their maps for later
     // re-enabling, but users who saved one before launch fall back to fr
@@ -964,10 +986,14 @@ class FASTProvider extends ChangeNotifier {
     String? name,
     String? email,
     String? phone,
+    String? currentPassword,
   }) async {
     final body = <String, dynamic>{};
     if (name != null) body['name'] = name;
     if (email != null) body['email'] = email;
+    if (currentPassword != null && currentPassword.isNotEmpty) {
+      body['currentPassword'] = currentPassword;
+    }
     if (phone != null) body['phone'] = phone;
     if (body.isEmpty) return;
 
@@ -1651,6 +1677,7 @@ class FASTProvider extends ChangeNotifier {
         restaurantId: restaurantId,
         rating: rating,
         comment: comment,
+        orderId: orderId,
       );
 
       final oIdx = _orders.indexWhere((o) => o.id == orderId);

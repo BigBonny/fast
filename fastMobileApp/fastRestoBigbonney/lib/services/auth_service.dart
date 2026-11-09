@@ -102,13 +102,16 @@ class AuthService {
     }
   }
 
-  Future<void> changePassword({
+  /// Returns the new session token: changing the password signs out every
+  /// other device, so the old token stops working.
+  Future<String?> changePassword({
     required String currentPassword,
     required String newPassword,
   }) async {
-    await _api.post(
+    final data = await _api.post(
       ApiConfig.changePassword,
       body: {'currentPassword': currentPassword, 'newPassword': newPassword},
     );
+    return data is Map<String, dynamic> ? data['token'] as String? : null;
   }
 }

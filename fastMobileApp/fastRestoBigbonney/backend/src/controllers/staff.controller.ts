@@ -116,11 +116,19 @@ export const deleteStaff = async (req: Request, res: Response): Promise<void> =>
     return;
   }
 
-  // Delete both the assignment and the user account
-  await prisma.restaurantStaff.delete({ where: { id: staffId } });
-  await prisma.user.delete({ where: { id: assignment.userId } });
+  // Remove the assignment only. The person keeps their own account (and
+  // its order history — deleting the user failed for anyone who had ever
+  // ordered); it goes back to a plain professional account, and bumping
+  // tokenVersion ends their sessions so the access stops at once.
+  await prisma.$transaction([
+    prisma.restaurantStaff.delete({ where: { id: staffId } }),
+    prisma.user.update({
+      where: { id: assignment.userId },
+      data: { role: 'RESTAURANT', tokenVersion: { increment: 1 } },
+    }),
+  ]);
 
-  res.json({ message: 'Membre supprimé' });
+  res.json({ message: "Membre retiré de l'équipe" });
 };
 
 /** Update staff role (promote/demote between STAFF and GUEST) */
@@ -149,10 +157,12 @@ export const updateStaffRole = async (req: Request, res: Response): Promise<void
     include: { user: { select: { id: true, name: true, email: true, phone: true } } },
   });
 
-  // Also update the user's role
+  // Also update the user's role, and end their sessions: the old token
+  // still carries the previous role, which would otherwise keep working
+  // until it expires (24 h).
   await prisma.user.update({
     where: { id: assignment.userId },
-    data: { role: newRole as any },
+    data: { role: newRole as any, tokenVersion: { increment: 1 } },
   });
 
   res.json(updated);

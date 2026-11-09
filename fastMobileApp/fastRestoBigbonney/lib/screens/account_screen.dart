@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../provider.dart';
 import '../models.dart';
+import '../api/api_exceptions.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/notification_center.dart';
 import '../theme.dart';
@@ -304,7 +305,7 @@ class _AccountScreenState extends State<AccountScreen>
                     context,
                     provider.tr('name'),
                     provider.userName,
-                    (val) => provider.updateProfile(name: val),
+                    (val, _) => provider.updateProfile(name: val),
                   ),
                 ),
                 Divider(height: 1, color: context.fast.line),
@@ -316,7 +317,7 @@ class _AccountScreenState extends State<AccountScreen>
                     context,
                     provider.tr('phone'),
                     provider.userPhone,
-                    (val) => provider.updateProfile(phone: val),
+                    (val, _) => provider.updateProfile(phone: val),
                     keyboardType: TextInputType.phone,
                   ),
                 ),
@@ -329,8 +330,12 @@ class _AccountScreenState extends State<AccountScreen>
                     context,
                     provider.tr('email'),
                     provider.userEmail,
-                    (val) => provider.updateProfile(email: val),
+                    (val, pwd) => provider.updateProfile(
+                      email: val,
+                      currentPassword: pwd,
+                    ),
                     keyboardType: TextInputType.emailAddress,
+                    askPassword: true,
                   ),
                 ),
               ],
@@ -831,10 +836,32 @@ class _AccountScreenState extends State<AccountScreen>
     BuildContext context,
     String fieldName,
     String currentValue,
-    Function(String) onSave, {
+    Future<void> Function(String value, String? password) onSave, {
     TextInputType keyboardType = TextInputType.text,
+    // Changing the sign-in email asks for the current password.
+    bool askPassword = false,
   }) {
     final controller = TextEditingController(text: currentValue);
+    final pwdController = TextEditingController();
+    InputDecoration fieldDecoration(String hint) => InputDecoration(
+      hintText: hint,
+      hintStyle: TextStyle(color: context.fast.faint),
+      filled: true,
+      fillColor: context.fast.bg,
+      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: context.fast.line),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: context.fast.line),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: Color(0xFFF59E0B)),
+      ),
+    );
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -851,30 +878,26 @@ class _AccountScreenState extends State<AccountScreen>
             fontSize: 14,
           ),
         ),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          keyboardType: keyboardType,
-          style: TextStyle(color: context.fast.t1, fontSize: 14),
-          decoration: InputDecoration(
-            hintText: fieldName,
-            hintStyle: TextStyle(color: context.fast.faint),
-            filled: true,
-            fillColor: context.fast.bg,
-            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: context.fast.line),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: controller,
+              autofocus: true,
+              keyboardType: keyboardType,
+              style: TextStyle(color: context.fast.t1, fontSize: 14),
+              decoration: fieldDecoration(fieldName),
             ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: context.fast.line),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFF59E0B)),
-            ),
-          ),
+            if (askPassword) ...[
+              const SizedBox(height: 10),
+              TextField(
+                controller: pwdController,
+                obscureText: true,
+                style: TextStyle(color: context.fast.t1, fontSize: 14),
+                decoration: fieldDecoration(tr(context, 'pwd_current')),
+              ),
+            ],
+          ],
         ),
         actions: [
           TextButton(
@@ -887,12 +910,19 @@ class _AccountScreenState extends State<AccountScreen>
           ElevatedButton(
             onPressed: () async {
               try {
-                await onSave(controller.text.trim());
+                await onSave(
+                  controller.text.trim(),
+                  askPassword ? pwdController.text : null,
+                );
                 if (ctx.mounted) Navigator.of(ctx).pop();
-              } catch (_) {
+              } catch (e) {
                 if (ctx.mounted) {
                   ScaffoldMessenger.of(ctx).showSnackBar(
-                    SnackBar(content: Text(tr(context, 'error_save'))),
+                    SnackBar(
+                      content: Text(
+                        e is ApiException ? e.message : tr(context, 'error_save'),
+                      ),
+                    ),
                   );
                 }
               }

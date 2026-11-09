@@ -43,7 +43,7 @@ export default function MenuManager() {
 
   const { data: items = [], isLoading: itemsLoading } = useQuery({
     queryKey: ["menu-items", restaurantId],
-    queryFn: () => (restaurantId ? menuApi.byRestaurant(restaurantId) : Promise.resolve([])),
+    queryFn: () => (restaurantId ? menuApi.managed(restaurantId) : Promise.resolve([])),
     enabled: !!restaurantId,
   });
 
@@ -106,7 +106,9 @@ export default function MenuManager() {
     setForm({
       name: item.name || "",
       description: item.description || "",
-      price: item.price?.toString() || "",
+      // The server treats the submitted price as the BASE price and adds
+      // FAST's markup; pre-filling the customer price would add it twice.
+      price: (item.basePrice ?? item.price)?.toString() || "",
       image: item.image || "",
       category: item.category || "",
       dietaryTags: item.dietaryTags?.map((t: any) => t.option) || [],
@@ -162,7 +164,7 @@ export default function MenuManager() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <input type="text" placeholder="Nom du plat *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="bg-[#020617] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-[#00c8b3]/50 outline-none" required />
-          <input type="number" step="0.01" min="0.01" placeholder="Prix () *" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="bg-[#020617] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-[#00c8b3]/50 outline-none" required />
+          <input type="number" step="0.01" min="0.01" placeholder="Prix de base (€) *" title="Votre prix, avant les frais FAST ajoutés au prix client" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="bg-[#020617] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-[#00c8b3]/50 outline-none" required />
         </div>
         <input type="text" placeholder="Catégorie (ex: Burgers, Boissons...)" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="w-full bg-[#020617] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-[#00c8b3]/50 outline-none" />
         <input type="text" placeholder="URL image (optionnel)" value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} className="w-full bg-[#020617] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-[#00c8b3]/50 outline-none" />

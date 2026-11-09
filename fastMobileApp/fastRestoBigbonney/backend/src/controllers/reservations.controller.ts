@@ -42,7 +42,7 @@ export const createReservation = async (req: Request, res: Response): Promise<vo
     data: {
       userId: restaurant.ownerId,
       title: 'Nouvelle demande de réservation',
-      body: `${reservation.userName} — ${reservation.partySize} pers. le ${dateTime.toLocaleString('fr-FR')}`,
+      body: `${reservation.userName} — ${reservation.partySize} pers. le ${dateTime.toLocaleString('fr-FR', { timeZone: 'Europe/Paris', dateStyle: 'short', timeStyle: 'short' })}`,
       type: 'STATUS',
     },
   });
@@ -129,8 +129,8 @@ export const updateReservationStatus = async (req: Request, res: Response): Prom
       title: data.status === 'CONFIRMED' ? 'Réservation confirmée' : 'Réservation refusée',
       body:
         data.status === 'CONFIRMED'
-          ? `Votre table pour ${reservation.partySize} pers. est confirmée le ${reservation.dateTime.toLocaleString('fr-FR')}`
-          : `Votre demande de réservation du ${reservation.dateTime.toLocaleString('fr-FR')} a été refusée`,
+          ? `Votre table pour ${reservation.partySize} pers. est confirmée le ${reservation.dateTime.toLocaleString('fr-FR', { timeZone: 'Europe/Paris', dateStyle: 'short', timeStyle: 'short' })}`
+          : `Votre demande de réservation du ${reservation.dateTime.toLocaleString('fr-FR', { timeZone: 'Europe/Paris', dateStyle: 'short', timeStyle: 'short' })} a été refusée`,
       type: 'STATUS',
     },
   });

@@ -29,6 +29,8 @@ export const updateProfileSchema = z.object({
   name: z.string().min(1, 'Nom requis').max(100, 'Nom trop long').optional(),
   email: z.string().trim().toLowerCase().email('Email invalide').optional(),
   phone: z.string().max(20, 'Téléphone trop long').optional(),
+  // Required only when `email` changes (checked in updateProfile).
+  currentPassword: z.string().max(200).optional(),
 });
 
 export const changePasswordSchema = z.object({
@@ -305,3 +307,11 @@ export const phoneVerifySchema = z.object({
   code: z.string().min(4).max(8),
 });
 
+
+// ─── Menu supplements ───────────────────────────────────────
+
+export const supplementSchema = z.object({
+  name: z.string().trim().min(1, 'Nom du supplément requis').max(80, 'Nom trop long'),
+  // Free extras are 0 €; a negative price would lower the order total.
+  price: z.coerce.number().min(0, 'Le prix ne peut pas être négatif').max(999.99, 'Prix trop élevé'),
+});

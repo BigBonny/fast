@@ -47,6 +47,9 @@ export const env = {
   // Minutes a paid order may wait for the restaurant to accept before it is
   // cancelled and fully refunded (see services/staleOrders.ts).
   acceptTimeoutMin: Math.max(5, parseInt(process.env.FAST_ACCEPT_TIMEOUT_MIN || '15', 10) || 15),
+  // Minutes a paid group share may wait for the host to send the group
+  // before the group is cancelled and every paid share refunded.
+  groupAbandonMin: Math.max(30, parseInt(process.env.FAST_GROUP_ABANDON_MIN || '120', 10) || 120),
   // Comma-separated restaurant IDs also exempt from Connect onboarding —
   // their charges stay on the platform account.
   platformCollectRestaurantIds: (process.env.FAST_PLATFORM_COLLECT_RESTAURANT_IDS || '')

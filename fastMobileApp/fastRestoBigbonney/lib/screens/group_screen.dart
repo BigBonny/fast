@@ -218,13 +218,51 @@ class _GroupScreenState extends State<GroupScreen> {
     }
   }
 
-  Future<void> _leave() async {
+  /// Members leave; the host cancels the whole group, and every share
+  /// already paid is refunded in full.
+  Future<void> _leave({bool isHost = false, int paidCount = 0}) async {
     final id = _group?['id'] as String?;
     if (id == null) return;
+    if (isHost) {
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(tr(ctx, 'group_cancel')),
+          content: Text(
+            paidCount > 0
+                ? tr(ctx, 'group_cancel_paid_confirm')
+                      .replaceAll('{n}', '$paidCount')
+                : tr(ctx, 'group_cancel_confirm'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(tr(ctx, 'back')),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(tr(ctx, 'confirm')),
+            ),
+          ],
+        ),
+      );
+      if (ok != true || !mounted) return;
+    }
     try {
-      await _service.leaveGroup(id);
+      final result = await _service.leaveGroup(id);
       _refreshTimer?.cancel();
       if (!mounted) return;
+      final refunded = (result['refunded'] as num?)?.toInt() ?? 0;
+      if (refunded > 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              tr(context, 'group_cancelled_refunded')
+                  .replaceAll('{n}', '$refunded'),
+            ),
+          ),
+        );
+      }
       context.read<FASTProvider>().clearActiveGroup();
       setState(() {
         _group = null;
@@ -451,8 +489,12 @@ class _GroupScreenState extends State<GroupScreen> {
             ),
             const SizedBox(width: 8),
             TextButton(
-              onPressed: _leave,
-              child: Text(context.read<FASTProvider>().tr('quit')),
+              onPressed: () => _leave(isHost: isHost, paidCount: paidCount),
+              child: Text(
+                isHost
+                    ? tr(context, 'group_cancel')
+                    : context.read<FASTProvider>().tr('quit'),
+              ),
             ),
           ],
         ),

@@ -40,6 +40,7 @@ dependencies:
   shared_preferences: ^2.3.5
   flutter_secure_storage: ^9.2.4
   http: ^1.2.0
+  http_parser: ^4.0.2
   fl_chart: ^1.2.0
   maplibre: ^0.3.7
   latlong2: ^0.9.1

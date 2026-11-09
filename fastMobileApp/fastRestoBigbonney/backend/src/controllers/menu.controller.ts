@@ -2,8 +2,8 @@ import { Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
-import { prisma } from '../services/prisma';
-import { createMenuItemSchema, updateMenuItemSchema, menuItemBaseSchema } from '../utils/validation';
+import { prisma, MENU_ITEM_WITH_BASE_PRICE } from '../services/prisma';
+import { createMenuItemSchema, updateMenuItemSchema, menuItemBaseSchema, supplementSchema } from '../utils/validation';
 import { resolveFastPricing } from '../utils/fastPricing';
 import { env } from '../config/env';
 import { getRestaurantIdForUser } from '../middleware/auth';
@@ -31,6 +31,7 @@ export const listManagedMenuItems = async (req: Request, res: Response): Promise
   }
   const items = await prisma.menuItem.findMany({
     where: { restaurantId, deletedAt: null },
+    omit: MENU_ITEM_WITH_BASE_PRICE, // restaurant-side: the editor shows the base price
     include: { dietaryTags: true, supplements: true },
     orderBy: [{ category: 'asc' }, { name: 'asc' }],
   });
@@ -62,6 +63,7 @@ export const createMenuItem = async (req: Request, res: Response): Promise<void>
         ? { create: data.dietaryTags.map((opt) => ({ option: opt as any })) }
         : undefined,
     },
+    omit: MENU_ITEM_WITH_BASE_PRICE,
     include: { dietaryTags: true, supplements: true },
   });
 
@@ -112,6 +114,7 @@ export const updateMenuItem = async (req: Request, res: Response): Promise<void>
           }
         : undefined,
     },
+    omit: MENU_ITEM_WITH_BASE_PRICE,
     include: { dietaryTags: true, supplements: true },
   });
 
@@ -164,14 +167,14 @@ export const addSupplement = async (req: Request, res: Response): Promise<void> 
     return;
   }
 
-  const { name, price } = req.body as { name: string; price: number };
-  if (!name || price == null) {
-    res.status(400).json({ error: 'name et price requis' });
+  const parsed = supplementSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.errors[0]?.message ?? 'Supplément invalide' });
     return;
   }
 
   const supplement = await prisma.menuItemSupplement.create({
-    data: { menuItemId, name, price: Number(price) },
+    data: { menuItemId, name: parsed.data.name, price: parsed.data.price },
   });
   res.status(201).json(supplement);
 };
@@ -193,10 +196,17 @@ export const updateSupplement = async (req: Request, res: Response): Promise<voi
     return;
   }
 
-  const { name, price } = req.body as { name?: string; price?: number };
+  const parsed = supplementSchema.partial().safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.errors[0]?.message ?? 'Supplément invalide' });
+    return;
+  }
   const updated = await prisma.menuItemSupplement.update({
     where: { id },
-    data: { name: name ?? supplement.name, price: price != null ? Number(price) : supplement.price },
+    data: {
+      name: parsed.data.name ?? supplement.name,
+      price: parsed.data.price ?? supplement.price,
+    },
   });
   res.json(updated);
 };
@@ -487,6 +497,7 @@ export const scanMenu = async (req: Request, res: Response): Promise<void> => {
           description: item.description || '',
           restaurantId,
         },
+        omit: MENU_ITEM_WITH_BASE_PRICE,
         include: { dietaryTags: true },
       }));
     } catch (dbErr) {

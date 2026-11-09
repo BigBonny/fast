@@ -5,6 +5,7 @@ import { createGroupSchema, joinGroupSchema, updateGroupMemberSchema, saveGroupC
 import { computeCartPricing } from '../utils/cartPricing';
 import { getRestaurantIdForUser } from '../middleware/auth';
 import { safeEmitNotificationToUser } from '../services/realtime';
+import { refundCancelledGroup } from '../services/staleOrders';
 
 function generateCode(): string {
   return `FAST-${randomBytes(6).toString('base64url').toUpperCase()}`;
@@ -171,19 +172,23 @@ export const leaveGroup = async (req: Request, res: Response): Promise<void> => 
     || group.members.some((groupMember) => groupMember.paymentStatus === 'PAID');
 
   if (member.role === 'HOST') {
-    if (hasPayment) {
-      res.status(409).json({ error: 'Le groupe ne peut plus être annulé après un paiement' });
-      return;
-    }
-    if (!['OPEN', 'LOCKED'].includes(group.status)) {
+    // Close the group first (atomically, so nobody can pay or submit
+    // meanwhile), then refund every share already paid.
+    const closed = await prisma.groupOrder.updateMany({
+      where: { id, status: { in: ['OPEN', 'LOCKED'] } },
+      data: { status: 'CANCELLED' },
+    });
+    if (closed.count !== 1) {
       res.status(409).json({ error: 'Ce groupe ne peut plus être annulé' });
       return;
     }
-    await prisma.groupOrder.update({
-      where: { id },
-      data: { status: 'CANCELLED' },
+    const refunded = hasPayment ? await refundCancelledGroup(id) : 0;
+    res.json({
+      message: refunded > 0
+        ? `Groupe annulé — ${refunded} part(s) payée(s) remboursée(s)`
+        : 'Groupe annulé',
+      refunded,
     });
-    res.json({ message: 'Groupe annulé' });
     return;
   }
 

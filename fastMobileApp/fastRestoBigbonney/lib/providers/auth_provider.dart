@@ -365,10 +365,13 @@ class AuthProvider extends ChangeNotifier {
     required String currentPassword,
     required String newPassword,
   }) async {
-    await AuthService().changePassword(
+    final token = await AuthService().changePassword(
       currentPassword: currentPassword,
       newPassword: newPassword,
     );
+    if (token != null && token.isNotEmpty) {
+      await ApiClient().setToken(token);
+    }
   }
 
   String _extractError(dynamic e) {

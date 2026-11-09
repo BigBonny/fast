@@ -436,8 +436,22 @@ model Review {
   restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   user       User       @relation(fields: [userId], references: [id])
   order      Order?     @relation(fields: [orderId], references: [id])
+  reports    ReviewReport[]
 
   @@unique([userId, orderId])
+}
+
+// One row per user who reported a review; the review is hidden after
+// REVIEW_HIDE_THRESHOLD distinct reporters (reviews.controller.ts).
+model ReviewReport {
+  id        String   @id @default(cuid())
+  reviewId  String
+  userId    String
+  createdAt DateTime @default(now())
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@unique([reviewId, userId])
 }
 
 // ─── Notifications ──────────────────────────────────────────
@@ -586,4 +600,17 @@ model RestaurantRequest {
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([status, createdAt])
+}
+
+// ─── Rate limiting ──────────────────────────────────────────
+
+// Fixed-window counters shared by every serverless instance
+// (services/rateLimitStore.ts). Expired rows are reset on the next hit and
+// cleaned up hourly.
+model RateLimit {
+  key     String   @id
+  hits    Int
+  resetAt DateTime
+
+  @@index([resetAt])
 }

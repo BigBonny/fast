@@ -233,6 +233,11 @@ export const menuApi = {
     const items = await apiFetch<MenuItem[]>(`/menu/restaurant/${restaurantId}`);
     return (items || []).map(normalizeMenuItem);
   },
+  /** Restaurant-side menu: includes unavailable dishes and the base price. */
+  managed: async (restaurantId: string): Promise<MenuItem[]> => {
+    const items = await apiFetch<MenuItem[]>(`/menu/restaurant/${restaurantId}/manage`);
+    return (items || []).map(normalizeMenuItem);
+  },
   create: async (restaurantId: string, data: MenuItemPayload): Promise<MenuItem> => {
     return apiFetch<MenuItem>(`/menu/restaurant/${restaurantId}`, {
       method: "POST",

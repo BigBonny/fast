@@ -57,6 +57,9 @@ export interface MenuItem {
   name: string;
   description?: string;
   price: number;
+  /** Restaurateur's price before FAST's markup. Only on restaurant-side
+   *  responses (menuApi.managed); `price` is what customers pay. */
+  basePrice?: number | null;
   image?: string;
   category?: string;
   isAvailable?: boolean;
