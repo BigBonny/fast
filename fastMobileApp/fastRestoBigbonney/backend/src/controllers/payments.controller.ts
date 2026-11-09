@@ -7,6 +7,7 @@ import { computeCartPricing } from '../utils/cartPricing';
 import { generatePickupToken } from '../utils/pickupToken';
 import { prepMinutesFor, shouldAutoAccept } from '../utils/autoAccept';
 import { restaurantPrivateOmit } from '../utils/restaurantPrivacy';
+import { CheckoutRefusedError, refundRefusedCheckout } from '../services/stripeRefunds';
 import { getStripeCustomerId } from './payment_methods.controller';
 import {
   distanceKm,
@@ -73,11 +74,14 @@ async function createPaidOrderFromCheckout(
             },
             include: { group: { select: { status: true, restaurantId: true } } },
           });
+          // The customer has already paid at this point. Refusing the order
+          // must also refund them (see the catch below), otherwise Stripe
+          // keeps the money with no order attached.
           if (!member || member.group.restaurantId !== checkout.restaurantId) {
-            throw new Error('Invalid group checkout');
+            throw new CheckoutRefusedError('Invalid group checkout', checkout.id, checkout.userId);
           }
           if (!['OPEN', 'LOCKED'].includes(member.group.status)) {
-            throw new Error('Group no longer accepts payments');
+            throw new CheckoutRefusedError('Group no longer accepts payments', checkout.id, checkout.userId);
           }
         }
 
@@ -235,11 +239,49 @@ async function createPaidOrderFromCheckout(
       if ((error as { code?: string }).code === 'P2034' && attempt < 2) {
         continue;
       }
+      if (error instanceof CheckoutRefusedError) {
+        await handleRefusedCheckout(error, stripePaymentIntentId);
+      }
       throw error;
     }
   }
   throw new Error('Could not create paid order');
 }
+
+/**
+ * Refunds a payment whose order was refused and tells the customer. Runs
+ * from both the webhook and the confirm endpoint; the refund is idempotent,
+ * and the notification is only sent by the call that actually refunded.
+ */
+async function handleRefusedCheckout(
+  error: CheckoutRefusedError,
+  paymentIntentId: string | null | undefined,
+): Promise<void> {
+  const already = await prisma.notification.findFirst({
+    where: { userId: error.userId, type: 'INFO', body: { contains: `[${error.checkoutId}]` } },
+    select: { id: true },
+  });
+  const refunded = await refundRefusedCheckout(error.checkoutId, paymentIntentId);
+  if (!refunded) {
+    console.error('Refused checkout could not be refunded automatically', error.checkoutId, error.message);
+    return;
+  }
+  if (already) return;
+  const notification = await prisma.notification.create({
+    data: {
+      userId: error.userId,
+      title: 'Paiement remboursé',
+      body: `Le groupe n'acceptait plus de paiements : votre paiement a été remboursé intégralement. [${error.checkoutId}]`,
+      type: 'INFO',
+    },
+  });
+  safeEmitNotificationToUser(error.userId, notification);
+}
+
+const GROUP_CLOSED_RESPONSE = {
+  code: 'GROUP_CLOSED',
+  error: "Le groupe n'accepte plus de paiements. Votre paiement a été remboursé.",
+};
 
 export const createCheckoutSession = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -574,6 +616,10 @@ export const confirmCheckoutSession = async (req: Request, res: Response): Promi
     const order = await createPaidOrderFromCheckout(checkoutId, paymentIntentId);
     res.json(order);
   } catch (err) {
+    if (err instanceof CheckoutRefusedError) {
+      res.status(409).json(GROUP_CLOSED_RESPONSE);
+      return;
+    }
     res.status(500).json({ error: (err as Error).message });
   }
 };
@@ -611,6 +657,10 @@ export const confirmPaymentIntent = async (req: Request, res: Response): Promise
     const order = await createPaidOrderFromCheckout(checkoutId, intent.id);
     res.json(order);
   } catch (err) {
+    if (err instanceof CheckoutRefusedError) {
+      res.status(409).json(GROUP_CLOSED_RESPONSE);
+      return;
+    }
     res.status(500).json({ error: (err as Error).message });
   }
 };
@@ -676,6 +726,12 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
 
     res.json({ received: true });
   } catch (err) {
+    // The order was refused and the payment refunded: acknowledge, so
+    // Stripe stops retrying the event for three days.
+    if (err instanceof CheckoutRefusedError) {
+      res.json({ received: true, refunded: true });
+      return;
+    }
     res.status(400).json({ error: (err as Error).message });
   }
 };
