@@ -654,7 +654,7 @@ class Order {
   final String restaurantImage;
   final List<CartItem> items;
   final double subtotal;
-  final double serviceFee; // flat €1.50
+  final double serviceFee; // FAST's markup, already included in the dish prices
   final double total;
   OrderStatus status;
   final String createdAt;
