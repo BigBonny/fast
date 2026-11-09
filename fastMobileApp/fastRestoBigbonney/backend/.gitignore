@@ -6,3 +6,5 @@ uploads/*
 
 .vercel
 .env*
+# The template has placeholders only and documents the required variables.
+!.env.example
