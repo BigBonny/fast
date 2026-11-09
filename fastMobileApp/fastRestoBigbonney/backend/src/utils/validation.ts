@@ -13,16 +13,10 @@ export const registerSchema = z.object({
   password: passwordSchema,
   name: z.string().min(1, 'Nom requis').max(100, 'Nom trop long'),
   phone: z.string().max(20, 'Téléphone trop long').optional(),
-  role: z.enum(['CLIENT', 'RESTAURANT', 'LIVREUR']).default('CLIENT'),
-  driverType: z.enum(['OCCASIONAL', 'PERMANENT']).optional(),
-}).superRefine((data, ctx) => {
-  if (data.role === 'LIVREUR' && !data.driverType) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ['driverType'],
-      message: 'Type de livreur requis',
-    });
-  }
+  // LIVREUR is deliberately not self-service: the driver feature is hidden,
+  // and a self-registered driver could read customer delivery addresses
+  // and mark orders delivered. Driver accounts are provisioned manually.
+  role: z.enum(['CLIENT', 'RESTAURANT']).default('CLIENT'),
 });
 
 export const loginSchema = z.object({

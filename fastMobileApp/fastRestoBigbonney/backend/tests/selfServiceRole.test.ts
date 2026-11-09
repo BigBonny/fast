@@ -13,5 +13,8 @@ test('social sign-up cannot self-assign privileged roles', () => {
 test('social sign-up keeps the roles email registration allows', () => {
   assert.equal(selfServiceRole('CLIENT'), 'CLIENT');
   assert.equal(selfServiceRole('RESTAURANT'), 'RESTAURANT');
-  assert.equal(selfServiceRole('LIVREUR'), 'LIVREUR');
+});
+
+test('driver (LIVREUR) accounts cannot be self-registered', () => {
+  assert.equal(selfServiceRole('LIVREUR'), 'CLIENT');
 });

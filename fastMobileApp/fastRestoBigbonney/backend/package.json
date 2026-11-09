@@ -15,7 +15,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
     "lint": "eslint src/",
-    "test": "jest --passWithNoTests"
+    "test": "node --import tsx --test \"tests/**/*.test.ts\" \"test/**/*.test.ts\""
   },
   "dependencies": {
     "@prisma/client": "^6.0.0",

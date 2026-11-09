@@ -5,6 +5,7 @@ import { geocodeAddress } from '../utils/geocoding';
 import { safeEmitNotificationToUser } from '../services/realtime';
 import { getRestaurantIdForUser } from '../middleware/auth';
 import { env } from '../config/env';
+import { RESTAURANT_OWNER_ONLY_FIELDS, stripOwnerOnlyFields } from '../utils/restaurantPrivacy';
 
 async function applyGeocoding(
   data: { address?: string; city?: string; latitude?: number; longitude?: number },
@@ -25,7 +26,7 @@ function publicRestaurant(restaurant: Record<string, unknown>): Record<string, u
     Boolean(restaurant.stripeAccountId && restaurant.stripeChargesEnabled) ||
     restaurant.id === env.demoRestaurantId ||
     env.platformCollectRestaurantIds.includes(restaurant.id as string);
-  for (const key of ['ownerId', 'managerIban', 'ownerBirthDate', 'ownerAddress', 'stripeAccountId', 'stripeChargesEnabled', 'stripePayoutsEnabled', 'payoutFrequency', 'staffInviteCode']) {
+  for (const key of ['ownerId', ...RESTAURANT_OWNER_ONLY_FIELDS]) {
     delete result[key];
   }
 
@@ -229,7 +230,10 @@ export const getMyRestaurant = async (req: Request, res: Response): Promise<void
     return;
   }
 
-  res.json(restaurant);
+  // Staff and guests run the restaurant day to day but must not see the
+  // owner's banking, identity or Stripe details, nor the invite code.
+  const isOwner = restaurant.ownerId === req.user!.userId || req.user!.role === 'ADMIN';
+  res.json(isOwner ? restaurant : stripOwnerOnlyFields(restaurant));
 };
 
 async function notifyActiveOrderClients(

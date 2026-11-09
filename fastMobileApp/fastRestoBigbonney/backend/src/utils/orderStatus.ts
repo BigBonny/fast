@@ -8,8 +8,13 @@ const VALID_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   CANCELLED: [],
 };
 
+/**
+ * A status may only move forward along the table above. Same-status
+ * "transitions" are NOT valid: re-applying COMPLETED used to grant loyalty
+ * points and send notifications again each time. Callers that want
+ * idempotent retries should short-circuit on `from === to` themselves.
+ */
 export function isValidStatusTransition(from: OrderStatus, to: OrderStatus): boolean {
-  if (from === to) return true;
   return VALID_TRANSITIONS[from]?.includes(to) ?? false;
 }
 

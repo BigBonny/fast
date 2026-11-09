@@ -142,8 +142,10 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/restaurants', restaurantRoutes);
 app.use('/api/menu', menuRoutes);
-app.use('/api/orders', ordersRoutes);
+// refundRoutes first: it owns GET /api/orders/refund-requests, which
+// ordersRoutes' GET /:id would otherwise swallow (404 "Commande introuvable").
 app.use('/api/orders', refundRoutes);
+app.use('/api/orders', ordersRoutes);
 app.use('/api/reviews', reviewsRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/stats', statsRoutes);

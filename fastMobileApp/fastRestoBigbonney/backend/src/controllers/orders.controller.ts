@@ -11,6 +11,7 @@ import {
 import { isValidStatusTransition, STATUS_LABELS } from '../utils/orderStatus';
 import { distanceKm } from '../utils/deliveryHelpers';
 import { pickupTokenMatches } from '../utils/pickupToken';
+import { restaurantPrivateOmit } from '../utils/restaurantPrivacy';
 import {
   safeEmitNotificationToUser,
   safeEmitOrderStatusToUser,
@@ -431,6 +432,22 @@ export const updateOrderStatus = async (req: Request, res: Response): Promise<vo
     return;
   }
 
+  // Idempotent retry (double tap, or a stale card accepting an order that
+  // auto-accept already moved): answer with the current order and skip the
+  // side effects (points, notifications, timer reset).
+  if (order.status === data.status) {
+    const current = await prisma.order.findUnique({
+      where: { id },
+      include: {
+        items: { include: { menuItem: true } },
+        restaurant: { omit: restaurantPrivateOmit },
+        groupOrder: { select: { code: true, status: true } },
+      },
+    });
+    res.json(current);
+    return;
+  }
+
   if (!isValidStatusTransition(order.status, data.status as OrderStatus)) {
     res.status(400).json({
       error: `Transition de statut invalide : ${order.status} → ${data.status}`,
@@ -485,7 +502,7 @@ export const updateOrderStatus = async (req: Request, res: Response): Promise<vo
     data: updateData,
     include: {
       items: { include: { menuItem: true } },
-      restaurant: true,
+      restaurant: { omit: restaurantPrivateOmit },
       groupOrder: { select: { code: true, status: true } },
     },
   });

@@ -42,9 +42,6 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       name: data.name,
       phone: data.phone,
       role: data.role,
-      ...(data.role === 'LIVREUR' && data.driverType
-        ? { driverProfile: { create: { type: data.driverType } } }
-        : {}),
     },
     include: { driverProfile: true },
   });
@@ -172,9 +169,20 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
 // Social sign-up may only self-assign the roles email registration allows
 // (registerSchema) — never ADMIN/STAFF/GUEST from a client-supplied body.
-const SELF_SERVICE_ROLES = ['CLIENT', 'RESTAURANT', 'LIVREUR'] as const;
+// Keep in sync with registerSchema.role. LIVREUR is excluded on purpose.
+const SELF_SERVICE_ROLES = ['CLIENT', 'RESTAURANT'] as const;
 export function selfServiceRole(role: unknown): (typeof SELF_SERVICE_ROLES)[number] {
   return SELF_SERVICE_ROLES.find((r) => r === role) ?? 'CLIENT';
+}
+
+/**
+ * Google's tokeninfo returns `email_verified` as the string "true" (and
+ * sometimes as a boolean). Without this check, a Google account holding an
+ * unverified address could sign in as the existing FAST user who owns it,
+ * because accounts are matched by email.
+ */
+export function isGoogleEmailVerified(payload: { email_verified?: unknown }): boolean {
+  return payload.email_verified === true || payload.email_verified === 'true';
 }
 
 export const googleLogin = async (req: Request, res: Response): Promise<void> => {
@@ -197,6 +205,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<void> =>
     name?: string;
     sub?: string;
     aud?: string;
+    email_verified?: string | boolean;
   };
   // The token must have been minted for FAST's own OAuth clients — a
   // Google ID token from any other app must not open a session here.
@@ -209,6 +218,10 @@ export const googleLogin = async (req: Request, res: Response): Promise<void> =>
     res.status(401).json({ error: 'Token Google invalide ou expiré' });
     return;
   }
+  if (!isGoogleEmailVerified(payload)) {
+    res.status(401).json({ error: 'Adresse email Google non vérifiée' });
+    return;
+  }
 
   const googleEmail = payload.email.trim().toLowerCase();
   let user = await findUserByEmail(googleEmail);
@@ -217,7 +230,8 @@ export const googleLogin = async (req: Request, res: Response): Promise<void> =>
       data: {
         email: googleEmail,
         name: payload.name?.trim() || googleEmail.split('@')[0],
-        password: await bcrypt.hash(`google-${payload.sub}-${Date.now()}`, env.bcryptRounds),
+        // Unusable random password: Google accounts sign in via Google only.
+        password: await bcrypt.hash(crypto.randomBytes(32).toString('hex'), env.bcryptRounds),
         role: selfServiceRole(role),
       },
       include: userWithLinks,
@@ -296,10 +310,8 @@ export const appleLogin = async (req: Request, res: Response): Promise<void> => 
         data: {
           email: appleEmail,
           name: (typeof name === 'string' ? name.trim() : '') || appleEmail.split('@')[0],
-          password: await bcrypt.hash(
-            `apple-${payload.sub}-${Date.now()}`,
-            env.bcryptRounds,
-          ),
+          // Unusable random password: Apple accounts sign in via Apple only.
+          password: await bcrypt.hash(crypto.randomBytes(32).toString('hex'), env.bcryptRounds),
           role: selfServiceRole(role),
         },
         include: userWithLinks,

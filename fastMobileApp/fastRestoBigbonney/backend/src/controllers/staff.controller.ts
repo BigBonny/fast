@@ -7,8 +7,23 @@ import { env } from '../config/env';
 import { getRestaurantIdForUser } from '../middleware/auth';
 import { redeemCodeSchema } from '../utils/validation';
 
-function generateInviteCode(): string {
-  return `FAST-${crypto.randomInt(1000, 9999)}`;
+// No 0/O or 1/I/L, so codes read aloud or copied by hand stay unambiguous.
+const INVITE_ALPHABET = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
+
+/**
+ * `FAST-XXXX-XXXX`: 8 random characters from a 31-letter alphabet,
+ * about 8.5e11 combinations. The old 4-digit codes (9,000 values) could be
+ * brute-forced by any logged-in account in about an hour.
+ */
+export function generateInviteCode(): string {
+  let body = '';
+  for (let i = 0; i < 8; i++) body += INVITE_ALPHABET[crypto.randomInt(INVITE_ALPHABET.length)];
+  return `FAST-${body.slice(0, 4)}-${body.slice(4)}`;
+}
+
+/** True for codes issued before the format change (`FAST-1234`). */
+export function isLegacyInviteCode(code: string | null | undefined): boolean {
+  return !!code && /^FAST-\d{4}$/.test(code);
 }
 
 function signStaffToken(payload: {
@@ -156,7 +171,9 @@ export const getInviteCode = async (req: Request, res: Response): Promise<void> 
     return;
   }
   let restaurant = await prisma.restaurant.findUnique({ where: { id: restaurantId } });
-  if (!restaurant!.staffInviteCode) {
+  // Legacy 4-digit codes are guessable: replace them the first time the
+  // owner opens the staff screen. Redeem already refuses them.
+  if (!restaurant!.staffInviteCode || isLegacyInviteCode(restaurant!.staffInviteCode)) {
     restaurant = await prisma.restaurant.update({
       where: { id: restaurantId },
       data: { staffInviteCode: generateInviteCode() },
@@ -201,9 +218,10 @@ export const revokeInviteCode = async (req: Request, res: Response): Promise<voi
 export const redeemInviteCode = async (req: Request, res: Response): Promise<void> => {
   const { code } = redeemCodeSchema.parse(req.body);
 
-  const restaurant = await prisma.restaurant.findFirst({
-    where: { staffInviteCode: code.trim().toUpperCase() },
-  });
+  const normalized = code.trim().toUpperCase();
+  const restaurant = isLegacyInviteCode(normalized)
+    ? null
+    : await prisma.restaurant.findFirst({ where: { staffInviteCode: normalized } });
   if (!restaurant) {
     res.status(403).json({ code: 'INVALID_INVITE_CODE', error: 'Code invalide ou révoqué' });
     return;

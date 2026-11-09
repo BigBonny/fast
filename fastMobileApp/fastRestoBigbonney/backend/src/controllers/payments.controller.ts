@@ -6,6 +6,7 @@ import { placeOrderSchema } from '../utils/validation';
 import { computeCartPricing } from '../utils/cartPricing';
 import { generatePickupToken } from '../utils/pickupToken';
 import { prepMinutesFor, shouldAutoAccept } from '../utils/autoAccept';
+import { restaurantPrivateOmit } from '../utils/restaurantPrivacy';
 import { getStripeCustomerId } from './payment_methods.controller';
 import {
   distanceKm,
@@ -45,7 +46,7 @@ async function createPaidOrderFromCheckout(
             where: { id: checkout.createdOrderId },
             include: {
               items: { include: { menuItem: true } },
-              restaurant: true,
+              restaurant: { omit: restaurantPrivateOmit },
               groupOrder: { select: { code: true, status: true } },
             },
           });
@@ -112,7 +113,7 @@ async function createPaidOrderFromCheckout(
           },
           include: {
             items: { include: { menuItem: true } },
-            restaurant: true,
+            restaurant: { omit: restaurantPrivateOmit },
             groupOrder: { select: { code: true, status: true } },
           },
         });
@@ -189,7 +190,7 @@ async function createPaidOrderFromCheckout(
                 },
                 include: {
                   items: { include: { menuItem: true } },
-                  restaurant: true,
+                  restaurant: { omit: restaurantPrivateOmit },
                   groupOrder: { select: { code: true, status: true } },
                 },
               })
