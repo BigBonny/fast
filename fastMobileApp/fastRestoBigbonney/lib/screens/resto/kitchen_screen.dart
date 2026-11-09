@@ -15,6 +15,7 @@ import '../../providers/auth_provider.dart';
 import '../../services/order_service.dart';
 import '../../theme.dart';
 import '../../l10n/tr.dart';
+import 'client_proximity.dart';
 
 class KitchenScreen extends StatefulWidget {
   const KitchenScreen({super.key});
@@ -290,28 +291,13 @@ class _KitchenScreenState extends State<KitchenScreen> {
         statusLabel = fast.tr('status_ready');
     }
 
-    // Client proximity, same rules as the Pro order cards: gpsProgress is
-    // only sent once the client has really started moving (or tapped
-    // "Je pars"). Yellow = en route, orange = close, red = at the door;
-    // no colour while the client hasn't left.
-    Color? proxColor;
-    String? proxLabel;
-    if (o.fulfillmentType == FulfillmentType.pickup) {
-      if (o.isReadyAtEntrance || o.gpsProgress >= 90) {
-        proxColor = const Color(0xFFEF4444);
-        proxLabel = fast.tr('prox_here');
-      } else if (o.gpsProgress >= 40) {
-        proxColor = const Color(0xFFF97316);
-        proxLabel = fast.tr('prox_close');
-      } else if (o.gpsProgress > 0) {
-        proxColor = const Color(0xFFFACC15);
-        proxLabel = fast.tr('prox_far');
-      } else {
-        proxLabel = fast.tr('client_not_left');
-      }
-    }
-    final proxIsYellow = proxColor == const Color(0xFFFACC15);
-    final accent = proxColor ?? statusColor;
+    // Client proximity, same rule as the Pro order cards (see
+    // client_proximity.dart): green = not left yet, yellow = en route,
+    // red = 2 min away or at the door.
+    final prox = clientProximity(o);
+    final Color? proxColor = prox?.color;
+    final String? proxLabel = prox == null ? null : fast.tr(prox.labelKey);
+    final accent = (prox?.tintsCard ?? false) ? prox!.color : statusColor;
 
     return Container(
       decoration: BoxDecoration(
@@ -372,7 +358,7 @@ class _KitchenScreenState extends State<KitchenScreen> {
                       proxLabel,
                       style: TextStyle(
                         // Dark text on the yellow chip for contrast.
-                        color: proxIsYellow ? Colors.black : Colors.white,
+                        color: prox?.onColor ?? Colors.white,
                         fontWeight: FontWeight.w900,
                         fontSize: 10,
                       ),

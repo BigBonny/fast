@@ -8,6 +8,7 @@ import '../../services/order_service.dart';
 import '../../api/api_exceptions.dart';
 import '../../theme.dart';
 import '../../l10n/tr.dart';
+import 'client_proximity.dart';
 
 class RestoOrdersScreen extends StatefulWidget {
   const RestoOrdersScreen({super.key});
@@ -428,27 +429,14 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
       statusColor = Color(0xFF3B82F6);
     }
 
-    // Client proximity — live gpsProgress pushed by the client app only
-    // once they have genuinely started moving (or tapped "Je pars").
-    // Yellow = en route, orange = close, red = at the door.
-    Color? proxColor;
-    String? proxLabel;
-    if (order.fulfillmentType == FulfillmentType.pickup) {
-      if (order.isReadyAtEntrance || order.gpsProgress >= 90) {
-        proxColor = const Color(0xFFEF4444);
-        proxLabel = tr(context, 'client_almost');
-      } else if (order.gpsProgress >= 40) {
-        proxColor = const Color(0xFFF97316);
-        proxLabel = tr(context, 'prox_close');
-      } else if (order.gpsProgress > 0) {
-        proxColor = const Color(0xFFFACC15);
-        proxLabel = tr(context, 'prox_far');
-      } else {
-        proxLabel = tr(context, 'client_not_left');
-      }
-    }
-    final Color accentColor = proxColor ?? statusColor;
-    final bool enRouteYellow = proxColor == const Color(0xFFFACC15);
+    // Client proximity (see client_proximity.dart): green = not left yet,
+    // yellow = en route, red = 2 min away or at the door.
+    final prox = clientProximity(order);
+    final Color? proxColor = prox?.color;
+    final String? proxLabel = prox == null ? null : tr(context, prox.labelKey);
+    final bool proxTints = prox?.tintsCard ?? false;
+    final Color accentColor = proxTints ? prox!.color : statusColor;
+    final bool enRouteYellow = prox == ClientProximity.enRoute;
 
     return Container(
       margin: EdgeInsets.only(bottom: 16),
@@ -460,7 +448,7 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
             : context.fast.card,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: accentColor.withValues(alpha: proxColor != null ? 0.9 : 0.5),
+          color: accentColor.withValues(alpha: proxTints ? 0.9 : 0.5),
           width: 2,
         ),
       ),
@@ -507,8 +495,8 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                     ),
                     child: Text(
                       proxLabel,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: prox?.onColor ?? Colors.white,
                         fontWeight: FontWeight.bold,
                         fontSize: 10,
                       ),
