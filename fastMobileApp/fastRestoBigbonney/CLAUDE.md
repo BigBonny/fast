@@ -52,8 +52,11 @@ the production API URL is used.
   gestures eagerly inside scroll views or the map renders but can't be
   touched. External directions via `url_launcher` (Apple Maps on iOS,
   Google Maps elsewhere).
-- Order card colors (Pro): yellow = client en route ONLY; violet =
-  preparing; don't reuse amber for status.
+- Order card colors (Pro): client proximity is green = not left yet,
+  yellow = en route ONLY, red = 2 min away or at the entrance — one rule
+  in `lib/screens/resto/client_proximity.dart` for the order cards and
+  the kitchen screen. Status: violet = preparing, blue = ready; don't
+  reuse amber for status.
 - Compact Pro order cards expand on tap — keep header chips, ETA,
   timer and action buttons visible when collapsed.
 
