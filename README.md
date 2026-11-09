@@ -1,39 +1,70 @@
-**Welcome to your Base44 project** 
+# FAST — click & collect
 
-**About**
+*Chaque minute compte.* Customers order ahead from partner restaurants, pay
+in-app with Stripe, and pick up with a QR code or a typed `XXXX-FAST` code.
 
-View and Edit  your app on [Base44.com](http://Base44.com) 
+## What's in this repo
 
-This project contains everything you need to run your app locally.
+| Part | Where | Stack | Deploy |
+|------|-------|-------|--------|
+| Website (customers + partner dashboard) | repo root: `app/`, `components/`, `lib/`, `api/` | Next.js 14 (App Router), Tailwind | Vercel, project `fast` |
+| Mobile app (customer + FAST Pro) | `fastMobileApp/fastRestoBigbonney` | Flutter, Provider | Codemagic (`codemagic.yaml`) |
+| Backend API | `fastMobileApp/fastRestoBigbonney/backend` | Express, TypeScript, Prisma, PostgreSQL (Supabase) | Vercel, on push to `master` |
 
-**Edit the code in your local development environment**
+`api/fastBackend.ts` is the website's client for the backend API, not
+server routes.
 
-Any change pushed to the repo will also be reflected in the Base44 Builder.
+## Website
 
-**Prerequisites:** 
+Uses **pnpm** (version pinned in `package.json`).
 
-1. Clone the repository using the project's Git URL 
-2. Navigate to the project directory
-3. Install dependencies: `npm install`
-4. Create an `.env.local` file and set the right environment variables
-
+```bash
+pnpm install
+pnpm dev        # http://localhost:3000
+pnpm build
+pnpm lint
 ```
-VITE_BASE44_APP_ID=your_app_id
-VITE_BASE44_APP_BASE_URL=your_backend_url
 
-e.g.
-VITE_BASE44_APP_ID=cbef744a8545c389ef439ea6
-VITE_BASE44_APP_BASE_URL=https://my-to-do-list-81bfaad7.base44.app
+Environment (`.env.local`):
+
+- `NEXT_PUBLIC_API_URL`: backend base URL including `/api`. Defaults to the
+  production backend.
+- `NEXT_PUBLIC_GOOGLE_CLIENT_ID`: Google Sign-In web client ID.
+
+Security headers (CSP, framing, HSTS) and the image host allowlist live in
+`next.config.js`. If you add a third-party script, API or image host,
+update them there; the image hosts must also match
+`components/SafeImage.tsx`.
+
+## Mobile app
+
+The Flutter SDK is managed by Puro (`.puro.json`, stable env):
+
+```bash
+cd fastMobileApp/fastRestoBigbonney
+puro dart analyze lib/
+puro flutter test
+puro flutter run
 ```
 
-Run the app: `npm run dev`
+See `fastMobileApp/fastRestoBigbonney/CLAUDE.md` for structure and
+conventions.
 
-**Publish your changes**
+## Backend
 
-Open [Base44.com](http://Base44.com) and click on Publish.
+```bash
+cd fastMobileApp/fastRestoBigbonney/backend
+npm install
+npm run dev
+npx tsc --noEmit
+npm test
+```
 
-**Docs & Support**
+Copy `.env.example` to `.env`. Schema changes are applied with
+`npx prisma db push` **before** deploying code that uses them; the Vercel
+build does not change the database.
 
-Documentation: [https://docs.base44.com/Integrations/Using-GitHub](https://docs.base44.com/Integrations/Using-GitHub)
+> Never run `prisma/seed.ts` against the shared or production database:
+> it deletes existing data first. Use a separate local database.
 
-Support: [https://app.base44.com/support](https://app.base44.com/support)
+More project rules: [`CLAUDE.md`](CLAUDE.md).

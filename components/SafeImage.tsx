@@ -3,24 +3,27 @@
 import { useState, memo } from "react";
 import Image from "next/image";
 
-const KNOWN_HOSTS = [
+// Hosts served through the Next image optimizer. Must match
+// images.remotePatterns in next.config.js, or the optimizer rejects the
+// image. Any other host still displays, as a plain <img>.
+const OPTIMIZED_IMAGE_HOSTS = [
   "images.unsplash.com",
-  "unsplash.com",
-  "supabase.co",
-  "cloudinary.com",
-  "imgur.com",
-  "s3.amazonaws.com",
-  "amazonaws.com",
-  "vercel.app",
+  "qrubbfaqxrndjvnpchlc.supabase.co",
+  new URL(process.env.NEXT_PUBLIC_API_URL || "https://backend-six-iota-69.vercel.app/api").hostname,
 ];
 
 function isKnownHost(src?: string) {
   if (!src || src.startsWith("/")) return false;
   try {
     const url = new URL(src);
-    return KNOWN_HOSTS.some(
-      (h) => url.hostname === h || url.hostname.endsWith("." + h)
-    );
+    if (url.protocol !== "https:") return false;
+    if (url.hostname.endsWith(".supabase.co")) {
+      return (
+        OPTIMIZED_IMAGE_HOSTS.includes(url.hostname) &&
+        url.pathname.startsWith("/storage/v1/object/public/")
+      );
+    }
+    return OPTIMIZED_IMAGE_HOSTS.includes(url.hostname);
   } catch {
     return false;
   }
