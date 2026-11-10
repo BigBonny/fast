@@ -483,18 +483,10 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
               ),
 
               // Menu title
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  FASTSpace.s16,
-                  FASTSpace.s24,
-                  FASTSpace.s16,
-                  FASTSpace.s8,
-                ),
-                child: Text(
-                  fastLabelCase(context, provider.tr('menu_items')),
-                  style: FASTText.label.copyWith(color: context.fast.t3),
-                ),
-              ),
+              // No "menu" label here: the category bar below already
+              // carries the status-bar inset as top padding (it needs it
+              // once pinned), and that inset doubles as the section gap.
+              const SizedBox(height: FASTSpace.s8),
             ],
           ),
         ),
@@ -569,44 +561,49 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
                       borderRadius: BorderRadius.circular(FASTRadius.md),
                       child: SizedBox(
                         height: 180,
-                        child: MapLibreMap(
-                          // Claim drags before the page scroll does.
-                          gestureRecognizers: {
-                            Factory<OneSequenceGestureRecognizer>(
-                              () => EagerGestureRecognizer(),
-                            ),
-                          },
-                          options: MapOptions(
-                            initStyle: openFreeMapStyle,
-                            initCenter: geo(rest.latitude, rest.longitude),
-                            initZoom: 15.0,
-                            gestures: const MapGestures(
-                              rotate: false,
-                              pan: true,
-                              zoom: true,
-                              pitch: false,
-                            ),
-                          ),
-                          onEvent: (event) async {
-                            if (event case MapEventStyleLoaded()) {
-                              await registerMapMarkers(event.style);
-                            }
-                          },
-                          layers: [
-                            MarkerLayer(
-                              points: [
-                                Feature(
-                                  geometry: Point(
-                                    geo(rest.latitude, rest.longitude),
+                        child: debugSkipMaps
+                            ? ColoredBox(color: context.fast.cardHigh)
+                            : MapLibreMap(
+                                // Claim drags before the page scroll does.
+                                gestureRecognizers: {
+                                  Factory<OneSequenceGestureRecognizer>(
+                                    () => EagerGestureRecognizer(),
+                                  ),
+                                },
+                                options: MapOptions(
+                                  initStyle: openFreeMapStyle,
+                                  initCenter: geo(
+                                    rest.latitude,
+                                    rest.longitude,
+                                  ),
+                                  initZoom: 15.0,
+                                  gestures: const MapGestures(
+                                    rotate: false,
+                                    pan: true,
+                                    zoom: true,
+                                    pitch: false,
                                   ),
                                 ),
-                              ],
-                              iconImage: 'marker_restaurant',
-                              iconSize: 0.2,
-                              iconAnchor: IconAnchor.center,
-                            ),
-                          ],
-                        ),
+                                onEvent: (event) async {
+                                  if (event case MapEventStyleLoaded()) {
+                                    await registerMapMarkers(event.style);
+                                  }
+                                },
+                                layers: [
+                                  MarkerLayer(
+                                    points: [
+                                      Feature(
+                                        geometry: Point(
+                                          geo(rest.latitude, rest.longitude),
+                                        ),
+                                      ),
+                                    ],
+                                    iconImage: 'marker_restaurant',
+                                    iconSize: 0.2,
+                                    iconAnchor: IconAnchor.center,
+                                  ),
+                                ],
+                              ),
                       ),
                     ),
                   ],

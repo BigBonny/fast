@@ -50,7 +50,7 @@ void main() {
         ),
       );
       expect(tester.takeException(), isNull);
-      expect(find.text('€12.50'), findsOneWidget);
+      expect(find.text('12.50 €'), findsOneWidget);
       expect(find.text('~8 min'), findsOneWidget);
       // No photo: the "+" still shows, standing alone.
       expect(find.byIcon(Icons.add), findsOneWidget);
@@ -60,7 +60,9 @@ void main() {
       expect(taps, 1);
     });
 
-    testWidgets('sold-out item shows the tag and hides the "+"', (tester) async {
+    testWidgets('sold-out item shows the tag and hides the "+"', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         _host(
           FastMenuRow(
@@ -110,7 +112,7 @@ void main() {
         ),
       );
       expect(tester.takeException(), isNull);
-      expect(find.text('€9.90'), findsOneWidget);
+      expect(find.text('9.90 €'), findsOneWidget);
     });
   });
 
@@ -165,7 +167,7 @@ void main() {
   });
 
   test('fastPriceLabel keeps the app-wide price format', () {
-    expect(fastPriceLabel(12.5), '€12.50');
-    expect(fastPriceLabel(0), '€0.00');
+    expect(fastPriceLabel(12.5), '12.50 €');
+    expect(fastPriceLabel(0), '0.00 €');
   });
 }

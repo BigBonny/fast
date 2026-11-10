@@ -759,7 +759,7 @@ class _MainShellState extends State<MainShell>
                       ),
                       const SizedBox(width: FASTSpace.s12),
                       Text(
-                        '€${provider.cartTotal.toStringAsFixed(2)}',
+                        '${provider.cartTotal.toStringAsFixed(2)} €',
                         style: FASTText.price.copyWith(
                           color: context.fast.onInk,
                         ),

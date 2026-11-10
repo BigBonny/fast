@@ -10,8 +10,9 @@ import 'fast_ui.dart';
 // menu row, pickup code. Everything is drawn from the tokens in
 // `theme.dart` (FASTSpace, FASTRadius, FASTText, `context.fast`).
 
-/// Formats an amount the way the rest of the app does: `€12.50`.
-String fastPriceLabel(double amount) => '€${amount.toStringAsFixed(2)}';
+/// Formats an amount the way receipts, totals and the translated strings
+/// already do: `12.50 €` (amount, space, euro sign).
+String fastPriceLabel(double amount) => '${amount.toStringAsFixed(2)} €';
 
 enum FastTagKind {
   /// Quiet grey pill — dietary tags and neutral facts.

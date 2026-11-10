@@ -102,7 +102,6 @@ class NotificationCenterList extends StatelessWidget {
           icon: Icons.notifications_off_outlined,
           title: tr(context, 'no_notifs'),
           subtitle: tr(context, 'notifs_hint'),
-          accent: context.fast.t2,
         ),
       ),
     );

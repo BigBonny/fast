@@ -442,7 +442,7 @@ class _CommandesScreenState extends State<CommandesScreen>
                 ),
                 SizedBox(height: 4),
                 Text(
-                  'SUIVI ACTIF • ${order.id}',
+                  '${tr(context, 'active_tracking')} • ${order.id}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: FASTText.caption.copyWith(color: context.fast.t3),
@@ -1184,7 +1184,10 @@ class _CommandesScreenState extends State<CommandesScreen>
                           if (!prepStarted) ...[
                             const SizedBox(height: 6),
                             Text(
-                              '👉 ACTIF. Remboursement : ${order.subtotal.toStringAsFixed(2)} €',
+                              tr(context, 'refund_active').replaceAll(
+                                '{n}',
+                                order.subtotal.toStringAsFixed(2),
+                              ),
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 12,
@@ -1639,7 +1642,7 @@ class _CommandesScreenState extends State<CommandesScreen>
                         ),
                         const SizedBox(width: FASTSpace.s12),
                         Text(
-                          '€${(cartItem.menuItem.price * cartItem.quantity).toStringAsFixed(2)}',
+                          '${(cartItem.menuItem.price * cartItem.quantity).toStringAsFixed(2)} €',
                           style: FASTText.price.copyWith(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
@@ -1667,7 +1670,7 @@ class _CommandesScreenState extends State<CommandesScreen>
                     ),
                     const SizedBox(width: FASTSpace.s12),
                     Text(
-                      '€${order.total.toStringAsFixed(2)}',
+                      '${order.total.toStringAsFixed(2)} €',
                       style: FASTText.price.copyWith(color: context.fast.t1),
                     ),
                   ],

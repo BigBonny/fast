@@ -1054,7 +1054,7 @@ class _AccountScreenState extends State<AccountScreen>
     if (pts < 80) {
       prevThreshold = 0;
       nextThreshold = 80;
-      nextLevel = 'FAST Member';
+      nextLevel = tr(context, 'level_member');
     } else if (pts < 200) {
       prevThreshold = 80;
       nextThreshold = 200;
@@ -1136,7 +1136,7 @@ class _AccountScreenState extends State<AccountScreen>
         ),
         const SizedBox(height: FASTSpace.s12),
         Text(
-          '$remaining pts restants',
+          tr(context, 'pts_remaining').replaceAll('{n}', '$remaining'),
           style: FASTText.body.copyWith(color: context.fast.t2),
         ),
       ],

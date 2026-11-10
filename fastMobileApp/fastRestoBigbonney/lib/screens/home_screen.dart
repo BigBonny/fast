@@ -8,10 +8,38 @@ import '../models.dart';
 import '../theme.dart';
 import '../widgets/fast_image.dart';
 import '../widgets/fast_glow_background.dart';
+import '../widgets/fast_night_surface.dart';
 import '../widgets/fast_parts.dart';
 import '../widgets/fast_ui.dart';
 import '../l10n/tr.dart';
 import '../services/restaurant_service.dart';
+
+/// Shell of a promo card: the night surface for the lead card, a plain
+/// card with a hairline for the others.
+class _PromoShell extends StatelessWidget {
+  const _PromoShell({required this.night, required this.child});
+
+  final bool night;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final fast = context.fast;
+    return Container(
+      width: 280,
+      margin: const EdgeInsetsDirectional.only(end: FASTSpace.s12),
+      padding: night ? null : const EdgeInsets.all(FASTSpace.s16),
+      decoration: night
+          ? null
+          : BoxDecoration(
+              color: fast.card,
+              borderRadius: BorderRadius.circular(FASTRadius.md),
+              border: Border.all(color: fast.line),
+            ),
+      child: night ? FastNightSurface(child: child) : child,
+    );
+  }
+}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -260,7 +288,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             Positioned(
                               left: 20,
                               right: 0,
-                              top: statusBar + 50,
+                              // +56 clears the wordmark and its 12 pt
+                              // tagline even under a short status bar.
+                              top: statusBar + 56,
                               child: FractionallySizedBox(
                                 alignment: Alignment.centerLeft,
                                 widthFactor:
@@ -799,20 +829,26 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: FASTSpace.s16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.baseline,
-        textBaseline: TextBaseline.alphabetic,
-        children: [
-          Expanded(
-            child: Text(
+      // A Wrap, not a Row: the title keeps its natural width on one line
+      // where it can, and a long trailing text drops under it instead of
+      // squeezing the title onto two lines.
+      child: SizedBox(
+        width: double.infinity,
+        child: Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          crossAxisAlignment: WrapCrossAlignment.end,
+          spacing: FASTSpace.s12,
+          runSpacing: FASTSpace.s4,
+          children: [
+            Text(
               title,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: FASTText.title.copyWith(color: fast.t1),
             ),
-          ),
-          if (trail != null) ...[const SizedBox(width: FASTSpace.s12), trail],
-        ],
+            if (trail != null) trail,
+          ],
+        ),
       ),
     );
   }
@@ -1101,22 +1137,17 @@ class _HomeScreenState extends State<HomeScreen> {
     IconData ctaIcon = Icons.chevron_right,
   }) {
     final fast = context.fast;
-    final bg = onInkCard ? fast.ink : fast.card;
-    final fg = onInkCard ? fast.onInk : fast.t1;
-    final fgMuted = onInkCard ? fast.onInk.withValues(alpha: 0.72) : fast.t2;
-    final pillBg = onInkCard ? fast.onInk : fast.ink;
-    final pillFg = onInkCard ? fast.ink : fast.onInk;
+    // The lead card sits on the night surface — it carries the hero's
+    // mood one step down the page and looks the same in both themes.
+    // (The flag keeps its name; it now means "the lead, dark card".)
+    final fg = onInkCard ? FastNightSurface.onNight : fast.t1;
+    final fgMuted = onInkCard ? FastNightSurface.onNightMuted : fast.t2;
+    final pillBg = onInkCard ? FastNightSurface.onNight : fast.ink;
+    final pillFg = onInkCard ? FASTBrand.onAmber : fast.onInk;
     return FastTap(
       onTap: onTap,
-      child: Container(
-        width: 280,
-        margin: const EdgeInsetsDirectional.only(end: FASTSpace.s12),
-        padding: const EdgeInsets.all(FASTSpace.s16),
-        decoration: BoxDecoration(
-          color: bg,
-          borderRadius: BorderRadius.circular(FASTRadius.md),
-          border: Border.all(color: onInkCard ? bg : fast.line),
-        ),
+      child: _PromoShell(
+        night: onInkCard,
         child: Stack(
           children: [
             // Large, faint line icon in the top corner, clear of the text.
@@ -1470,7 +1501,6 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         FastEmpty(
           icon: Icons.restaurant_outlined,
-          accent: context.fast.t1,
           title: tr(context, 'no_cuisine'),
           subtitle: tr(context, 'widen_radius'),
           action: FastButton(

@@ -68,7 +68,6 @@ class _CartScreenState extends State<CartScreen> {
       return Center(
         child: FastEmpty(
           icon: Icons.shopping_bag_outlined,
-          accent: context.fast.t1,
           title: provider.tr('cart_empty'),
           subtitle: tr(context, 'cart_empty_hint'),
           action: FastButton(
@@ -290,7 +289,14 @@ class _CartScreenState extends State<CartScreen> {
                   spacing: 6,
                   runSpacing: 6,
                   children: [
-                    for (final opt in item.selectedOptions) FastTag(opt),
+                    // Paid supplements are stored by id; show their name.
+                    for (final opt in item.selectedOptions)
+                      FastTag(
+                        item.menuItem.supplements
+                            .where((s) => s.id == opt)
+                            .map((s) => s.name)
+                            .firstWhere((_) => true, orElse: () => opt),
+                      ),
                   ],
                 ),
               ],
@@ -314,7 +320,10 @@ class _CartScreenState extends State<CartScreen> {
               ],
               const SizedBox(height: FASTSpace.s4),
               Text(
-                '${item.menuItem.price.toStringAsFixed(2)} € chacun',
+                tr(
+                  context,
+                  'each_price',
+                ).replaceAll('{n}', item.menuItem.price.toStringAsFixed(2)),
                 style: FASTText.caption.copyWith(color: fast.t2),
               ),
               const SizedBox(height: FASTSpace.s12),
