@@ -314,7 +314,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ),
                                     ),
                                     Padding(
-                                      padding: const EdgeInsets.only(left: 12),
+                                      padding: const EdgeInsets.only(left: 4),
                                       // Amber→ember gradient "Fast." — the
                                       // brand accent line, on its own row.
                                       child: FittedBox(
@@ -332,22 +332,34 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   Color(0xFFD97706),
                                                 ],
                                               ).createShader(rect),
-                                          child: const Text(
-                                            'Fast.',
-                                            style: TextStyle(
-                                              fontSize: 32,
-                                              fontWeight: FontWeight.w900,
-                                              fontStyle: FontStyle.italic,
-                                              letterSpacing: -0.8,
-                                              color: Colors.white,
-                                              height: 1.05,
-                                              shadows: [
-                                                Shadow(
-                                                  color: Colors.black54,
-                                                  blurRadius: 12,
-                                                  offset: Offset(0, 2),
-                                                ),
-                                              ],
+                                          // Side padding gives the italic's overhang room
+                                          // inside the gradient mask so it is not clipped.
+                                          child: const Padding(
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: 8,
+                                            ),
+                                            child: Text(
+                                              'Fast.',
+                                              style: TextStyle(
+                                                fontFamily:
+                                                    FASTText.displayFamily,
+                                                fontVariations: [
+                                                  FontVariation('wght', 900),
+                                                ],
+                                                fontSize: 36,
+                                                fontWeight: FontWeight.w900,
+                                                fontStyle: FontStyle.italic,
+                                                letterSpacing: -0.4,
+                                                color: Colors.white,
+                                                height: 1.05,
+                                                shadows: [
+                                                  Shadow(
+                                                    color: Colors.black54,
+                                                    blurRadius: 12,
+                                                    offset: Offset(0, 2),
+                                                  ),
+                                                ],
+                                              ),
                                             ),
                                           ),
                                         ),
@@ -1726,9 +1738,11 @@ class _HeroStreakPainter extends CustomPainter {
 /// Shared white headline style for the stacked hero lines
 /// ("Commandez." / "Maintenant.") — "Fast." has its own amber variant.
 const _heroHeadline = TextStyle(
-  fontSize: 32,
+  fontFamily: FASTText.displayFamily,
+  fontSize: 34,
   fontWeight: FontWeight.w900,
-  letterSpacing: -0.8,
+  fontVariations: [FontVariation('wght', 900)],
+  letterSpacing: -0.4,
   color: Colors.white,
   height: 1.05,
   shadows: [

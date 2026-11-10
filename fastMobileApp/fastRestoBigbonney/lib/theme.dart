@@ -129,17 +129,27 @@ class FASTText {
 
   static const List<FontFeature> _tabular = [FontFeature.tabularFigures()];
 
+  /// The display face: a high-contrast serif in the French tradition,
+  /// used for headlines and section titles only. Body text stays in the
+  /// system font. Scripts it does not cover (Arabic, Chinese…) fall back
+  /// to the system font on their own.
+  static const String displayFamily = 'Playfair Display';
+
   static const TextStyle display = TextStyle(
+    fontFamily: displayFamily,
     fontSize: 28,
-    fontWeight: FontWeight.w900,
-    letterSpacing: -0.6,
-    height: 1.1,
+    fontWeight: FontWeight.w800,
+    fontVariations: [FontVariation('wght', 800)],
+    letterSpacing: -0.3,
+    height: 1.12,
   );
 
   static const TextStyle title = TextStyle(
+    fontFamily: displayFamily,
     fontSize: 20,
-    fontWeight: FontWeight.w800,
-    letterSpacing: -0.3,
+    fontWeight: FontWeight.w700,
+    fontVariations: [FontVariation('wght', 700)],
+    letterSpacing: -0.1,
     height: 1.2,
   );
 
