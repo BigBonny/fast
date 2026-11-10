@@ -72,7 +72,9 @@ class _FastTapState extends State<FastTap> with SingleTickerProviderStateMixin {
   }
 }
 
-enum FastButtonKind { primary, soft, outline, ghost }
+/// `ink` is the neutral pill used by the rebuilt customer screens:
+/// near-black in light mode, near-white in dark mode, no gradient.
+enum FastButtonKind { primary, soft, outline, ghost, ink }
 
 /// Primary FAST call-to-action — amber gradient, warm glow, springy
 /// press, built-in loading state.
@@ -118,6 +120,7 @@ class FastButton extends StatelessWidget {
         null,
       ),
       FastButtonKind.ghost => (null, FASTBrand.amberDeep, null, null),
+      FastButtonKind.ink => (null, fast.onInk, null, null),
     };
 
     final content = loading
@@ -169,6 +172,7 @@ class FastButton extends StatelessWidget {
             color: switch (kind) {
               FastButtonKind.soft => fast.amberSoftBg,
               FastButtonKind.primary => FASTBrand.amber,
+              FastButtonKind.ink => fast.ink,
               _ => Colors.transparent,
             },
             border:
@@ -176,7 +180,9 @@ class FastButton extends StatelessWidget {
                 (kind == FastButtonKind.soft
                     ? Border.all(color: fast.amberSoftBorder)
                     : null),
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(
+              kind == FastButtonKind.ink ? FASTRadius.pill : 14,
+            ),
             boxShadow: glow == null
                 ? null
                 : [
@@ -548,6 +554,11 @@ class FastNavBar extends StatefulWidget {
   /// Optional keys per tab — the Pro spotlight tutorial targets nav items.
   final List<Key?>? itemKeys;
 
+  /// Calm variant used by the customer shell: same frosted floating pill,
+  /// but the selected tab sits on a flat ink pill (no gradient, no glow)
+  /// and labels are 12. With `false` the bar is exactly the original.
+  final bool calm;
+
   const FastNavBar({
     super.key,
     required this.currentIndex,
@@ -558,6 +569,7 @@ class FastNavBar extends StatefulWidget {
     this.line,
     this.inactive,
     this.itemKeys,
+    this.calm = false,
   });
 
   @override
@@ -580,7 +592,7 @@ class _FastNavBarState extends State<FastNavBar>
       _pos.animateTo(
         widget.currentIndex.toDouble(),
         duration: const Duration(milliseconds: 380),
-        curve: Curves.easeOutBack,
+        curve: widget.calm ? Curves.easeOutCubic : Curves.easeOutBack,
       );
     }
   }
@@ -594,17 +606,22 @@ class _FastNavBarState extends State<FastNavBar>
   @override
   Widget build(BuildContext context) {
     final fast = context.fast;
+    final calm = widget.calm;
     final accent = widget.accent;
-    final inactive = widget.inactive ?? fast.t3;
+    final inactive = widget.inactive ?? (calm ? fast.t2 : fast.t3);
     final bottom = MediaQuery.paddingOf(context).bottom;
     // Icon/label color inside the filled indicator — dark on bright
-    // accents (teal, amber), white on dark ones.
-    final onAccent = accent.computeLuminance() > 0.35
-        ? const Color(0xFF10141F)
-        : Colors.white;
+    // accents (teal, amber), white on dark ones. Calm: content on ink.
+    final onAccent = calm
+        ? fast.onInk
+        : (accent.computeLuminance() > 0.35
+              ? const Color(0xFF10141F)
+              : Colors.white);
+    // Calm: 2px less side margin so four 12pt labels fit at 360 wide.
+    final side = calm ? 12.0 : 14.0;
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(14, 0, 14, bottom + 12),
+      padding: EdgeInsets.fromLTRB(side, 0, side, bottom + 12),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(34),
@@ -614,11 +631,12 @@ class _FastNavBarState extends State<FastNavBar>
               blurRadius: 32,
               offset: const Offset(0, 16),
             ),
-            BoxShadow(
-              color: accent.withValues(alpha: 0.08),
-              blurRadius: 40,
-              offset: const Offset(0, 8),
-            ),
+            if (!calm)
+              BoxShadow(
+                color: accent.withValues(alpha: 0.08),
+                blurRadius: 40,
+                offset: const Offset(0, 8),
+              ),
           ],
         ),
         child: ClipRRect(
@@ -646,30 +664,37 @@ class _FastNavBarState extends State<FastNavBar>
                       AnimatedBuilder(
                         animation: _pos,
                         builder: (ctx, _) => PositionedDirectional(
-                          start: _pos.value * tabW + 8,
-                          top: 9,
-                          width: tabW - 16,
-                          height: 50,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  Color.lerp(accent, Colors.white, 0.12)!,
-                                  Color.lerp(accent, Colors.black, 0.18)!,
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(26),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: accent.withValues(alpha: 0.45),
-                                  blurRadius: 18,
-                                  offset: const Offset(0, 6),
+                          start: _pos.value * tabW + (calm ? 3 : 8),
+                          top: calm ? 8 : 9,
+                          width: tabW - (calm ? 6 : 16),
+                          height: calm ? 52 : 50,
+                          child: calm
+                              ? DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    color: fast.ink,
+                                    borderRadius: BorderRadius.circular(22),
+                                  ),
+                                )
+                              : Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        Color.lerp(accent, Colors.white, 0.12)!,
+                                        Color.lerp(accent, Colors.black, 0.18)!,
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(26),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: accent.withValues(alpha: 0.45),
+                                        blurRadius: 18,
+                                        offset: const Offset(0, 6),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ],
-                            ),
-                          ),
                         ),
                       ),
                       Row(
@@ -704,6 +729,7 @@ class _FastNavBarState extends State<FastNavBar>
   }
 
   Widget _tab(int i, FastNavItem item, Color inactive, Color onAccent) {
+    final calm = widget.calm;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () => widget.onTap(i),
@@ -712,11 +738,11 @@ class _FastNavBarState extends State<FastNavBar>
         builder: (ctx, _) {
           final t = 1 - (_pos.value - i).abs().clamp(0.0, 1.0);
           final color = Color.lerp(inactive, onAccent, t)!;
-          return Column(
+          final column = Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Transform.scale(
-                scale: 1 + 0.18 * t,
+                scale: calm ? 1 : 1 + 0.18 * t,
                 child: Stack(
                   clipBehavior: Clip.none,
                   children: [
@@ -728,24 +754,25 @@ class _FastNavBarState extends State<FastNavBar>
                         ),
                     if (item.badge > 0)
                       Positioned(
-                        right: -11,
-                        top: -6,
+                        right: calm ? -15 : -11,
+                        top: calm ? -8 : -6,
                         child: Container(
-                          padding: const EdgeInsets.all(2),
+                          padding: EdgeInsets.all(calm ? 1 : 2),
                           decoration: const BoxDecoration(
                             color: Color(0xFFEF4444),
                             shape: BoxShape.circle,
                           ),
-                          constraints: const BoxConstraints(
-                            minWidth: 15,
-                            minHeight: 15,
+                          constraints: BoxConstraints(
+                            minWidth: calm ? 18 : 15,
+                            minHeight: calm ? 18 : 15,
                           ),
                           child: Text(
                             '${item.badge}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.white,
-                              fontSize: 8,
+                              fontSize: calm ? 12 : 8,
                               fontWeight: FontWeight.w900,
+                              height: calm ? 1.3 : null,
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -773,15 +800,22 @@ class _FastNavBarState extends State<FastNavBar>
               Text(
                 item.label,
                 style: TextStyle(
-                  fontSize: 9,
-                  fontWeight: FontWeight.w800,
+                  fontSize: calm ? 12 : 9,
+                  fontWeight: calm ? FontWeight.w700 : FontWeight.w800,
                   color: color,
-                  letterSpacing: 0.2,
+                  letterSpacing: calm ? 0 : 0.2,
+                  height: calm ? 1.2 : null,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ],
+          );
+          if (!calm) return column;
+          // Keep the label inside the ink pill (pill is inset 3 a side).
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 5),
+            child: column,
           );
         },
       ),

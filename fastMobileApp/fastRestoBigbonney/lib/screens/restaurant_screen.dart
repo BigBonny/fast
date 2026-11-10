@@ -3,6 +3,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:maplibre/maplibre.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -12,7 +13,9 @@ import '../services/map_helper.dart';
 import '../theme.dart';
 import 'story_viewer_screen.dart';
 import '../widgets/fast_image.dart';
+import '../widgets/fast_parts.dart';
 import '../widgets/fast_ui.dart';
+import 'product_sheet.dart';
 import '../l10n/tr.dart';
 import '../services/reservation_service.dart';
 import '../services/review_service.dart';
@@ -133,19 +136,25 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
   }
 
   Widget _categoryChip(BuildContext context, String cat, bool active) {
-    const amber = Color(0xFFF59E0B);
+    // Selected state is ink (near-black in light mode, near-white in
+    // dark), not the accent — amber is kept for the pickup code and tags.
+    final ink = context.fast.ink;
+    final onInk = context.fast.onInk;
     return Padding(
       key: _chipKeys[cat],
-      padding: const EdgeInsets.only(right: 8),
+      padding: const EdgeInsetsDirectional.only(end: 8),
       child: FastTap(
-        onTap: () => _scrollToCategory(cat),
+        onTap: () {
+          HapticFeedback.selectionClick();
+          _scrollToCategory(cat);
+        },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: active ? amber : context.fast.card,
-            borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: active ? amber : context.fast.line),
+            color: active ? ink : context.fast.card,
+            borderRadius: BorderRadius.circular(FASTRadius.pill),
+            border: Border.all(color: active ? ink : context.fast.line),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -153,7 +162,7 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
               Icon(
                 _categoryIcon(cat),
                 size: 13,
-                color: active ? FASTBrand.onAmber : context.fast.t3,
+                color: active ? onInk : context.fast.t3,
               ),
               const SizedBox(width: 6),
               Text(
@@ -163,10 +172,9 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
                         listen: false,
                       ).tr('menu_other')
                     : cat,
-                style: TextStyle(
-                  fontSize: 12,
+                style: FASTText.caption.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: active ? FASTBrand.onAmber : context.fast.t2,
+                  color: active ? onInk : context.fast.t2,
                 ),
               ),
             ],
@@ -182,7 +190,12 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
   /// since the banner's own back button has scrolled away by that point.
   Widget _catBarContent(BuildContext context, {required bool pinned}) {
     return Container(
-      padding: EdgeInsets.fromLTRB(12, _barTopInset, 12, 8),
+      padding: EdgeInsets.fromLTRB(
+        FASTSpace.s16,
+        _barTopInset,
+        FASTSpace.s16,
+        8,
+      ),
       decoration: BoxDecoration(
         color: context.fast.bg,
         border: Border(
@@ -215,7 +228,7 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
               child: Container(
                 width: 34,
                 height: 34,
-                margin: const EdgeInsets.only(right: 8),
+                margin: const EdgeInsetsDirectional.only(end: 8),
                 decoration: BoxDecoration(
                   color: context.fast.card,
                   shape: BoxShape.circle,
@@ -261,78 +274,49 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Restaurant Banner Header
+              // Banner: the photo carries only the round buttons and the
+              // Stories pill — name, address and facts sit under it.
               Stack(
                 children: [
                   FastImage(
                     rest.image,
-                    height: 160,
+                    height: 180,
                     width: double.infinity,
-                    cacheWidth: 500,
+                    cacheWidth: 900,
                     placeholder: Container(
-                      height: 160,
+                      height: 180,
                       color: context.fast.cardHigh,
-                    ),
-                  ),
-                  // Gradient Overlay
-                  Positioned.fill(
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.black54,
-                            Colors.transparent,
-                            Colors.black87,
-                          ],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                        ),
-                      ),
                     ),
                   ),
                   // Back Button
                   PositionedDirectional(
-                    top: 12,
-                    start: 12,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: context.fast.bg.withValues(alpha: 0.8),
-                        shape: BoxShape.circle,
-                      ),
-                      child: IconButton(
-                        onPressed: () {
-                          provider.selectRestaurant(null);
-                          provider.navigateToScreen('home');
-                        },
-                        icon: Icon(
-                          Icons.arrow_back,
-                          color: context.fast.t1,
-                          size: 20,
-                        ),
-                      ),
+                    top: FASTSpace.s12,
+                    start: FASTSpace.s12,
+                    child: _roundButton(
+                      context,
+                      icon: Icons.arrow_back,
+                      label: MaterialLocalizations.of(
+                        context,
+                      ).backButtonTooltip,
+                      onTap: () {
+                        provider.selectRestaurant(null);
+                        provider.navigateToScreen('home');
+                      },
                     ),
                   ),
                   // Favorite heart
                   PositionedDirectional(
-                    top: 12,
-                    end: 12,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: context.fast.bg.withValues(alpha: 0.8),
-                        shape: BoxShape.circle,
-                      ),
-                      child: IconButton(
-                        onPressed: () => provider.toggleFavorite(rest.id),
-                        icon: Icon(
-                          provider.isFavorite(rest.id)
-                              ? Icons.favorite
-                              : Icons.favorite_border,
-                          color: provider.isFavorite(rest.id)
-                              ? const Color(0xFFEF4444)
-                              : context.fast.t1,
-                          size: 20,
-                        ),
-                      ),
+                    top: FASTSpace.s12,
+                    end: FASTSpace.s12,
+                    child: _roundButton(
+                      context,
+                      icon: provider.isFavorite(rest.id)
+                          ? Icons.favorite
+                          : Icons.favorite_border,
+                      color: provider.isFavorite(rest.id)
+                          ? FASTBrand.error
+                          : context.fast.t1,
+                      onTap: () => provider.toggleFavorite(rest.id),
                     ),
                   ),
                   // Stories entry — Snapchat-style menu viewer
@@ -343,7 +327,7 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
                   ))
                     PositionedDirectional(
                       top: 64,
-                      end: 12,
+                      end: FASTSpace.s12,
                       child: GestureDetector(
                         onTap: () => Navigator.push(
                           context,
@@ -353,12 +337,16 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
                         ),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
+                            horizontal: FASTSpace.s12,
                             vertical: 6,
                           ),
+                          // Sits on the photo: a dark scrim with white
+                          // text reads in both themes.
                           decoration: BoxDecoration(
                             color: Colors.black.withValues(alpha: 0.55),
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(
+                              FASTRadius.pill,
+                            ),
                             border: Border.all(color: Colors.white24),
                           ),
                           child: Row(
@@ -367,15 +355,14 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
                               const Icon(
                                 Icons.play_circle_fill,
                                 color: Colors.white,
-                                size: 14,
+                                size: 16,
                               ),
-                              const SizedBox(width: 5),
+                              const SizedBox(width: FASTSpace.s4),
                               Text(
                                 provider.tr('stories'),
-                                style: const TextStyle(
+                                style: FASTText.caption.copyWith(
                                   color: Colors.white,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                             ],
@@ -383,211 +370,93 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
                         ),
                       ),
                     ),
-                  // Title & Info
-                  Positioned(
-                    bottom: 16,
-                    left: 16,
-                    right: 16,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF59E0B),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            '⚡ CLICK & COLLECT',
-                            style: TextStyle(
-                              fontSize: 8,
-                              fontWeight: FontWeight.bold,
-                              color: FASTBrand.onAmber,
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 6),
-                        Text(
-                          rest.name,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white,
-                          ),
-                        ),
-                        if (rest.address.isNotEmpty)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 4),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.location_on,
-                                  color: Color(0xFFF59E0B),
-                                  size: 14,
-                                ),
-                                const SizedBox(width: 4),
-                                Flexible(
-                                  child: Text(
-                                    rest.address,
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
                 ],
               ),
 
-              // Restaurant Meta Info Section
+              // Name, address, facts, actions
               Padding(
-                padding: EdgeInsets.all(16),
+                padding: const EdgeInsets.fromLTRB(
+                  FASTSpace.s16,
+                  FASTSpace.s16,
+                  FASTSpace.s16,
+                  0,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Meta chips
-                    Row(
-                      children: [
-                        Icon(Icons.star, color: Color(0xFFF59E0B), size: 16),
-                        SizedBox(width: 4),
-                        Text(
-                          '${rest.rating} (${provider.tr('reviews').replaceAll('{n}', '${rest.reviewsCount}')})',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                            color: context.fast.t1,
-                          ),
-                        ),
-                        SizedBox(width: 12),
-                        Icon(
-                          Icons.access_time_filled,
-                          color: context.fast.t2,
-                          size: 14,
-                        ),
-                        SizedBox(width: 4),
-                        Text(
-                          provider
-                              .tr('prep_time')
-                              .replaceAll('{n}', '${rest.pickupPrepTime}'),
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                            color: context.fast.t2,
-                          ),
-                        ),
-                        SizedBox(width: 12),
-                        Icon(
-                          Icons.location_on,
-                          color: context.fast.t2,
-                          size: 14,
-                        ),
-                        SizedBox(width: 4),
-                        Text(
-                          '${provider.getRealDistance(rest).toStringAsFixed(1)} km',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                            color: context.fast.t2,
-                          ),
-                        ),
-                      ],
+                    const FastTag(
+                      'Click & Collect',
+                      kind: FastTagKind.accent,
+                      icon: Icons.bolt,
                     ),
-                    if (rest.reservationsEnabled) ...[
-                      const SizedBox(height: 10),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 44,
-                        child: OutlinedButton.icon(
-                          onPressed: () => _showReservationSheet(context, rest),
-                          icon: const Icon(Icons.event_seat, size: 18),
-                          label: Text(provider.tr('reserve_table')),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xFF00C8B3),
-                            side: const BorderSide(color: Color(0xFF00C8B3)),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            textStyle: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ),
+                    const SizedBox(height: FASTSpace.s8),
+                    Text(
+                      rest.name,
+                      style: FASTText.display.copyWith(color: context.fast.t1),
+                    ),
+                    if (rest.address.isNotEmpty) ...[
+                      const SizedBox(height: FASTSpace.s4),
+                      Text(
+                        rest.address,
+                        style: FASTText.body.copyWith(color: context.fast.t2),
                       ),
                     ],
-                    const SizedBox(height: 10),
-                    // F08 — anyone can tap; the backend only accepts the review
-                    // once the user has a completed order here. The sheet surfaces
-                    // that message instead of failing silently.
-                    SizedBox(
-                      width: double.infinity,
-                      height: 44,
-                      child: OutlinedButton.icon(
-                        onPressed: () =>
-                            _showReviewSheet(context, provider, rest),
-                        icon: const Icon(
-                          Icons.star_outline_rounded,
-                          size: 18,
-                          color: Color(0xFFF59E0B),
-                        ),
-                        label: Text(provider.tr('leave_review')),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFFF59E0B),
-                          side: const BorderSide(color: Color(0xFFF59E0B)),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                    const SizedBox(height: FASTSpace.s8),
+                    // One line of facts: rating, reviews, prep time, distance.
+                    Text.rich(
+                      TextSpan(
+                        children: [
+                          const WidgetSpan(
+                            alignment: PlaceholderAlignment.middle,
+                            child: Padding(
+                              padding: EdgeInsetsDirectional.only(end: 2),
+                              child: Icon(
+                                Icons.star_rounded,
+                                color: FASTBrand.amber,
+                                size: 18,
+                              ),
+                            ),
                           ),
-                          textStyle: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800,
+                          TextSpan(
+                            text: '${rest.rating}',
+                            style: FASTText.body.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: context.fast.t1,
+                            ),
                           ),
-                        ),
+                          TextSpan(
+                            text:
+                                ' (${provider.tr('reviews').replaceAll('{n}', '${rest.reviewsCount}')})'
+                                '  ·  ${provider.tr('prep_time').replaceAll('{n}', '${rest.pickupPrepTime}')}'
+                                '  ·  ${provider.getRealDistance(rest).toStringAsFixed(1)} km',
+                          ),
+                        ],
                       ),
+                      style: FASTText.body.copyWith(color: context.fast.t2),
                     ),
                     if (!rest.paymentsReady) ...[
-                      const SizedBox(height: 10),
+                      const SizedBox(height: FASTSpace.s12),
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(FASTSpace.s12),
                         decoration: BoxDecoration(
-                          color: const Color(
-                            0xFFF59E0B,
-                          ).withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: const Color(
-                              0xFFF59E0B,
-                            ).withValues(alpha: 0.5),
-                          ),
+                          color: context.fast.cardHigh,
+                          borderRadius: BorderRadius.circular(FASTRadius.sm),
                         ),
                         child: Row(
-                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.schedule,
-                              color: Color(0xFFF59E0B),
-                              size: 14,
+                              color: context.fast.t2,
+                              size: 16,
                             ),
-                            const SizedBox(width: 6),
-                            Flexible(
+                            const SizedBox(width: FASTSpace.s8),
+                            Expanded(
                               child: Text(
                                 provider.tr('restaurant_not_connected'),
-                                style: const TextStyle(
-                                  color: Color(0xFFF59E0B),
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
+                                style: FASTText.caption.copyWith(
+                                  color: context.fast.t1,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                             ),
@@ -595,138 +464,29 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
                         ),
                       ),
                     ],
-                    SizedBox(height: 12),
-                    // Description
-                    Text(
-                      rest.description,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: context.fast.t2,
-                        height: 1.4,
+                    const SizedBox(height: FASTSpace.s16),
+                    ..._buildActions(context, provider, rest),
+                    if (rest.description.isNotEmpty) ...[
+                      const SizedBox(height: FASTSpace.s16),
+                      Text(
+                        rest.description,
+                        style: FASTText.body.copyWith(color: context.fast.t2),
                       ),
-                    ),
-                    SizedBox(height: 8),
-                    // Address
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Icon(
-                          Icons.location_on,
-                          color: Color(0xFFF59E0B),
-                          size: 16,
-                        ),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            rest.address,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: context.fast.t2,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                    ],
                     // Food truck — weekly stops so customers can follow the truck
                     if (rest.isFoodTruck) ...[
-                      SizedBox(height: 10),
+                      const SizedBox(height: FASTSpace.s16),
                       _buildTruckSchedule(context, rest),
                     ],
-                    SizedBox(height: 12),
-
-                    // Mini Map (MapLibre GL + OpenFreeMap)
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: SizedBox(
-                        height: 180,
-                        child: MapLibreMap(
-                          // Claim drags before the page scroll does.
-                          gestureRecognizers: {
-                            Factory<OneSequenceGestureRecognizer>(
-                              () => EagerGestureRecognizer(),
-                            ),
-                          },
-                          options: MapOptions(
-                            initStyle: openFreeMapStyle,
-                            initCenter: geo(rest.latitude, rest.longitude),
-                            initZoom: 15.0,
-                            gestures: const MapGestures(
-                              rotate: false,
-                              pan: true,
-                              zoom: true,
-                              pitch: false,
-                            ),
-                          ),
-                          onEvent: (event) async {
-                            if (event case MapEventStyleLoaded()) {
-                              await registerMapMarkers(event.style);
-                            }
-                          },
-                          layers: [
-                            MarkerLayer(
-                              points: [
-                                Feature(
-                                  geometry: Point(
-                                    geo(rest.latitude, rest.longitude),
-                                  ),
-                                ),
-                              ],
-                              iconImage: 'marker_restaurant',
-                              iconSize: 0.2,
-                              iconAnchor: IconAnchor.center,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 12),
-                    Semantics(
-                      button: true,
-                      label: provider.tr('gmaps'),
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: 48,
-                        child: ElevatedButton.icon(
-                          onPressed: () =>
-                              _openGoogleMapsDirections(context, rest),
-                          icon: Icon(Icons.directions_walk, size: 20),
-                          label: Text(tr(context, 'itinerary')),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFFF59E0B),
-                            foregroundColor: FASTBrand.onAmber,
-                            elevation: 0,
-                            textStyle: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 0.4,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               ),
 
-              Divider(color: context.fast.line, height: 1),
-
               // Menu title
-              Padding(
-                padding: EdgeInsets.fromLTRB(16, 20, 16, 8),
-                child: Text(
-                  provider.tr('menu_items'),
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.0,
-                    color: context.fast.t3,
-                  ),
-                ),
-              ),
+              // No "menu" label here: the category bar below already
+              // carries the status-bar inset as top padding (it needs it
+              // once pinned), and that inset doubles as the section gap.
+              const SizedBox(height: FASTSpace.s8),
             ],
           ),
         ),
@@ -752,36 +512,137 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
                   child: Center(
                     child: Text(
                       provider.tr('no_items'),
-                      style: TextStyle(color: context.fast.t3),
+                      style: FASTText.body.copyWith(color: context.fast.t3),
                     ),
                   ),
                 )
               else
                 ..._buildMenuSections(context, provider, rest),
 
+              // Where to find the restaurant. The address and map sit under
+              // the menu so the dishes start higher on the page; the
+              // itinerary button stays at the top with the other actions.
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  FASTSpace.s16,
+                  FASTSpace.s24,
+                  FASTSpace.s16,
+                  0,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Divider(color: context.fast.line, height: 1, thickness: 1),
+                    const SizedBox(height: FASTSpace.s24),
+                    // Address
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          Icons.location_on_outlined,
+                          color: context.fast.t2,
+                          size: 20,
+                        ),
+                        const SizedBox(width: FASTSpace.s8),
+                        Expanded(
+                          child: Text(
+                            rest.address,
+                            style: FASTText.body.copyWith(
+                              color: context.fast.t1,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: FASTSpace.s12),
+
+                    // Mini Map (MapLibre GL + OpenFreeMap)
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(FASTRadius.md),
+                      child: SizedBox(
+                        height: 180,
+                        child: debugSkipMaps
+                            ? ColoredBox(color: context.fast.cardHigh)
+                            : MapLibreMap(
+                                // Claim drags before the page scroll does.
+                                gestureRecognizers: {
+                                  Factory<OneSequenceGestureRecognizer>(
+                                    () => EagerGestureRecognizer(),
+                                  ),
+                                },
+                                options: MapOptions(
+                                  initStyle: openFreeMapStyle,
+                                  initCenter: geo(
+                                    rest.latitude,
+                                    rest.longitude,
+                                  ),
+                                  initZoom: 15.0,
+                                  gestures: const MapGestures(
+                                    rotate: false,
+                                    pan: true,
+                                    zoom: true,
+                                    pitch: false,
+                                  ),
+                                ),
+                                onEvent: (event) async {
+                                  if (event case MapEventStyleLoaded()) {
+                                    await registerMapMarkers(event.style);
+                                  }
+                                },
+                                layers: [
+                                  MarkerLayer(
+                                    points: [
+                                      Feature(
+                                        geometry: Point(
+                                          geo(rest.latitude, rest.longitude),
+                                        ),
+                                      ),
+                                    ],
+                                    iconImage: 'marker_restaurant',
+                                    iconSize: 0.2,
+                                    iconAnchor: IconAnchor.center,
+                                  ),
+                                ],
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
               // Reviews — each comment is reportable (F09 moderation)
               if (rest.reviews.isNotEmpty) ...[
-                Divider(color: context.fast.line, height: 32),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                  padding: const EdgeInsets.fromLTRB(
+                    FASTSpace.s16,
+                    FASTSpace.s24,
+                    FASTSpace.s16,
+                    FASTSpace.s4,
+                  ),
                   child: Text(
                     provider
                         .tr('reviews')
                         .replaceAll('{n}', '${rest.reviewsCount}'),
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.0,
-                      color: context.fast.t3,
+                    style: FASTText.title.copyWith(color: context.fast.t1),
+                  ),
+                ),
+                for (var i = 0; i < rest.reviews.length; i++) ...[
+                  if (i > 0)
+                    Divider(
+                      height: 1,
+                      thickness: 1,
+                      indent: FASTSpace.s16,
+                      endIndent: FASTSpace.s16,
+                      color: context.fast.line,
                     ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: FASTSpace.s16,
+                      vertical: FASTSpace.s12,
+                    ),
+                    child: _buildReviewCard(context, provider, rest.reviews[i]),
                   ),
-                ),
-                ...rest.reviews.map(
-                  (r) => Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-                    child: _buildReviewCard(context, provider, r),
-                  ),
-                ),
+                ],
               ],
               const SizedBox(height: 120),
             ],
@@ -840,46 +701,42 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
       for (final key in keys) ...[
         Padding(
           key: _catKeys[key],
-          padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
+          padding: const EdgeInsets.fromLTRB(
+            FASTSpace.s16,
+            FASTSpace.s24,
+            FASTSpace.s16,
+            FASTSpace.s4,
+          ),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
             children: [
-              Icon(
-                _categoryIcon(key),
-                size: 15,
-                color: const Color(0xFFF59E0B),
-              ),
-              const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   key.isEmpty ? provider.tr('menu_other') : key,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w900,
-                    color: context.fast.t1,
-                  ),
+                  style: FASTText.title.copyWith(color: context.fast.t1),
                 ),
               ),
               Text(
                 '${groups[key]!.length}',
-                style: TextStyle(fontSize: 11, color: context.fast.t3),
+                style: FASTText.caption.copyWith(color: context.fast.t3),
               ),
             ],
           ),
         ),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            mainAxisSpacing: 10,
-            crossAxisSpacing: 10,
-            childAspectRatio: 0.68,
-          ),
-          itemCount: groups[key]!.length,
-          itemBuilder: (context, index) =>
-              _buildMenuItemCard(context, provider, groups[key]![index]),
-        ),
+        // One column of rows separated by hairlines: long dish names get
+        // two lines and a missing photo no longer leaves a blank tile.
+        for (var i = 0; i < groups[key]!.length; i++) ...[
+          if (i > 0)
+            Divider(
+              height: 1,
+              thickness: 1,
+              indent: FASTSpace.s16,
+              endIndent: FASTSpace.s16,
+              color: context.fast.line,
+            ),
+          _buildMenuItemRow(context, provider, groups[key]![i]),
+        ],
       ],
     ];
   }
@@ -985,68 +842,216 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
       );
   }
 
+  /// 40 circle on the card colour — back and heart on the banner, same
+  /// as the heart on the home restaurant card.
+  Widget _roundButton(
+    BuildContext context, {
+    required IconData icon,
+    required VoidCallback onTap,
+    Color? color,
+    String? label,
+  }) {
+    return Semantics(
+      button: true,
+      label: label,
+      child: FastTap(
+        onTap: onTap,
+        child: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: context.fast.card,
+            shape: BoxShape.circle,
+            boxShadow: FASTShadow.card(context),
+          ),
+          child: Icon(icon, size: 20, color: color ?? context.fast.t1),
+        ),
+      ),
+    );
+  }
+
+  /// Secondary action: outlined pill in the text colour.
+  Widget _outlineAction(
+    BuildContext context, {
+    required String label,
+    required VoidCallback onTap,
+    IconData? icon,
+  }) {
+    final fast = context.fast;
+    return FastTap(
+      onTap: onTap,
+      pressedScale: 0.97,
+      child: Container(
+        height: 44,
+        padding: const EdgeInsets.symmetric(horizontal: FASTSpace.s12),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(FASTRadius.pill),
+          border: Border.all(color: fast.line),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: 18, color: fast.t1),
+              const SizedBox(width: FASTSpace.s8),
+            ],
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: FASTText.body.copyWith(
+                  color: fast.t1,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Itinerary, reserve (when the restaurant takes reservations) and leave
+  /// a review. One ink pill, the others outlined: reserving leads on a
+  /// reservation-only restaurant, the itinerary everywhere else.
+  List<Widget> _buildActions(
+    BuildContext context,
+    FASTProvider provider,
+    Restaurant rest,
+  ) {
+    final reserveLeads = rest.reservationsEnabled && rest.reservationOnly;
+    void reserve() => _showReservationSheet(context, rest);
+    void itinerary() => _openGoogleMapsDirections(context, rest);
+    // F08 — anyone can tap; the backend only accepts the review once the
+    // user has a completed order here. The sheet surfaces that message
+    // instead of failing silently.
+    void review() => _showReviewSheet(context, provider, rest);
+
+    final hasSecondOutline = rest.reservationsEnabled;
+    return [
+      if (reserveLeads)
+        FastButton(
+          label: provider.tr('reserve_table'),
+          icon: Icons.event_seat_outlined,
+          kind: FastButtonKind.ink,
+          height: 48,
+          onPressed: reserve,
+        )
+      else
+        Semantics(
+          button: true,
+          label: provider.tr('gmaps'),
+          child: FastButton(
+            label: tr(context, 'itinerary'),
+            icon: Icons.directions_walk,
+            kind: FastButtonKind.ink,
+            height: 48,
+            onPressed: itinerary,
+          ),
+        ),
+      const SizedBox(height: FASTSpace.s8),
+      Row(
+        children: [
+          if (reserveLeads) ...[
+            Expanded(
+              child: Semantics(
+                button: true,
+                label: provider.tr('gmaps'),
+                child: _outlineAction(
+                  context,
+                  label: tr(context, 'itinerary'),
+                  onTap: itinerary,
+                ),
+              ),
+            ),
+            const SizedBox(width: FASTSpace.s8),
+          ] else if (rest.reservationsEnabled) ...[
+            Expanded(
+              child: _outlineAction(
+                context,
+                label: provider.tr('reserve_table'),
+                onTap: reserve,
+              ),
+            ),
+            const SizedBox(width: FASTSpace.s8),
+          ],
+          Expanded(
+            child: _outlineAction(
+              context,
+              label: provider.tr('leave_review'),
+              // Two pills share the row: no icon so the labels fit.
+              icon: hasSecondOutline ? null : Icons.star_outline_rounded,
+              onTap: review,
+            ),
+          ),
+        ],
+      ),
+    ];
+  }
+
+  /// Review dates arrive as strings; ISO dates are shown as dd/mm/yyyy,
+  /// anything else as received.
+  String _reviewDate(String raw) {
+    final t = raw.trim();
+    final d = DateTime.tryParse(t)?.toLocal();
+    if (d == null) return t;
+    return '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+  }
+
   /// F09 — a single review with its report (moderation) action.
   Widget _buildReviewCard(
     BuildContext context,
     FASTProvider provider,
     Review r,
   ) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: context.fast.card,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: context.fast.line),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  r.userName,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: context.fast.t1,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                  ),
+    final fast = context.fast;
+    final date = _reviewDate(r.date);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                r.userName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: FASTText.body.copyWith(
+                  color: fast.t1,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
-              ...List.generate(
-                5,
-                (i) => Icon(
-                  i < r.rating.round() ? Icons.star : Icons.star_border,
-                  size: 12,
-                  color: const Color(0xFFF59E0B),
-                ),
+            ),
+            ...List.generate(
+              5,
+              (i) => Icon(
+                i < r.rating.round()
+                    ? Icons.star_rounded
+                    : Icons.star_outline_rounded,
+                size: 16,
+                color: FASTBrand.amber,
               ),
-              const SizedBox(width: 6),
-              InkWell(
-                onTap: () => _reportReview(context, provider, r),
-                child: Icon(
-                  Icons.flag_outlined,
-                  size: 15,
-                  color: context.fast.t3,
-                ),
-              ),
-            ],
-          ),
-          if (r.comment.isNotEmpty) ...[
-            const SizedBox(height: 6),
-            Text(
-              r.comment,
-              style: TextStyle(
-                color: context.fast.t2,
-                fontSize: 11,
-                height: 1.35,
+            ),
+            const SizedBox(width: FASTSpace.s4),
+            InkWell(
+              onTap: () => _reportReview(context, provider, r),
+              customBorder: const CircleBorder(),
+              child: Padding(
+                padding: const EdgeInsets.all(FASTSpace.s4),
+                child: Icon(Icons.flag_outlined, size: 18, color: fast.t3),
               ),
             ),
           ],
+        ),
+        if (date.isNotEmpty)
+          Text(date, style: FASTText.caption.copyWith(color: fast.t3)),
+        if (r.comment.isNotEmpty) ...[
+          const SizedBox(height: FASTSpace.s4),
+          Text(r.comment, style: FASTText.body.copyWith(color: fast.t2)),
         ],
-      ),
+      ],
     );
   }
 
@@ -1111,546 +1116,92 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
     );
   }
 
-  /// F04 — menu card: photo on top, name, short description, final price
-  /// and a "+" add button. Two cards per row.
-  Widget _buildMenuItemCard(
+  /// One menu item as a full-width row: name, description, price, and a
+  /// square photo with a "+" in its corner.
+  Widget _buildMenuItemRow(
     BuildContext context,
     FASTProvider provider,
     MenuItem item,
   ) {
-    final unavailable = !item.available;
-    return Opacity(
-      opacity: unavailable ? 0.45 : 1,
-      child: Material(
-        color: context.fast.card,
-        borderRadius: BorderRadius.circular(14),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          // Reservation-only restaurants don't sell à-la-carte — the tap
-          // opens the booking sheet instead of the cart dialog.
-          onTap: () {
-            final rest = provider.selectedRestaurant;
-            if (rest != null && rest.reservationOnly) {
-              _showReservationSheet(context, rest);
-            } else {
-              _showAddToCartDialog(context, provider, item);
-            }
-          },
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                flex: 5,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    FastImage(
-                      item.image,
-                      fit: BoxFit.cover,
-                      cacheWidth: 300,
-                      placeholder: Container(color: context.fast.cardHigh),
-                    ),
-                    if (!unavailable)
-                      Positioned(
-                        right: 8,
-                        bottom: 8,
-                        child: Container(
-                          width: 30,
-                          height: 30,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFF59E0B),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.add,
-                            color: FASTBrand.onAmber,
-                            size: 20,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              Expanded(
-                flex: 4,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                          color: context.fast.t1,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Expanded(
-                        child: Text(
-                          item.description,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: context.fast.t2,
-                            height: 1.3,
-                          ),
-                        ),
-                      ),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              '€${item.price.toStringAsFixed(2)}',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w900,
-                                fontSize: 13,
-                                color: Color(0xFFF59E0B),
-                              ),
-                            ),
-                          ),
-                          if (item.prepTime > 0)
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.schedule,
-                                  size: 10,
-                                  color: context.fast.t3,
-                                ),
-                                const SizedBox(width: 2),
-                                Text(
-                                  '~${item.prepTime} min',
-                                  style: TextStyle(
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.bold,
-                                    color: context.fast.t3,
-                                  ),
-                                ),
-                              ],
-                            ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    final rest = provider.selectedRestaurant;
+    final reservationOnly = rest != null && rest.reservationOnly;
+    return FastMenuRow(
+      name: item.name,
+      description: item.description,
+      price: item.price,
+      image: item.image,
+      available: item.available,
+      prepMinutes: item.prepTime,
+      unavailableLabel: provider.tr('sold_out'),
+      showAdd: !reservationOnly,
+      // Reservation-only restaurants don't sell à-la-carte — the tap
+      // opens the booking sheet instead of the product sheet.
+      onTap: () {
+        if (rest != null && rest.reservationOnly) {
+          _showReservationSheet(context, rest);
+        } else {
+          _showAddToCartDialog(context, provider, item);
+        }
+      },
     );
   }
 
-  // Cart customization popup dialog
+  // Product sheet: photo, options, supplements, notes, quantity.
   void _showAddToCartDialog(
     BuildContext context,
     FASTProvider provider,
     MenuItem item,
   ) {
-    final textController = TextEditingController();
-
-    // Free options — no extra charge
-    final List<String> freeOptions = [
-      provider.tr('opt_no_onions'),
-      provider.tr('opt_no_cheese'),
-      provider.tr('opt_gluten'),
-      provider.tr('opt_spicy'),
-      provider.tr('opt_well'),
-      provider.tr('opt_rare'),
-    ];
-    final List<String> selectedFree = [];
-
-    // Paid extras from the menu item's supplements (set by restaurant owner)
-    final List<String> selectedPaid = [];
-
-    int qty = 1; // quantity counter declared outside builder to persist state
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      backgroundColor: context.fast.card,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            return Padding(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-                top: 8,
-                left: 20,
-                right: 20,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Flexible(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Item Name & Description
-                          Text(
-                            item.name,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: context.fast.t1,
-                            ),
-                          ),
-                          if (item.description.isNotEmpty) ...[
-                            const SizedBox(height: 6),
-                            Text(
-                              item.description,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: context.fast.t2,
-                              ),
-                            ),
-                          ],
-                          const SizedBox(height: 16),
-                          Divider(color: context.fast.line, height: 1),
-                          const SizedBox(height: 16),
-
-                          // Free options — no extra charge
-                          Text(
-                            provider.tr('options'),
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              color: context.fast.t1,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: freeOptions
-                                .map(
-                                  (option) => FilterChip(
-                                    label: Text(
-                                      option,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: context.fast.t1,
-                                      ),
-                                    ),
-                                    selected: selectedFree.contains(option),
-                                    onSelected: (val) {
-                                      setModalState(() {
-                                        if (val) {
-                                          selectedFree.add(option);
-                                        } else {
-                                          selectedFree.remove(option);
-                                        }
-                                      });
-                                    },
-                                    backgroundColor: context.fast.bg,
-                                    side: BorderSide(
-                                      color: selectedFree.contains(option)
-                                          ? const Color(0xFFF59E0B)
-                                          : context.fast.faint,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                )
-                                .toList(),
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Paid supplements — from item.supplements
-                          if (item.supplements.isNotEmpty) ...[
-                            Text(
-                              provider.tr('extras'),
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                                color: context.fast.t1,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: item.supplements
-                                  .map(
-                                    (s) => FilterChip(
-                                      label: Text(
-                                        '${s.name} (+${s.price.toStringAsFixed(2)}€)',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: context.fast.t1,
-                                        ),
-                                      ),
-                                      selected: selectedPaid.contains(s.id),
-                                      onSelected: (val) {
-                                        setModalState(() {
-                                          if (val) {
-                                            selectedPaid.add(s.id);
-                                          } else {
-                                            selectedPaid.remove(s.id);
-                                          }
-                                        });
-                                      },
-                                      backgroundColor: context.fast.bg,
-                                      side: BorderSide(
-                                        color: selectedPaid.contains(s.id)
-                                            ? const Color(0xFFF59E0B)
-                                            : context.fast.faint,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                    ),
-                                  )
-                                  .toList(),
-                            ),
-                            const SizedBox(height: 16),
-                          ],
-
-                          // Allergy notes multiline field
-                          Text(
-                            'ALLERGIES / NOTES',
-                            style: TextStyle(
-                              fontSize: 9,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.0,
-                              color: context.fast.t3,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          TextField(
-                            controller: textController,
-                            maxLines: 3,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: context.fast.t1,
-                            ),
-                            decoration: InputDecoration(
-                              hintText: tr(context, 'allergy_hint'),
-                              hintStyle: TextStyle(
-                                color: context.fast.t3,
-                                fontSize: 11,
-                              ),
-                              filled: true,
-                              fillColor: context.fast.bg,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: context.fast.line,
-                                ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: context.fast.line,
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(
-                                  color: Color(0xFFF59E0B),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Quantity picker & Add Button Row
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Qty Counter
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 4,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: context.fast.cardHigh,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: context.fast.line),
-                        ),
-                        child: Row(
-                          children: [
-                            IconButton(
-                              onPressed: () {
-                                if (qty > 1) {
-                                  setModalState(() {
-                                    qty--;
-                                  });
-                                }
-                              },
-                              icon: Icon(
-                                Icons.remove,
-                                size: 16,
-                                color: context.fast.t1,
-                              ),
-                            ),
-                            Text(
-                              '$qty',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                                color: context.fast.t1,
-                              ),
-                            ),
-                            IconButton(
-                              onPressed: () {
-                                setModalState(() {
-                                  qty++;
-                                });
-                              },
-                              icon: Icon(
-                                Icons.add,
-                                size: 16,
-                                color: context.fast.t1,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Add Button
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 16),
-                          child: Builder(
-                            builder: (ctx) {
-                              final extrasTotal = selectedPaid.fold(0.0, (
-                                sum,
-                                id,
-                              ) {
-                                final s = item.supplements.firstWhere(
-                                  (s) => s.id == id,
-                                  orElse: () => MenuItemSupplement(
-                                    id: '',
-                                    name: '',
-                                    price: 0,
-                                  ),
-                                );
-                                return sum + s.price;
-                              });
-                              final total = (item.price + extrasTotal) * qty;
-                              final allSelected = [
-                                ...selectedFree,
-                                ...selectedPaid,
-                              ];
-                              return ElevatedButton(
-                                onPressed: () {
-                                  provider.addToCart(
-                                    item,
-                                    qty,
-                                    allSelected,
-                                    textController.text.trim(),
-                                  );
-                                  Navigator.of(context).pop();
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFF59E0B),
-                                  foregroundColor: FASTBrand.onAmber,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 16,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  elevation: 0,
-                                ),
-                                child: Text(
-                                  tr(
-                                    context,
-                                    'add_cart_price',
-                                  ).replaceAll('{n}', total.toStringAsFixed(2)),
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
+    showProductSheet(context, provider, item);
   }
 
   // Food truck — emplacements programmés par jour pour suivre le camion.
   Widget _buildTruckSchedule(BuildContext context, Restaurant rest) {
+    final fast = context.fast;
     final today = DateTime.now().weekday; // 1 = lundi … 7 = dimanche
     final byDay = {for (final s in rest.truckStops) s.weekday: s};
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(FASTSpace.s16),
       decoration: BoxDecoration(
-        color: context.fast.card,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: context.fast.line),
+        color: fast.card,
+        borderRadius: BorderRadius.circular(FASTRadius.md),
+        border: Border.all(color: fast.line),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Text('🚚', style: TextStyle(fontSize: 16)),
-              const SizedBox(width: 8),
-              Text(
-                tr(context, 'food_truck'),
-                style: TextStyle(
-                  color: context.fast.t1,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w900,
+              Icon(Icons.local_shipping_outlined, size: 20, color: fast.t1),
+              const SizedBox(width: FASTSpace.s8),
+              Expanded(
+                child: Text(
+                  tr(context, 'food_truck'),
+                  style: FASTText.item.copyWith(color: fast.t1),
                 ),
               ),
-              const Spacer(),
               if (rest.todayStop == null)
-                Text(
-                  tr(context, 'truck_not_today'),
-                  style: TextStyle(
-                    color: context.fast.t3,
-                    fontSize: 10,
-                    fontStyle: FontStyle.italic,
+                Flexible(
+                  child: Text(
+                    tr(context, 'truck_not_today'),
+                    textAlign: TextAlign.end,
+                    style: FASTText.caption.copyWith(color: fast.t3),
                   ),
                 ),
             ],
           ),
           if (rest.todayStop != null) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: FASTSpace.s12),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(
-                  Icons.location_on,
-                  size: 14,
-                  color: Color(0xFF00C8B3),
-                ),
-                const SizedBox(width: 6),
+                Icon(Icons.location_on_outlined, size: 18, color: fast.t1),
+                const SizedBox(width: FASTSpace.s8),
                 Expanded(
                   child: Text(
                     '${tr(context, 'truck_today')} ${[rest.todayStop!.label, rest.todayStop!.address, rest.todayStop!.city].where((p) => p.isNotEmpty).join(', ')}',
-                    style: const TextStyle(
-                      color: Color(0xFF00C8B3),
-                      fontSize: 12,
+                    style: FASTText.body.copyWith(
+                      color: fast.t1,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -1658,36 +1209,26 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
               ],
             ),
           ],
-          const SizedBox(height: 8),
+          const SizedBox(height: FASTSpace.s12),
           Wrap(
-            spacing: 6,
-            runSpacing: 6,
+            spacing: FASTSpace.s8,
+            runSpacing: FASTSpace.s8,
             children: [
               for (var d = 1; d <= 7; d++)
                 if (byDay.containsKey(d))
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 5,
+                      horizontal: FASTSpace.s12,
+                      vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: d == today
-                          ? const Color(0xFF00C8B3).withValues(alpha: 0.15)
-                          : context.fast.bg,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: d == today
-                            ? const Color(0xFF00C8B3)
-                            : context.fast.line,
-                      ),
+                      color: d == today ? fast.ink : fast.cardHigh,
+                      borderRadius: BorderRadius.circular(FASTRadius.pill),
                     ),
                     child: Text(
                       '${tr(context, 'day_$d')} • ${byDay[d]!.label.isNotEmpty ? byDay[d]!.label : (byDay[d]!.city.isNotEmpty ? byDay[d]!.city : byDay[d]!.address)}',
-                      style: TextStyle(
-                        color: d == today
-                            ? const Color(0xFF00C8B3)
-                            : context.fast.t2,
-                        fontSize: 10,
+                      style: FASTText.caption.copyWith(
+                        color: d == today ? fast.onInk : fast.t2,
                         fontWeight: d == today
                             ? FontWeight.w800
                             : FontWeight.w500,
@@ -1789,20 +1330,35 @@ class _ReservationSheetState extends State<_ReservationSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final fast = context.fast;
     final dateLabel =
         '${_date.day.toString().padLeft(2, '0')}/${_date.month.toString().padLeft(2, '0')}/${_date.year}';
     final timeLabel =
         '${_time.hour.toString().padLeft(2, '0')}:${_time.minute.toString().padLeft(2, '0')}';
+    final pickStyle = OutlinedButton.styleFrom(
+      foregroundColor: fast.t1,
+      backgroundColor: fast.cardHigh,
+      side: BorderSide(color: fast.line),
+      minimumSize: const Size(0, 48),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(FASTRadius.sm),
+      ),
+      textStyle: FASTText.body.copyWith(fontWeight: FontWeight.w700),
+    );
+    final media = MediaQuery.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: context.fast.bg,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        color: fast.bg,
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(FASTRadius.md),
+        ),
+        boxShadow: FASTShadow.sheet(context),
       ),
       padding: EdgeInsets.fromLTRB(
-        20,
-        20,
-        20,
-        20 + MediaQuery.of(context).viewInsets.bottom,
+        FASTSpace.s16,
+        FASTSpace.s24,
+        FASTSpace.s16,
+        FASTSpace.s16 + media.viewInsets.bottom + media.padding.bottom,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -1810,145 +1366,82 @@ class _ReservationSheetState extends State<_ReservationSheet> {
         children: [
           Text(
             tr(context, 'reserve_table'),
-            style: TextStyle(
-              color: context.fast.t1,
-              fontSize: 16,
-              fontWeight: FontWeight.w900,
-            ),
+            style: FASTText.title.copyWith(color: fast.t1),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: FASTSpace.s16),
           Row(
             children: [
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: _pickDate,
-                  icon: const Icon(Icons.calendar_today, size: 16),
+                  icon: const Icon(Icons.calendar_today_outlined, size: 18),
                   label: Text(dateLabel),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: context.fast.t1,
-                    side: BorderSide(color: context.fast.line),
-                  ),
+                  style: pickStyle,
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: FASTSpace.s8),
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: _pickTime,
-                  icon: const Icon(Icons.schedule, size: 16),
+                  icon: const Icon(Icons.schedule, size: 18),
                   label: Text(timeLabel),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: context.fast.t1,
-                    side: BorderSide(color: context.fast.line),
-                  ),
+                  style: pickStyle,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: FASTSpace.s16),
           Row(
             children: [
-              Text(
-                tr(context, 'party_size'),
-                style: TextStyle(color: context.fast.t3, fontSize: 11),
-              ),
-              if (widget.restaurant.seatingCapacity > 0) ...[
-                const SizedBox(width: 8),
-                Text(
-                  tr(
-                    context,
-                    'seating_cap_hint',
-                  ).replaceAll('{n}', '${widget.restaurant.seatingCapacity}'),
-                  style: TextStyle(color: context.fast.t3, fontSize: 10),
-                ),
-              ],
-            ],
-          ),
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              IconButton(
-                onPressed: _partySize > 1
-                    ? () => setState(() => _partySize--)
-                    : null,
-                icon: const Icon(Icons.remove_circle_outline),
-                color: context.fast.t2,
-              ),
-              Text(
-                '$_partySize',
-                style: TextStyle(
-                  color: context.fast.t1,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w900,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      tr(context, 'party_size'),
+                      style: FASTText.body.copyWith(
+                        color: fast.t1,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    if (widget.restaurant.seatingCapacity > 0)
+                      Text(
+                        tr(context, 'seating_cap_hint').replaceAll(
+                          '{n}',
+                          '${widget.restaurant.seatingCapacity}',
+                        ),
+                        style: FASTText.caption.copyWith(color: fast.t3),
+                      ),
+                  ],
                 ),
               ),
-              IconButton(
-                onPressed: _partySize < _maxParty
-                    ? () => setState(() => _partySize++)
-                    : null,
-                icon: const Icon(Icons.add_circle_outline),
-                color: context.fast.t2,
+              const SizedBox(width: FASTSpace.s12),
+              FastStepper(
+                value: _partySize,
+                min: 1,
+                max: _maxParty,
+                onChanged: (v) => setState(() => _partySize = v),
               ),
             ],
           ),
+          const SizedBox(height: FASTSpace.s16),
           if (_error != null) ...[
-            const SizedBox(height: 4),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEF4444).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: const Color(0xFFEF4444).withValues(alpha: 0.4),
-                ),
-              ),
-              child: Text(
-                _error!,
-                style: const TextStyle(color: Color(0xFFEF4444), fontSize: 11),
-              ),
-            ),
-            const SizedBox(height: 6),
+            _SheetError(_error!),
+            const SizedBox(height: FASTSpace.s8),
           ],
           TextField(
             controller: _noteCtrl,
             maxLines: 2,
-            style: TextStyle(color: context.fast.t1, fontSize: 13),
-            decoration: InputDecoration(
-              hintText: tr(context, 'allergy_note'),
-              hintStyle: TextStyle(color: context.fast.t3),
-              filled: true,
-              fillColor: context.fast.card,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: context.fast.line),
-              ),
-            ),
+            cursorColor: fast.ink,
+            style: FASTText.body.copyWith(color: fast.t1),
+            decoration: _sheetInput(context, tr(context, 'allergy_note')),
           ),
-          const SizedBox(height: 18),
-          SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: ElevatedButton(
-              onPressed: _sending ? null : _submit,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF00C8B3),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                textStyle: const TextStyle(fontWeight: FontWeight.w900),
-              ),
-              child: _sending
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : Text(tr(context, 'reserve_table')),
-            ),
+          const SizedBox(height: FASTSpace.s24),
+          FastButton(
+            label: tr(context, 'reserve_table'),
+            onPressed: _submit,
+            loading: _sending,
+            kind: FastButtonKind.ink,
           ),
         ],
       ),
@@ -2011,16 +1504,21 @@ class _ReviewSheetState extends State<_ReviewSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final fast = context.fast;
+    final media = MediaQuery.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: context.fast.bg,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        color: fast.bg,
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(FASTRadius.md),
+        ),
+        boxShadow: FASTShadow.sheet(context),
       ),
       padding: EdgeInsets.fromLTRB(
-        20,
-        20,
-        20,
-        20 + MediaQuery.of(context).viewInsets.bottom,
+        FASTSpace.s16,
+        FASTSpace.s24,
+        FASTSpace.s16,
+        FASTSpace.s16 + media.viewInsets.bottom + media.padding.bottom,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -2028,80 +1526,49 @@ class _ReviewSheetState extends State<_ReviewSheet> {
         children: [
           Text(
             tr(context, 'leave_review'),
-            style: TextStyle(
-              color: context.fast.t1,
-              fontSize: 16,
-              fontWeight: FontWeight.w900,
-            ),
+            style: FASTText.title.copyWith(color: fast.t1),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: FASTSpace.s4),
           Text(
             widget.restaurant.name,
-            style: TextStyle(color: context.fast.t3, fontSize: 12),
+            style: FASTText.body.copyWith(color: fast.t3),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: FASTSpace.s16),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(5, (i) {
               final lit = i < _rating;
               return IconButton(
-                onPressed: () => setState(() => _rating = i + 1.0),
+                onPressed: () {
+                  HapticFeedback.selectionClick();
+                  setState(() => _rating = i + 1.0);
+                },
                 icon: Icon(
                   lit ? Icons.star_rounded : Icons.star_outline_rounded,
-                  color: lit ? const Color(0xFFF59E0B) : context.fast.faint,
+                  color: lit ? FASTBrand.amber : fast.faint,
                   size: 36,
                 ),
               );
             }),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: FASTSpace.s12),
           TextField(
             controller: _commentCtrl,
             maxLines: 3,
-            style: TextStyle(color: context.fast.t1, fontSize: 13),
-            decoration: InputDecoration(
-              hintText: tr(context, 'review_ph'),
-              hintStyle: TextStyle(color: context.fast.t3, fontSize: 12),
-              filled: true,
-              fillColor: context.fast.card,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: context.fast.line),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: context.fast.line),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFFF59E0B)),
-              ),
-            ),
+            cursorColor: fast.ink,
+            style: FASTText.body.copyWith(color: fast.t1),
+            decoration: _sheetInput(context, tr(context, 'review_ph')),
           ),
           if (_error != null) ...[
-            const SizedBox(height: 10),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEF4444).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: const Color(0xFFEF4444).withValues(alpha: 0.4),
-                ),
-              ),
-              child: Text(
-                _error!,
-                style: const TextStyle(color: Color(0xFFEF4444), fontSize: 11),
-              ),
-            ),
+            const SizedBox(height: FASTSpace.s12),
+            _SheetError(_error!),
           ],
-          const SizedBox(height: 16),
+          const SizedBox(height: FASTSpace.s24),
           FastButton(
             label: tr(context, 'submit_review'),
             onPressed: _submit,
             loading: _sending,
-            height: 48,
+            kind: FastButtonKind.ink,
           ),
         ],
       ),
@@ -2136,4 +1603,49 @@ class _StickyCatBarDelegate extends SliverPersistentHeaderDelegate {
   @override
   bool shouldRebuild(_StickyCatBarDelegate oldDelegate) =>
       oldDelegate.height != height || oldDelegate.builder != builder;
+}
+
+/// Text field look shared by the reservation and review sheets: radius
+/// 12 on the raised card colour, ink border when focused.
+InputDecoration _sheetInput(BuildContext context, String hint) {
+  final fast = context.fast;
+  OutlineInputBorder border(Color color, [double width = 1]) =>
+      OutlineInputBorder(
+        borderRadius: BorderRadius.circular(FASTRadius.sm),
+        borderSide: BorderSide(color: color, width: width),
+      );
+  return InputDecoration(
+    hintText: hint,
+    hintStyle: FASTText.body.copyWith(color: fast.t3),
+    filled: true,
+    fillColor: fast.cardHigh,
+    contentPadding: const EdgeInsets.all(FASTSpace.s12),
+    border: border(fast.line),
+    enabledBorder: border(fast.line),
+    focusedBorder: border(fast.ink, 1.5),
+  );
+}
+
+/// Error message shown inside the reservation and review sheets.
+class _SheetError extends StatelessWidget {
+  const _SheetError(this.message);
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(FASTSpace.s12),
+      decoration: BoxDecoration(
+        color: FASTBrand.error.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(FASTRadius.sm),
+        border: Border.all(color: FASTBrand.error.withValues(alpha: 0.4)),
+      ),
+      child: Text(
+        message,
+        style: FASTText.caption.copyWith(color: FASTBrand.error),
+      ),
+    );
+  }
 }

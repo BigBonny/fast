@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../provider.dart';
 import '../l10n/app_strings.dart';
@@ -7,175 +8,45 @@ import '../screens/account_screen.dart';
 import '../screens/assistant_screen.dart';
 import '../theme.dart';
 import '../l10n/tr.dart';
+import 'fast_night_surface.dart';
 
-/// Base44-style slide-in account menu for the client app:
-/// gradient header with logo + avatar + points pill, tinted icon rows,
-/// expandable Réglages (theme picker), and a red outlined logout button.
+/// Slide-in account menu for the client app: night-surface header with
+/// the wordmark, the user's name and the points pill, plain icon rows,
+/// expandable Réglages (theme + language pickers), and a red outlined
+/// logout button.
 class ClientDrawer extends StatelessWidget {
   const ClientDrawer({super.key});
-
-  static const _headerGradient = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0xFF1E1B4B), Color(0xFF312E81), Color(0xFF1E293B)],
-  );
-
-  static bool _isDark(BuildContext context) =>
-      Theme.of(context).brightness == Brightness.dark;
-
-  static Color _bg(BuildContext context) =>
-      _isDark(context) ? const Color(0xFF0F172A) : Colors.white;
-  static Color _text(BuildContext context) =>
-      _isDark(context) ? const Color(0xFFF1F5F9) : const Color(0xFF1E293B);
-  static Color _subtext(BuildContext context) =>
-      _isDark(context) ? const Color(0xFFCBD5E1) : const Color(0xFF64748B);
-  static Color _chipBg(BuildContext context) =>
-      _isDark(context) ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9);
-  static Color _chipBorder(BuildContext context) =>
-      _isDark(context) ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
 
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<FASTProvider>();
+    final fast = context.fast;
+    final topInset = MediaQuery.paddingOf(context).top;
 
     return Drawer(
-      backgroundColor: _bg(context),
-      child: SafeArea(
-        child: Column(
-          children: [
-            // ─── Header ───
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(16, 12, 8, 20),
-              decoration: const BoxDecoration(gradient: _headerGradient),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      ShaderMask(
-                        shaderCallback: (b) => const LinearGradient(
-                          colors: [Color(0xFF60A5FA), Color(0xFFA855F7)],
-                        ).createShader(b),
-                        child: const Text(
-                          '⚡FAST⚡',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w900,
-                            fontStyle: FontStyle.italic,
-                            fontSize: 22,
-                            letterSpacing: 1,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      const Spacer(),
-                      IconButton(
-                        icon: const Icon(Icons.close, color: Colors.white70),
-                        onPressed: () => Navigator.of(context).pop(),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Container(
-                        width: 52,
-                        height: 52,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            colors: [Color(0xFF60A5FA), Color(0xFFA855F7)],
-                          ),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          provider.userInitial.isNotEmpty
-                              ? provider.userInitial
-                              : '?',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              provider.userName.isNotEmpty
-                                  ? provider.userName
-                                  : tr(context, 'my_account'),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w800,
-                                fontSize: 16,
-                              ),
-                            ),
-                            if (provider.userEmail.isNotEmpty)
-                              Text(
-                                provider.userEmail,
-                                style: const TextStyle(
-                                  color: Color(0xFFCBD5E1),
-                                  fontSize: 12,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF59E0B),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.star_rounded,
-                          color: Colors.white,
-                          size: 16,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          '${provider.userPoints} ${provider.tr('tab_points')}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w900,
-                            fontSize: 13,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        const Text(
-                          '· Portefeuille FAST',
-                          style: TextStyle(color: Colors.white, fontSize: 12),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
+      backgroundColor: fast.card,
+      shape: const RoundedRectangleBorder(),
+      child: Column(
+        children: [
+          // ─── Header ───
+          // The night surface runs under the status bar, so its icons
+          // are forced light. Clipped so the glow stays inside the header.
+          AnnotatedRegion<SystemUiOverlayStyle>(
+            value: SystemUiOverlayStyle.light,
+            child: _header(context, provider, topInset),
+          ),
 
-            // ─── Menu items ───
-            Expanded(
+          // ─── Menu items ───
+          Expanded(
+            child: MediaQuery.removePadding(
+              context: context,
+              removeTop: true,
               child: ListView(
-                padding: const EdgeInsets.symmetric(vertical: 8),
+                padding: const EdgeInsets.symmetric(vertical: FASTSpace.s8),
                 children: [
                   _item(
                     context,
                     icon: Icons.person_outline,
-                    iconColor: const Color(0xFFA855F7),
                     label: provider.tr('my_account'),
                     onTap: () {
                       Navigator.of(context).pop();
@@ -189,7 +60,6 @@ class ClientDrawer extends StatelessWidget {
                   _item(
                     context,
                     icon: Icons.shopping_bag_outlined,
-                    iconColor: const Color(0xFF60A5FA),
                     label: provider.tr('my_orders'),
                     onTap: () {
                       Navigator.of(context).pop();
@@ -199,8 +69,7 @@ class ClientDrawer extends StatelessWidget {
                   _settingsItem(context, provider),
                   _item(
                     context,
-                    icon: Icons.auto_awesome,
-                    iconColor: const Color(0xFFF59E0B),
+                    icon: Icons.auto_awesome_outlined,
                     label: provider.tr('assistant_title'),
                     onTap: () {
                       Navigator.of(context).pop();
@@ -214,7 +83,6 @@ class ClientDrawer extends StatelessWidget {
                   _item(
                     context,
                     icon: Icons.favorite_border,
-                    iconColor: const Color(0xFFF472B6),
                     label: provider.tr('favorites'),
                     onTap: () {
                       Navigator.of(context).pop();
@@ -224,7 +92,6 @@ class ClientDrawer extends StatelessWidget {
                   _item(
                     context,
                     icon: Icons.location_on_outlined,
-                    iconColor: const Color(0xFF34D399),
                     label: provider.tr('addresses'),
                     onTap: () {
                       Navigator.of(context).pop();
@@ -235,31 +102,41 @@ class ClientDrawer extends StatelessWidget {
                       );
                     },
                   ),
+                  _groupDivider(context),
                   // Owners/staff who switched to client mode get a way back
                   if (context.watch<AuthProvider>().isRestaurant ||
-                      (context.watch<AuthProvider>().user?.isStaff ?? false))
+                      (context.watch<AuthProvider>().user?.isStaff ??
+                          false)) ...[
                     _proBanner(context, provider),
+                    _groupDivider(context),
+                  ],
                   _item(
                     context,
                     icon: Icons.shield_outlined,
-                    iconColor: const Color(0xFF38BDF8),
                     label: provider.tr('privacy'),
                     onTap: () => _showLegal(context, tr(context, 'privacy')),
                   ),
                   _item(
                     context,
                     icon: Icons.description_outlined,
-                    iconColor: const Color(0xFFFBBF24),
                     label: provider.tr('cgu'),
                     onTap: () => _showLegal(context, 'CGU'),
                   ),
                 ],
               ),
             ),
+          ),
 
-            // ─── Logout ───
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+          // ─── Logout ───
+          SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                FASTSpace.s16,
+                FASTSpace.s8,
+                FASTSpace.s16,
+                FASTSpace.s16,
+              ),
               child: SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
@@ -272,61 +149,183 @@ class ClientDrawer extends StatelessWidget {
                   },
                   icon: const Icon(
                     Icons.logout,
-                    color: Color(0xFFEF4444),
+                    color: FASTBrand.error,
                     size: 18,
                   ),
                   label: Text(
                     provider.tr('logout'),
                     style: const TextStyle(
-                      color: Color(0xFFEF4444),
+                      color: FASTBrand.error,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Color(0xFFEF4444)),
+                    side: const BorderSide(color: FASTBrand.error),
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                    shape: const StadiumBorder(),
                   ),
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
+  Widget _header(BuildContext context, FASTProvider provider, double topInset) {
+    return Column(
+      children: [
+        ClipRect(
+          child: SizedBox(
+            width: double.infinity,
+            child: FastNightSurface(
+              radius: 0,
+              padding: EdgeInsetsDirectional.fromSTEB(
+                FASTSpace.s16,
+                topInset + FASTSpace.s8,
+                FASTSpace.s4,
+                FASTSpace.s16,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.bolt, color: FASTBrand.amber, size: 22),
+                      const SizedBox(width: 2),
+                      Text(
+                        'FAST',
+                        style: FASTText.title.copyWith(
+                          fontWeight: FontWeight.w900,
+                          fontStyle: FontStyle.italic,
+                          letterSpacing: 1,
+                          color: FastNightSurface.onNight,
+                        ),
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.close,
+                          color: FastNightSurface.onNightMuted,
+                        ),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: FASTSpace.s12),
+                  Padding(
+                    padding: const EdgeInsetsDirectional.only(
+                      end: FASTSpace.s12,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          provider.userName.isNotEmpty
+                              ? provider.userName
+                              : tr(context, 'my_account'),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: FASTText.title.copyWith(
+                            color: FastNightSurface.onNight,
+                          ),
+                        ),
+                        if (provider.userEmail.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            provider.userEmail,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: FASTText.caption.copyWith(
+                              color: FastNightSurface.onNightMuted,
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: FASTSpace.s16),
+                        _pointsPill(provider),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Dark pill with the points balance — on the night surface only.
+  Widget _pointsPill(FASTProvider provider) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: FASTSpace.s12,
+        vertical: FASTSpace.s8,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.35),
+        borderRadius: BorderRadius.circular(FASTRadius.pill),
+        border: Border.all(color: FASTBrand.amber.withValues(alpha: 0.45)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.bolt_outlined, color: FASTBrand.amber, size: 16),
+          const SizedBox(width: FASTSpace.s4),
+          Text(
+            '${provider.userPoints} ${provider.tr('tab_points')}',
+            style: FASTText.price.copyWith(
+              fontSize: 14,
+              color: FASTBrand.amber,
+            ),
+          ),
+          const SizedBox(width: FASTSpace.s4),
+          Flexible(
+            child: Text(
+              '· ${provider.tr('points_wallet')}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: FASTText.caption.copyWith(
+                color: FastNightSurface.onNightMuted,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static TextStyle _rowStyle(BuildContext context) => FASTText.item.copyWith(
+    fontWeight: FontWeight.w600,
+    color: context.fast.t1,
+  );
+
+  Widget _groupDivider(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: FASTSpace.s8),
+    child: Divider(
+      height: 1,
+      thickness: 1,
+      indent: FASTSpace.s16,
+      endIndent: FASTSpace.s16,
+      color: context.fast.line,
+    ),
+  );
+
   Widget _item(
     BuildContext context, {
     required IconData icon,
-    required Color iconColor,
     required String label,
-    Widget? trailing,
     VoidCallback? onTap,
   }) {
     return ListTile(
       onTap: onTap,
-      leading: Container(
-        width: 34,
-        height: 34,
-        decoration: BoxDecoration(
-          color: iconColor.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Icon(icon, color: iconColor, size: 18),
-      ),
-      title: Text(
-        label,
-        style: TextStyle(
-          color: _text(context),
-          fontWeight: FontWeight.w600,
-          fontSize: 14,
-        ),
-      ),
-      trailing: trailing,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      contentPadding: const EdgeInsets.symmetric(horizontal: FASTSpace.s16),
+      horizontalTitleGap: FASTSpace.s12,
+      leading: Icon(icon, color: context.fast.t2, size: 22),
+      title: Text(label, style: _rowStyle(context)),
+      trailing: Icon(Icons.chevron_right, color: context.fast.t3, size: 20),
+      shape: const RoundedRectangleBorder(),
     );
   }
 
@@ -334,30 +333,23 @@ class ClientDrawer extends StatelessWidget {
     return Theme(
       data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
       child: ExpansionTile(
-        leading: Container(
-          width: 34,
-          height: 34,
-          decoration: BoxDecoration(
-            color: const Color(0xFF94A3B8).withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: const Icon(
-            Icons.settings_outlined,
-            color: Color(0xFF94A3B8),
-            size: 18,
-          ),
+        tilePadding: const EdgeInsets.symmetric(horizontal: FASTSpace.s16),
+        leading: Icon(
+          Icons.settings_outlined,
+          color: context.fast.t2,
+          size: 22,
         ),
-        title: Text(
-          provider.tr('settings'),
-          style: TextStyle(
-            color: _text(context),
-            fontWeight: FontWeight.w600,
-            fontSize: 14,
-          ),
+        title: Text(provider.tr('settings'), style: _rowStyle(context)),
+        iconColor: context.fast.t2,
+        collapsedIconColor: context.fast.t3,
+        shape: const RoundedRectangleBorder(),
+        collapsedShape: const RoundedRectangleBorder(),
+        childrenPadding: const EdgeInsetsDirectional.fromSTEB(
+          FASTSpace.s16,
+          0,
+          FASTSpace.s16,
+          FASTSpace.s12,
         ),
-        iconColor: const Color(0xFF94A3B8),
-        collapsedIconColor: const Color(0xFF94A3B8),
-        childrenPadding: const EdgeInsets.only(left: 16, right: 8, bottom: 8),
         children: [
           Row(
             children: [
@@ -368,7 +360,7 @@ class ClientDrawer extends StatelessWidget {
                 Icons.phone_android,
                 provider.tr('theme_auto'),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: FASTSpace.s8),
               _themeOpt(
                 context,
                 provider,
@@ -376,7 +368,7 @@ class ClientDrawer extends StatelessWidget {
                 Icons.wb_sunny_outlined,
                 provider.tr('theme_light'),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: FASTSpace.s8),
               _themeOpt(
                 context,
                 provider,
@@ -386,7 +378,7 @@ class ClientDrawer extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: FASTSpace.s8),
           _languagePicker(context, provider),
         ],
       ),
@@ -394,31 +386,34 @@ class ClientDrawer extends StatelessWidget {
   }
 
   Widget _languagePicker(BuildContext context, FASTProvider provider) {
+    final fast = context.fast;
+    OutlineInputBorder border(Color color) => OutlineInputBorder(
+      borderRadius: BorderRadius.circular(FASTRadius.sm),
+      borderSide: BorderSide(color: color),
+    );
     return DropdownButtonFormField<String>(
       initialValue: provider.appLanguage,
       isDense: true,
       isExpanded: true,
-      icon: Icon(Icons.expand_more, color: _subtext(context), size: 18),
+      icon: Icon(Icons.expand_more, color: fast.t2, size: 20),
       decoration: InputDecoration(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: _chipBorder(context)),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: FASTSpace.s12,
+          vertical: 10,
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: _chipBorder(context)),
-        ),
+        border: border(fast.line),
+        enabledBorder: border(fast.line),
+        focusedBorder: border(fast.ink),
         filled: true,
-        fillColor: _chipBg(context),
+        fillColor: fast.cardHigh,
       ),
-      style: TextStyle(color: _text(context), fontSize: 12),
-      dropdownColor: _bg(context),
+      style: FASTText.body.copyWith(color: fast.t1),
+      dropdownColor: fast.card,
       items: AppStrings.languages
           .map(
             (l) => DropdownMenuItem(
               value: l.$1,
-              child: Text(l.$2, style: const TextStyle(fontSize: 12)),
+              child: Text(l.$2, style: const TextStyle(fontSize: 14)),
             ),
           )
           .toList(),
@@ -428,67 +423,52 @@ class ClientDrawer extends StatelessWidget {
     );
   }
 
-  /// Big branded card so restaurant owners instantly spot the way
-  /// back into FAST Pro while browsing the client experience.
+  /// Ink card so restaurant owners instantly spot the way back into
+  /// FAST Pro while browsing the client experience.
   Widget _proBanner(BuildContext context, FASTProvider provider) {
+    final fast = context.fast;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(
+        horizontal: FASTSpace.s16,
+        vertical: FASTSpace.s4,
+      ),
       child: Material(
-        borderRadius: BorderRadius.circular(12),
+        color: fast.ink,
+        borderRadius: BorderRadius.circular(FASTRadius.md),
+        clipBehavior: Clip.antiAlias,
         child: InkWell(
-          borderRadius: BorderRadius.circular(12),
           onTap: () {
             Navigator.of(context).popUntil((r) => r.isFirst);
             provider.setViewAsClient(false);
           },
-          child: Ink(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              gradient: const LinearGradient(
-                colors: [Color(0xFF00C8B3), Color(0xFF0EA5E9)],
-              ),
-            ),
+          child: Padding(
+            padding: const EdgeInsets.all(FASTSpace.s16),
             child: Row(
               children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.storefront,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
+                Icon(Icons.storefront_outlined, color: fast.onInk, size: 22),
+                const SizedBox(width: FASTSpace.s12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'FAST PRO',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
+                        style: FASTText.label.copyWith(
                           fontSize: 14,
-                          letterSpacing: 1.2,
+                          color: fast.onInk,
                         ),
                       ),
+                      const SizedBox(height: 2),
                       Text(
                         provider.tr('pro_space'),
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.85),
-                          fontSize: 11,
+                        style: FASTText.caption.copyWith(
+                          color: fast.onInk.withValues(alpha: 0.75),
                         ),
                       ),
                     ],
                   ),
                 ),
-                const Icon(Icons.arrow_forward, color: Colors.white, size: 18),
+                Icon(Icons.arrow_forward, color: fast.onInk, size: 20),
               ],
             ),
           ),
@@ -504,35 +484,33 @@ class ClientDrawer extends StatelessWidget {
     IconData icon,
     String label,
   ) {
+    final fast = context.fast;
     final sel = provider.themeMode == mode;
+    final fg = sel ? fast.onInk : fast.t2;
     return Expanded(
       child: GestureDetector(
-        onTap: () => provider.setThemeMode(mode),
+        onTap: () {
+          HapticFeedback.selectionClick();
+          provider.setThemeMode(mode);
+        },
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: sel
-                ? FASTBrand.amber.withValues(alpha: 0.15)
-                : _chipBg(context),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: sel ? FASTBrand.amber : _chipBorder(context),
-            ),
+            color: sel ? fast.ink : fast.cardHigh,
+            borderRadius: BorderRadius.circular(FASTRadius.sm),
+            border: Border.all(color: sel ? fast.ink : fast.line),
           ),
           child: Column(
             children: [
-              Icon(
-                icon,
-                size: 16,
-                color: sel ? FASTBrand.amber : _subtext(context),
-              ),
+              Icon(icon, size: 18, color: fg),
               const SizedBox(height: 2),
               Text(
                 label,
-                style: TextStyle(
-                  color: sel ? FASTBrand.amber : _subtext(context),
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: FASTText.caption.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: fg,
                 ),
               ),
             ],
@@ -550,37 +528,33 @@ class ClientDrawer extends StatelessWidget {
         : tr(context, 'privacy_collect') +
               tr(context, 'privacy_data') +
               tr(context, 'data_rights');
+    final fast = context.fast;
 
     Navigator.of(context).pop();
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: _bg(context),
+        backgroundColor: fast.card,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: _chipBorder(context)),
+          borderRadius: BorderRadius.circular(FASTRadius.md),
+          side: BorderSide(color: fast.line),
         ),
         title: Text(
           type == 'CGU' ? tr(context, 'terms_title') : tr(context, 'privacy'),
-          style: TextStyle(
-            color: _text(context),
-            fontWeight: FontWeight.bold,
-            fontSize: 14,
-          ),
+          style: FASTText.item.copyWith(color: fast.t1),
         ),
         content: Text(
           content,
-          style: TextStyle(color: _subtext(context), fontSize: 12, height: 1.5),
+          style: FASTText.caption.copyWith(color: fast.t2, height: 1.5),
         ),
         actions: [
           ElevatedButton(
             onPressed: () => Navigator.of(ctx).pop(),
             style: ElevatedButton.styleFrom(
-              backgroundColor: FASTBrand.amber,
-              foregroundColor: FASTBrand.onAmber,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
+              backgroundColor: fast.ink,
+              foregroundColor: fast.onInk,
+              shape: const StadiumBorder(),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               elevation: 0,
             ),
             child: Text(

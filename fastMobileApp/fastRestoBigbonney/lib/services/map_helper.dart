@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:maplibre/maplibre.dart';
 import 'package:latlong2/latlong.dart';
 
+/// Test seam: widget tests set this to true so a screen that embeds a map
+/// can be laid out where MapLibre has no platform implementation. The app
+/// never sets it — maps always render in a real build.
+bool debugSkipMaps = false;
+
 /// Convert [LatLng] to [Geographic] for use with MapLibre.
 Geographic toGeo(LatLng ll) => Geographic(lon: ll.longitude, lat: ll.latitude);
 

@@ -65,19 +65,16 @@ void main() {
     return;
   }
 
-  SentryFlutter.init(
-    (options) {
-      options.dsn = sentryDsn;
-      options.sendDefaultPii = false;
-      options.attachScreenshot = false;
-      options.tracesSampleRate = 0.1;
-      options.beforeSend = (event, hint) {
-        final scrubbed = _scrubSentryEvent(event);
-        return scrubbed;
-      };
-    },
-    appRunner: () => runApp(app),
-  );
+  SentryFlutter.init((options) {
+    options.dsn = sentryDsn;
+    options.sendDefaultPii = false;
+    options.attachScreenshot = false;
+    options.tracesSampleRate = 0.1;
+    options.beforeSend = (event, hint) {
+      final scrubbed = _scrubSentryEvent(event);
+      return scrubbed;
+    };
+  }, appRunner: () => runApp(app));
 }
 
 final _emailRe = RegExp(r'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}');
@@ -234,10 +231,15 @@ class _FASTAppState extends State<FASTApp> with WidgetsBindingObserver {
   Future<void> _confirmStripeIntent(String intentId) async {
     if (!mounted) return;
     final auth = context.read<AuthProvider>();
-    if (!auth.isLoggedIn || auth.isRestaurant || (auth.isLivreur && kDriverModeEnabled)) return;
+    if (!auth.isLoggedIn ||
+        auth.isRestaurant ||
+        (auth.isLivreur && kDriverModeEnabled)) {
+      return;
+    }
     final fastProv = context.read<FASTProvider>();
     final ok = await fastProv.confirmStripeIntent(intentId);
     if (ok && mounted) {
+      HapticFeedback.mediumImpact();
       fastProv.navigateToScreen('commandes');
     }
   }
@@ -245,10 +247,15 @@ class _FASTAppState extends State<FASTApp> with WidgetsBindingObserver {
   Future<void> _confirmStripeSession(String sessionId) async {
     if (!mounted) return;
     final auth = context.read<AuthProvider>();
-    if (!auth.isLoggedIn || auth.isRestaurant || (auth.isLivreur && kDriverModeEnabled)) return;
+    if (!auth.isLoggedIn ||
+        auth.isRestaurant ||
+        (auth.isLivreur && kDriverModeEnabled)) {
+      return;
+    }
     final fastProv = context.read<FASTProvider>();
     final ok = await fastProv.confirmStripeCheckout(sessionId);
     if (ok && mounted) {
+      HapticFeedback.mediumImpact();
       fastProv.navigateToScreen('commandes');
     }
   }
@@ -391,7 +398,36 @@ class _SplashScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.fast.bg,
-      body: Center(child: CircularProgressIndicator(color: Color(0xFFF59E0B))),
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.bolt, color: FASTBrand.amber, size: 30),
+                Text(
+                  'FAST',
+                  style: FASTText.display.copyWith(
+                    fontStyle: FontStyle.italic,
+                    color: context.fast.t1,
+                  ),
+                ),
+                const Icon(Icons.bolt, color: FASTBrand.amber, size: 30),
+              ],
+            ),
+            const SizedBox(height: FASTSpace.s24),
+            const SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(
+                color: FASTBrand.amber,
+                strokeWidth: 2.5,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -540,19 +576,20 @@ class _MainShellState extends State<MainShell>
               );
             },
             icon: Container(
-              width: 30,
-              height: 30,
+              width: 32,
+              height: 32,
               decoration: BoxDecoration(
-                color: const Color(0xFFF59E0B),
-                borderRadius: BorderRadius.circular(8),
+                color: context.fast.cardHigh,
+                shape: BoxShape.circle,
+                border: Border.all(color: context.fast.line),
               ),
               alignment: Alignment.center,
               child: Text(
                 provider.userInitial.isNotEmpty ? provider.userInitial : 'D',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w900,
-                  color: FASTBrand.onAmber,
+                style: FASTText.body.copyWith(
+                  fontWeight: FontWeight.w800,
+                  height: 1,
+                  color: context.fast.t1,
                 ),
               ),
             ),
@@ -573,7 +610,10 @@ class _MainShellState extends State<MainShell>
               right: 0,
               child: SafeArea(
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: FASTSpace.s16,
+                    vertical: FASTSpace.s8,
+                  ),
                   child: SlideTransition(
                     position: _toastSlide,
                     child: GestureDetector(
@@ -583,31 +623,25 @@ class _MainShellState extends State<MainShell>
                         });
                       },
                       child: Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 10,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: FASTSpace.s16,
+                          vertical: FASTSpace.s12,
                         ),
                         decoration: BoxDecoration(
                           color: context.fast.card,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(FASTRadius.sm),
                           border: Border.all(color: context.fast.line),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.1),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
+                          boxShadow: FASTShadow.card(context),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              Icons.notifications_active,
-                              color: Color(0xFFF59E0B),
-                              size: 16,
+                              Icons.notifications_none_rounded,
+                              color: context.fast.t1,
+                              size: 20,
                             ),
-                            SizedBox(width: 8),
+                            const SizedBox(width: FASTSpace.s12),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -615,10 +649,9 @@ class _MainShellState extends State<MainShell>
                                 children: [
                                   Text(
                                     _toastTitle,
-                                    style: TextStyle(
+                                    style: FASTText.body.copyWith(
                                       color: context.fast.t1,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
                                     ),
                                     overflow: TextOverflow.ellipsis,
                                     maxLines: 1,
@@ -627,9 +660,8 @@ class _MainShellState extends State<MainShell>
                                     SizedBox(height: 2),
                                     Text(
                                       _toastBody,
-                                      style: TextStyle(
-                                        color: context.fast.t3,
-                                        fontSize: 10,
+                                      style: FASTText.caption.copyWith(
+                                        color: context.fast.t2,
                                       ),
                                       overflow: TextOverflow.ellipsis,
                                       maxLines: 1,
@@ -662,85 +694,81 @@ class _MainShellState extends State<MainShell>
               child: GestureDetector(
                 onTap: () => provider.navigateToScreen('cart'),
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  padding: const EdgeInsetsDirectional.fromSTEB(
+                    FASTSpace.s12,
+                    FASTSpace.s12,
+                    FASTSpace.s16,
+                    FASTSpace.s12,
+                  ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF59E0B),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.3),
-                        blurRadius: 16,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
+                    color: context.fast.ink,
+                    borderRadius: BorderRadius.circular(FASTRadius.pill),
+                    boxShadow: FASTShadow.card(context),
                   ),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              '${provider.cartCount}',
-                              style: TextStyle(
-                                color: FASTBrand.onAmber,
-                                fontWeight: FontWeight.w900,
-                                fontSize: 13,
-                              ),
-                            ),
+                      Container(
+                        constraints: const BoxConstraints(
+                          minWidth: 32,
+                          minHeight: 32,
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: FASTSpace.s8,
+                        ),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: context.fast.onInk.withValues(alpha: 0.16),
+                          borderRadius: BorderRadius.circular(FASTRadius.pill),
+                        ),
+                        child: Text(
+                          '${provider.cartCount}',
+                          style: FASTText.body.copyWith(
+                            color: context.fast.onInk,
+                            fontWeight: FontWeight.w800,
+                            height: 1,
                           ),
-                          SizedBox(width: 12),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                provider.tr('view_cart'),
-                                style: TextStyle(
-                                  color: FASTBrand.onAmber,
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 13,
-                                ),
-                              ),
-                              Text(
-                                '${provider.tr('at_restaurant')} ${provider.selectedRestaurant!.name}',
-                                style: TextStyle(
-                                  color: FASTBrand.onAmber.withValues(
-                                    alpha: 0.7,
-                                  ),
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 10,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                        ),
                       ),
-                      Row(
-                        children: [
-                          Text(
-                            '€${provider.cartTotal.toStringAsFixed(2)}',
-                            style: TextStyle(
-                              color: FASTBrand.onAmber,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 15,
+                      const SizedBox(width: FASTSpace.s12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              provider.tr('view_cart'),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: FASTText.body.copyWith(
+                                color: context.fast.onInk,
+                                fontWeight: FontWeight.w800,
+                              ),
                             ),
-                          ),
-                          SizedBox(width: 4),
-                          Icon(
-                            Icons.chevron_right,
-                            color: FASTBrand.onAmber,
-                            size: 20,
-                          ),
-                        ],
+                            Text(
+                              '${provider.tr('at_restaurant')} ${provider.selectedRestaurant!.name}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: FASTText.caption.copyWith(
+                                color: context.fast.onInk.withValues(
+                                  alpha: 0.7,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: FASTSpace.s12),
+                      Text(
+                        '${provider.cartTotal.toStringAsFixed(2)} €',
+                        style: FASTText.price.copyWith(
+                          color: context.fast.onInk,
+                        ),
+                      ),
+                      const SizedBox(width: FASTSpace.s4),
+                      Icon(
+                        Icons.chevron_right,
+                        color: context.fast.onInk,
+                        size: 20,
                       ),
                     ],
                   ),
@@ -750,9 +778,12 @@ class _MainShellState extends State<MainShell>
         ],
       ),
       bottomNavigationBar: FastNavBar(
+        calm: true,
         currentIndex: _getBottomNavIndex(provider.currentScreen),
-        onTap: (index) =>
-            provider.navigateToScreen(_getScreenFromIndex(index)),
+        onTap: (index) {
+          HapticFeedback.selectionClick();
+          provider.navigateToScreen(_getScreenFromIndex(index));
+        },
         items: [
           FastNavItem(
             icon: Icons.restaurant_outlined,

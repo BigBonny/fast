@@ -2,7 +2,8 @@
 // Shared intro carousel — dark branded glow stage, one accent color per
 // slide, breathing icon medallion with a slow orbiting dashed ring,
 // sliding text transitions and a gradient CTA. Used by the first-launch
-// onboarding and by the client intro gate.
+// onboarding and by the client intro gate (which passes `calm: true`:
+// the medallion plays one entrance and settles instead of looping).
 
 import 'dart:math' as math;
 
@@ -57,12 +58,19 @@ class FastIntroCarousel extends StatefulWidget {
   /// persisted under this SharedPreferences key.
   final String? dismissedPrefKey;
 
+  /// When true the medallion plays a single entrance animation and then
+  /// stays still (no endless breathing / orbiting), small text is drawn
+  /// at 12 and the CTA is a full pill. Defaults to false, which keeps the
+  /// original looping look.
+  final bool calm;
+
   const FastIntroCarousel({
     super.key,
     required this.slides,
     required this.onDone,
     this.onBack,
     this.dismissedPrefKey,
+    this.calm = false,
   });
 
   /// True when the user previously ticked "don't show again" for [prefKey].
@@ -87,20 +95,38 @@ class _FastIntroCarouselState extends State<FastIntroCarousel>
   int _currentPage = 0;
   bool _dontShowAgain = false;
 
-  late final AnimationController _breathe = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 2400),
-  )..repeat(reverse: true);
+  // Looping look (default): breathing scale + orbiting ring.
+  AnimationController? _breathe;
+  AnimationController? _orbit;
 
-  late final AnimationController _orbit = AnimationController(
-    vsync: this,
-    duration: const Duration(seconds: 22),
-  )..repeat();
+  // Calm look: one entrance that settles, then nothing moves.
+  AnimationController? _enter;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.calm) {
+      _enter = AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 700),
+      )..forward();
+    } else {
+      _breathe = AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 2400),
+      )..repeat(reverse: true);
+      _orbit = AnimationController(
+        vsync: this,
+        duration: const Duration(seconds: 22),
+      )..repeat();
+    }
+  }
 
   @override
   void dispose() {
-    _breathe.dispose();
-    _orbit.dispose();
+    _breathe?.dispose();
+    _orbit?.dispose();
+    _enter?.dispose();
     _pageController.dispose();
     super.dispose();
   }
@@ -210,9 +236,9 @@ class _FastIntroCarouselState extends State<FastIntroCarousel>
                         const SizedBox(width: 7),
                         Text(
                           tr(context, 'dont_show_again'),
-                          style: const TextStyle(
-                            color: Color(0xFF94A3B8),
-                            fontSize: 11.5,
+                          style: TextStyle(
+                            color: const Color(0xFF94A3B8),
+                            fontSize: widget.calm ? 12 : 11.5,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -249,8 +275,9 @@ class _FastIntroCarouselState extends State<FastIntroCarousel>
                             boxShadow: isActive
                                 ? [
                                     BoxShadow(
-                                      color: slide.accent
-                                          .withValues(alpha: 0.5),
+                                      color: slide.accent.withValues(
+                                        alpha: 0.5,
+                                      ),
                                       blurRadius: 8,
                                     ),
                                   ]
@@ -272,7 +299,9 @@ class _FastIntroCarouselState extends State<FastIntroCarousel>
                             end: Alignment.centerRight,
                             colors: [slide.accent, slide.glow],
                           ),
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(
+                            widget.calm ? 999 : 16,
+                          ),
                           boxShadow: [
                             BoxShadow(
                               color: slide.accent.withValues(alpha: 0.45),
@@ -297,9 +326,7 @@ class _FastIntroCarouselState extends State<FastIntroCarousel>
                             ),
                             const SizedBox(width: 10),
                             Icon(
-                              isLast
-                                  ? Icons.bolt
-                                  : Icons.arrow_forward_rounded,
+                              isLast ? Icons.bolt : Icons.arrow_forward_rounded,
                               color: Colors.white,
                               size: 20,
                             ),
@@ -309,7 +336,10 @@ class _FastIntroCarouselState extends State<FastIntroCarousel>
                     ),
                     if (slide.bannerText != null) ...[
                       const SizedBox(height: 14),
-                      _BannerPill(text: slide.bannerText!, accent: slide.accent),
+                      _BannerPill(
+                        text: slide.bannerText!,
+                        accent: slide.accent,
+                      ),
                     ],
                   ],
                 ),
@@ -365,10 +395,20 @@ class _FastIntroCarouselState extends State<FastIntroCarousel>
             flex: 5,
             child: Center(
               child: AnimatedBuilder(
-                animation: Listenable.merge([_breathe, _orbit]),
+                animation: Listenable.merge([_breathe, _orbit, _enter]),
                 builder: (context, _) {
-                  final scale = 1 + 0.035 * _breathe.value;
-                  final angle = _orbit.value * 2 * math.pi;
+                  final double scale;
+                  final double angle;
+                  final enter = _enter;
+                  if (enter != null) {
+                    // Grows in and the ring turns a little, then rests.
+                    final t = Curves.easeOutCubic.transform(enter.value);
+                    scale = 0.9 + 0.1 * t;
+                    angle = (t - 1) * 0.6;
+                  } else {
+                    scale = 1 + 0.035 * _breathe!.value;
+                    angle = _orbit!.value * 2 * math.pi;
+                  }
                   return SizedBox(
                     width: 270,
                     height: 270,
@@ -462,12 +502,16 @@ class _FastIntroCarouselState extends State<FastIntroCarousel>
               transitionBuilder: (child, anim) => FadeTransition(
                 opacity: anim,
                 child: SlideTransition(
-                  position: Tween(
-                    begin: const Offset(0.12, 0),
-                    end: Offset.zero,
-                  ).animate(
-                    CurvedAnimation(parent: anim, curve: Curves.easeOutCubic),
-                  ),
+                  position:
+                      Tween(
+                        begin: const Offset(0.12, 0),
+                        end: Offset.zero,
+                      ).animate(
+                        CurvedAnimation(
+                          parent: anim,
+                          curve: Curves.easeOutCubic,
+                        ),
+                      ),
                   child: child,
                 ),
               ),
@@ -478,7 +522,7 @@ class _FastIntroCarouselState extends State<FastIntroCarousel>
                     '0${_currentPage + 1} — 0${widget.slides.length}',
                     style: TextStyle(
                       color: slide.accent,
-                      fontSize: 11,
+                      fontSize: widget.calm ? 12 : 11,
                       fontWeight: FontWeight.w900,
                       letterSpacing: 4,
                     ),
@@ -533,7 +577,10 @@ class _FastIntroCarouselState extends State<FastIntroCarousel>
       TextSpan(
         children: [
           TextSpan(text: slide.title.substring(0, split), style: white),
-          TextSpan(text: part, style: white.copyWith(color: slide.accent)),
+          TextSpan(
+            text: part,
+            style: white.copyWith(color: slide.accent),
+          ),
           TextSpan(
             text: slide.title.substring(split + part.length),
             style: white,

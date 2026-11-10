@@ -381,8 +381,10 @@ class FASTProvider extends ChangeNotifier {
   String get membershipLevel {
     final pts = _userPoints;
     if (pts >= 200) return 'FAST Gold';
-    if (pts >= 80) return 'Membre FAST';
-    return 'Nouveau FAST';
+    // "FAST Gold" is a brand name and stays as is; the other two level
+    // names are translated.
+    if (pts >= 80) return tr('level_member');
+    return tr('level_new');
   }
 
   bool get hasUnreadNotifications => _notifications.any((n) => !n.isRead);

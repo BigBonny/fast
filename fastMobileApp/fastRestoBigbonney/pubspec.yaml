@@ -100,6 +100,16 @@ flutter:
   assets:
     - assets/images/
 
+  # Display typeface for headlines and section titles (SIL Open Font
+  # License, see assets/fonts/PlayfairDisplay-OFL.txt). Variable fonts: the
+  # weight is picked with fontVariations in lib/theme.dart (FASTText).
+  fonts:
+    - family: Playfair Display
+      fonts:
+        - asset: assets/fonts/PlayfairDisplay-wght.ttf
+        - asset: assets/fonts/PlayfairDisplay-Italic-wght.ttf
+          style: italic
+
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 

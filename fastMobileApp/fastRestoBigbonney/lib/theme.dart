@@ -21,7 +21,16 @@ class FASTShades {
     required this.shadow,
     required this.amberSoftBg,
     required this.amberSoftBorder,
+    required this.ink,
+    required this.onInk,
   });
+
+  /// Neutral for primary actions and selected states (buttons, active
+  /// tabs). Near-black in light mode, near-white in dark mode.
+  final Color ink;
+
+  /// Content color on top of [ink].
+  final Color onInk;
 
   /// Page / scaffold background.
   final Color bg;
@@ -68,6 +77,8 @@ class FASTShades {
     shadow: Color(0x66000000),
     amberSoftBg: Color(0x33F59E0B),
     amberSoftBorder: Color(0x66F59E0B),
+    ink: Color(0xFFF4F4F5),
+    onInk: Color(0xFF17171B),
   );
 
   static const FASTShades light = FASTShades(
@@ -82,7 +93,139 @@ class FASTShades {
     shadow: Color(0x14000000),
     amberSoftBg: Color(0xFFFEF3E2),
     amberSoftBorder: Color(0xFFF6D9A8),
+    ink: Color(0xFF17171B),
+    onInk: Color(0xFFFFFFFF),
   );
+}
+
+/// Spacing steps. Page side margin is [s16], the gap between sections
+/// is [s40], padding inside cards is [s16].
+class FASTSpace {
+  FASTSpace._();
+
+  static const double s4 = 4;
+  static const double s8 = 8;
+  static const double s12 = 12;
+  static const double s16 = 16;
+  static const double s24 = 24;
+  static const double s40 = 40;
+}
+
+/// Corner radii: [sm] for images and inputs, [md] for cards and sheets,
+/// [pill] for buttons, chips and tags.
+class FASTRadius {
+  FASTRadius._();
+
+  static const double sm = 12;
+  static const double md = 20;
+  static const double pill = 999;
+}
+
+/// Type scale for rebuilt customer screens: 12 / 14 / 16 / 20 / 28, plus
+/// one display size reserved for the pickup code. Styles carry no color —
+/// add it with `.copyWith(color: context.fast.t1)`.
+class FASTText {
+  FASTText._();
+
+  static const List<FontFeature> _tabular = [FontFeature.tabularFigures()];
+
+  /// The display face: a high-contrast serif in the French tradition,
+  /// used for headlines and section titles only. Body text stays in the
+  /// system font. Scripts it does not cover (Arabic, Chinese…) fall back
+  /// to the system font on their own.
+  static const String displayFamily = 'Playfair Display';
+
+  static const TextStyle display = TextStyle(
+    fontFamily: displayFamily,
+    fontSize: 28,
+    fontWeight: FontWeight.w800,
+    fontVariations: [FontVariation('wght', 800)],
+    letterSpacing: -0.3,
+    height: 1.12,
+  );
+
+  static const TextStyle title = TextStyle(
+    fontFamily: displayFamily,
+    fontSize: 20,
+    fontWeight: FontWeight.w700,
+    fontVariations: [FontVariation('wght', 700)],
+    letterSpacing: -0.1,
+    height: 1.2,
+  );
+
+  static const TextStyle item = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w700,
+    height: 1.25,
+  );
+
+  static const TextStyle body = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
+    height: 1.35,
+  );
+
+  static const TextStyle caption = TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.w500,
+    height: 1.3,
+  );
+
+  /// Small label voice. Pass the text through [fastLabelCase].
+  static const TextStyle label = TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.w800,
+    letterSpacing: 0.6,
+    height: 1.2,
+  );
+
+  /// Prices and totals: text color, digits of equal width.
+  static const TextStyle price = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w700,
+    fontFeatures: _tabular,
+    height: 1.2,
+  );
+
+  /// The pickup code. Used by `FastPickupCode` only.
+  static const TextStyle code = TextStyle(
+    fontSize: 34,
+    fontWeight: FontWeight.w900,
+    letterSpacing: 3,
+    fontFeatures: _tabular,
+    height: 1.1,
+  );
+}
+
+/// Uppercases [text] for the label voice in scripts where upper case
+/// exists and is safe. Arabic, Urdu, Hindi, Bengali and Chinese have no
+/// upper case; Turkish upper-casing of "i" is locale-specific — those
+/// keep their original casing and rely on weight alone.
+String fastLabelCase(BuildContext context, String text) {
+  const noUpper = {'ar', 'ur', 'hi', 'bn', 'zh', 'tr'};
+  final lang = Localizations.maybeLocaleOf(context)?.languageCode;
+  return noUpper.contains(lang) ? text : text.toUpperCase();
+}
+
+/// The two shadows used by rebuilt screens.
+class FASTShadow {
+  FASTShadow._();
+
+  static List<BoxShadow> card(BuildContext context) => [
+    BoxShadow(
+      color: context.fast.shadow,
+      blurRadius: 16,
+      offset: const Offset(0, 4),
+    ),
+  ];
+
+  static List<BoxShadow> sheet(BuildContext context) => [
+    BoxShadow(
+      color: context.fast.shadow,
+      blurRadius: 28,
+      offset: const Offset(0, -6),
+    ),
+  ];
 }
 
 extension FASTShadesX on BuildContext {
@@ -202,7 +345,9 @@ class FASTTheme {
       ),
       textTheme: textTheme,
       appBarTheme: AppBarTheme(
-        systemOverlayStyle: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+        systemOverlayStyle: isDark
+            ? SystemUiOverlayStyle.light
+            : SystemUiOverlayStyle.dark,
         backgroundColor: sh.bg,
         foregroundColor: sh.t1,
         elevation: 0,
