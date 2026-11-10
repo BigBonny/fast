@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../models.dart';
 import '../theme.dart';
+import '../widgets/fast_parts.dart';
 import '../l10n/tr.dart';
 
 /// Shown as a full-screen modal: client shows QR to staff for verification.
@@ -15,25 +16,7 @@ class QRVerificationScreen extends StatefulWidget {
   State<QRVerificationScreen> createState() => _QRVerificationScreenState();
 }
 
-class _QRVerificationScreenState extends State<QRVerificationScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _scanController;
-
-  @override
-  void initState() {
-    super.initState();
-    _scanController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    )..repeat();
-  }
-
-  @override
-  void dispose() {
-    _scanController.dispose();
-    super.dispose();
-  }
-
+class _QRVerificationScreenState extends State<QRVerificationScreen> {
   @override
   Widget build(BuildContext context) {
     final order = widget.order;
@@ -95,117 +78,51 @@ class _QRVerificationScreenState extends State<QRVerificationScreen>
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: context.fast.line),
               ),
-              child: AnimatedBuilder(
-                animation: _scanController,
-                builder: (context, child) {
-                  return SizedBox(
-                    width: 220,
-                    height: 220,
-                    child: Stack(
-                      children: [
-                        Positioned.fill(
-                          child: QrImageView(
-                            data: qrData,
-                            version: QrVersions.auto,
-                            backgroundColor: Colors.white,
-                            eyeStyle: QrEyeStyle(
-                              eyeShape: QrEyeShape.square,
-                              color: FASTBrand.onAmber,
-                            ),
-                            dataModuleStyle: QrDataModuleStyle(
-                              dataModuleShape: QrDataModuleShape.square,
-                              color: FASTBrand.onAmber,
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          top: (_scanController.value * 220).clamp(0.0, 220.0),
-                          left: 0,
-                          right: 0,
-                          child: Container(
-                            height: 2,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  const Color(
-                                    0xFFF59E0B,
-                                  ).withValues(alpha: 0.0),
-                                  const Color(
-                                    0xFFF59E0B,
-                                  ).withValues(alpha: 0.8),
-                                  const Color(
-                                    0xFFF59E0B,
-                                  ).withValues(alpha: 0.0),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
+              // A still QR: the scan-line loop was decoration and kept
+              // the screen repainting while the customer held it up.
+              child: SizedBox(
+                width: 220,
+                height: 220,
+                child: QrImageView(
+                  data: qrData,
+                  version: QrVersions.auto,
+                  backgroundColor: Colors.white,
+                  eyeStyle: QrEyeStyle(
+                    eyeShape: QrEyeShape.square,
+                    color: FASTBrand.onAmber,
+                  ),
+                  dataModuleStyle: QrDataModuleStyle(
+                    dataModuleShape: QrDataModuleShape.square,
+                    color: FASTBrand.onAmber,
+                  ),
+                ),
               ),
             ),
-            SizedBox(height: 20),
-            Text(
-              order.id.toUpperCase(),
-              style: const TextStyle(
-                fontFamily: 'monospace',
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFFF59E0B),
-                letterSpacing: 2.0,
-              ),
-            ),
-            SizedBox(height: 6),
+            SizedBox(height: 16),
             Text(
               tr(context, 'valid_at').replaceAll('{n}', order.restaurantName),
-              style: TextStyle(
-                fontSize: 12,
+              textAlign: TextAlign.center,
+              style: FASTText.body.copyWith(
                 color: context.fast.t2,
                 fontWeight: FontWeight.w600,
               ),
             ),
-            if (order.pickupToken != null) ...[
-              SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: const Color(0xFFF59E0B).withValues(alpha: 0.4),
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      tr(context, 'pickup_code_lbl'),
-                      style: TextStyle(fontSize: 11, color: context.fast.t3),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      pickupCodeFromToken(order.pickupToken!),
-                      style: const TextStyle(
-                        fontFamily: 'monospace',
-                        fontSize: 22,
-                        fontWeight: FontWeight.w900,
-                        color: Color(0xFFF59E0B),
-                        letterSpacing: 2.0,
-                      ),
-                    ),
-                  ],
-                ),
+            SizedBox(height: 4),
+            // The order id stays for support, but quiet — the pickup code
+            // below is the thing to read out.
+            Text(
+              order.id.toUpperCase(),
+              style: FASTText.caption.copyWith(
+                color: context.fast.t3,
+                letterSpacing: 1.2,
               ),
-              SizedBox(height: 6),
-              Text(
-                tr(context, 'pickup_code_hint'),
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 11, color: context.fast.t3),
+            ),
+            if (order.pickupToken != null) ...[
+              SizedBox(height: 24),
+              FastPickupCode(
+                code: pickupCodeFromToken(order.pickupToken!),
+                label: tr(context, 'pickup_code_lbl'),
+                hint: tr(context, 'pickup_code_hint'),
               ),
             ],
             SizedBox(height: 24),

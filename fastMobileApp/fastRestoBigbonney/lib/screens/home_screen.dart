@@ -1,12 +1,14 @@
 // lib/screens/home_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../provider.dart';
 import '../models.dart';
 import '../theme.dart';
 import '../widgets/fast_image.dart';
 import '../widgets/fast_glow_background.dart';
+import '../widgets/fast_parts.dart';
 import '../widgets/fast_ui.dart';
 import '../l10n/tr.dart';
 import '../services/restaurant_service.dart';
@@ -18,19 +20,11 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen>
-    with SingleTickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
-
-  /// Slow light sweep running across the FAST hero wordmark.
-  late final AnimationController _brandShine = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 3200),
-  )..repeat();
 
   @override
   void dispose() {
-    _brandShine.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -71,7 +65,7 @@ class _HomeScreenState extends State<HomeScreen>
                       // The hero extends under the floating AppBar; the brand
                       // mark sits level with the nav icons, like the reference.
                       final statusBar = MediaQuery.of(context).padding.top;
-                      const heroBody = 292.0;
+                      const heroBody = 276.0;
                       final heroHeight = statusBar + heroBody;
                       // The photo owns the lower-right; measured from the
                       // reference it spans ~60% of the width at natural aspect.
@@ -185,19 +179,18 @@ class _HomeScreenState extends State<HomeScreen>
                                         ],
                                       ),
                                       const SizedBox(width: 2),
-                                      AnimatedBuilder(
-                                        animation: _brandShine,
-                                        builder: (context, _) {
-                                          // A bright band sweeping
-                                          // left→right across the gradient.
-                                          final t = _brandShine.value * 2 - 0.5;
+                                      Builder(
+                                        builder: (context) {
+                                          // Still amber gradient with one
+                                          // fixed highlight — the endless
+                                          // shine sweep was decoration.
                                           return ShaderMask(
                                             blendMode: BlendMode.srcIn,
                                             shaderCallback: (rect) =>
-                                                LinearGradient(
+                                                const LinearGradient(
                                                   begin: Alignment.centerLeft,
                                                   end: Alignment.centerRight,
-                                                  colors: const [
+                                                  colors: [
                                                     Color(0xFFF59E0B),
                                                     Color(0xFFFBBF24),
                                                     Color(0xFFFFFBEB),
@@ -205,11 +198,11 @@ class _HomeScreenState extends State<HomeScreen>
                                                     Color(0xFFD97706),
                                                   ],
                                                   stops: [
-                                                    (t - 0.5).clamp(0.0, 1.0),
-                                                    (t - 0.22).clamp(0.0, 1.0),
-                                                    t.clamp(0.0, 1.0),
-                                                    (t + 0.22).clamp(0.0, 1.0),
-                                                    (t + 0.5).clamp(0.0, 1.0),
+                                                    0.0,
+                                                    0.28,
+                                                    0.5,
+                                                    0.72,
+                                                    1.0,
                                                   ],
                                                 ).createShader(rect),
                                             child: const Text(
@@ -250,9 +243,9 @@ class _HomeScreenState extends State<HomeScreen>
                                   const Text(
                                     'CHAQUE MINUTE COMPTE',
                                     style: TextStyle(
-                                      fontSize: 10,
+                                      fontSize: 12,
                                       fontWeight: FontWeight.w600,
-                                      letterSpacing: 3.2,
+                                      letterSpacing: 2.6,
                                       color: Color(0xB3FBBF24),
                                     ),
                                   ),
@@ -274,103 +267,86 @@ class _HomeScreenState extends State<HomeScreen>
                                     (((photoLeft + photoW * 0.10) - 20) /
                                             box.maxWidth)
                                         .clamp(0.38, 0.62),
-                                child: Transform.rotate(
-                                  angle: -0.028,
-                                  alignment: Alignment.centerLeft,
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      // scaleDown keeps every locale on one
-                                      // line instead of wrapping into the photo
-                                      FittedBox(
+                                // Level headline: the tilt and the painted
+                                // swoosh under it were removed so the hero
+                                // holds fewer competing shapes.
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // scaleDown keeps every locale on one
+                                    // line instead of wrapping into the photo
+                                    FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        tr(context, 'hero_order'),
+                                        style: _heroHeadline,
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 12),
+                                      // Amber→ember gradient "Fast." — the
+                                      // brand accent line, on its own row.
+                                      child: FittedBox(
                                         fit: BoxFit.scaleDown,
                                         alignment: Alignment.centerLeft,
-                                        child: Text(
-                                          tr(context, 'hero_order'),
-                                          style: _heroHeadline,
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                          left: 12,
-                                        ),
-                                        // Amber→ember gradient "Fast." — the
-                                        // brand accent line, on its own row.
-                                        child: FittedBox(
-                                          fit: BoxFit.scaleDown,
-                                          alignment: Alignment.centerLeft,
-                                          child: ShaderMask(
-                                            blendMode: BlendMode.srcIn,
-                                            shaderCallback: (rect) =>
-                                                const LinearGradient(
-                                                  begin: Alignment.topLeft,
-                                                  end: Alignment.bottomRight,
-                                                  colors: [
-                                                    Color(0xFFFBBF24),
-                                                    Color(0xFFF59E0B),
-                                                    Color(0xFFD97706),
-                                                  ],
-                                                ).createShader(rect),
-                                            child: const Text(
-                                              'Fast.',
-                                              style: TextStyle(
-                                                fontSize: 32,
-                                                fontWeight: FontWeight.w900,
-                                                fontStyle: FontStyle.italic,
-                                                letterSpacing: -0.8,
-                                                color: Colors.white,
-                                                height: 1.05,
-                                                shadows: [
-                                                  Shadow(
-                                                    color: Colors.black54,
-                                                    blurRadius: 12,
-                                                    offset: Offset(0, 2),
-                                                  ),
+                                        child: ShaderMask(
+                                          blendMode: BlendMode.srcIn,
+                                          shaderCallback: (rect) =>
+                                              const LinearGradient(
+                                                begin: Alignment.topLeft,
+                                                end: Alignment.bottomRight,
+                                                colors: [
+                                                  Color(0xFFFBBF24),
+                                                  Color(0xFFF59E0B),
+                                                  Color(0xFFD97706),
                                                 ],
-                                              ),
+                                              ).createShader(rect),
+                                          child: const Text(
+                                            'Fast.',
+                                            style: TextStyle(
+                                              fontSize: 32,
+                                              fontWeight: FontWeight.w900,
+                                              fontStyle: FontStyle.italic,
+                                              letterSpacing: -0.8,
+                                              color: Colors.white,
+                                              height: 1.05,
+                                              shadows: [
+                                                Shadow(
+                                                  color: Colors.black54,
+                                                  blurRadius: 12,
+                                                  offset: Offset(0, 2),
+                                                ),
+                                              ],
                                             ),
                                           ),
                                         ),
                                       ),
-                                      const SizedBox(height: 6),
-                                      // The sub wraps inside the safe column —
-                                      // no fixed width, so it never rides over
-                                      // the photo edge.
-                                      Padding(
-                                        padding: const EdgeInsets.only(left: 6),
-                                        child: Text(
-                                          tr(context, 'hero_sub'),
-                                          style: const TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w800,
-                                            color: Color(0xFFFBBF24),
-                                            height: 1.2,
-                                            shadows: [
-                                              Shadow(
-                                                color: Colors.black54,
-                                                blurRadius: 10,
-                                                offset: Offset(0, 2),
-                                              ),
-                                            ],
-                                          ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    // The sub wraps inside the safe column —
+                                    // no fixed width, so it never rides over
+                                    // the photo edge.
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 6),
+                                      child: Text(
+                                        tr(context, 'hero_sub'),
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w800,
+                                          color: Color(0xFFFBBF24),
+                                          height: 1.2,
+                                          shadows: [
+                                            Shadow(
+                                              color: Colors.black54,
+                                              blurRadius: 10,
+                                              offset: Offset(0, 2),
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                      const SizedBox(height: 4),
-                                      // Curved orange swoosh — the reference's
-                                      // hand-drawn highlight under the accent.
-                                      Padding(
-                                        padding: const EdgeInsets.only(left: 6),
-                                        child: SizedBox(
-                                          width: 150,
-                                          height: 10,
-                                          child: CustomPaint(
-                                            painter: _HeroUnderlinePainter(),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
@@ -426,7 +402,7 @@ class _HomeScreenState extends State<HomeScreen>
                                           onChanged: (val) =>
                                               provider.setKeyword(val),
                                           style: const TextStyle(
-                                            fontSize: 13,
+                                            fontSize: 14,
                                             color: Color(0xFF1A1425),
                                           ),
                                           decoration: InputDecoration(
@@ -506,12 +482,12 @@ class _HomeScreenState extends State<HomeScreen>
                   SizedBox(
                     height:
                         (viewport.maxHeight -
-                                268 -
+                                252 -
                                 MediaQuery.of(context).padding.top) <
                             240
                         ? 240.0
                         : viewport.maxHeight -
-                              268 -
+                              252 -
                               MediaQuery.of(context).padding.top,
                     child: Container(
                       decoration: BoxDecoration(
@@ -589,7 +565,7 @@ class _HomeScreenState extends State<HomeScreen>
             Text(
               tr(context, 'matching_cats'),
               style: TextStyle(
-                fontSize: 10,
+                fontSize: 12,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1.0,
                 color: context.fast.t3,
@@ -638,7 +614,7 @@ class _HomeScreenState extends State<HomeScreen>
           Text(
             provider.tr('matching'),
             style: TextStyle(
-              fontSize: 10,
+              fontSize: 12,
               fontWeight: FontWeight.bold,
               letterSpacing: 1.0,
               color: context.fast.t3,
@@ -665,7 +641,7 @@ class _HomeScreenState extends State<HomeScreen>
                         Text(
                           tr(context, 'search_suggest'),
                           style: TextStyle(
-                            fontSize: 10,
+                            fontSize: 12,
                             color: context.fast.t3,
                           ),
                         ),
@@ -718,7 +694,7 @@ class _HomeScreenState extends State<HomeScreen>
                             subtitle: Text(
                               '${r.pickupPrepTime} ${tr(context, 'min_prep')} • ${provider.getRealDistance(r).toStringAsFixed(1)} km',
                               style: TextStyle(
-                                fontSize: 11,
+                                fontSize: 12,
                                 color: context.fast.t3,
                               ),
                             ),
@@ -764,7 +740,7 @@ class _HomeScreenState extends State<HomeScreen>
                             subtitle: Text(
                               '${tr(context, 'from_resto').replaceAll('{n}', r.name)} • ${item.price.toStringAsFixed(2)} €',
                               style: TextStyle(
-                                fontSize: 11,
+                                fontSize: 12,
                                 color: context.fast.t3,
                               ),
                             ),
@@ -782,7 +758,7 @@ class _HomeScreenState extends State<HomeScreen>
                               child: Text(
                                 tr(context, 'order_btn'),
                                 style: TextStyle(
-                                  fontSize: 10,
+                                  fontSize: 12,
                                   fontWeight: FontWeight.bold,
                                   color: Color(0xFFF59E0B),
                                 ),
@@ -828,7 +804,7 @@ class _HomeScreenState extends State<HomeScreen>
               Text(
                 tr(context, 'browse_by_cat'),
                 style: TextStyle(
-                  fontSize: 10,
+                  fontSize: 12,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1.0,
                   color: context.fast.t3,
@@ -840,7 +816,7 @@ class _HomeScreenState extends State<HomeScreen>
                   child: Text(
                     tr(context, 'clear_filter'),
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: 12,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFFEF4444),
                     ),
@@ -865,7 +841,7 @@ class _HomeScreenState extends State<HomeScreen>
                 Text(
                   tr(context, 'favorites').toUpperCase(),
                   style: TextStyle(
-                    fontSize: 10,
+                    fontSize: 12,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.0,
                     color: context.fast.t3,
@@ -943,7 +919,7 @@ class _HomeScreenState extends State<HomeScreen>
                                   Text(
                                     '${rest.rating} • ${rest.pickupPrepTime} min',
                                     style: TextStyle(
-                                      fontSize: 10,
+                                      fontSize: 12,
                                       color: context.fast.t3,
                                     ),
                                   ),
@@ -971,7 +947,7 @@ class _HomeScreenState extends State<HomeScreen>
               Text(
                 provider.tr('cuisines_near'),
                 style: TextStyle(
-                  fontSize: 10,
+                  fontSize: 12,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1.0,
                   color: context.fast.t3,
@@ -982,7 +958,7 @@ class _HomeScreenState extends State<HomeScreen>
                     .tr('restaurants_available')
                     .replaceAll('{n}', '${filteredRest.length}'),
                 style: TextStyle(
-                  fontSize: 10,
+                  fontSize: 12,
                   fontWeight: FontWeight.bold,
                   color: context.fast.t3,
                 ),
@@ -1114,7 +1090,15 @@ class _HomeScreenState extends State<HomeScreen>
         ),
         child: Stack(
           children: [
-            Positioned(right: -10, bottom: -10, child: _PulsingEmoji(emoji)),
+            // Still, faint emoji as a watermark (it used to pulse forever).
+            Positioned(
+              right: -10,
+              bottom: -10,
+              child: Opacity(
+                opacity: 0.22,
+                child: Text(emoji, style: const TextStyle(fontSize: 64)),
+              ),
+            ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1132,9 +1116,9 @@ class _HomeScreenState extends State<HomeScreen>
                     tag,
                     style: TextStyle(
                       color: tagColor,
-                      fontSize: 8,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'monospace',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.4,
                     ),
                   ),
                 ),
@@ -1156,10 +1140,9 @@ class _HomeScreenState extends State<HomeScreen>
                       child: Text(
                         subtitle,
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.75),
-                          fontFamily: 'monospace',
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
+                          color: Colors.white.withValues(alpha: 0.8),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -1180,7 +1163,7 @@ class _HomeScreenState extends State<HomeScreen>
                             cta,
                             style: const TextStyle(
                               color: Color(0xFF17171B),
-                              fontSize: 10,
+                              fontSize: 12,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -1196,12 +1179,6 @@ class _HomeScreenState extends State<HomeScreen>
                   ],
                 ),
               ],
-            ),
-            // Animated light sweep across the card
-            Positioned.fill(
-              child: IgnorePointer(
-                child: _LightSweep(borderRadius: BorderRadius.circular(20)),
-              ),
             ),
           ],
         ),
@@ -1224,34 +1201,21 @@ class _HomeScreenState extends State<HomeScreen>
           final cat = cats[index];
           final isActive = provider.selectedCategory == cat.id;
           return GestureDetector(
-            onTap: () => provider.setCategory(cat.id),
+            onTap: () {
+              HapticFeedback.selectionClick();
+              provider.setCategory(cat.id);
+            },
             child: AnimatedContainer(
               duration: Duration(milliseconds: 200),
               curve: Curves.easeOutCubic,
               padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              // Selected is ink, flat — no amber fill, no glow.
               decoration: BoxDecoration(
-                color: isActive ? const Color(0xFFF59E0B) : context.fast.card,
-                borderRadius: BorderRadius.circular(20),
+                color: isActive ? context.fast.ink : context.fast.card,
+                borderRadius: BorderRadius.circular(FASTRadius.md),
                 border: Border.all(
-                  color: isActive ? const Color(0xFFF59E0B) : context.fast.line,
-                  width: isActive ? 1.8 : 1,
+                  color: isActive ? context.fast.ink : context.fast.line,
                 ),
-                boxShadow: isActive
-                    ? [
-                        BoxShadow(
-                          color: const Color(0xFFF59E0B).withValues(alpha: 0.3),
-                          blurRadius: 12,
-                          spreadRadius: 1,
-                          offset: const Offset(0, 3),
-                        ),
-                      ]
-                    : [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.04),
-                          blurRadius: 4,
-                          offset: const Offset(0, 1),
-                        ),
-                      ],
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -1263,9 +1227,9 @@ class _HomeScreenState extends State<HomeScreen>
                         ? cat.name
                         : catLabel(context, cat.id),
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: 12,
                       fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
-                      color: isActive ? FASTBrand.onAmber : context.fast.t2,
+                      color: isActive ? context.fast.onInk : context.fast.t2,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -1286,6 +1250,8 @@ class _HomeScreenState extends State<HomeScreen>
     Restaurant rest,
     int index,
   ) {
+    final fast = context.fast;
+    final isFav = provider.isFavorite(rest.id);
     return FastStagger(
       index: index,
       child: FastTap(
@@ -1294,224 +1260,134 @@ class _HomeScreenState extends State<HomeScreen>
           provider.navigateToScreen('restaurant');
         },
         child: Container(
-          margin: EdgeInsets.only(bottom: 16),
+          margin: const EdgeInsets.only(bottom: FASTSpace.s24),
           decoration: BoxDecoration(
-            color: context.fast.card,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: context.fast.line),
-            boxShadow: [
-              BoxShadow(
-                color: context.fast.shadow,
-                blurRadius: 10,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            color: fast.card,
+            borderRadius: BorderRadius.circular(FASTRadius.md),
+            border: Border.all(color: fast.line),
+            boxShadow: FASTShadow.card(context),
           ),
           clipBehavior: Clip.antiAlias,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Restaurant Image
+              // Photo at a fixed 16:9 with nothing on it but the heart —
+              // rating, prep time and distance moved to one line of facts
+              // under the name.
               Stack(
                 children: [
-                  FastParallax(
-                    maxShift: 14,
-                    child: FastImage(
-                      rest.image,
-                      height: 140,
-                      width: double.infinity,
-                      cacheWidth: 800,
-                      placeholder: Container(
-                        height: 140,
-                        color: context.fast.cardHigh,
-                        child: Icon(
-                          Icons.restaurant,
-                          color: context.fast.faint,
-                          size: 40,
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Top gradient overlay
-                  Positioned.fill(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.black.withValues(alpha: 0.5),
-                            Colors.transparent,
-                          ],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Favorite heart
-                  Positioned(
-                    top: 12,
-                    left: 12,
-                    child: GestureDetector(
-                      onTap: () => provider.toggleFavorite(rest.id),
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: context.fast.bg.withValues(alpha: 0.85),
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.1),
-                          ),
-                        ),
-                        child: Icon(
-                          provider.isFavorite(rest.id)
-                              ? Icons.favorite
-                              : Icons.favorite_border,
-                          color: provider.isFavorite(rest.id)
-                              ? const Color(0xFFEF4444)
-                              : context.fast.t2,
-                          size: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Details badges
-                  Positioned(
-                    top: 12,
-                    right: 12,
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: context.fast.bg.withValues(alpha: 0.85),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.1),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.star, color: Color(0xFFF59E0B), size: 14),
-                          SizedBox(width: 4),
-                          Text(
-                            '${rest.rating}',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: context.fast.t1,
+                  AspectRatio(
+                    aspectRatio: 16 / 9,
+                    child: ClipRect(
+                      child: FastParallax(
+                        maxShift: 14,
+                        child: FastImage(
+                          rest.image,
+                          width: double.infinity,
+                          height: double.infinity,
+                          fit: BoxFit.cover,
+                          cacheWidth: 800,
+                          placeholder: Container(
+                            color: fast.cardHigh,
+                            alignment: Alignment.center,
+                            child: Icon(
+                              Icons.restaurant,
+                              color: fast.faint,
+                              size: 40,
                             ),
                           ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
-                  // Distance badge
-                  Positioned(
-                    bottom: 12,
-                    left: 12,
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF59E0B),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        '⚡ ${rest.pickupPrepTime} ${tr(context, 'min_prep')} • ${provider.getRealDistance(rest).toStringAsFixed(1)} km',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: FASTBrand.onAmber,
+                  PositionedDirectional(
+                    top: FASTSpace.s12,
+                    end: FASTSpace.s12,
+                    child: FastTap(
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        provider.toggleFavorite(rest.id);
+                      },
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: fast.card,
+                          shape: BoxShape.circle,
+                          boxShadow: FASTShadow.card(context),
+                        ),
+                        child: Icon(
+                          isFav ? Icons.favorite : Icons.favorite_border,
+                          color: isFav ? FASTBrand.error : fast.t1,
+                          size: 20,
                         ),
                       ),
                     ),
                   ),
                 ],
               ),
-              // Text info
               Padding(
-                padding: EdgeInsets.all(16),
+                padding: const EdgeInsets.all(FASTSpace.s16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       rest.name,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 14,
-                        color: context.fast.t1,
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      rest.description,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: context.fast.t3,
-                        height: 1.4,
-                      ),
-                      maxLines: 2,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
+                      style: FASTText.item.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: fast.t1,
+                      ),
                     ),
-                    SizedBox(height: 10),
-                    // Dietary preference tags
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
-                      children: rest.dietaryOptions.map((tag) {
-                        return Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: context.fast.cardHigh,
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: context.fast.line),
-                          ),
-                          child: Text(
-                            dietLabel(context, tag),
-                            style: TextStyle(
-                              fontSize: 9,
-                              fontWeight: FontWeight.bold,
-                              color: context.fast.t2,
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                    SizedBox(height: 10),
-                    // Website-style status row: teal FAST indicator + prep time
+                    const SizedBox(height: FASTSpace.s4),
+                    // One line of facts: rating, prep time, distance.
                     Row(
                       children: [
-                        Container(
-                          width: 6,
-                          height: 6,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF00C8B3),
-                            shape: BoxShape.circle,
-                          ),
+                        const Icon(
+                          Icons.star_rounded,
+                          color: FASTBrand.amber,
+                          size: 18,
                         ),
-                        const SizedBox(width: 5),
-                        const Text(
-                          'FAST',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 1.2,
-                            color: Color(0xFF00C8B3),
-                          ),
-                        ),
-                        const Spacer(),
-                        Icon(Icons.schedule, size: 12, color: context.fast.t3),
-                        const SizedBox(width: 3),
+                        const SizedBox(width: 2),
                         Text(
-                          '${rest.pickupPrepTime} min',
-                          style: TextStyle(
-                            fontSize: 10,
+                          '${rest.rating}',
+                          style: FASTText.body.copyWith(
                             fontWeight: FontWeight.w700,
-                            color: context.fast.t3,
+                            color: fast.t1,
+                          ),
+                        ),
+                        Flexible(
+                          child: Text(
+                            '  ·  ${rest.pickupPrepTime} ${tr(context, 'min_prep')}'
+                            '  ·  ${provider.getRealDistance(rest).toStringAsFixed(1)} km',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: FASTText.body.copyWith(color: fast.t2),
                           ),
                         ),
                       ],
                     ),
+                    if (rest.description.isNotEmpty) ...[
+                      const SizedBox(height: FASTSpace.s8),
+                      Text(
+                        rest.description,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: FASTText.body.copyWith(color: fast.t3),
+                      ),
+                    ],
+                    if (rest.dietaryOptions.isNotEmpty) ...[
+                      const SizedBox(height: FASTSpace.s12),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: [
+                          for (final tag in rest.dietaryOptions.take(3))
+                            FastTag(dietLabel(context, tag)),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -1565,7 +1441,7 @@ class _HomeScreenState extends State<HomeScreen>
                   Text(
                     km != null && !hasGps ? '$label (GPS…)' : label,
                     style: TextStyle(
-                      fontSize: 10,
+                      fontSize: 12,
                       fontWeight: FontWeight.w700,
                       color: active ? Colors.white : context.fast.t2,
                     ),
@@ -1663,7 +1539,7 @@ class _HomeScreenState extends State<HomeScreen>
               SizedBox(height: 6),
               Text(
                 tr(context, 'slot_launch'),
-                style: TextStyle(color: context.fast.t2, fontSize: 11),
+                style: TextStyle(color: context.fast.t2, fontSize: 12),
               ),
               SizedBox(height: 24),
               // Surprise-me revolving screen card
@@ -1723,115 +1599,6 @@ class _HomeScreenState extends State<HomeScreen>
           ),
         ),
       ),
-    );
-  }
-}
-
-/// Diagonal light band sweeping across a promo card, forever looping.
-class _LightSweep extends StatefulWidget {
-  final BorderRadius borderRadius;
-  const _LightSweep({required this.borderRadius});
-
-  @override
-  State<_LightSweep> createState() => _LightSweepState();
-}
-
-class _LightSweepState extends State<_LightSweep>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _ctrl = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 2800),
-  )..repeat();
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: widget.borderRadius,
-      child: AnimatedBuilder(
-        animation: _ctrl,
-        builder: (context, _) {
-          // Sweep position: -1.4 → 1.4 (off-left to off-right)
-          final t = _ctrl.value * 2.8 - 1.4;
-          return FractionallySizedBox(
-            widthFactor: 0.5,
-            heightFactor: 1.6,
-            alignment: Alignment(t, 0),
-            child: Transform.rotate(
-              angle: -0.35,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                    colors: [
-                      Colors.white.withValues(alpha: 0),
-                      Colors.white.withValues(alpha: 0.20),
-                      Colors.white.withValues(alpha: 0),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-/// Softly pulsing decorative emoji with a light glow.
-class _PulsingEmoji extends StatefulWidget {
-  final String emoji;
-  const _PulsingEmoji(this.emoji);
-
-  @override
-  State<_PulsingEmoji> createState() => _PulsingEmojiState();
-}
-
-class _PulsingEmojiState extends State<_PulsingEmoji>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _ctrl = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 1600),
-  )..repeat(reverse: true);
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _ctrl,
-      builder: (context, _) {
-        final v = Curves.easeInOut.transform(_ctrl.value);
-        return Transform.scale(
-          scale: 1 + v * 0.18,
-          child: Opacity(
-            opacity: 0.15 + v * 0.15,
-            child: Text(
-              widget.emoji,
-              style: TextStyle(
-                fontSize: 64,
-                shadows: [
-                  Shadow(
-                    color: Colors.white.withValues(alpha: 0.35 + v * 0.3),
-                    blurRadius: 18 + v * 14,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
     );
   }
 }
@@ -1934,37 +1701,6 @@ class _HeroStreakPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _HeroStreakPainter old) =>
       old.photoLeft != photoLeft || old.photoTop != photoTop;
-}
-
-/// The hand-drawn orange swoosh under the hero's last line — a bezier
-/// that dips slightly then sweeps up to the right, tapering at both
-/// ends like a marker underline.
-class _HeroUnderlinePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final path = Path()
-      ..moveTo(0, size.height * 0.7)
-      ..quadraticBezierTo(size.width * 0.45, size.height * 1.15, size.width, 0);
-    for (final (w, alpha, blur) in const [(5.0, 0.35, 4.0), (2.4, 1.0, 0.0)]) {
-      final paint = Paint()
-        ..shader = LinearGradient(
-          colors: [
-            const Color(0xFFF97316).withValues(alpha: alpha),
-            const Color(0xFFFBBF24).withValues(alpha: alpha),
-          ],
-        ).createShader(Offset.zero & size)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = w
-        ..strokeCap = StrokeCap.round;
-      if (blur > 0) {
-        paint.maskFilter = MaskFilter.blur(BlurStyle.normal, blur);
-      }
-      canvas.drawPath(path, paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 /// Shared white headline style for the stacked hero lines

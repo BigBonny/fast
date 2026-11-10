@@ -17,6 +17,7 @@ import '../services/delivery_service.dart';
 import 'qr_screen.dart';
 import '../theme.dart';
 import '../widgets/fast_image.dart';
+import '../widgets/fast_parts.dart';
 import '../l10n/tr.dart';
 import '../services/reservation_service.dart';
 import '../api/api_exceptions.dart';
@@ -289,6 +290,20 @@ class _CommandesScreenState extends State<CommandesScreen>
                 isCancelled,
               ),
               SizedBox(height: 16),
+              // The pickup code is the first thing under the order header:
+              // every payment path lands here, and it is what the customer
+              // shows at the counter. Same conditions as before — never
+              // for delivery or cancelled orders.
+              if (!activeOrder.isDelivery &&
+                  activeOrder.status != OrderStatus.cancelled &&
+                  activeOrder.pickupToken != null) ...[
+                FastPickupCode(
+                  code: pickupCodeFromToken(activeOrder.pickupToken!),
+                  label: provider.tr('pickup_code_lbl'),
+                  hint: provider.tr('pickup_code_hint'),
+                ),
+                const SizedBox(height: 16),
+              ],
               if (!isCancelled) ...[
                 if (activeOrder.isDelivery) ...[
                   Text(
@@ -337,39 +352,6 @@ class _CommandesScreenState extends State<CommandesScreen>
                         activeOrder.status == OrderStatus.readyForPickup))
                   _buildDepartCard(context, provider, activeOrder),
                 _buildQRButton(context, activeOrder),
-                if (activeOrder.pickupToken != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Center(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(
-                            0xFFF59E0B,
-                          ).withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: const Color(
-                              0xFFF59E0B,
-                            ).withValues(alpha: 0.4),
-                          ),
-                        ),
-                        child: Text(
-                          pickupCodeFromToken(activeOrder.pickupToken!),
-                          style: const TextStyle(
-                            fontFamily: 'monospace',
-                            fontSize: 15,
-                            fontWeight: FontWeight.w900,
-                            color: Color(0xFFF59E0B),
-                            letterSpacing: 1.5,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
               ],
 
               // Cancellation trigger
@@ -1971,7 +1953,8 @@ class _MyReservationsTabState extends State<_MyReservationsTab> {
     } catch (e) {
       if (mounted) {
         setState(
-          () => _error = e is ApiException ? e.message : tr(context, 'load_err'),
+          () =>
+              _error = e is ApiException ? e.message : tr(context, 'load_err'),
         );
       }
     }
@@ -2006,7 +1989,9 @@ class _MyReservationsTabState extends State<_MyReservationsTab> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e is ApiException ? e.message : tr(context, 'load_err')),
+            content: Text(
+              e is ApiException ? e.message : tr(context, 'load_err'),
+            ),
           ),
         );
       }
@@ -2133,10 +2118,7 @@ class _MyReservationsTabState extends State<_MyReservationsTab> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 3,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),

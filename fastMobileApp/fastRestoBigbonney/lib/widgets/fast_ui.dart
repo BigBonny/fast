@@ -72,7 +72,9 @@ class _FastTapState extends State<FastTap> with SingleTickerProviderStateMixin {
   }
 }
 
-enum FastButtonKind { primary, soft, outline, ghost }
+/// `ink` is the neutral pill used by the rebuilt customer screens:
+/// near-black in light mode, near-white in dark mode, no gradient.
+enum FastButtonKind { primary, soft, outline, ghost, ink }
 
 /// Primary FAST call-to-action — amber gradient, warm glow, springy
 /// press, built-in loading state.
@@ -118,6 +120,7 @@ class FastButton extends StatelessWidget {
         null,
       ),
       FastButtonKind.ghost => (null, FASTBrand.amberDeep, null, null),
+      FastButtonKind.ink => (null, fast.onInk, null, null),
     };
 
     final content = loading
@@ -169,6 +172,7 @@ class FastButton extends StatelessWidget {
             color: switch (kind) {
               FastButtonKind.soft => fast.amberSoftBg,
               FastButtonKind.primary => FASTBrand.amber,
+              FastButtonKind.ink => fast.ink,
               _ => Colors.transparent,
             },
             border:
@@ -176,7 +180,9 @@ class FastButton extends StatelessWidget {
                 (kind == FastButtonKind.soft
                     ? Border.all(color: fast.amberSoftBorder)
                     : null),
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(
+              kind == FastButtonKind.ink ? FASTRadius.pill : 14,
+            ),
             boxShadow: glow == null
                 ? null
                 : [

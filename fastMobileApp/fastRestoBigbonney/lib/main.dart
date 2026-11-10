@@ -751,8 +751,10 @@ class _MainShellState extends State<MainShell>
       ),
       bottomNavigationBar: FastNavBar(
         currentIndex: _getBottomNavIndex(provider.currentScreen),
-        onTap: (index) =>
-            provider.navigateToScreen(_getScreenFromIndex(index)),
+        onTap: (index) {
+          HapticFeedback.selectionClick();
+          provider.navigateToScreen(_getScreenFromIndex(index));
+        },
         items: [
           FastNavItem(
             icon: Icons.restaurant_outlined,
