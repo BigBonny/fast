@@ -283,7 +283,7 @@ class ClientDrawer extends StatelessWidget {
           const SizedBox(width: FASTSpace.s4),
           Flexible(
             child: Text(
-              '· Portefeuille FAST',
+              '· ${provider.tr('points_wallet')}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: FASTText.caption.copyWith(

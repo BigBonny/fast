@@ -141,7 +141,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
         body: Center(
           child: Text(
             tr(context, 'no_visual'),
-            style: const TextStyle(color: Colors.white70),
+            style: FASTText.body.copyWith(color: Colors.white70),
           ),
         ),
       );
@@ -172,7 +172,8 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
                             child: VideoPlayer(_video!),
                           )
                         : const CircularProgressIndicator(
-                            color: Color(0xFFF59E0B),
+                            color: Colors.white,
+                            strokeWidth: 2,
                           ))
                   : FastImage(
                       _current.image,
@@ -188,7 +189,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
               right: 0,
               bottom: 0,
               child: Container(
-                padding: const EdgeInsets.fromLTRB(20, 40, 20, 32),
+                padding: const EdgeInsets.fromLTRB(16, 40, 16, 32),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
@@ -204,42 +205,36 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
                   children: [
                     Text(
                       _current.name,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w900,
-                      ),
+                      style: FASTText.title.copyWith(color: Colors.white),
                     ),
                     if (_current.description.isNotEmpty) ...[
                       const SizedBox(height: 6),
                       Text(
                         _current.description,
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 13,
-                          height: 1.4,
-                        ),
+                        style: FASTText.body.copyWith(color: Colors.white70),
                         maxLines: 3,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 12),
                     Row(
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 5,
+                            horizontal: 12,
+                            vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF59E0B),
-                            borderRadius: BorderRadius.circular(8),
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(
+                              FASTRadius.pill,
+                            ),
                           ),
                           child: Text(
                             '${_current.price.toStringAsFixed(2)} €',
-                            style: TextStyle(
+                            style: FASTText.price.copyWith(
+                              fontSize: 14,
                               color: FASTBrand.onAmber,
-                              fontWeight: FontWeight.w900,
                             ),
                           ),
                         ),
@@ -247,18 +242,20 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
                           const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 5,
+                              horizontal: 12,
+                              vertical: 6,
                             ),
                             decoration: BoxDecoration(
                               color: Colors.white24,
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(
+                                FASTRadius.pill,
+                              ),
                             ),
                             child: Text(
                               '~${_current.prepTime} min',
-                              style: const TextStyle(
+                              style: FASTText.body.copyWith(
                                 color: Colors.white,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
@@ -287,7 +284,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
                         children: List.generate(_slides.length, (i) {
                           return Expanded(
                             child: Container(
-                              height: 3,
+                              height: 2,
                               margin: const EdgeInsets.symmetric(horizontal: 2),
                               decoration: BoxDecoration(
                                 color: Colors.white24,
@@ -361,20 +358,22 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: const EdgeInsetsDirectional.only(
+                        start: 16,
+                        end: 12,
+                      ),
                       child: Row(
                         children: [
                           CircleAvatar(
-                            radius: 14,
-                            backgroundColor: const Color(0xFFF59E0B),
+                            radius: 16,
+                            backgroundColor: Colors.white24,
                             child: Text(
                               widget.restaurant.name.isNotEmpty
                                   ? widget.restaurant.name[0]
                                   : 'F',
-                              style: TextStyle(
-                                color: FASTBrand.onAmber,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
+                              style: FASTText.label.copyWith(
+                                color: Colors.white,
+                                letterSpacing: 0,
                               ),
                             ),
                           ),
@@ -382,22 +381,35 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
                           Expanded(
                             child: Text(
                               widget.restaurant.name,
-                              style: const TextStyle(
+                              style: FASTText.body.copyWith(
                                 color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           if (_paused)
-                            const Icon(
-                              Icons.pause,
-                              color: Colors.white70,
-                              size: 20,
+                            const Padding(
+                              padding: EdgeInsetsDirectional.only(end: 8),
+                              child: Icon(
+                                Icons.pause,
+                                color: Colors.white70,
+                                size: 20,
+                              ),
                             ),
                           IconButton(
-                            icon: const Icon(Icons.close, color: Colors.white),
+                            style: IconButton.styleFrom(
+                              backgroundColor: Colors.black45,
+                              fixedSize: const Size(40, 40),
+                              minimumSize: const Size(40, 40),
+                              padding: EdgeInsets.zero,
+                              shape: const CircleBorder(),
+                            ),
+                            icon: const Icon(
+                              Icons.close,
+                              color: Colors.white,
+                              size: 20,
+                            ),
                             onPressed: () => Navigator.pop(context),
                           ),
                         ],

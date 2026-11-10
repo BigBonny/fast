@@ -45,7 +45,7 @@ class _ClientIntroGateState extends State<ClientIntroGate> {
           title: tr(context, 'ci1_t'),
           accentPart: tr(context, 'ci1_ta'),
           description: tr(context, 'ci1_d'),
-          accent: const Color(0xFFF59E0B),
+          accent: FASTBrand.amber,
           glow: const Color(0xFFF97316),
         ),
         FastIntroSlide(
@@ -67,6 +67,7 @@ class _ClientIntroGateState extends State<ClientIntroGate> {
         ),
       ],
       dismissedPrefKey: ProIntroSlides.clientDismissedKey,
+      calm: true,
       onDone: () => setState(() => _done = true),
     );
   }

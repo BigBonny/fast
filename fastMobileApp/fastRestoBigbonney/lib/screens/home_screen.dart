@@ -554,227 +554,278 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     }
 
+    final fast = context.fast;
+
+    Widget resultRow({
+      required String image,
+      required String title,
+      required String caption,
+      required Widget trailing,
+      required VoidCallback onTap,
+    }) {
+      return InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: FASTSpace.s16,
+            vertical: FASTSpace.s12,
+          ),
+          child: Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(FASTRadius.sm),
+                child: FastImage(
+                  image,
+                  width: 48,
+                  height: 48,
+                  placeholder: Container(
+                    color: fast.faint,
+                    width: 48,
+                    height: 48,
+                  ),
+                ),
+              ),
+              const SizedBox(width: FASTSpace.s12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: FASTText.body.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: fast.t1,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      caption,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: FASTText.caption.copyWith(color: fast.t2),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: FASTSpace.s8),
+              trailing,
+            ],
+          ),
+        ),
+      );
+    }
+
+    final rows = <Widget>[
+      // Restaurants results
+      ...matchingRestaurants.map(
+        (r) => resultRow(
+          image: r.image,
+          title: r.name,
+          caption:
+              '${r.pickupPrepTime} ${tr(context, 'min_prep')} • ${provider.getRealDistance(r).toStringAsFixed(1)} km',
+          trailing: Icon(Icons.chevron_right, size: 20, color: fast.t3),
+          onTap: () {
+            provider.selectRestaurant(r.id);
+            provider.navigateToScreen('restaurant');
+          },
+        ),
+      ),
+      // Dishes results
+      ...matchingDishes.map((data) {
+        final Restaurant r = data['restaurant'];
+        final MenuItem item = data['item'];
+        return resultRow(
+          image: item.image,
+          title: item.name,
+          caption:
+              '${tr(context, 'from_resto').replaceAll('{n}', r.name)} • ${item.price.toStringAsFixed(2)} €',
+          trailing: FastTag(tr(context, 'order_btn')),
+          onTap: () {
+            provider.selectRestaurant(r.id);
+            provider.navigateToScreen('restaurant');
+          },
+        );
+      }),
+    ];
+
     return Container(
-      color: context.fast.bg,
-      padding: EdgeInsets.symmetric(horizontal: 16),
+      color: fast.bg,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const SizedBox(height: FASTSpace.s16),
           // Section 1: Categories Autocomplete Suggestions
           if (suggCategories.isNotEmpty) ...[
-            Text(
-              tr(context, 'matching_cats'),
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.0,
-                color: context.fast.t3,
-              ),
-            ),
-            SizedBox(height: 8),
+            _sectionHeader(context, tr(context, 'matching_cats')),
+            const SizedBox(height: FASTSpace.s12),
             SizedBox(
-              height: 40,
-              child: ListView.builder(
+              height: 36,
+              child: ListView.separated(
                 scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: FASTSpace.s16),
                 itemCount: suggCategories.length,
+                separatorBuilder: (_, __) =>
+                    const SizedBox(width: FASTSpace.s8),
                 itemBuilder: (context, index) {
                   final cat = suggCategories[index];
-                  return Padding(
-                    padding: EdgeInsets.only(right: 8),
-                    child: ActionChip(
-                      backgroundColor: context.fast.card,
-                      side: BorderSide(color: context.fast.line),
-                      avatar: Text(cat.icon),
-                      label: Text(
-                        cat.id.startsWith('custom:')
-                            ? cat.name
-                            : catLabel(context, cat.id),
-                        style: TextStyle(
-                          color: context.fast.t1,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
+                  return GestureDetector(
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      provider.setCategory(cat.id);
+                      provider.setKeyword(
+                        '',
+                      ); // Clear search to reveal category list
+                      _searchController.clear();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      decoration: BoxDecoration(
+                        color: fast.card,
+                        borderRadius: BorderRadius.circular(FASTRadius.pill),
+                        border: Border.all(color: fast.line),
                       ),
-                      onPressed: () {
-                        provider.setCategory(cat.id);
-                        provider.setKeyword(
-                          '',
-                        ); // Clear search to reveal category list
-                        _searchController.clear();
-                      },
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(cat.icon, style: const TextStyle(fontSize: 16)),
+                          const SizedBox(width: 6),
+                          Text(
+                            cat.id.startsWith('custom:')
+                                ? cat.name
+                                : catLabel(context, cat.id),
+                            style: FASTText.caption.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: fast.t1,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 },
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: FASTSpace.s24),
           ],
 
           // Section 2: Matching Kitchens & Dishes List
-          Text(
-            provider.tr('matching'),
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.0,
-              color: context.fast.t3,
-            ),
-          ),
-          SizedBox(height: 8),
+          _sectionHeader(context, provider.tr('matching')),
+          const SizedBox(height: FASTSpace.s4),
           Expanded(
-            child: (matchingRestaurants.isEmpty && matchingDishes.isEmpty)
+            child: rows.isEmpty
                 ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text('🥙', style: TextStyle(fontSize: 32)),
-                        SizedBox(height: 12),
-                        Text(
-                          tr(context, 'no_items'),
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                            color: context.fast.t3,
+                    // Scrolls rather than overflowing when the keyboard
+                    // leaves the panel at its minimum height.
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(FASTSpace.s24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.search_off, size: 40, color: fast.t3),
+                          const SizedBox(height: FASTSpace.s12),
+                          Text(
+                            tr(context, 'no_items'),
+                            textAlign: TextAlign.center,
+                            style: FASTText.item.copyWith(color: fast.t1),
                           ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          tr(context, 'search_suggest'),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: context.fast.t3,
+                          const SizedBox(height: FASTSpace.s4),
+                          Text(
+                            tr(context, 'search_suggest'),
+                            textAlign: TextAlign.center,
+                            style: FASTText.body.copyWith(color: fast.t2),
                           ),
-                        ),
-                        const SizedBox(height: 14),
-                        TextButton.icon(
-                          onPressed: () => _showRestaurantRequestSheet(
+                          const SizedBox(height: FASTSpace.s12),
+                          _requestRestaurantLink(
                             context,
-                            provider.searchKeyword,
-                          ),
-                          icon: const Icon(Icons.storefront_outlined, size: 15),
-                          label: Text(tr(context, 'req_resto_cta')),
-                          style: TextButton.styleFrom(
-                            foregroundColor: const Color(0xFFF59E0B),
-                            textStyle: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
+                            () => _showRestaurantRequestSheet(
+                              context,
+                              provider.searchKeyword,
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   )
-                : ListView(
-                    children: [
-                      // Restaurants results
-                      if (matchingRestaurants.isNotEmpty) ...[
-                        ...matchingRestaurants.map(
-                          (r) => ListTile(
-                            leading: ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: FastImage(
-                                r.image,
-                                width: 40,
-                                height: 40,
-                                placeholder: Container(
-                                  color: context.fast.faint,
-                                  width: 40,
-                                  height: 40,
-                                ),
-                              ),
-                            ),
-                            title: Text(
-                              r.name,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                                color: context.fast.t1,
-                              ),
-                            ),
-                            subtitle: Text(
-                              '${r.pickupPrepTime} ${tr(context, 'min_prep')} • ${provider.getRealDistance(r).toStringAsFixed(1)} km',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: context.fast.t3,
-                              ),
-                            ),
-                            trailing: Icon(
-                              Icons.chevron_right,
-                              size: 16,
-                              color: context.fast.t3,
-                            ),
-                            onTap: () {
-                              provider.selectRestaurant(r.id);
-                              provider.navigateToScreen('restaurant');
-                            },
-                          ),
-                        ),
-                      ],
-                      // Dishes results
-                      if (matchingDishes.isNotEmpty) ...[
-                        ...matchingDishes.map((data) {
-                          final Restaurant r = data['restaurant'];
-                          final MenuItem item = data['item'];
-                          return ListTile(
-                            leading: ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: FastImage(
-                                item.image,
-                                width: 40,
-                                height: 40,
-                                placeholder: Container(
-                                  color: context.fast.faint,
-                                  width: 40,
-                                  height: 40,
-                                ),
-                              ),
-                            ),
-                            title: Text(
-                              item.name,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                                color: context.fast.t1,
-                              ),
-                            ),
-                            subtitle: Text(
-                              '${tr(context, 'from_resto').replaceAll('{n}', r.name)} • ${item.price.toStringAsFixed(2)} €',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: context.fast.t3,
-                              ),
-                            ),
-                            trailing: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(
-                                  0xFFF59E0B,
-                                ).withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                tr(context, 'order_btn'),
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFFF59E0B),
-                                ),
-                              ),
-                            ),
-                            onTap: () {
-                              provider.selectRestaurant(r.id);
-                              provider.navigateToScreen('restaurant');
-                            },
-                          );
-                        }),
-                      ],
-                    ],
+                : ListView.separated(
+                    padding: EdgeInsets.zero,
+                    itemCount: rows.length,
+                    separatorBuilder: (_, __) => Divider(
+                      height: 1,
+                      thickness: 1,
+                      indent: FASTSpace.s16,
+                      endIndent: FASTSpace.s16,
+                      color: fast.line,
+                    ),
+                    itemBuilder: (_, i) => rows[i],
                   ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Page section header: sentence-case bold title on the leading side,
+  /// optional count / action text on the trailing side.
+  Widget _sectionHeader(
+    BuildContext context,
+    String title, {
+    String? trailing,
+    VoidCallback? onTrailingTap,
+  }) {
+    final fast = context.fast;
+    Widget? trail;
+    if (trailing != null) {
+      trail = ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 180),
+        child: Text(
+          trailing,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: FASTText.body.copyWith(
+            fontWeight: FontWeight.w600,
+            color: fast.t2,
+          ),
+        ),
+      );
+      if (onTrailingTap != null) {
+        trail = GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onTrailingTap,
+          child: trail,
+        );
+      }
+    }
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: FASTSpace.s16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
+        children: [
+          Expanded(
+            child: Text(
+              title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: FASTText.title.copyWith(color: fast.t1),
+            ),
+          ),
+          if (trail != null) ...[const SizedBox(width: FASTSpace.s12), trail],
+        ],
+      ),
+    );
+  }
+
+  /// Quiet text link that opens the "suggest a restaurant" sheet.
+  Widget _requestRestaurantLink(BuildContext context, VoidCallback onPressed) {
+    return TextButton.icon(
+      onPressed: onPressed,
+      icon: const Icon(Icons.storefront_outlined, size: 18),
+      label: Text(tr(context, 'req_resto_cta')),
+      style: TextButton.styleFrom(
+        foregroundColor: context.fast.t1,
+        textStyle: FASTText.body.copyWith(fontWeight: FontWeight.w700),
       ),
     );
   }
@@ -785,77 +836,54 @@ class _HomeScreenState extends State<HomeScreen> {
     FASTProvider provider,
     List<Restaurant> filteredRest,
   ) {
+    final fast = context.fast;
+    // Favourites row height follows the text scale so the card never clips:
+    // photo + padding + name line + caption line.
+    final scaler = MediaQuery.textScalerOf(context);
+    final favCaption = scaler.scale(12) * 1.3;
+    final favRowHeight =
+        (100 +
+                2 +
+                FASTSpace.s12 * 2 +
+                scaler.scale(14) * 1.35 +
+                FASTSpace.s4 +
+                (favCaption < 16 ? 16 : favCaption) +
+                2)
+            .ceilToDouble();
+
     return ListView(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.only(top: FASTSpace.s24, bottom: FASTSpace.s8),
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       children: [
         // Bento/Actionable Carousel Banners
         _buildActionableBanners(context, provider),
 
-        SizedBox(height: 16),
+        const SizedBox(height: FASTSpace.s40),
 
         // Category Browsing Section
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                tr(context, 'browse_by_cat'),
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.0,
-                  color: context.fast.t3,
-                ),
-              ),
-              if (provider.selectedCategory != 'all')
-                GestureDetector(
-                  onTap: () => provider.resetFilters(),
-                  child: Text(
-                    tr(context, 'clear_filter'),
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFFEF4444),
-                    ),
-                  ),
-                ),
-            ],
-          ),
+        _sectionHeader(
+          context,
+          tr(context, 'browse_by_cat'),
+          trailing: provider.selectedCategory != 'all'
+              ? tr(context, 'clear_filter')
+              : null,
+          onTrailingTap: () => provider.resetFilters(),
         ),
-        SizedBox(height: 12),
+        const SizedBox(height: FASTSpace.s12),
         _buildCategoryStrip(context, provider),
 
-        SizedBox(height: 20),
+        const SizedBox(height: FASTSpace.s40),
 
         // Favorites — synced with website "Mes favoris"
         if (provider.favorites.isNotEmpty) ...[
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                const Icon(Icons.favorite, color: Color(0xFFEF4444), size: 14),
-                const SizedBox(width: 6),
-                Text(
-                  tr(context, 'favorites').toUpperCase(),
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.0,
-                    color: context.fast.t3,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 10),
+          _sectionHeader(context, tr(context, 'favorites')),
+          const SizedBox(height: FASTSpace.s12),
           SizedBox(
-            height: 150,
+            height: favRowHeight,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: FASTSpace.s16),
               itemCount: provider.favorites.length,
               itemBuilder: (context, index) {
                 final rest = provider.favorites[index];
@@ -865,62 +893,90 @@ class _HomeScreenState extends State<HomeScreen> {
                     provider.navigateToScreen('restaurant');
                   },
                   child: Container(
-                    width: 180,
-                    margin: const EdgeInsets.only(right: 12),
+                    width: 200,
+                    margin: const EdgeInsetsDirectional.only(
+                      end: FASTSpace.s12,
+                    ),
                     decoration: BoxDecoration(
-                      color: context.fast.card,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: context.fast.line),
+                      color: fast.card,
+                      borderRadius: BorderRadius.circular(FASTRadius.md),
+                      border: Border.all(color: fast.line),
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        FastParallax(
-                          child: FastImage(
-                            rest.image,
-                            height: 84,
-                            width: double.infinity,
-                            placeholder: Container(
-                              height: 84,
-                              color: context.fast.cardHigh,
-                              child: Icon(
-                                Icons.restaurant,
-                                color: context.fast.faint,
-                                size: 28,
+                        Stack(
+                          children: [
+                            FastParallax(
+                              child: FastImage(
+                                rest.image,
+                                height: 100,
+                                width: double.infinity,
+                                placeholder: Container(
+                                  height: 100,
+                                  color: fast.cardHigh,
+                                  child: Icon(
+                                    Icons.restaurant,
+                                    color: fast.faint,
+                                    size: 28,
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
+                            // Same heart badge as the restaurant card,
+                            // smaller; it marks the card, it is not a button.
+                            PositionedDirectional(
+                              top: FASTSpace.s8,
+                              end: FASTSpace.s8,
+                              child: Container(
+                                width: 32,
+                                height: 32,
+                                decoration: BoxDecoration(
+                                  color: fast.card,
+                                  shape: BoxShape.circle,
+                                  boxShadow: FASTShadow.card(context),
+                                ),
+                                child: const Icon(
+                                  Icons.favorite,
+                                  color: FASTBrand.error,
+                                  size: 16,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                         Padding(
-                          padding: const EdgeInsets.all(10),
+                          padding: const EdgeInsets.all(FASTSpace.s12),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 rest.name,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                  color: context.fast.t1,
+                                style: FASTText.body.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                  color: fast.t1,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: FASTSpace.s4),
                               Row(
                                 children: [
                                   const Icon(
-                                    Icons.star,
-                                    color: Color(0xFFF59E0B),
-                                    size: 12,
+                                    Icons.star_rounded,
+                                    color: FASTBrand.amber,
+                                    size: 14,
                                   ),
-                                  const SizedBox(width: 3),
-                                  Text(
-                                    '${rest.rating} • ${rest.pickupPrepTime} min',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: context.fast.t3,
+                                  const SizedBox(width: FASTSpace.s4),
+                                  Flexible(
+                                    child: Text(
+                                      '${rest.rating} • ${rest.pickupPrepTime} min',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: FASTText.caption.copyWith(
+                                        color: fast.t2,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -935,46 +991,26 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: FASTSpace.s40),
         ],
 
         // Kitchen list section
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                provider.tr('cuisines_near'),
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.0,
-                  color: context.fast.t3,
-                ),
-              ),
-              Text(
-                provider
-                    .tr('restaurants_available')
-                    .replaceAll('{n}', '${filteredRest.length}'),
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: context.fast.t3,
-                ),
-              ),
-            ],
-          ),
+        _sectionHeader(
+          context,
+          provider.tr('cuisines_near'),
+          trailing: provider
+              .tr('restaurants_available')
+              .replaceAll('{n}', '${filteredRest.length}'),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: FASTSpace.s12),
         _buildRadiusFilter(context, provider),
-        const SizedBox(height: 12),
+        const SizedBox(height: FASTSpace.s16),
 
         // List of Restaurants — skeletons while fetching, staggered
         // cascade when the cards land.
         if (provider.isLoading && filteredRest.isEmpty)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: FASTSpace.s16),
             child: Column(
               children: List.generate(
                 3,
@@ -986,7 +1022,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _buildNoKitchens(context, provider)
         else
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: FASTSpace.s16),
             child: ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -1005,11 +1041,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Actionable Banners — synced with website quick categories
   Widget _buildActionableBanners(BuildContext context, FASTProvider provider) {
+    // Tall enough for tag + two title lines + CTA at larger text scales.
+    final scale = MediaQuery.textScalerOf(context).scale(16) / 16;
     return SizedBox(
-      height: 150,
+      height: (168 * (scale < 1 ? 1 : scale)).ceilToDouble(),
       child: ListView(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: FASTSpace.s16),
         children: [
           _promoBanner(
             context: context,
@@ -1017,14 +1055,9 @@ class _HomeScreenState extends State<HomeScreen> {
               provider.setKeyword('burger');
               provider.setCategory('burger');
             },
-            gradient: const LinearGradient(
-              colors: [Color(0xFFDC2626), Color(0xFFB91C1C)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            emoji: '🍔',
+            onInkCard: true,
+            watermark: Icons.lunch_dining_outlined,
             tag: tr(context, 'express_offer'),
-            tagColor: const Color(0xFFFBBF24),
             title: tr(context, 'promo_burger_t'),
             subtitle: tr(context, 'promo_velvet'),
             cta: tr(context, 'cta_enjoy'),
@@ -1032,14 +1065,8 @@ class _HomeScreenState extends State<HomeScreen> {
           _promoBanner(
             context: context,
             onTap: () => provider.navigateToScreen('group'),
-            gradient: const LinearGradient(
-              colors: [Color(0xFF7C3AED), Color(0xFF4F46E5)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            emoji: '👥',
+            watermark: Icons.groups_outlined,
             tag: tr(context, 'with_friends'),
-            tagColor: const Color(0xFFC4B5FD),
             title: tr(context, 'group_tagline'),
             subtitle: tr(context, 'promo_group_s'),
             cta: tr(context, 'cta_group'),
@@ -1048,14 +1075,8 @@ class _HomeScreenState extends State<HomeScreen> {
           _promoBanner(
             context: context,
             onTap: () => provider.triggerSurpriseMe(context),
-            gradient: const LinearGradient(
-              colors: [Color(0xFF374151), Color(0xFF1A1F2E)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            emoji: '🎯',
+            watermark: Icons.casino_outlined,
             tag: tr(context, 'cta_surprise'),
-            tagColor: const Color(0xFFF59E0B),
             title: tr(context, 'promo_surprise_t2'),
             subtitle: tr(context, 'promo_surprise_s2'),
             cta: tr(context, 'cta_surprise'),
@@ -1066,113 +1087,97 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  /// One promo card. Flat surface: ink for the lead card, plain card with
+  /// a hairline for the others.
   Widget _promoBanner({
     required BuildContext context,
     required VoidCallback onTap,
-    required LinearGradient gradient,
-    required String emoji,
+    required IconData watermark,
     required String tag,
-    required Color tagColor,
     required String title,
     required String subtitle,
     required String cta,
+    bool onInkCard = false,
     IconData ctaIcon = Icons.chevron_right,
   }) {
+    final fast = context.fast;
+    final bg = onInkCard ? fast.ink : fast.card;
+    final fg = onInkCard ? fast.onInk : fast.t1;
+    final fgMuted = onInkCard ? fast.onInk.withValues(alpha: 0.72) : fast.t2;
+    final pillBg = onInkCard ? fast.onInk : fast.ink;
+    final pillFg = onInkCard ? fast.ink : fast.onInk;
     return FastTap(
       onTap: onTap,
       child: Container(
         width: 280,
-        margin: const EdgeInsets.only(right: 12),
-        padding: const EdgeInsets.all(16),
+        margin: const EdgeInsetsDirectional.only(end: FASTSpace.s12),
+        padding: const EdgeInsets.all(FASTSpace.s16),
         decoration: BoxDecoration(
-          gradient: gradient,
-          borderRadius: BorderRadius.circular(20),
+          color: bg,
+          borderRadius: BorderRadius.circular(FASTRadius.md),
+          border: Border.all(color: onInkCard ? bg : fast.line),
         ),
         child: Stack(
           children: [
-            // Still, faint emoji as a watermark (it used to pulse forever).
-            Positioned(
-              right: -10,
-              bottom: -10,
-              child: Opacity(
-                opacity: 0.22,
-                child: Text(emoji, style: const TextStyle(fontSize: 64)),
+            // Large, faint line icon in the top corner, clear of the text.
+            PositionedDirectional(
+              top: -4,
+              end: -4,
+              child: Icon(
+                watermark,
+                size: 64,
+                color: fg.withValues(alpha: 0.08),
               ),
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: FASTBrand.onAmber.withValues(alpha: 0.85),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    tag,
-                    style: TextStyle(
-                      color: tagColor,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.4,
-                    ),
-                  ),
+                FastTag(
+                  tag,
+                  kind: onInkCard ? FastTagKind.accent : FastTagKind.neutral,
                 ),
                 Text(
                   title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 16,
-                    height: 1.2,
+                  style: FASTText.item.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: fg,
                   ),
                 ),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
                       child: Text(
                         subtitle,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.8),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: FASTText.caption.copyWith(color: fgMuted),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                    const SizedBox(width: FASTSpace.s8),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
+                        horizontal: FASTSpace.s12,
+                        vertical: FASTSpace.s8,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
+                        color: pillBg,
+                        borderRadius: BorderRadius.circular(FASTRadius.pill),
                       ),
                       child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
                             cta,
-                            style: const TextStyle(
-                              color: Color(0xFF17171B),
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
+                            style: FASTText.caption.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: pillFg,
                             ),
                           ),
-                          const SizedBox(width: 2),
-                          Icon(
-                            ctaIcon,
-                            size: 12,
-                            color: const Color(0xFF17171B),
-                          ),
+                          const SizedBox(width: FASTSpace.s4),
+                          Icon(ctaIcon, size: 14, color: pillFg),
                         ],
                       ),
                     ),
@@ -1400,6 +1405,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Max search radius picker — 1 / 3 / 5 / 10 km or unlimited
   Widget _buildRadiusFilter(BuildContext context, FASTProvider provider) {
+    final fast = context.fast;
     final options = <(double?, String)>[
       (null, provider.tr('radius_all')),
       (1, '1 km'),
@@ -1408,42 +1414,45 @@ class _HomeScreenState extends State<HomeScreen> {
       (10, '10 km'),
     ];
     final hasGps = provider.userLocation != null;
+    final scale = MediaQuery.textScalerOf(context).scale(12) / 12;
     return SizedBox(
-      height: 30,
+      height: (36 * (scale < 1 ? 1 : scale)).ceilToDouble(),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: FASTSpace.s16),
         itemCount: options.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        separatorBuilder: (_, __) => const SizedBox(width: FASTSpace.s8),
         itemBuilder: (context, i) {
           final (km, label) = options[i];
           final active = provider.searchRadiusKm == km;
+          final fg = active ? fast.onInk : fast.t2;
           return GestureDetector(
-            onTap: () => provider.setSearchRadius(km),
+            onTap: () {
+              HapticFeedback.selectionClick();
+              provider.setSearchRadius(km);
+            },
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 180),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 14),
               decoration: BoxDecoration(
-                color: active ? const Color(0xFF00C8B3) : context.fast.card,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: active ? const Color(0xFF00C8B3) : context.fast.line,
-                ),
+                color: active ? fast.ink : fast.card,
+                borderRadius: BorderRadius.circular(FASTRadius.pill),
+                border: Border.all(color: active ? fast.ink : fast.line),
               ),
               child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
                     km == null ? Icons.all_inclusive : Icons.near_me,
-                    size: 11,
-                    color: active ? Colors.white : context.fast.t3,
+                    size: 14,
+                    color: fg,
                   ),
-                  const SizedBox(width: 4),
+                  const SizedBox(width: FASTSpace.s4),
                   Text(
                     km != null && !hasGps ? '$label (GPS…)' : label,
-                    style: TextStyle(
-                      fontSize: 12,
+                    style: FASTText.caption.copyWith(
                       fontWeight: FontWeight.w700,
-                      color: active ? Colors.white : context.fast.t2,
+                      color: fg,
                     ),
                   ),
                 ],
@@ -1461,26 +1470,20 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         FastEmpty(
           icon: Icons.restaurant_outlined,
+          accent: context.fast.t1,
           title: tr(context, 'no_cuisine'),
           subtitle: tr(context, 'widen_radius'),
           action: FastButton(
             label: tr(context, 'reset_filters'),
             onPressed: () => provider.resetFilters(),
+            kind: FastButtonKind.ink,
             expand: false,
-            height: 44,
+            height: 48,
           ),
         ),
-        TextButton.icon(
-          onPressed: () => _showRestaurantRequestSheet(context, ''),
-          icon: const Icon(Icons.storefront_outlined, size: 15),
-          label: Text(tr(context, 'req_resto_cta')),
-          style: TextButton.styleFrom(
-            foregroundColor: const Color(0xFFF59E0B),
-            textStyle: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 12,
-            ),
-          ),
+        _requestRestaurantLink(
+          context,
+          () => _showRestaurantRequestSheet(context, ''),
         ),
       ],
     );
@@ -1502,6 +1505,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Slots Reveal animation modal overlay
   Widget _buildSlotsOverlay(BuildContext context, FASTProvider provider) {
+    final fast = context.fast;
     final randRest = provider.surpriseMeRolledRestaurant;
     return Positioned.fill(
       child: Container(
@@ -1509,90 +1513,76 @@ class _HomeScreenState extends State<HomeScreen> {
         alignment: Alignment.center,
         child: Container(
           width: 300,
-          padding: EdgeInsets.all(24),
+          padding: const EdgeInsets.all(FASTSpace.s24),
           decoration: BoxDecoration(
-            color: context.fast.card,
-            borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: const Color(0xFFF59E0B), width: 2),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFFF59E0B).withValues(alpha: 0.25),
-                blurRadius: 24,
-                spreadRadius: 2,
-              ),
-            ],
+            color: fast.card,
+            borderRadius: BorderRadius.circular(FASTRadius.md),
+            border: Border.all(color: fast.line),
+            boxShadow: FASTShadow.sheet(context),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('🎯', style: TextStyle(fontSize: 40)),
-              SizedBox(height: 12),
+              Icon(Icons.casino_outlined, size: 40, color: fast.t1),
+              const SizedBox(height: FASTSpace.s12),
               Text(
                 tr(context, 'choose_meal'),
-                style: TextStyle(
-                  color: Color(0xFFF59E0B),
-                  fontWeight: FontWeight.w900,
-                  fontSize: 13,
-                  letterSpacing: 1.5,
-                ),
+                textAlign: TextAlign.center,
+                style: FASTText.title.copyWith(color: fast.t1),
               ),
-              SizedBox(height: 6),
+              const SizedBox(height: FASTSpace.s4),
               Text(
                 tr(context, 'slot_launch'),
-                style: TextStyle(color: context.fast.t2, fontSize: 12),
+                textAlign: TextAlign.center,
+                style: FASTText.body.copyWith(color: fast.t2),
               ),
-              SizedBox(height: 24),
+              const SizedBox(height: FASTSpace.s24),
               // Surprise-me revolving screen card
               Container(
-                height: 160,
+                constraints: const BoxConstraints(minHeight: 160),
                 width: double.infinity,
+                padding: const EdgeInsets.all(FASTSpace.s16),
+                alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: context.fast.card,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: context.fast.line),
+                  color: fast.cardHigh,
+                  borderRadius: BorderRadius.circular(FASTRadius.sm),
                 ),
                 child: randRest == null
-                    ? Center(
-                        child: CircularProgressIndicator(
-                          color: Color(0xFFF59E0B),
-                        ),
-                      )
+                    ? const CircularProgressIndicator(color: FASTBrand.amber)
                     : Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(FASTRadius.sm),
                             child: FastImage(
                               randRest.image,
                               width: 80,
                               height: 80,
                               placeholder: Container(
-                                color: context.fast.cardHigh,
+                                color: fast.faint,
                                 width: 80,
                                 height: 80,
                               ),
                             ),
                           ),
-                          SizedBox(height: 12),
+                          const SizedBox(height: FASTSpace.s12),
                           Text(
                             randRest.name,
-                            style: TextStyle(
-                              color: context.fast.t1,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 14,
-                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: FASTText.item.copyWith(color: fast.t1),
                             textAlign: TextAlign.center,
                           ),
                         ],
                       ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: FASTSpace.s24),
               const SizedBox(
                 width: 16,
                 height: 16,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFF59E0B)),
+                  valueColor: AlwaysStoppedAnimation<Color>(FASTBrand.amber),
                 ),
               ),
             ],
@@ -1746,24 +1736,26 @@ class _RestaurantRequestSheetState extends State<_RestaurantRequestSheet> {
     super.dispose();
   }
 
+  // Label at 16 so it reads 12 once it floats above the value.
   InputDecoration _fieldStyle(String label) => InputDecoration(
     labelText: label,
-    labelStyle: TextStyle(color: context.fast.t3, fontSize: 12),
+    labelStyle: TextStyle(color: context.fast.t3, fontSize: 16),
+    floatingLabelStyle: TextStyle(color: context.fast.t2, fontSize: 16),
     filled: true,
     fillColor: context.fast.faint,
     border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(FASTRadius.sm),
       borderSide: BorderSide(color: context.fast.line),
     ),
     enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(FASTRadius.sm),
       borderSide: BorderSide(color: context.fast.line),
     ),
     focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: Color(0xFFF59E0B)),
+      borderRadius: BorderRadius.circular(FASTRadius.sm),
+      borderSide: BorderSide(color: context.fast.ink, width: 1.5),
     ),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
   );
 
   Future<void> _submit() async {
@@ -1793,12 +1785,14 @@ class _RestaurantRequestSheetState extends State<_RestaurantRequestSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final fast = context.fast;
+    final inputStyle = FASTText.body.copyWith(color: fast.t1);
     return Padding(
       padding: EdgeInsets.fromLTRB(
-        20,
-        16,
-        20,
-        MediaQuery.viewInsetsOf(context).bottom + 20,
+        FASTSpace.s16,
+        FASTSpace.s24,
+        FASTSpace.s16,
+        MediaQuery.viewInsetsOf(context).bottom + FASTSpace.s24,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -1806,62 +1800,55 @@ class _RestaurantRequestSheetState extends State<_RestaurantRequestSheet> {
         children: [
           Row(
             children: [
-              const Icon(
-                Icons.storefront_outlined,
-                color: Color(0xFFF59E0B),
-                size: 20,
-              ),
-              const SizedBox(width: 8),
+              Icon(Icons.storefront_outlined, color: fast.t1, size: 24),
+              const SizedBox(width: FASTSpace.s8),
               Expanded(
                 child: Text(
                   tr(context, 'req_resto_title'),
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
-                    color: context.fast.t1,
-                  ),
+                  style: FASTText.title.copyWith(color: fast.t1),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: FASTSpace.s8),
           Text(
             tr(context, 'req_resto_sub'),
-            style: TextStyle(fontSize: 12, color: context.fast.t3),
+            style: FASTText.body.copyWith(color: fast.t2),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: FASTSpace.s24),
           TextField(
             controller: _name,
-            style: TextStyle(color: context.fast.t1, fontSize: 14),
+            style: inputStyle,
             decoration: _fieldStyle(tr(context, 'req_resto_name')),
             textCapitalization: TextCapitalization.words,
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: FASTSpace.s12),
           TextField(
             controller: _city,
-            style: TextStyle(color: context.fast.t1, fontSize: 14),
+            style: inputStyle,
             decoration: _fieldStyle(tr(context, 'req_resto_city')),
             textCapitalization: TextCapitalization.words,
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: FASTSpace.s12),
           TextField(
             controller: _phone,
-            style: TextStyle(color: context.fast.t1, fontSize: 14),
+            style: inputStyle,
             decoration: _fieldStyle(tr(context, 'req_resto_phone')),
             keyboardType: TextInputType.phone,
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: FASTSpace.s12),
           TextField(
             controller: _note,
-            style: TextStyle(color: context.fast.t1, fontSize: 14),
+            style: inputStyle,
             decoration: _fieldStyle(tr(context, 'req_resto_note')),
             maxLines: 2,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: FASTSpace.s24),
           FastButton(
             label: tr(context, 'req_resto_submit'),
             onPressed: _sending ? null : _submit,
-            height: 48,
+            kind: FastButtonKind.ink,
+            height: 52,
           ),
         ],
       ),

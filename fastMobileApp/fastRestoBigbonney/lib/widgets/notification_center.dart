@@ -7,6 +7,7 @@ import '../provider.dart';
 import '../services/local_push_service.dart';
 import '../theme.dart';
 import '../l10n/tr.dart';
+import 'fast_ui.dart';
 
 class NotificationCenter extends StatelessWidget {
   const NotificationCenter({super.key});
@@ -19,14 +20,14 @@ class NotificationCenter extends StatelessWidget {
     return Dialog(
       backgroundColor: context.fast.card,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(FASTRadius.md),
         side: BorderSide(color: context.fast.line),
       ),
       insetPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 48),
       child: Container(
         width: double.infinity,
         height: double.infinity,
-        padding: EdgeInsets.all(20),
+        padding: EdgeInsets.all(FASTSpace.s16),
         child: Column(
           children: [
             // Header
@@ -36,25 +37,21 @@ class NotificationCenter extends StatelessWidget {
                 Row(
                   children: [
                     Icon(
-                      Icons.notifications_active_outlined,
-                      color: Color(0xFFF59E0B),
+                      Icons.notifications_none_outlined,
+                      color: context.fast.t1,
                     ),
                     SizedBox(width: 8),
                     Text(
                       'Notifications',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w900,
-                        fontSize: 16,
-                        color: context.fast.t1,
-                      ),
+                      style: FASTText.item.copyWith(color: context.fast.t1),
                     ),
                     if (notifications.any((n) => !n.isRead))
                       Container(
-                        margin: const EdgeInsets.only(left: 6),
-                        width: 6,
-                        height: 6,
+                        margin: const EdgeInsetsDirectional.only(start: 8),
+                        width: 8,
+                        height: 8,
                         decoration: const BoxDecoration(
-                          color: Color(0xFFEF4444),
+                          color: FASTBrand.amber,
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -99,36 +96,16 @@ class NotificationCenterList extends StatelessWidget {
   }
 
   Widget _buildEmpty(BuildContext context) {
-      return Center(
-        child: Padding(
-          padding: EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.notifications_off_outlined,
-                size: 48,
-                color: context.fast.line,
-              ),
-              SizedBox(height: 12),
-              Text(
-                tr(context, 'no_notifs'),
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                  color: context.fast.t2,
-                ),
-              ),
-              SizedBox(height: 4),
-              Text(
-                tr(context, 'notifs_hint'),
-                style: TextStyle(fontSize: 11, color: context.fast.t3),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
+    return Center(
+      child: SingleChildScrollView(
+        child: FastEmpty(
+          icon: Icons.notifications_off_outlined,
+          title: tr(context, 'no_notifs'),
+          subtitle: tr(context, 'notifs_hint'),
+          accent: context.fast.t2,
         ),
-      );
+      ),
+    );
   }
 
   Widget _buildList(
@@ -139,71 +116,78 @@ class NotificationCenterList extends StatelessWidget {
     return Column(
       children: [
         Expanded(
-          child: ListView.builder(
+          child: ListView.separated(
+            padding: EdgeInsets.zero,
             itemCount: notifications.length,
+            separatorBuilder: (context, _) =>
+                Divider(height: 1, thickness: 1, color: context.fast.line),
             itemBuilder: (context, index) {
               final notif = notifications[index];
-              return Container(
-                margin: EdgeInsets.only(bottom: 12),
-                padding: EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: context.fast.card,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: context.fast.line),
-                ),
+              final unread = !notif.isRead;
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: FASTSpace.s12),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(8),
+                      width: 40,
+                      height: 40,
                       decoration: BoxDecoration(
-                        color: _getIconColor(
-                          context,
-                          notif.type,
-                        ).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
+                        color: context.fast.cardHigh,
+                        shape: BoxShape.circle,
                       ),
                       child: Icon(
                         _getIcon(notif.type),
-                        color: _getIconColor(context, notif.type),
-                        size: 16,
+                        color: context.fast.t1,
+                        size: 20,
                       ),
                     ),
-                    SizedBox(width: 12),
+                    const SizedBox(width: FASTSpace.s12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Expanded(
                                 child: Text(
                                   notif.title,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
+                                  style: FASTText.body.copyWith(
+                                    fontWeight: unread
+                                        ? FontWeight.w800
+                                        : FontWeight.w700,
                                     color: context.fast.t1,
                                   ),
                                 ),
                               ),
+                              const SizedBox(width: FASTSpace.s8),
                               Text(
                                 notif.timestamp,
-                                style: TextStyle(
-                                  fontSize: 9,
-                                  fontFamily: 'monospace',
+                                style: FASTText.caption.copyWith(
                                   color: context.fast.t3,
                                 ),
                               ),
+                              if (unread)
+                                Container(
+                                  margin: const EdgeInsetsDirectional.only(
+                                    start: FASTSpace.s8,
+                                    top: 4,
+                                  ),
+                                  width: 8,
+                                  height: 8,
+                                  decoration: const BoxDecoration(
+                                    color: FASTBrand.amber,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
                             ],
                           ),
-                          SizedBox(height: 4),
+                          const SizedBox(height: FASTSpace.s4),
                           Text(
                             notif.body,
-                            style: TextStyle(
-                              fontSize: 11,
+                            style: FASTText.body.copyWith(
                               color: context.fast.t2,
-                              height: 1.4,
                             ),
                           ),
                         ],
@@ -215,7 +199,8 @@ class NotificationCenterList extends StatelessWidget {
             },
           ),
         ),
-        Divider(color: context.fast.line, height: 24),
+        Divider(height: 1, thickness: 1, color: context.fast.line),
+        const SizedBox(height: FASTSpace.s8),
         SizedBox(
           width: double.infinity,
           child: TextButton.icon(
@@ -224,15 +209,14 @@ class NotificationCenterList extends StatelessWidget {
             },
             icon: const Icon(
               Icons.delete_outline,
-              size: 16,
-              color: Color(0xFFEF4444),
+              size: 18,
+              color: FASTBrand.error,
             ),
             label: Text(
               tr(context, 'clear_all'),
-              style: TextStyle(
-                color: Color(0xFFEF4444),
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
+              style: FASTText.body.copyWith(
+                color: FASTBrand.error,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -254,24 +238,10 @@ class NotificationCenterList extends StatelessWidget {
         return Icons.info_outline;
     }
   }
-
-  Color _getIconColor(BuildContext context, String type) {
-    switch (type) {
-      case 'success':
-        return Color(0xFF10B981); // Emerald 500
-      case 'status':
-        return Color(0xFFF59E0B); // Amber 500
-      case 'rating':
-        return Color(0xFF3B82F6); // Blue 500
-      case 'info':
-      default:
-        return context.fast.t2; // Muted grey
-    }
-  }
 }
 
-/// Shows an amber warning when the OS has notifications disabled for the
-/// app (the request dialog stops appearing after a denial — only the
+/// Shows a soft amber notice when the OS has notifications disabled for
+/// the app (the request dialog stops appearing after a denial — only the
 /// settings screen can fix it). When enabled, offers a self-test button.
 class _PushPermissionBanner extends StatefulWidget {
   const _PushPermissionBanner();
@@ -313,42 +283,36 @@ class _PushPermissionBannerState extends State<_PushPermissionBanner>
     if (enabled == null) return const SizedBox.shrink();
     if (!enabled) {
       return Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        margin: const EdgeInsets.only(bottom: FASTSpace.s12),
+        padding: const EdgeInsetsDirectional.fromSTEB(12, 4, 4, 4),
         decoration: BoxDecoration(
-          color: const Color(0xFFF59E0B).withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: const Color(0xFFF59E0B).withValues(alpha: 0.4),
-          ),
+          color: context.fast.amberSoftBg,
+          borderRadius: BorderRadius.circular(FASTRadius.sm),
+          border: Border.all(color: context.fast.amberSoftBorder),
         ),
         child: Row(
           children: [
-            const Icon(
+            Icon(
               Icons.notifications_off_outlined,
-              color: Color(0xFFF59E0B),
-              size: 18,
+              color: context.fast.t1,
+              size: 20,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: FASTSpace.s8),
             Expanded(
               child: Text(
                 tr(context, 'notif_off_banner'),
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
+                style: FASTText.caption.copyWith(
+                  fontWeight: FontWeight.w700,
                   color: context.fast.t1,
                 ),
               ),
             ),
             TextButton(
-              onPressed: () =>
-                  LocalPushService.instance.openSystemSettings(),
+              onPressed: () => LocalPushService.instance.openSystemSettings(),
+              style: TextButton.styleFrom(foregroundColor: context.fast.t1),
               child: Text(
                 tr(context, 'notif_enable'),
-                style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: FASTText.label.copyWith(letterSpacing: 0),
               ),
             ),
           ],
@@ -356,17 +320,15 @@ class _PushPermissionBannerState extends State<_PushPermissionBanner>
       );
     }
     return Align(
-      alignment: Alignment.centerRight,
+      alignment: AlignmentDirectional.centerEnd,
       child: TextButton.icon(
         onPressed: () => LocalPushService.instance.show(
           title: 'FAST',
           body: tr(context, 'notif_test_body'),
         ),
-        icon: const Icon(Icons.send_outlined, size: 14),
-        label: Text(
-          tr(context, 'notif_test_send'),
-          style: const TextStyle(fontSize: 11),
-        ),
+        style: TextButton.styleFrom(foregroundColor: context.fast.t2),
+        icon: const Icon(Icons.send_outlined, size: 16),
+        label: Text(tr(context, 'notif_test_send'), style: FASTText.caption),
       ),
     );
   }

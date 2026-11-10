@@ -747,10 +747,10 @@ class _CommandesScreenState extends State<CommandesScreen>
   Widget _buildDeliveryTrackingCard(Order order) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(FASTSpace.s16),
       decoration: BoxDecoration(
         color: context.fast.card,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(FASTRadius.md),
         border: Border.all(color: context.fast.line),
       ),
       child: Column(
@@ -758,36 +758,60 @@ class _CommandesScreenState extends State<CommandesScreen>
         children: [
           Row(
             children: [
-              Icon(Icons.delivery_dining, color: Color(0xFF10B981), size: 28),
-              SizedBox(width: 12),
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: context.fast.cardHigh,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.delivery_dining_outlined,
+                  color: context.fast.t1,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: FASTSpace.s12),
               Expanded(
                 child: Text(
                   _deliveryStatusLabel ??
                       _deliveryStatusToLabel(order.deliveryStatus),
-                  style: TextStyle(
-                    color: context.fast.t1,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                  ),
+                  style: FASTText.item.copyWith(color: context.fast.t1),
                 ),
               ),
             ],
           ),
           if (_deliveryDriverName != null) ...[
-            SizedBox(height: 10),
+            const SizedBox(height: FASTSpace.s12),
             Text(
               context
                   .read<FASTProvider>()
                   .tr('driver_lbl')
                   .replaceAll('{n}', '$_deliveryDriverName'),
-              style: TextStyle(fontSize: 12, color: context.fast.t2),
+              style: FASTText.body.copyWith(color: context.fast.t2),
             ),
           ],
           if (order.deliveryAddress.isNotEmpty) ...[
-            SizedBox(height: 8),
-            Text(
-              '📍 ${order.deliveryAddress}',
-              style: TextStyle(fontSize: 12, color: context.fast.t3),
+            const SizedBox(height: FASTSpace.s8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 1),
+                  child: Icon(
+                    Icons.place_outlined,
+                    size: 16,
+                    color: context.fast.t2,
+                  ),
+                ),
+                const SizedBox(width: FASTSpace.s4),
+                Expanded(
+                  child: Text(
+                    order.deliveryAddress,
+                    style: FASTText.body.copyWith(color: context.fast.t2),
+                  ),
+                ),
+              ],
             ),
           ],
         ],
