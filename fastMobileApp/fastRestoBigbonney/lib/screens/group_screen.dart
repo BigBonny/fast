@@ -82,6 +82,7 @@ class _GroupScreenState extends State<GroupScreen> {
     _startPolling();
     final status = data['status'] as String? ?? 'OPEN';
     if (status == 'SUBMITTED' && previousStatus != 'SUBMITTED') {
+      HapticFeedback.mediumImpact();
       context.read<FASTProvider>().navigateToScreen('commandes');
     }
   }
@@ -114,37 +115,45 @@ class _GroupScreenState extends State<GroupScreen> {
       builder: (sheetContext) => SafeArea(
         child: StatefulBuilder(
           builder: (context, setSheetState) => Padding(
-            padding: EdgeInsets.all(20),
+            padding: const EdgeInsets.fromLTRB(
+              FASTSpace.s16,
+              FASTSpace.s24,
+              FASTSpace.s16,
+              FASTSpace.s16,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   provider.tr('choose_resto'),
-                  style: TextStyle(
-                    color: context.fast.t1,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w900,
-                  ),
+                  style: FASTText.title.copyWith(color: context.fast.t1),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: FASTSpace.s8),
                 Text(
                   provider.tr('group_sub'),
-                  style: TextStyle(color: context.fast.t2),
+                  style: FASTText.body.copyWith(color: context.fast.t2),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: FASTSpace.s24),
                 DropdownButtonFormField<String>(
                   initialValue: restaurantId,
-                  dropdownColor: context.fast.line,
-                  decoration: InputDecoration(
-                    labelText: provider.tr('restaurant_lbl'),
-                    border: const OutlineInputBorder(),
-                  ),
+                  isExpanded: true,
+                  dropdownColor: context.fast.card,
+                  borderRadius: BorderRadius.circular(FASTRadius.sm),
+                  style: FASTText.body.copyWith(color: context.fast.t1),
+                  icon: Icon(Icons.keyboard_arrow_down, color: context.fast.t2),
+                  decoration: _fieldDecoration(
+                    context,
+                  ).copyWith(labelText: provider.tr('restaurant_lbl')),
                   items: provider.restaurants
                       .map(
                         (restaurant) => DropdownMenuItem(
                           value: restaurant.id,
-                          child: Text(restaurant.name),
+                          child: Text(
+                            restaurant.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       )
                       .toList(),
@@ -154,14 +163,11 @@ class _GroupScreenState extends State<GroupScreen> {
                     }
                   },
                 ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(sheetContext, restaurantId),
-                    child: Text(provider.tr('create_group')),
-                  ),
+                const SizedBox(height: FASTSpace.s24),
+                FastButton(
+                  label: provider.tr('create_group'),
+                  kind: FastButtonKind.ink,
+                  onPressed: () => Navigator.pop(sheetContext, restaurantId),
                 ),
               ],
             ),
@@ -230,8 +236,10 @@ class _GroupScreenState extends State<GroupScreen> {
           title: Text(tr(ctx, 'group_cancel')),
           content: Text(
             paidCount > 0
-                ? tr(ctx, 'group_cancel_paid_confirm')
-                      .replaceAll('{n}', '$paidCount')
+                ? tr(
+                    ctx,
+                    'group_cancel_paid_confirm',
+                  ).replaceAll('{n}', '$paidCount')
                 : tr(ctx, 'group_cancel_confirm'),
           ),
           actions: [
@@ -257,8 +265,10 @@ class _GroupScreenState extends State<GroupScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              tr(context, 'group_cancelled_refunded')
-                  .replaceAll('{n}', '$refunded'),
+              tr(
+                context,
+                'group_cancelled_refunded',
+              ).replaceAll('{n}', '$refunded'),
             ),
           ),
         );
@@ -306,11 +316,31 @@ class _GroupScreenState extends State<GroupScreen> {
       ? error.message
       : context.read<FASTProvider>().tr('generic_error');
 
+  /// Inputs on this screen: radius 12, `cardHigh` fill, ink focus ring.
+  static InputDecoration _fieldDecoration(BuildContext context) {
+    final fast = context.fast;
+    OutlineInputBorder border(Color color, [double width = 1]) =>
+        OutlineInputBorder(
+          borderRadius: BorderRadius.circular(FASTRadius.sm),
+          borderSide: BorderSide(color: color, width: width),
+        );
+    return InputDecoration(
+      filled: true,
+      fillColor: fast.cardHigh,
+      hintStyle: FASTText.body.copyWith(color: fast.t3),
+      labelStyle: FASTText.body.copyWith(color: fast.t2),
+      floatingLabelStyle: FASTText.body.copyWith(color: fast.t1),
+      border: border(fast.line),
+      enabledBorder: border(fast.line),
+      focusedBorder: border(fast.ink, 1.5),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_loading) {
       return const Center(
-        child: CircularProgressIndicator(color: Color(0xFFF59E0B)),
+        child: CircularProgressIndicator(color: FASTBrand.amber),
       );
     }
     return Scaffold(
@@ -318,9 +348,10 @@ class _GroupScreenState extends State<GroupScreen> {
       appBar: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: context.fast.bg,
+        titleSpacing: FASTSpace.s16,
         title: Text(
           context.watch<FASTProvider>().tr('group_order'),
-          style: const TextStyle(fontWeight: FontWeight.w900),
+          style: FASTText.title.copyWith(color: context.fast.t1),
         ),
       ),
       body: RefreshIndicator(
@@ -329,7 +360,12 @@ class _GroupScreenState extends State<GroupScreen> {
           if (id != null) await _refresh(id, quiet: true);
         },
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+          padding: const EdgeInsets.fromLTRB(
+            FASTSpace.s16,
+            FASTSpace.s8,
+            FASTSpace.s16,
+            100,
+          ),
           children: [
             if (_error != null) _errorBanner(),
             if (_group == null) _welcome() else _dashboard(),
@@ -340,95 +376,74 @@ class _GroupScreenState extends State<GroupScreen> {
   }
 
   Widget _errorBanner() => Container(
-    margin: const EdgeInsets.only(bottom: 16),
-    padding: const EdgeInsets.all(12),
+    margin: const EdgeInsets.only(bottom: FASTSpace.s16),
+    padding: const EdgeInsets.all(FASTSpace.s12),
     decoration: BoxDecoration(
-      color: const Color(0xFF7F1D1D).withValues(alpha: 0.45),
-      borderRadius: BorderRadius.circular(10),
-      border: Border.all(color: const Color(0xFFEF4444)),
+      color: FASTBrand.error.withValues(alpha: 0.10),
+      borderRadius: BorderRadius.circular(FASTRadius.sm),
+      border: Border.all(color: FASTBrand.error.withValues(alpha: 0.45)),
     ),
     child: Row(
       children: [
-        const Icon(Icons.error_outline, color: Color(0xFFFCA5A5)),
-        const SizedBox(width: 10),
+        const Icon(Icons.error_outline, color: FASTBrand.error, size: 20),
+        const SizedBox(width: FASTSpace.s12),
         Expanded(
           child: Text(
             _error!,
-            style: const TextStyle(color: Color(0xFFFCA5A5)),
+            style: FASTText.body.copyWith(color: context.fast.t1),
           ),
         ),
       ],
     ),
   );
 
+  Widget _sectionLabel(String text) => Text(
+    fastLabelCase(context, text),
+    style: FASTText.label.copyWith(color: context.fast.t2),
+  );
+
   Widget _welcome() => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
+      FastEmpty(
+        icon: Icons.groups_2_outlined,
+        title: context.watch<FASTProvider>().tr('group_tagline'),
+        action: FastButton(
+          label: context.watch<FASTProvider>().tr('create_group'),
+          icon: Icons.add,
+          kind: FastButtonKind.ink,
+          onPressed: _create,
+        ),
+      ),
       Container(
-        padding: EdgeInsets.all(20),
+        padding: const EdgeInsets.all(FASTSpace.s16),
         decoration: BoxDecoration(
           color: context.fast.card,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(FASTRadius.md),
           border: Border.all(color: context.fast.line),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(Icons.groups_2_outlined, color: Color(0xFFF59E0B), size: 36),
-            SizedBox(height: 16),
-            Text(
-              context.watch<FASTProvider>().tr('group_tagline'),
-              style: TextStyle(
-                color: context.fast.t1,
-                fontWeight: FontWeight.w900,
-                fontSize: 20,
-              ),
-            ),
-            SizedBox(height: 10),
-            Text(
-              context.watch<FASTProvider>().tr('group_steps'),
-              style: TextStyle(color: context.fast.t2, height: 1.7),
-            ),
-          ],
+        child: Text(
+          context.watch<FASTProvider>().tr('group_steps'),
+          style: FASTText.body.copyWith(color: context.fast.t2, height: 1.7),
         ),
       ),
-      SizedBox(height: 20),
-      SizedBox(
-        height: 50,
-        child: ElevatedButton.icon(
-          onPressed: _create,
-          icon: const Icon(Icons.add_circle_outline),
-          label: Text(
-            context.watch<FASTProvider>().tr('create_group'),
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-        ),
-      ),
-      SizedBox(height: 28),
-      Text(
-        context.watch<FASTProvider>().tr('join_code'),
-        style: TextStyle(
-          color: context.fast.t2,
-          fontWeight: FontWeight.bold,
-          fontSize: 11,
-          letterSpacing: 0.8,
-        ),
-      ),
-      const SizedBox(height: 8),
+      const SizedBox(height: FASTSpace.s40),
+      _sectionLabel(context.watch<FASTProvider>().tr('join_code')),
+      const SizedBox(height: FASTSpace.s8),
       FastShake(
         trigger: _shakeTick,
         child: TextField(
           controller: _codeController,
           textCapitalization: TextCapitalization.characters,
-          decoration: InputDecoration(
+          style: FASTText.item.copyWith(color: context.fast.t1),
+          decoration: _fieldDecoration(context).copyWith(
             hintText: 'FAST-XXXXXXXX',
-            prefixIcon: const Icon(Icons.key_outlined),
+            prefixIcon: Icon(Icons.key_outlined, color: context.fast.t2),
             suffixIcon: IconButton(
               tooltip: context.read<FASTProvider>().tr('join'),
               onPressed: _join,
-              icon: const Icon(Icons.arrow_forward),
+              icon: Icon(Icons.arrow_forward, color: context.fast.t1),
             ),
-            border: const OutlineInputBorder(),
           ),
           onSubmitted: (_) => _join(),
         ),
@@ -463,33 +478,41 @@ class _GroupScreenState extends State<GroupScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    context.watch<FASTProvider>().tr('group_code'),
-                    style: TextStyle(
-                      color: context.fast.t2,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    group['code'] as String? ?? '',
-                    style: const TextStyle(
-                      color: Color(0xFFF59E0B),
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
+                  _sectionLabel(context.watch<FASTProvider>().tr('group_code')),
+                  const SizedBox(height: FASTSpace.s4),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: AlignmentDirectional.centerStart,
+                    child: Text(
+                      group['code'] as String? ?? '',
+                      maxLines: 1,
+                      style: FASTText.display.copyWith(
+                        color: context.fast.t1,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-            IconButton.filledTonal(
+            const SizedBox(width: FASTSpace.s8),
+            IconButton(
               tooltip: tr(context, 'copy_invite'),
               onPressed: _copyInvite,
-              icon: const Icon(Icons.share_outlined),
+              style: IconButton.styleFrom(
+                backgroundColor: context.fast.cardHigh,
+                foregroundColor: context.fast.t1,
+                side: BorderSide(color: context.fast.line),
+              ),
+              icon: const Icon(Icons.ios_share_outlined, size: 20),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: FASTSpace.s4),
             TextButton(
               onPressed: () => _leave(isHost: isHost, paidCount: paidCount),
+              style: TextButton.styleFrom(
+                foregroundColor: context.fast.t2,
+                textStyle: FASTText.body.copyWith(fontWeight: FontWeight.w700),
+              ),
               child: Text(
                 isHost
                     ? tr(context, 'group_cancel')
@@ -498,90 +521,90 @@ class _GroupScreenState extends State<GroupScreen> {
             ),
           ],
         ),
-        SizedBox(height: 16),
+        const SizedBox(height: FASTSpace.s24),
         _progress(status),
-        SizedBox(height: 20),
+        const SizedBox(height: FASTSpace.s24),
         Container(
-          padding: EdgeInsets.all(16),
+          padding: const EdgeInsets.all(FASTSpace.s16),
           decoration: BoxDecoration(
             color: context.fast.card,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(FASTRadius.md),
             border: Border.all(color: context.fast.line),
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _summary(
-                tr(context, 'members'),
-                '${members.length}',
-                Icons.people_outline,
+              Expanded(
+                child: _summary(
+                  tr(context, 'members'),
+                  '${members.length}',
+                  Icons.people_outline,
+                ),
               ),
-              _summary(
-                tr(context, 'parts_paid'),
-                '$paidCount/${members.length}',
-                Icons.verified_outlined,
+              Expanded(
+                child: _summary(
+                  tr(context, 'parts_paid'),
+                  '$paidCount/${members.length}',
+                  Icons.verified_outlined,
+                ),
               ),
-              _summary(
-                tr(context, 'total'),
-                '${total.toStringAsFixed(2)} €',
-                Icons.receipt_long_outlined,
+              Expanded(
+                child: _summary(
+                  tr(context, 'total'),
+                  '${total.toStringAsFixed(2)} €',
+                  Icons.receipt_long_outlined,
+                ),
               ),
             ],
           ),
         ),
-        SizedBox(height: 20),
-        Text(
-          tr(context, 'participants'),
-          style: TextStyle(
-            color: context.fast.t2,
-            fontSize: 11,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 0.8,
-          ),
-        ),
-        SizedBox(height: 8),
+        const SizedBox(height: FASTSpace.s40),
+        _sectionLabel(tr(context, 'participants')),
+        const SizedBox(height: FASTSpace.s12),
         ...members.map(_memberCard),
-        SizedBox(height: 20),
+        const SizedBox(height: FASTSpace.s24),
         if (status == 'OPEN')
-          SizedBox(
-            height: 50,
-            child: ElevatedButton.icon(
-              onPressed: _orderMyPart,
-              icon: const Icon(Icons.restaurant_menu),
-              label: Text(tr(context, 'pay_share')),
-            ),
+          FastButton(
+            label: tr(context, 'pay_share'),
+            icon: Icons.restaurant_menu,
+            kind: FastButtonKind.ink,
+            onPressed: _orderMyPart,
           ),
         if (isHost && status == 'OPEN') ...[
-          const SizedBox(height: 10),
-          OutlinedButton.icon(
-            onPressed: () =>
-                _action(() => _service.lockGroup(group['id'] as String)),
-            icon: const Icon(Icons.lock_outline),
-            label: Text(tr(context, 'close_invites')),
+          const SizedBox(height: FASTSpace.s12),
+          SizedBox(
+            height: 52,
+            child: OutlinedButton.icon(
+              onPressed: () =>
+                  _action(() => _service.lockGroup(group['id'] as String)),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: context.fast.t1,
+                side: BorderSide(color: context.fast.faint),
+                shape: const StadiumBorder(),
+                textStyle: FASTText.body.copyWith(fontWeight: FontWeight.w800),
+              ),
+              icon: const Icon(Icons.lock_outline, size: 18),
+              label: Text(tr(context, 'close_invites')),
+            ),
           ),
         ],
         if (isHost && status == 'LOCKED') ...[
-          SizedBox(
-            height: 50,
-            child: ElevatedButton.icon(
-              onPressed: paidCount == 0
-                  ? null
-                  : () => _action(
-                      () => _service.submitGroup(group['id'] as String),
-                    ),
-              icon: const Icon(Icons.send_outlined),
-              label: Text(
-                paidCount == 0
-                    ? tr(context, 'waiting_payment')
-                    : tr(context, 'send_parts').replaceAll('{n}', '$paidCount'),
-              ),
-            ),
+          FastButton(
+            label: paidCount == 0
+                ? tr(context, 'waiting_payment')
+                : tr(context, 'send_parts').replaceAll('{n}', '$paidCount'),
+            icon: Icons.send_outlined,
+            kind: FastButtonKind.ink,
+            onPressed: paidCount == 0
+                ? null
+                : () => _action(
+                    () => _service.submitGroup(group['id'] as String),
+                  ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: FASTSpace.s8),
           Text(
             tr(context, 'group_unpaid_warn'),
             textAlign: TextAlign.center,
-            style: TextStyle(color: context.fast.t2, fontSize: 12),
+            style: FASTText.caption.copyWith(color: context.fast.t2),
           ),
         ],
         if (status == 'SUBMITTED') const _SubmittedCard(),
@@ -605,23 +628,23 @@ class _GroupScreenState extends State<GroupScreen> {
             children: [
               Container(
                 height: 4,
-                margin: EdgeInsets.symmetric(horizontal: 3),
+                margin: const EdgeInsets.symmetric(horizontal: 3),
                 decoration: BoxDecoration(
                   color: index <= current
-                      ? Color(0xFFF59E0B)
+                      ? FASTBrand.amber
                       : context.fast.faint,
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(FASTRadius.pill),
                 ),
               ),
-              SizedBox(height: 6),
+              const SizedBox(height: FASTSpace.s8),
               Text(
                 labels[index],
-                style: TextStyle(
-                  color: index <= current
-                      ? const Color(0xFFF59E0B)
-                      : context.fast.t3,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: FASTText.caption.copyWith(
+                  color: index <= current ? context.fast.t1 : context.fast.t3,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],
@@ -633,13 +656,22 @@ class _GroupScreenState extends State<GroupScreen> {
 
   Widget _summary(String label, String value, IconData icon) => Column(
     children: [
-      Icon(icon, color: const Color(0xFFF59E0B), size: 20),
-      SizedBox(height: 6),
+      Icon(icon, color: context.fast.t2, size: 20),
+      const SizedBox(height: FASTSpace.s8),
       Text(
         value,
-        style: TextStyle(color: context.fast.t1, fontWeight: FontWeight.w900),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: FASTText.price.copyWith(color: context.fast.t1),
       ),
-      Text(label, style: TextStyle(color: context.fast.t2, fontSize: 10)),
+      const SizedBox(height: 2),
+      Text(
+        label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        textAlign: TextAlign.center,
+        style: FASTText.caption.copyWith(color: context.fast.t2),
+      ),
     ],
   );
 
@@ -649,68 +681,64 @@ class _GroupScreenState extends State<GroupScreen> {
     final paymentStatus = member['paymentStatus'] as String? ?? 'DRAFT';
     final paid = paymentStatus == 'PAID';
     return Container(
-      margin: EdgeInsets.only(bottom: 8),
-      padding: EdgeInsets.all(14),
+      margin: const EdgeInsets.only(bottom: FASTSpace.s8),
+      padding: const EdgeInsets.all(FASTSpace.s16),
       decoration: BoxDecoration(
         color: context.fast.card,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(FASTRadius.md),
         border: Border.all(color: context.fast.line),
       ),
       child: Row(
         children: [
           CircleAvatar(
             backgroundColor: paid
-                ? Color(0xFF10B981).withValues(alpha: 0.18)
-                : context.fast.faint,
+                ? FASTBrand.success.withValues(alpha: 0.16)
+                : context.fast.cardHigh,
             child: Text(
               name.isEmpty ? '?' : name[0].toUpperCase(),
-              style: TextStyle(
-                color: paid
-                    ? const Color(0xFF10B981)
-                    : (Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white
-                          : const Color(0xFF52525B)),
-                fontWeight: FontWeight.bold,
+              style: FASTText.item.copyWith(
+                color: paid ? FASTBrand.success : context.fast.t1,
               ),
             ),
           ),
-          SizedBox(width: 12),
+          const SizedBox(width: FASTSpace.s12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   name,
-                  style: TextStyle(
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: FASTText.body.copyWith(
                     color: context.fast.t1,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
+                const SizedBox(height: 2),
                 Text(
                   paid
                       ? tr(context, 'part_paid')
                       : paymentStatus == 'READY'
                       ? tr(context, 'paying')
                       : tr(context, 'compose_part'),
-                  style: TextStyle(
-                    color: paid ? Color(0xFF10B981) : context.fast.t2,
-                    fontSize: 11,
+                  style: FASTText.caption.copyWith(
+                    color: paid ? FASTBrand.success : context.fast.t2,
                   ),
                 ),
               ],
             ),
           ),
+          const SizedBox(width: FASTSpace.s8),
           Text(
             '${((member['total'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)} €',
-            style: TextStyle(
-              color: context.fast.t1,
-              fontWeight: FontWeight.bold,
-            ),
+            style: FASTText.price.copyWith(color: context.fast.t1),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: FASTSpace.s8),
           Icon(
             paid ? Icons.check_circle : Icons.hourglass_empty,
-            color: paid ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
+            size: 20,
+            color: paid ? FASTBrand.success : context.fast.t3,
           ),
         ],
       ),
@@ -723,29 +751,26 @@ class _SubmittedCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    padding: EdgeInsets.all(20),
+    padding: const EdgeInsets.all(FASTSpace.s24),
     decoration: BoxDecoration(
-      color: const Color(0xFF064E3B).withValues(alpha: 0.35),
-      borderRadius: BorderRadius.circular(14),
-      border: Border.all(color: const Color(0xFF10B981)),
+      color: FASTBrand.success.withValues(alpha: 0.10),
+      borderRadius: BorderRadius.circular(FASTRadius.md),
+      border: Border.all(color: FASTBrand.success.withValues(alpha: 0.45)),
     ),
     child: Column(
       children: [
-        Icon(Icons.task_alt, color: Color(0xFF10B981), size: 36),
-        SizedBox(height: 10),
+        const Icon(Icons.task_alt, color: FASTBrand.success, size: 36),
+        const SizedBox(height: FASTSpace.s12),
         Text(
           tr(context, 'group_sent_title'),
-          style: TextStyle(
-            color: context.fast.t1,
-            fontWeight: FontWeight.w900,
-            fontSize: 17,
-          ),
+          textAlign: TextAlign.center,
+          style: FASTText.item.copyWith(color: context.fast.t1),
         ),
-        SizedBox(height: 6),
+        const SizedBox(height: FASTSpace.s8),
         Text(
           tr(context, 'group_sent_sub'),
           textAlign: TextAlign.center,
-          style: TextStyle(color: context.fast.t2, height: 1.4),
+          style: FASTText.body.copyWith(color: context.fast.t2),
         ),
       ],
     ),

@@ -1,6 +1,7 @@
 // lib/screens/cart_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_stripe/flutter_stripe.dart'
     show
         Stripe,
@@ -18,6 +19,8 @@ import '../services/payment_service.dart';
 import '../services/group_service.dart';
 import '../theme.dart';
 import '../l10n/tr.dart';
+import '../widgets/fast_image.dart';
+import '../widgets/fast_parts.dart';
 import '../widgets/fast_ui.dart';
 
 class CartScreen extends StatefulWidget {
@@ -63,35 +66,17 @@ class _CartScreenState extends State<CartScreen> {
 
     if (cart.isEmpty || rest == null) {
       return Center(
-        child: Padding(
-          padding: EdgeInsets.all(32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('🛒', style: TextStyle(fontSize: 48)),
-              SizedBox(height: 12),
-              Text(
-                provider.tr('cart_empty'),
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  color: context.fast.t1,
-                ),
-              ),
-              SizedBox(height: 6),
-              Text(
-                tr(context, 'cart_empty_hint'),
-                style: TextStyle(fontSize: 11, color: context.fast.t2),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 16),
-              FastButton(
-                label: provider.tr('browse'),
-                onPressed: () => provider.navigateToScreen('home'),
-                expand: false,
-                height: 46,
-              ),
-            ],
+        child: FastEmpty(
+          icon: Icons.shopping_bag_outlined,
+          accent: context.fast.t1,
+          title: provider.tr('cart_empty'),
+          subtitle: tr(context, 'cart_empty_hint'),
+          action: FastButton(
+            label: provider.tr('browse'),
+            onPressed: () => provider.navigateToScreen('home'),
+            expand: false,
+            height: 46,
+            kind: FastButtonKind.ink,
           ),
         ),
       );
@@ -107,80 +92,61 @@ class _CartScreenState extends State<CartScreen> {
     });
 
     return SingleChildScrollView(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(FASTSpace.s16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (provider.activeGroupId != null) ...[
             Container(
               width: double.infinity,
-              padding: EdgeInsets.all(14),
+              padding: const EdgeInsets.all(FASTSpace.s16),
               decoration: BoxDecoration(
-                color: const Color(0xFFF59E0B).withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: const Color(0xFFF59E0B).withValues(alpha: 0.45),
-                ),
+                color: context.fast.amberSoftBg,
+                borderRadius: BorderRadius.circular(FASTRadius.md),
+                border: Border.all(color: context.fast.amberSoftBorder),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.groups_outlined, color: Color(0xFFF59E0B)),
-                  SizedBox(width: 12),
+                  Icon(Icons.groups_outlined, color: context.fast.t1),
+                  const SizedBox(width: FASTSpace.s12),
                   Expanded(
                     child: Text(
                       tr(
                         context,
                         'group_share',
                       ).replaceAll('{n}', provider.activeGroupCode ?? ''),
-                      style: TextStyle(
+                      style: FASTText.body.copyWith(
                         color: context.fast.t1,
-                        fontWeight: FontWeight.bold,
-                        height: 1.4,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: FASTSpace.s24),
           ],
           // Order list Card
-          Text(
-            tr(context, 'cart_of').replaceAll('{n}', rest.name.toUpperCase()),
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.0,
-              color: context.fast.t3,
-            ),
-          ),
-          SizedBox(height: 12),
+          _sectionLabel(tr(context, 'cart_of').replaceAll('{n}', rest.name)),
+          const SizedBox(height: FASTSpace.s12),
           _buildCartItemsCard(context, provider, cart),
 
-          SizedBox(height: 20),
+          const SizedBox(height: FASTSpace.s24),
 
           if (provider.activeGroupId == null && rest.deliveryEnabled)
             _buildFulfillmentSelector(provider),
 
           if (provider.fulfillmentType == FulfillmentType.delivery) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: FASTSpace.s24),
             _buildDeliveryAddressSection(provider),
           ] else ...[
-            SizedBox(height: 20),
-            Text(
-              tr(context, 'walk_time_title'),
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.0,
-                color: context.fast.t3,
-              ),
-            ),
-            const SizedBox(height: 12),
+            const SizedBox(height: FASTSpace.s24),
+            _sectionLabel(tr(context, 'walk_time_title')),
+            const SizedBox(height: FASTSpace.s12),
             _buildWalkTimeSelector(context, rest.pickupPrepTime),
           ],
 
-          const SizedBox(height: 20),
+          const SizedBox(height: FASTSpace.s40),
 
           // Secure payment Form and receipt breakdown
           _isProcessing
@@ -193,204 +159,196 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
+  /// Small bold section label in the label voice.
+  Widget _sectionLabel(String text) {
+    return Text(
+      fastLabelCase(context, text),
+      style: FASTText.label.copyWith(color: context.fast.t3),
+    );
+  }
+
+  BoxDecoration _cardDecoration() {
+    return BoxDecoration(
+      color: context.fast.card,
+      borderRadius: BorderRadius.circular(FASTRadius.md),
+      border: Border.all(color: context.fast.line),
+    );
+  }
+
+  /// Pill chip, ink when selected. Keeps `ChoiceChip` so tap semantics
+  /// stay exactly what they were.
+  Widget _inkChip({
+    required String label,
+    required bool selected,
+    required ValueChanged<bool>? onSelected,
+  }) {
+    final fast = context.fast;
+    return ChoiceChip(
+      label: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
+      selected: selected,
+      showCheckmark: false,
+      backgroundColor: fast.card,
+      selectedColor: fast.ink,
+      disabledColor: fast.card,
+      labelStyle: FASTText.label.copyWith(
+        letterSpacing: 0,
+        color: selected ? fast.onInk : fast.t1,
+      ),
+      labelPadding: const EdgeInsets.symmetric(horizontal: FASTSpace.s4),
+      padding: const EdgeInsets.symmetric(
+        horizontal: FASTSpace.s8,
+        vertical: FASTSpace.s8,
+      ),
+      shape: const StadiumBorder(),
+      side: BorderSide(color: selected ? fast.ink : fast.line),
+      onSelected: onSelected,
+    );
+  }
+
   Widget _buildCartItemsCard(
     BuildContext context,
     FASTProvider provider,
     List<CartItem> cart,
   ) {
     return Container(
-      decoration: BoxDecoration(
-        color: context.fast.card,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: context.fast.line),
-      ),
+      decoration: _cardDecoration(),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(FASTRadius.md),
         child: ListView.separated(
-        shrinkWrap: true,
-        physics: NeverScrollableScrollPhysics(),
-        itemCount: cart.length,
-        separatorBuilder: (context, index) =>
-            Divider(color: context.fast.line, height: 1),
-        itemBuilder: (context, index) {
-          final item = cart[index];
-          return FastSwipeDelete(
-            onDelete: () => provider.removeFromCart(item),
-            child: Container(
-            color: context.fast.card,
-            child: Padding(
-            padding: EdgeInsets.all(16),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.menuItem.name,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                          color: context.fast.t1,
-                        ),
-                      ),
-                      if (item.selectedOptions.isNotEmpty) ...[
-                        const SizedBox(height: 4),
-                        Wrap(
-                          spacing: 4,
-                          runSpacing: 4,
-                          children: item.selectedOptions
-                              .map(
-                                (opt) => Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: const Color(
-                                      0xFFF59E0B,
-                                    ).withValues(alpha: 0.12),
-                                    borderRadius: BorderRadius.circular(4),
-                                    border: Border.all(
-                                      color: const Color(
-                                        0xFFF59E0B,
-                                      ).withValues(alpha: 0.3),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    opt,
-                                    style: const TextStyle(
-                                      fontSize: 9,
-                                      color: Color(0xFFF59E0B),
-                                    ),
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                        ),
-                      ],
-                      if (item.allergyNotes.isNotEmpty) ...[
-                        SizedBox(height: 4),
-                        Container(
-                          padding: EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: context.fast.amberSoftBg,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: context.fast.amberSoftBorder,
-                            ),
-                          ),
-                          child: Text(
-                            '« ${item.allergyNotes} »',
-                            style: const TextStyle(
-                              fontSize: 10,
-                              fontStyle: FontStyle.italic,
-                              color: Color(0xFFF59E0B),
-                            ),
-                          ),
-                        ),
-                      ],
-                      SizedBox(height: 6),
-                      Text(
-                        '${item.menuItem.price.toStringAsFixed(2)} € chacun',
-                        style: TextStyle(fontSize: 11, color: context.fast.t2),
-                      ),
-                    ],
+          shrinkWrap: true,
+          padding: EdgeInsets.zero,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: cart.length,
+          separatorBuilder: (context, index) =>
+              Divider(color: context.fast.line, height: 1),
+          itemBuilder: (context, index) {
+            final item = cart[index];
+            return FastSwipeDelete(
+              onDelete: () => provider.removeFromCart(item),
+              child: Container(
+                color: context.fast.card,
+                padding: const EdgeInsets.all(FASTSpace.s16),
+                child: _buildCartRow(context, provider, item),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCartRow(
+    BuildContext context,
+    FASTProvider provider,
+    CartItem item,
+  ) {
+    final fast = context.fast;
+    final image = item.menuItem.image;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (image.isNotEmpty) ...[
+          ClipRRect(
+            borderRadius: BorderRadius.circular(FASTRadius.sm),
+            child: FastImage(
+              image,
+              width: 56,
+              height: 56,
+              fit: BoxFit.cover,
+              cacheWidth: 180,
+              placeholder: Container(
+                width: 56,
+                height: 56,
+                color: fast.cardHigh,
+                alignment: Alignment.center,
+                child: Icon(Icons.restaurant, size: 20, color: fast.faint),
+              ),
+            ),
+          ),
+          const SizedBox(width: FASTSpace.s12),
+        ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      item.menuItem.name,
+                      style: FASTText.item.copyWith(color: fast.t1),
+                    ),
                   ),
-                ),
-                SizedBox(width: 12),
-                Row(
+                  const SizedBox(width: FASTSpace.s12),
+                  FastPrice(item.menuItem.price * item.quantity),
+                ],
+              ),
+              if (item.selectedOptions.isNotEmpty) ...[
+                const SizedBox(height: FASTSpace.s8),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
                   children: [
-                    // quantity adjustments
-                    Container(
-                      decoration: BoxDecoration(
-                        color: context.fast.cardHigh,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: [
-                          GestureDetector(
-                            onTap: () => provider.updateCartQuantity(
-                              item,
-                              item.quantity - 1,
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 6,
-                              ),
-                              child: Text(
-                                '-',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: context.fast.t1,
-                                ),
-                              ),
-                            ),
-                          ),
-                          Text(
-                            '${item.quantity}',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                              fontFamily: 'monospace',
-                              color: context.fast.t1,
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: () => provider.updateCartQuantity(
-                              item,
-                              item.quantity + 1,
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 6,
-                              ),
-                              child: Text(
-                                '+',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: context.fast.t1,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                      onPressed: () =>
-                          provider.removeFromCart(item),
-                      icon: const Icon(
-                        Icons.delete_outline,
-                        color: Color(0xFFEF4444),
-                        size: 18,
-                      ),
-                    ),
+                    for (final opt in item.selectedOptions) FastTag(opt),
                   ],
                 ),
               ],
-            ),
-            ),
-            ),
-          );
-        },
-      ),
-      ),
+              if (item.allergyNotes.isNotEmpty) ...[
+                const SizedBox(height: FASTSpace.s8),
+                Container(
+                  padding: const EdgeInsets.all(FASTSpace.s8),
+                  decoration: BoxDecoration(
+                    color: fast.amberSoftBg,
+                    borderRadius: BorderRadius.circular(FASTRadius.sm),
+                    border: Border.all(color: fast.amberSoftBorder),
+                  ),
+                  child: Text(
+                    '« ${item.allergyNotes} »',
+                    style: FASTText.caption.copyWith(
+                      fontStyle: FontStyle.italic,
+                      color: fast.t1,
+                    ),
+                  ),
+                ),
+              ],
+              const SizedBox(height: FASTSpace.s4),
+              Text(
+                '${item.menuItem.price.toStringAsFixed(2)} € chacun',
+                style: FASTText.caption.copyWith(color: fast.t2),
+              ),
+              const SizedBox(height: FASTSpace.s12),
+              Row(
+                children: [
+                  // quantity adjustments — min 0 so "minus" at 1 still
+                  // goes through updateCartQuantity(item, 0), which
+                  // removes the line exactly as before.
+                  FastStepper(
+                    value: item.quantity,
+                    min: 0,
+                    max: 1 << 30,
+                    size: 36,
+                    onChanged: (q) => provider.updateCartQuantity(item, q),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () => provider.removeFromCart(item),
+                    visualDensity: VisualDensity.compact,
+                    icon: Icon(Icons.delete_outline, color: fast.t3, size: 20),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
   Widget _buildWalkTimeSelector(BuildContext context, int minPrepTime) {
     return Container(
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: context.fast.card,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: context.fast.line),
-      ),
+      padding: const EdgeInsets.all(FASTSpace.s16),
+      decoration: _cardDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -403,46 +361,25 @@ class _CartScreenState extends State<CartScreen> {
                   children: [
                     Text(
                       context.read<FASTProvider>().tr('walk_time'),
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: context.fast.t1,
-                      ),
+                      style: FASTText.item.copyWith(color: context.fast.t1),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: FASTSpace.s4),
                     Text(
                       context.read<FASTProvider>().tr('walk_sub'),
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: const Color(0xFFF59E0B).withValues(alpha: 0.8),
-                      ),
+                      style: FASTText.caption.copyWith(color: context.fast.t2),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 12),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  '⚡ $_selectedWalkTime MIN',
-                  style: const TextStyle(
-                    color: Color(0xFFF59E0B),
-                    fontWeight: FontWeight.w900,
-                    fontSize: 12,
-                    fontFamily: 'monospace',
-                  ),
-                ),
+              const SizedBox(width: FASTSpace.s12),
+              FastTag(
+                '$_selectedWalkTime MIN',
+                kind: FastTagKind.accent,
+                icon: Icons.bolt,
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: FASTSpace.s16),
           // Choice chips
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -452,11 +389,11 @@ class _CartScreenState extends State<CartScreen> {
                   tr(context, 'asap').replaceAll('{n}', '$minPrepTime'),
                   minPrepTime,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: FASTSpace.s8),
                 _buildWalkChip('+10 min', minPrepTime + 10),
-                const SizedBox(width: 8),
+                const SizedBox(width: FASTSpace.s8),
                 _buildWalkChip('+20 min', minPrepTime + 20),
-                const SizedBox(width: 8),
+                const SizedBox(width: FASTSpace.s8),
                 _buildWalkChip('+30 min', minPrepTime + 30),
               ],
             ),
@@ -470,93 +407,50 @@ class _CartScreenState extends State<CartScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          tr(context, 'pickup_mode_title'),
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.0,
-            color: context.fast.t3,
-          ),
-        ),
-        SizedBox(height: 10),
+        _sectionLabel(tr(context, 'pickup_mode_title')),
+        const SizedBox(height: FASTSpace.s12),
         Row(
           children: [
             Expanded(
-              child: ChoiceChip(
-                label: Text(
-                  provider.tr('click_collect'),
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+              child: _inkChip(
+                label: provider.tr('click_collect'),
                 selected: provider.fulfillmentType == FulfillmentType.pickup,
-                selectedColor: Color(0xFFF59E0B),
-                backgroundColor: context.fast.card,
-                labelStyle: TextStyle(
-                  color: provider.fulfillmentType == FulfillmentType.pickup
-                      ? FASTBrand.onAmber
-                      : context.fast.t1,
-                ),
-                onSelected: (_) =>
-                    provider.setFulfillmentType(FulfillmentType.pickup),
+                onSelected: (_) {
+                  HapticFeedback.selectionClick();
+                  provider.setFulfillmentType(FulfillmentType.pickup);
+                },
               ),
             ),
-            SizedBox(width: 8),
+            const SizedBox(width: FASTSpace.s8),
             Expanded(
               // Spec: unavailable choices are disabled, not hidden, so
               // the customer sees the option exists but can't pick it.
               child: Opacity(
-                opacity:
-                    (provider.selectedRestaurant?.allowDineIn ?? false)
-                        ? 1.0
-                        : 0.4,
-                child: ChoiceChip(
-                  label: Text(
-                    provider.tr('dine_in'),
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  selected:
-                      provider.fulfillmentType == FulfillmentType.dineIn,
-                  selectedColor: Color(0xFF00C8B3),
-                  backgroundColor: context.fast.card,
-                  labelStyle: TextStyle(
-                    color: provider.fulfillmentType == FulfillmentType.dineIn
-                        ? Colors.white
-                        : context.fast.t1,
-                  ),
+                opacity: (provider.selectedRestaurant?.allowDineIn ?? false)
+                    ? 1.0
+                    : 0.4,
+                child: _inkChip(
+                  label: provider.tr('dine_in'),
+                  selected: provider.fulfillmentType == FulfillmentType.dineIn,
                   onSelected:
                       (provider.selectedRestaurant?.allowDineIn ?? false)
-                          ? (_) =>
-                              provider.setFulfillmentType(FulfillmentType.dineIn)
-                          : null,
+                      ? (_) {
+                          HapticFeedback.selectionClick();
+                          provider.setFulfillmentType(FulfillmentType.dineIn);
+                        }
+                      : null,
                 ),
               ),
             ),
-            SizedBox(width: 8),
+            const SizedBox(width: FASTSpace.s8),
             Expanded(
-              child: ChoiceChip(
-                label: Text(
-                  provider.tr('delivery'),
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+              child: _inkChip(
+                label: provider.tr('delivery'),
                 selected: provider.fulfillmentType == FulfillmentType.delivery,
-                selectedColor: Color(0xFF10B981),
-                backgroundColor: context.fast.card,
-                labelStyle: TextStyle(
-                  color: provider.fulfillmentType == FulfillmentType.delivery
-                      ? Colors.white
-                      : context.fast.t1,
-                ),
-                onSelected: (_) =>
-                    provider.setFulfillmentType(FulfillmentType.delivery),
+                onSelected: (_) {
+                  HapticFeedback.selectionClick();
+                  provider.setFulfillmentType(FulfillmentType.delivery);
+                },
               ),
             ),
           ],
@@ -569,64 +463,58 @@ class _CartScreenState extends State<CartScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          tr(context, 'delivery_addr_title'),
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.0,
-            color: context.fast.t3,
-          ),
-        ),
-        SizedBox(height: 10),
+        _sectionLabel(tr(context, 'delivery_addr_title')),
+        const SizedBox(height: FASTSpace.s12),
         TextField(
           controller: _deliveryAddressCtrl,
-          style: TextStyle(color: context.fast.t1, fontSize: 13),
+          style: FASTText.body.copyWith(color: context.fast.t1),
           maxLines: 2,
           decoration: InputDecoration(
             hintText: tr(context, 'addr_example'),
-            hintStyle: TextStyle(color: context.fast.t3),
+            hintStyle: FASTText.body.copyWith(color: context.fast.t3),
             filled: true,
             fillColor: context.fast.card,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(FASTRadius.sm),
               borderSide: BorderSide(color: context.fast.line),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(FASTRadius.sm),
               borderSide: BorderSide(color: context.fast.line),
             ),
           ),
           onChanged: (v) => provider.setDeliveryAddress(v),
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: FASTSpace.s8),
         Row(
           children: [
             TextButton.icon(
               onPressed: _geocodingAddress
                   ? null
                   : () => _useCurrentLocation(provider),
-              icon: const Icon(
-                Icons.my_location,
-                size: 16,
-                color: Color(0xFF10B981),
-              ),
+              icon: Icon(Icons.my_location, size: 16, color: context.fast.t1),
               label: Text(
                 provider.tr(_geocodingAddress ? 'locating' : 'my_position'),
-                style: const TextStyle(color: Color(0xFF10B981), fontSize: 11),
+                style: FASTText.caption.copyWith(
+                  color: context.fast.t1,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
-            Spacer(),
-            Text(
-              provider
-                  .tr('delivery_zone')
-                  .replaceAll(
-                    '{n}',
-                    provider.selectedRestaurant?.deliveryRadiusKm
-                            .toStringAsFixed(0) ??
-                        '5',
-                  ),
-              style: TextStyle(fontSize: 10, color: context.fast.t3),
+            const SizedBox(width: FASTSpace.s8),
+            Expanded(
+              child: Text(
+                provider
+                    .tr('delivery_zone')
+                    .replaceAll(
+                      '{n}',
+                      provider.selectedRestaurant?.deliveryRadiusKm
+                              .toStringAsFixed(0) ??
+                          '5',
+                    ),
+                textAlign: TextAlign.end,
+                style: FASTText.caption.copyWith(color: context.fast.t3),
+              ),
             ),
           ],
         ),
@@ -670,23 +558,12 @@ class _CartScreenState extends State<CartScreen> {
 
   Widget _buildWalkChip(String label, int minutes) {
     final isSelected = _selectedWalkTime == minutes;
-    return ChoiceChip(
-      label: Text(
-        label,
-        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
-      ),
+    return _inkChip(
+      label: label,
       selected: isSelected,
-      backgroundColor: context.fast.card,
-      selectedColor: Color(0xFFF59E0B),
-      checkmarkColor: FASTBrand.onAmber,
-      labelStyle: TextStyle(
-        color: isSelected ? FASTBrand.onAmber : context.fast.t1,
-      ),
-      side: BorderSide(
-        color: isSelected ? Color(0xFFF59E0B) : context.fast.line,
-      ),
       onSelected: (selected) {
         if (selected) {
+          HapticFeedback.selectionClick();
           setState(() {
             _selectedWalkTime = minutes;
           });
@@ -695,145 +572,99 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
+  Widget _receiptRow(String label, Widget trailing) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            label,
+            style: FASTText.body.copyWith(color: context.fast.t2),
+          ),
+        ),
+        const SizedBox(width: FASTSpace.s12),
+        trailing,
+      ],
+    );
+  }
+
   // Secure checkout fields card
   Widget _buildCheckoutFormCard(BuildContext context, FASTProvider provider) {
+    final amountStyle = FASTText.price.copyWith(
+      fontSize: 14,
+      fontWeight: FontWeight.w500,
+      color: context.fast.t1,
+    );
     return Container(
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: context.fast.card,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: context.fast.line),
-      ),
+      padding: const EdgeInsets.all(FASTSpace.s16),
+      decoration: _cardDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            tr(context, 'payment_details'),
-            style: TextStyle(
-              fontSize: 9,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.0,
-              color: context.fast.t3,
-            ),
-          ),
-          SizedBox(height: 12),
+          _sectionLabel(tr(context, 'payment_details')),
+          const SizedBox(height: FASTSpace.s16),
 
           // Receipt breakdown
-          Container(
-            padding: EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: context.fast.cardHigh,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      provider.tr('subtotal'),
-                      style: TextStyle(fontSize: 12, color: context.fast.t2),
-                    ),
-                    Text(
-                      '${provider.cartSubtotal.toStringAsFixed(2)} €',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: context.fast.t1,
-                        fontFamily: 'monospace',
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 6),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      provider.fulfillmentType == FulfillmentType.delivery
-                          ? provider.tr('fee_delivery')
-                          : provider.tr('fee_pickup'),
-                      style: TextStyle(fontSize: 12, color: context.fast.t2),
-                    ),
-                    if (provider.fulfillmentType == FulfillmentType.delivery)
-                      Text(
-                        '${provider.cartDeliveryFee.toStringAsFixed(2)} €',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: context.fast.t1,
-                          fontFamily: 'monospace',
-                        ),
-                      )
-                    else
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(
-                            0xFF10B981,
-                          ).withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          tr(context, 'free_upper'),
-                          style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF10B981),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-                Divider(color: context.fast.line, height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      provider.tr('total'),
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: context.fast.t1,
-                      ),
-                    ),
-                    Text(
-                      '${provider.cartTotal.toStringAsFixed(2)} €',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w900,
-                        color: Color(0xFFF59E0B),
-                        fontFamily: 'monospace',
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+          _receiptRow(
+            provider.tr('subtotal'),
+            Text(
+              '${provider.cartSubtotal.toStringAsFixed(2)} €',
+              style: amountStyle,
             ),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: FASTSpace.s8),
+          _receiptRow(
+            provider.fulfillmentType == FulfillmentType.delivery
+                ? provider.tr('fee_delivery')
+                : provider.tr('fee_pickup'),
+            provider.fulfillmentType == FulfillmentType.delivery
+                ? Text(
+                    '${provider.cartDeliveryFee.toStringAsFixed(2)} €',
+                    style: amountStyle,
+                  )
+                : Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: FASTBrand.success.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(FASTRadius.pill),
+                    ),
+                    child: Text(
+                      tr(context, 'free_upper'),
+                      style: FASTText.label.copyWith(color: FASTBrand.success),
+                    ),
+                  ),
+          ),
+          Divider(color: context.fast.line, height: FASTSpace.s24),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  provider.tr('total'),
+                  style: FASTText.item.copyWith(color: context.fast.t1),
+                ),
+              ),
+              const SizedBox(width: FASTSpace.s12),
+              Text(
+                '${provider.cartTotal.toStringAsFixed(2)} €',
+                style: FASTText.price.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: context.fast.t1,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: FASTSpace.s24),
 
           // Stripe Checkout
-          Text(
-            tr(context, 'stripe_secure_title'),
-            style: TextStyle(
-              fontSize: 9,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.0,
-              color: context.fast.t3,
-            ),
-          ),
-          SizedBox(height: 12),
+          _sectionLabel(tr(context, 'stripe_secure_title')),
+          const SizedBox(height: FASTSpace.s8),
           Text(
             tr(context, 'bank_info'),
-            style: TextStyle(
-              fontSize: 11,
-              color: context.fast.t2,
-              height: 1.35,
-            ),
+            style: FASTText.caption.copyWith(color: context.fast.t2),
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: FASTSpace.s24),
 
           // Place Order Button
           FastButton(
@@ -842,35 +673,35 @@ class _CartScreenState extends State<CartScreen> {
                 .replaceAll('{n}', provider.cartTotal.toStringAsFixed(2)),
             onPressed: () => _startStripeCheckout(provider),
             icon: Icons.shield,
-            fontSize: 13,
+            kind: FastButtonKind.ink,
+            fontSize: 14,
           ),
           if (_pendingStripeSessionId != null) ...[
-            SizedBox(height: 8),
-            TextButton(
-              onPressed: () => _confirmStripeCheckout(provider),
-              child: Text(
-                provider.tr('confirm_payment'),
-                style: TextStyle(color: context.fast.t3, fontSize: 11),
+            const SizedBox(height: FASTSpace.s8),
+            Center(
+              child: TextButton(
+                onPressed: () => _confirmStripeCheckout(provider),
+                child: Text(
+                  provider.tr('confirm_payment'),
+                  style: FASTText.caption.copyWith(color: context.fast.t2),
+                ),
               ),
             ),
           ],
-          SizedBox(height: 10),
-          Center(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.lock_outline, size: 12, color: context.fast.t3),
-                SizedBox(width: 4),
-                Text(
+          const SizedBox(height: FASTSpace.s12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.lock_outline, size: 14, color: context.fast.t3),
+              const SizedBox(width: FASTSpace.s4),
+              Flexible(
+                child: Text(
                   provider.tr('pci'),
-                  style: TextStyle(
-                    fontSize: 9,
-                    color: context.fast.t3,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  textAlign: TextAlign.center,
+                  style: FASTText.caption.copyWith(color: context.fast.t3),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),
@@ -880,38 +711,32 @@ class _CartScreenState extends State<CartScreen> {
   Widget _buildProcessingCard() {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(32),
-      decoration: BoxDecoration(
-        color: context.fast.card,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: context.fast.line),
+      padding: const EdgeInsets.symmetric(
+        horizontal: FASTSpace.s24,
+        vertical: FASTSpace.s40,
       ),
+      decoration: _cardDecoration(),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          SizedBox(
+          const SizedBox(
             width: 48,
             height: 48,
             child: CircularProgressIndicator(
               strokeWidth: 3,
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFF59E0B)),
+              valueColor: AlwaysStoppedAnimation<Color>(FASTBrand.amber),
             ),
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: FASTSpace.s24),
           Text(
             _processStep,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 12,
-              color: context.fast.t1,
-              fontFamily: 'monospace',
-            ),
+            style: FASTText.label.copyWith(color: context.fast.t1),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: 6),
+          const SizedBox(height: FASTSpace.s8),
           Text(
             tr(context, 'securing_tokens'),
-            style: TextStyle(fontSize: 10, color: context.fast.t3),
+            style: FASTText.caption.copyWith(color: context.fast.t3),
             textAlign: TextAlign.center,
           ),
         ],
@@ -1105,7 +930,10 @@ class _CartScreenState extends State<CartScreen> {
     }
     if (!mounted) return true;
     final ok = await provider.confirmStripeIntent(intent.paymentIntentId);
-    if (ok && mounted) provider.navigateToScreen('commandes');
+    if (ok && mounted) {
+      HapticFeedback.mediumImpact();
+      provider.navigateToScreen('commandes');
+    }
     return true;
   }
 
@@ -1120,6 +948,7 @@ class _CartScreenState extends State<CartScreen> {
     try {
       final ok = await provider.confirmStripeCheckout(sessionId);
       if (ok && mounted) {
+        HapticFeedback.mediumImpact();
         setState(() {
           _pendingStripeSessionId = null;
         });

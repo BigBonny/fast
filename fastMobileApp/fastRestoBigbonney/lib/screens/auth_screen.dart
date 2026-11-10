@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart' show defaultTargetPlatform;
 import 'package:provider/provider.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
@@ -268,10 +269,7 @@ class _AuthScreenState extends State<AuthScreen>
                 : widget.initialRole == 'LIVREUR'
                 ? fast.tr('space_driver')
                 : fast.tr('space_client'),
-            style: TextStyle(
-              color: context.fast.t1,
-              fontWeight: FontWeight.bold,
-            ),
+            style: FASTText.item.copyWith(color: context.fast.t1),
           ),
         ),
         body: SafeArea(
@@ -281,18 +279,18 @@ class _AuthScreenState extends State<AuthScreen>
               children: [
                 TabBar(
                   controller: _tabController,
-                  indicatorColor: Color(0xFFF59E0B),
+                  onTap: (_) => HapticFeedback.selectionClick(),
+                  indicatorColor: context.fast.ink,
                   indicatorSize: TabBarIndicatorSize.tab,
                   dividerColor: context.fast.line,
-                  labelColor: context.fast.t1,
+                  labelColor: context.fast.ink,
                   unselectedLabelColor: context.fast.t2,
-                  labelStyle: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
+                  overlayColor: WidgetStatePropertyAll(
+                    context.fast.ink.withValues(alpha: 0.06),
                   ),
-                  unselectedLabelStyle: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
+                  labelStyle: FASTText.item,
+                  unselectedLabelStyle: FASTText.item.copyWith(
+                    fontWeight: FontWeight.w600,
                   ),
                   tabs: [
                     Tab(text: fast.tr('login_tab')),
@@ -368,10 +366,7 @@ class _AuthScreenState extends State<AuthScreen>
                     padding: const EdgeInsets.only(bottom: 16),
                     child: Text(
                       auth.error!,
-                      style: const TextStyle(
-                        color: Color(0xFFEF4444),
-                        fontSize: 13,
-                      ),
+                      style: FASTText.body.copyWith(color: FASTBrand.error),
                       textAlign: TextAlign.center,
                     ),
                   );
@@ -385,6 +380,7 @@ class _AuthScreenState extends State<AuthScreen>
                   label: fast.tr('login_btn'),
                   onPressed: _handleLogin,
                   loading: auth.isBusy,
+                  kind: FastButtonKind.ink,
                   fontSize: 16,
                 );
               },
@@ -415,7 +411,7 @@ class _AuthScreenState extends State<AuthScreen>
           for (final email in matches)
             ActionChip(
               avatar: const Icon(Icons.history, size: 14),
-              label: Text(email, style: const TextStyle(fontSize: 12)),
+              label: Text(email, style: FASTText.caption),
               backgroundColor: context.fast.card,
               side: BorderSide(color: context.fast.line),
               labelStyle: TextStyle(color: context.fast.t2),
@@ -439,7 +435,7 @@ class _AuthScreenState extends State<AuthScreen>
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Text(
                   fast.tr('or'),
-                  style: TextStyle(color: context.fast.t3, fontSize: 12),
+                  style: FASTText.caption.copyWith(color: context.fast.t3),
                 ),
               ),
               Expanded(child: Divider(color: context.fast.line)),
@@ -452,9 +448,9 @@ class _AuthScreenState extends State<AuthScreen>
                 height: 48,
                 child: Material(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(FASTRadius.sm),
                   child: InkWell(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(FASTRadius.sm),
                     onTap: auth.isBusy
                         ? null
                         : () async {
@@ -465,7 +461,7 @@ class _AuthScreenState extends State<AuthScreen>
                           },
                     child: Container(
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(FASTRadius.sm),
                         border: Border.all(color: const Color(0xFFDADCE0)),
                       ),
                       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -528,6 +524,9 @@ class _AuthScreenState extends State<AuthScreen>
                     style: Theme.of(context).brightness == Brightness.dark
                         ? SignInWithAppleButtonStyle.white
                         : SignInWithAppleButtonStyle.black,
+                    borderRadius: const BorderRadius.all(
+                      Radius.circular(FASTRadius.sm),
+                    ),
                     text: tr(context, 'apple_signin'),
                   ),
                 );
@@ -601,15 +600,14 @@ class _AuthScreenState extends State<AuthScreen>
                   children: [
                     const Icon(
                       Icons.check_circle,
-                      color: Color(0xFF10B981),
+                      color: FASTBrand.success,
                       size: 16,
                     ),
                     const SizedBox(width: 6),
                     Text(
                       fast.tr('phone_verified'),
-                      style: const TextStyle(
-                        color: Color(0xFF10B981),
-                        fontSize: 12,
+                      style: FASTText.caption.copyWith(
+                        color: FASTBrand.success,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -625,8 +623,9 @@ class _AuthScreenState extends State<AuthScreen>
                       _smsSent ? fast.tr('resend_code') : fast.tr('send_code'),
                     ),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFFF59E0B),
-                      side: const BorderSide(color: Color(0xFFF59E0B)),
+                      foregroundColor: context.fast.t1,
+                      side: BorderSide(color: context.fast.faint),
+                      shape: const StadiumBorder(),
                     ),
                   ),
                 ),
@@ -647,12 +646,29 @@ class _AuthScreenState extends State<AuthScreen>
                           decoration: InputDecoration(
                             hintText: '••••••',
                             counterText: '',
-                            hintStyle: TextStyle(color: context.fast.faint),
+                            hintStyle: TextStyle(color: context.fast.t3),
                             filled: true,
                             fillColor: context.fast.card,
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(
+                                FASTRadius.sm,
+                              ),
                               borderSide: BorderSide(color: context.fast.line),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(
+                                FASTRadius.sm,
+                              ),
+                              borderSide: BorderSide(color: context.fast.line),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(
+                                FASTRadius.sm,
+                              ),
+                              borderSide: BorderSide(
+                                color: context.fast.ink,
+                                width: 1.5,
+                              ),
                             ),
                           ),
                         ),
@@ -661,8 +677,9 @@ class _AuthScreenState extends State<AuthScreen>
                       ElevatedButton(
                         onPressed: _smsBusy ? null : _verifySmsCode,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFF59E0B),
-                          foregroundColor: FASTBrand.onAmber,
+                          backgroundColor: context.fast.ink,
+                          foregroundColor: context.fast.onInk,
+                          shape: const StadiumBorder(),
                         ),
                         child: Text(fast.tr('verify')),
                       ),
@@ -764,10 +781,7 @@ class _AuthScreenState extends State<AuthScreen>
                     padding: const EdgeInsets.only(bottom: 16),
                     child: Text(
                       auth.error!,
-                      style: const TextStyle(
-                        color: Color(0xFFEF4444),
-                        fontSize: 13,
-                      ),
+                      style: FASTText.body.copyWith(color: FASTBrand.error),
                       textAlign: TextAlign.center,
                     ),
                   );
@@ -781,6 +795,7 @@ class _AuthScreenState extends State<AuthScreen>
                   label: fast.tr('register_btn'),
                   onPressed: _handleRegister,
                   loading: auth.isBusy,
+                  kind: FastButtonKind.ink,
                   fontSize: 16,
                 );
               },
@@ -818,7 +833,7 @@ class _AuthScreenState extends State<AuthScreen>
         Text(
           fast.tr('lang_label'),
           style: TextStyle(
-            fontSize: 13,
+            fontSize: 14,
             fontWeight: FontWeight.w600,
             color: context.fast.t1,
           ),
@@ -838,15 +853,12 @@ class _AuthScreenState extends State<AuthScreen>
               vertical: 14,
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(FASTRadius.sm),
               borderSide: BorderSide(color: context.fast.line, width: 1),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(
-                color: Color(0xFFF59E0B),
-                width: 1.5,
-              ),
+              borderRadius: BorderRadius.circular(FASTRadius.sm),
+              borderSide: BorderSide(color: context.fast.ink, width: 1.5),
             ),
           ),
           items: _languages
@@ -876,7 +888,7 @@ class _AuthScreenState extends State<AuthScreen>
         Text(
           label,
           style: TextStyle(
-            fontSize: 13,
+            fontSize: 14,
             fontWeight: FontWeight.w600,
             color: context.fast.t1,
           ),
@@ -892,33 +904,27 @@ class _AuthScreenState extends State<AuthScreen>
           style: TextStyle(color: context.fast.t1, fontSize: 14),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: context.fast.faint, fontSize: 14),
+            hintStyle: TextStyle(color: context.fast.t3, fontSize: 14),
             prefixIcon: Icon(icon, color: context.fast.t3, size: 18),
             suffixIcon: suffix,
             filled: true,
             fillColor: context.fast.card,
             contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(FASTRadius.sm),
               borderSide: BorderSide(color: context.fast.line, width: 1),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(
-                color: Color(0xFFF59E0B),
-                width: 1.5,
-              ),
+              borderRadius: BorderRadius.circular(FASTRadius.sm),
+              borderSide: BorderSide(color: context.fast.ink, width: 1.5),
             ),
             errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1),
+              borderRadius: BorderRadius.circular(FASTRadius.sm),
+              borderSide: const BorderSide(color: FASTBrand.error, width: 1),
             ),
             focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(
-                color: Color(0xFFEF4444),
-                width: 1.5,
-              ),
+              borderRadius: BorderRadius.circular(FASTRadius.sm),
+              borderSide: const BorderSide(color: FASTBrand.error, width: 1.5),
             ),
           ),
         ),

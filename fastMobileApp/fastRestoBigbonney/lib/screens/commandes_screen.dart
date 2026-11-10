@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:maplibre/maplibre.dart';
 import 'package:latlong2/latlong.dart' hide Path;
@@ -18,9 +19,42 @@ import 'qr_screen.dart';
 import '../theme.dart';
 import '../widgets/fast_image.dart';
 import '../widgets/fast_parts.dart';
+import '../widgets/fast_ui.dart';
 import '../l10n/tr.dart';
 import '../services/reservation_service.dart';
 import '../api/api_exceptions.dart';
+
+/// Status pill at the label size. [color] null gives a quiet grey pill;
+/// amber is drawn as a solid fill with dark text (amber text fails
+/// contrast on light surfaces); other status colours are tinted.
+Widget _statusPill(BuildContext context, String label, Color? color) {
+  final fast = context.fast;
+  final Color bg;
+  final Color fg;
+  if (color == null) {
+    bg = fast.cardHigh;
+    fg = fast.t2;
+  } else if (color == FASTBrand.amber) {
+    bg = FASTBrand.amber;
+    fg = FASTBrand.onAmber;
+  } else {
+    bg = color.withValues(alpha: 0.15);
+    fg = color;
+  }
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+    decoration: BoxDecoration(
+      color: bg,
+      borderRadius: BorderRadius.circular(FASTRadius.pill),
+    ),
+    child: Text(
+      fastLabelCase(context, label),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: FASTText.label.copyWith(color: fg),
+    ),
+  );
+}
 
 class CommandesScreen extends StatefulWidget {
   const CommandesScreen({super.key});
@@ -49,7 +83,6 @@ class _CommandesScreenState extends State<CommandesScreen>
   DateTime? _lastTrackingPatch;
 
   // Active Order (Suivi) Animations
-  late AnimationController _pulseController;
   late AnimationController _confettiController;
   bool _ratingSubmitted = false;
   double _pendingRating = 0;
@@ -63,10 +96,6 @@ class _CommandesScreenState extends State<CommandesScreen>
   @override
   void initState() {
     super.initState();
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    )..repeat(reverse: true);
     _confettiController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 4),
@@ -91,7 +120,6 @@ class _CommandesScreenState extends State<CommandesScreen>
     _stopLocationTracking();
     _deliveryPollTimer?.cancel();
     _tabController.dispose();
-    _pulseController.dispose();
     _confettiController.dispose();
     _commentController.dispose();
     for (var controller in _controllers.values) {
@@ -107,6 +135,31 @@ class _CommandesScreenState extends State<CommandesScreen>
     return _controllers[orderId]!;
   }
 
+  Widget _sectionLabel(String text) => Text(
+    fastLabelCase(context, text),
+    style: FASTText.label.copyWith(color: context.fast.t3),
+  );
+
+  InputDecoration _reviewFieldDecoration(String hint) {
+    OutlineInputBorder border(Color c) => OutlineInputBorder(
+      borderRadius: BorderRadius.circular(FASTRadius.sm),
+      borderSide: BorderSide(color: c),
+    );
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: FASTText.body.copyWith(color: context.fast.t3),
+      filled: true,
+      fillColor: context.fast.bg,
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: FASTSpace.s16,
+        vertical: FASTSpace.s12,
+      ),
+      border: border(context.fast.line),
+      enabledBorder: border(context.fast.line),
+      focusedBorder: border(context.fast.ink),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<FASTProvider>(context);
@@ -120,17 +173,15 @@ class _CommandesScreenState extends State<CommandesScreen>
         automaticallyImplyLeading: false,
         title: Text(
           provider.tr('nav_orders'),
-          style: TextStyle(
-            color: context.fast.t1,
-            fontWeight: FontWeight.w900,
-            fontSize: 18,
-          ),
+          style: FASTText.title.copyWith(color: context.fast.t1),
         ),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: Color(0xFFF59E0B),
+          onTap: (_) => HapticFeedback.selectionClick(),
+          indicatorColor: context.fast.ink,
           indicatorWeight: 2,
-          labelColor: Color(0xFFF59E0B),
+          dividerColor: context.fast.line,
+          labelColor: context.fast.ink,
           unselectedLabelColor: context.fast.t3,
           labelStyle: const TextStyle(
             fontSize: 12,
@@ -173,47 +224,16 @@ class _CommandesScreenState extends State<CommandesScreen>
         (_) => _stopLocationTracking(),
       );
       return Center(
-        child: Padding(
-          padding: EdgeInsets.all(32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('🚶', style: TextStyle(fontSize: 48)),
-              SizedBox(height: 12),
-              Text(
-                provider.tr('no_tracking'),
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  color: context.fast.t1,
-                ),
-              ),
-              SizedBox(height: 6),
-              Text(
-                provider.tr('no_tracking_sub'),
-                style: TextStyle(fontSize: 11, color: context.fast.t2),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => provider.navigateToScreen('home'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFFF59E0B),
-                  foregroundColor: FASTBrand.onAmber,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  elevation: 0,
-                ),
-                child: Text(
-                  provider.tr('discover'),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-            ],
+        child: FastEmpty(
+          icon: Icons.directions_walk,
+          title: provider.tr('no_tracking'),
+          subtitle: provider.tr('no_tracking_sub'),
+          action: FastButton(
+            label: provider.tr('discover'),
+            kind: FastButtonKind.ink,
+            expand: false,
+            height: 48,
+            onPressed: () => provider.navigateToScreen('home'),
           ),
         ),
       );
@@ -253,7 +273,7 @@ class _CommandesScreenState extends State<CommandesScreen>
             children: [
               if (activeOrders.length > 1) ...[
                 SizedBox(
-                  height: 36,
+                  height: 40,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: activeOrders.length,
@@ -261,27 +281,44 @@ class _CommandesScreenState extends State<CommandesScreen>
                     itemBuilder: (context, index) {
                       final o = activeOrders[index];
                       final selected = index == _selectedActiveIndex;
-                      return ChoiceChip(
-                        label: Text(
-                          o.restaurantName,
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
+                      return FastTap(
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          setState(() => _selectedActiveIndex = index);
+                        },
+                        child: Container(
+                          alignment: Alignment.center,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: FASTSpace.s16,
+                          ),
+                          decoration: BoxDecoration(
                             color: selected
-                                ? FASTBrand.onAmber
-                                : context.fast.t1,
+                                ? context.fast.ink
+                                : context.fast.card,
+                            borderRadius: BorderRadius.circular(
+                              FASTRadius.pill,
+                            ),
+                            border: Border.all(
+                              color: selected
+                                  ? context.fast.ink
+                                  : context.fast.line,
+                            ),
+                          ),
+                          child: Text(
+                            o.restaurantName,
+                            style: FASTText.caption.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: selected
+                                  ? context.fast.onInk
+                                  : context.fast.t1,
+                            ),
                           ),
                         ),
-                        selected: selected,
-                        selectedColor: Color(0xFFF59E0B),
-                        backgroundColor: context.fast.card,
-                        onSelected: (_) =>
-                            setState(() => _selectedActiveIndex = index),
                       );
                     },
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
               ],
               _buildTrackerHeader(
                 context,
@@ -306,27 +343,11 @@ class _CommandesScreenState extends State<CommandesScreen>
               ],
               if (!isCancelled) ...[
                 if (activeOrder.isDelivery) ...[
-                  Text(
-                    provider.tr('tracking_delivery'),
-                    style: TextStyle(
-                      fontSize: 9,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.0,
-                      color: context.fast.t3,
-                    ),
-                  ),
+                  _sectionLabel(provider.tr('tracking_delivery')),
                   const SizedBox(height: 8),
                   _buildDeliveryTrackingCard(activeOrder),
                 ] else ...[
-                  Text(
-                    provider.tr('tracking_walk'),
-                    style: TextStyle(
-                      fontSize: 9,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.0,
-                      color: context.fast.t3,
-                    ),
-                  ),
+                  _sectionLabel(provider.tr('tracking_walk')),
                   const SizedBox(height: 8),
                   _buildVectorMapCard(context, walkProgress, activeOrder),
                 ],
@@ -380,14 +401,14 @@ class _CommandesScreenState extends State<CommandesScreen>
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: context.fast.card,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(FASTRadius.md),
         border: Border.all(color: context.fast.line),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(FASTRadius.sm),
             child: FastImage(
               order.restaurantImage,
               width: 56,
@@ -405,35 +426,33 @@ class _CommandesScreenState extends State<CommandesScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'SUIVI ACTIF • ${order.id}',
-                      style: const TextStyle(
-                        fontFamily: 'monospace',
-                        fontWeight: FontWeight.bold,
-                        fontSize: 9,
-                        color: Color(0xFFF59E0B),
+                    Expanded(
+                      child: Text(
+                        order.restaurantName,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: FASTText.item.copyWith(color: context.fast.t1),
                       ),
                     ),
+                    const SizedBox(width: FASTSpace.s8),
                     _buildStatusBadge(order.status),
                   ],
                 ),
                 SizedBox(height: 4),
                 Text(
-                  order.restaurantName,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 15,
-                    color: context.fast.t1,
-                  ),
+                  'SUIVI ACTIF • ${order.id}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: FASTText.caption.copyWith(color: context.fast.t3),
                 ),
-                SizedBox(height: 6),
+                SizedBox(height: 8),
                 Row(
                   children: [
                     Icon(
                       Icons.directions_walk,
-                      size: 12,
+                      size: 14,
                       color: context.fast.t2,
                     ),
                     SizedBox(width: 4),
@@ -448,10 +467,9 @@ class _CommandesScreenState extends State<CommandesScreen>
                                 .read<FASTProvider>()
                                 .tr('eta_in')
                                 .replaceAll('{n}', '${_liveEtaMinutes(order)}'),
-                      style: TextStyle(
-                        fontSize: 11,
+                      style: FASTText.caption.copyWith(
                         color: context.fast.t2,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ],
@@ -459,7 +477,7 @@ class _CommandesScreenState extends State<CommandesScreen>
                 // Live proximity chip — syncs with actual GPS progress:
                 // green = still far, orange ≈ 3 min out, red = at the door.
                 if (!isCompleted && !isCancelled) ...[
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 8),
                   _buildProximityChip(order),
                 ],
               ],
@@ -490,36 +508,35 @@ class _CommandesScreenState extends State<CommandesScreen>
     final IconData icon;
     final fast = context.read<FASTProvider>();
     if (atDoor) {
-      c = const Color(0xFFEF4444);
+      c = FASTBrand.error;
       label = fast.tr('at_door');
       icon = Icons.storefront;
     } else if (eta <= 3) {
-      c = const Color(0xFFF59E0B);
+      c = FASTBrand.amber;
       label = fast.tr('almost').replaceAll('{n}', '$eta');
       icon = Icons.near_me;
     } else {
-      c = const Color(0xFF10B981);
+      c = FASTBrand.success;
       label = fast.tr('en_route');
       icon = Icons.directions_walk;
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: c.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(FASTRadius.pill),
         border: Border.all(color: c.withValues(alpha: 0.4)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: c),
-          const SizedBox(width: 5),
+          Icon(icon, size: 14, color: c),
+          const SizedBox(width: 6),
           Flexible(
             child: Text(
               label,
-              style: TextStyle(
-                fontSize: 10,
+              style: FASTText.caption.copyWith(
                 fontWeight: FontWeight.w800,
                 color: c,
               ),
@@ -532,48 +549,32 @@ class _CommandesScreenState extends State<CommandesScreen>
   }
 
   Widget _buildStatusBadge(OrderStatus status) {
-    Color bg;
-    Color fg;
+    Color? color;
     String label;
     final fast = context.read<FASTProvider>();
     switch (status) {
       case OrderStatus.placed:
-        bg = Colors.blue.withValues(alpha: 0.15);
-        fg = Colors.blue;
+        color = FASTBrand.info;
         label = fast.tr('st_ordered');
         break;
       case OrderStatus.preparing:
-        bg = Color(0xFFF59E0B).withValues(alpha: 0.15);
-        fg = Color(0xFFF59E0B);
+        color = FASTBrand.amber;
         label = fast.tr('st_preparing');
         break;
       case OrderStatus.readyForPickup:
-        bg = Color(0xFF10B981).withValues(alpha: 0.15);
-        fg = Color(0xFF10B981);
+        color = FASTBrand.success;
         label = fast.tr('st_ready');
         break;
       case OrderStatus.completed:
-        bg = context.fast.t3.withValues(alpha: 0.15);
-        fg = context.fast.t2;
+        color = null;
         label = fast.tr('st_picked');
         break;
       case OrderStatus.cancelled:
-        bg = Colors.red.withValues(alpha: 0.15);
-        fg = Colors.red;
+        color = FASTBrand.error;
         label = fast.tr('st_cancelled');
         break;
     }
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: fg),
-      ),
-    );
+    return _statusPill(context, label, color);
   }
 
   Widget _buildVectorMapCard(
@@ -603,7 +604,7 @@ class _CommandesScreenState extends State<CommandesScreen>
       height: 200,
       width: double.infinity,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(FASTRadius.md),
         border: Border.all(color: context.fast.line),
       ),
       clipBehavior: Clip.antiAlias,
@@ -656,24 +657,23 @@ class _CommandesScreenState extends State<CommandesScreen>
               ),
             ],
           ),
-          Positioned(
-            left: 12,
+          PositionedDirectional(
+            start: 12,
             bottom: 12,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
                 color: Colors.black.withValues(alpha: 0.65),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(FASTRadius.pill),
               ),
               child: Text(
                 context
                     .read<FASTProvider>()
                     .tr('pct_route')
                     .replaceAll('{n}', '${(progress * 100).round()}'),
-                style: const TextStyle(
-                  color: Color(0xFFF59E0B),
-                  fontWeight: FontWeight.bold,
-                  fontSize: 10,
+                style: FASTText.caption.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
@@ -787,7 +787,7 @@ class _CommandesScreenState extends State<CommandesScreen>
             SizedBox(height: 8),
             Text(
               '📍 ${order.deliveryAddress}',
-              style: TextStyle(fontSize: 11, color: context.fast.t3),
+              style: TextStyle(fontSize: 12, color: context.fast.t3),
             ),
           ],
         ],
@@ -871,49 +871,53 @@ class _CommandesScreenState extends State<CommandesScreen>
     String title = '';
     String desc = '';
     IconData icon = Icons.info;
-    Color iconColor = Color(0xFFF59E0B);
+    Color iconColor = FASTBrand.amber;
 
     final fast = context.read<FASTProvider>();
     if (isCancelled) {
       title = fast.tr('cancelled_title');
       desc = fast.tr('cancelled_desc');
-      icon = Icons.cancel;
-      iconColor = Colors.red;
+      icon = Icons.cancel_outlined;
+      iconColor = FASTBrand.error;
     } else if (isCompleted) {
       title = fast.tr('picked_title');
       desc = fast.tr('picked_desc');
-      icon = Icons.handshake;
-      iconColor = const Color(0xFF10B981);
+      icon = Icons.handshake_outlined;
+      iconColor = FASTBrand.success;
     } else {
       switch (order.status) {
         case OrderStatus.placed:
           title = fast.tr('ordered_title');
           desc = fast.tr('ordered_desc');
-          icon = Icons.receipt_long;
-          iconColor = Colors.blue;
+          icon = Icons.receipt_long_outlined;
+          iconColor = FASTBrand.info;
           break;
         case OrderStatus.preparing:
           title = fast.tr('cooking_title');
           desc = fast.tr('cooking_desc');
           icon = Icons.restaurant_menu;
-          iconColor = const Color(0xFFF59E0B);
+          iconColor = FASTBrand.amber;
           break;
         case OrderStatus.readyForPickup:
           title = fast.tr('ready_title');
           desc = fast.tr('ready_desc');
-          icon = Icons.backpack;
-          iconColor = const Color(0xFF10B981);
+          icon = Icons.shopping_bag_outlined;
+          iconColor = FASTBrand.success;
           break;
         default:
           break;
       }
     }
 
+    // Amber is drawn as a fill with a dark icon; the other status
+    // colours as a tint with the icon in the status colour.
+    final amberIcon = iconColor == FASTBrand.amber;
+
     return Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: context.fast.card,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(FASTRadius.md),
         border: Border.all(color: context.fast.line),
       ),
       child: Row(
@@ -922,10 +926,16 @@ class _CommandesScreenState extends State<CommandesScreen>
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.1),
+              color: amberIcon
+                  ? FASTBrand.amber
+                  : iconColor.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: iconColor, size: 20),
+            child: Icon(
+              icon,
+              color: amberIcon ? FASTBrand.onAmber : iconColor,
+              size: 20,
+            ),
           ),
           SizedBox(width: 12),
           Expanded(
@@ -934,20 +944,12 @@ class _CommandesScreenState extends State<CommandesScreen>
               children: [
                 Text(
                   title,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                    color: context.fast.t1,
-                  ),
+                  style: FASTText.item.copyWith(color: context.fast.t1),
                 ),
                 SizedBox(height: 4),
                 Text(
                   desc,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: context.fast.t2,
-                    height: 1.4,
-                  ),
+                  style: FASTText.body.copyWith(color: context.fast.t2),
                 ),
               ],
             ),
@@ -968,65 +970,56 @@ class _CommandesScreenState extends State<CommandesScreen>
   ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(FASTSpace.s16),
       decoration: BoxDecoration(
-        color: const Color(0xFF00C8B3).withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: const Color(0xFF00C8B3).withValues(alpha: 0.4),
-        ),
+        color: context.fast.card,
+        borderRadius: BorderRadius.circular(FASTRadius.md),
+        border: Border.all(color: context.fast.line),
       ),
       child: Row(
         children: [
-          const Icon(Icons.directions_walk, color: Color(0xFF00C8B3)),
-          const SizedBox(width: 10),
+          Icon(Icons.directions_walk, color: context.fast.t1),
+          const SizedBox(width: FASTSpace.s12),
           Expanded(
             child: Text(
               provider.tr('depart_prompt'),
-              style: TextStyle(
+              style: FASTText.body.copyWith(
                 color: context.fast.t1,
-                fontSize: 12,
                 fontWeight: FontWeight.w600,
-                height: 1.3,
               ),
             ),
           ),
-          const SizedBox(width: 8),
-          ElevatedButton(
-            onPressed: _departing
-                ? null
-                : () async {
-                    final messenger = ScaffoldMessenger.of(context);
-                    final fast = context.read<FASTProvider>();
-                    setState(() => _departing = true);
-                    final ok = await provider.departForOrder(
-                      order.id,
-                      navigate: false,
-                    );
-                    if (!mounted) return;
-                    setState(() => _departing = false);
-                    messenger.showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          fast.tr(ok ? 'depart_ok' : 'depart_fail'),
+          const SizedBox(width: FASTSpace.s12),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 150),
+            child: FastButton(
+              label: provider.tr('je_parts'),
+              kind: FastButtonKind.ink,
+              expand: false,
+              height: 44,
+              fontSize: 14,
+              loading: _departing,
+              onPressed: _departing
+                  ? null
+                  : () async {
+                      final messenger = ScaffoldMessenger.of(context);
+                      final fast = context.read<FASTProvider>();
+                      setState(() => _departing = true);
+                      final ok = await provider.departForOrder(
+                        order.id,
+                        navigate: false,
+                      );
+                      if (!mounted) return;
+                      setState(() => _departing = false);
+                      messenger.showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            fast.tr(ok ? 'depart_ok' : 'depart_fail'),
+                          ),
                         ),
-                      ),
-                    );
-                  },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF00C8B3),
-              foregroundColor: Colors.white,
+                      );
+                    },
             ),
-            child: _departing
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                : Text(provider.tr('je_parts')),
           ),
         ],
       ),
@@ -1036,34 +1029,18 @@ class _CommandesScreenState extends State<CommandesScreen>
   Widget _buildQRButton(BuildContext context, Order order) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      child: SizedBox(
-        width: double.infinity,
-        child: OutlinedButton.icon(
-          onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => QRVerificationScreen(order: order),
-                fullscreenDialog: true,
-              ),
-            );
-          },
-          style: OutlinedButton.styleFrom(
-            side: const BorderSide(color: Color(0xFFF59E0B), width: 1),
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+      child: FastButton(
+        label: context.read<FASTProvider>().tr('show_qr'),
+        icon: Icons.qr_code,
+        kind: FastButtonKind.ink,
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => QRVerificationScreen(order: order),
+              fullscreenDialog: true,
             ),
-          ),
-          icon: const Icon(Icons.qr_code, color: Color(0xFFF59E0B), size: 18),
-          label: Text(
-            context.read<FASTProvider>().tr('show_qr'),
-            style: const TextStyle(
-              color: Color(0xFFF59E0B),
-              fontWeight: FontWeight.bold,
-              fontSize: 13,
-            ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
@@ -1081,10 +1058,9 @@ class _CommandesScreenState extends State<CommandesScreen>
               _showHonestCancellationSheet(context, provider, order),
           child: Text(
             provider.tr('cancel_order'),
-            style: const TextStyle(
-              color: Color(0xFFEF4444),
-              fontWeight: FontWeight.bold,
-              fontSize: 12,
+            style: FASTText.caption.copyWith(
+              color: FASTBrand.error,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),
@@ -1114,14 +1090,12 @@ class _CommandesScreenState extends State<CommandesScreen>
             children: [
               Row(
                 children: [
-                  Icon(Icons.warning, color: Color(0xFFEF4444)),
+                  Icon(Icons.warning_amber_rounded, color: FASTBrand.error),
                   SizedBox(width: 8),
-                  Text(
-                    tr(context, 'cancel_policy'),
-                    style: TextStyle(
-                      fontWeight: FontWeight.w900,
-                      fontSize: 16,
-                      color: context.fast.t1,
+                  Expanded(
+                    child: Text(
+                      tr(context, 'cancel_policy'),
+                      style: FASTText.item.copyWith(color: context.fast.t1),
                     ),
                   ),
                 ],
@@ -1129,11 +1103,7 @@ class _CommandesScreenState extends State<CommandesScreen>
               SizedBox(height: 12),
               Text(
                 tr(context, 'cancel_policy_intro'),
-                style: TextStyle(
-                  fontSize: 11,
-                  color: context.fast.t2,
-                  height: 1.4,
-                ),
+                style: FASTText.caption.copyWith(color: context.fast.t2),
               ),
               SizedBox(height: 16),
 
@@ -1148,7 +1118,7 @@ class _CommandesScreenState extends State<CommandesScreen>
                               : 0.08,
                         )
                       : context.fast.bg,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(FASTRadius.sm),
                   border: Border.all(
                     color: !prepStarted
                         ? Color(0xFF10B981).withValues(alpha: 0.3)
@@ -1182,7 +1152,7 @@ class _CommandesScreenState extends State<CommandesScreen>
                           Text(
                             tr(context, 'cancel_case1_desc'),
                             style: TextStyle(
-                              fontSize: 10,
+                              fontSize: 12,
                               color: context.fast.t2,
                               height: 1.3,
                             ),
@@ -1193,8 +1163,8 @@ class _CommandesScreenState extends State<CommandesScreen>
                               '👉 ACTIF. Remboursement : ${order.subtotal.toStringAsFixed(2)} €',
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 10,
-                                color: Color(0xFF10B981),
+                                fontSize: 12,
+                                color: FASTBrand.success,
                               ),
                             ),
                           ],
@@ -1215,7 +1185,7 @@ class _CommandesScreenState extends State<CommandesScreen>
                               : 0.08,
                         )
                       : context.fast.bg,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(FASTRadius.sm),
                   border: Border.all(
                     color: prepStarted
                         ? Color(0xFFEF4444).withValues(alpha: 0.3)
@@ -1247,7 +1217,7 @@ class _CommandesScreenState extends State<CommandesScreen>
                           Text(
                             tr(context, 'cancel_case2_desc'),
                             style: TextStyle(
-                              fontSize: 10,
+                              fontSize: 12,
                               color: context.fast.t2,
                               height: 1.3,
                             ),
@@ -1261,8 +1231,8 @@ class _CommandesScreenState extends State<CommandesScreen>
                               ),
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 10,
-                                color: Color(0xFFEF4444),
+                                fontSize: 12,
+                                color: FASTBrand.error,
                               ),
                             ),
                           ],
@@ -1283,9 +1253,7 @@ class _CommandesScreenState extends State<CommandesScreen>
                       style: OutlinedButton.styleFrom(
                         side: BorderSide(color: context.fast.line),
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
+                        shape: const StadiumBorder(),
                       ),
                       child: Text(
                         tr(context, 'keep_order'),
@@ -1304,12 +1272,10 @@ class _CommandesScreenState extends State<CommandesScreen>
                         Navigator.of(context).pop();
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFEF4444),
+                        backgroundColor: FASTBrand.error,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
+                        shape: const StadiumBorder(),
                         elevation: 0,
                       ),
                       child: Text(
@@ -1381,14 +1347,17 @@ class _CommandesScreenState extends State<CommandesScreen>
     return Container(
       decoration: BoxDecoration(
         color: context.fast.card,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(FASTRadius.md),
+        ),
         border: Border(
           top: BorderSide(color: context.fast.line),
           left: BorderSide(color: context.fast.line),
           right: BorderSide(color: context.fast.line),
         ),
+        boxShadow: FASTShadow.sheet(context),
       ),
-      padding: EdgeInsets.fromLTRB(20, 20, 20, 32),
+      padding: EdgeInsets.fromLTRB(16, 16, 16, 32),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1407,39 +1376,38 @@ class _CommandesScreenState extends State<CommandesScreen>
 
           Row(
             children: [
-              Text('🎉', style: TextStyle(fontSize: 22)),
-              SizedBox(width: 10),
+              Icon(
+                Icons.celebration_outlined,
+                size: 24,
+                color: context.fast.t1,
+              ),
+              SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       tr(context, 'picked_up_excl'),
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w900,
-                        color: context.fast.t1,
-                      ),
+                      style: FASTText.item.copyWith(color: context.fast.t1),
                     ),
                     Text(
                       order.restaurantName,
-                      style: TextStyle(fontSize: 12, color: context.fast.t2),
+                      style: FASTText.caption.copyWith(color: context.fast.t2),
                     ),
                   ],
                 ),
               ),
             ],
           ),
-          SizedBox(height: 20),
+          SizedBox(height: 24),
           Text(
             tr(context, 'review_prompt'),
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
+            style: FASTText.body.copyWith(
+              fontWeight: FontWeight.w700,
               color: context.fast.t1,
             ),
           ),
-          SizedBox(height: 10),
+          SizedBox(height: 12),
           StatefulBuilder(
             builder: (context, setInnerState) {
               return Row(
@@ -1447,15 +1415,16 @@ class _CommandesScreenState extends State<CommandesScreen>
                   final filled = i < _pendingRating;
                   return GestureDetector(
                     onTap: () {
+                      HapticFeedback.selectionClick();
                       setState(() => _pendingRating = (i + 1).toDouble());
                     },
                     child: Padding(
-                      padding: EdgeInsets.only(right: 6),
+                      padding: EdgeInsetsDirectional.only(end: 6),
                       child: Icon(
                         filled
                             ? Icons.star_rounded
                             : Icons.star_outline_rounded,
-                        color: filled ? Color(0xFFF59E0B) : context.fast.faint,
+                        color: filled ? FASTBrand.amber : context.fast.faint,
                         size: 32,
                       ),
                     ),
@@ -1464,33 +1433,12 @@ class _CommandesScreenState extends State<CommandesScreen>
               );
             },
           ),
-          SizedBox(height: 14),
+          SizedBox(height: 16),
           TextField(
             controller: _commentController,
             maxLines: 2,
-            style: TextStyle(fontSize: 13, color: context.fast.t1),
-            decoration: InputDecoration(
-              hintText: tr(context, 'comment_ph'),
-              hintStyle: TextStyle(color: context.fast.faint, fontSize: 12),
-              filled: true,
-              fillColor: context.fast.bg,
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 12,
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: context.fast.line),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: context.fast.line),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Color(0xFFF59E0B)),
-              ),
-            ),
+            style: FASTText.body.copyWith(color: context.fast.t1),
+            decoration: _reviewFieldDecoration(tr(context, 'comment_ph')),
           ),
           SizedBox(height: 16),
 
@@ -1501,9 +1449,9 @@ class _CommandesScreenState extends State<CommandesScreen>
                   onPressed: () => setState(() => _ratingSubmitted = true),
                   child: Text(
                     tr(context, 'skip_tuto'),
-                    style: TextStyle(
-                      color: context.fast.t3,
-                      fontWeight: FontWeight.bold,
+                    style: FASTText.body.copyWith(
+                      color: context.fast.t2,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
@@ -1511,7 +1459,9 @@ class _CommandesScreenState extends State<CommandesScreen>
               SizedBox(width: 12),
               Expanded(
                 flex: 2,
-                child: ElevatedButton(
+                child: FastButton(
+                  label: tr(context, 'send_review'),
+                  kind: FastButtonKind.ink,
                   onPressed: _pendingRating == 0
                       ? null
                       : () {
@@ -1523,24 +1473,6 @@ class _CommandesScreenState extends State<CommandesScreen>
                           );
                           setState(() => _ratingSubmitted = true);
                         },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFFF59E0B),
-                    foregroundColor: FASTBrand.onAmber,
-                    disabledBackgroundColor: context.fast.line,
-                    disabledForegroundColor: context.fast.faint,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: Text(
-                    tr(context, 'send_review'),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w900,
-                      fontSize: 13,
-                    ),
-                  ),
                 ),
               ),
             ],
@@ -1556,29 +1488,10 @@ class _CommandesScreenState extends State<CommandesScreen>
 
     if (orders.isEmpty) {
       return Center(
-        child: Padding(
-          padding: EdgeInsets.all(32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('📜', style: TextStyle(fontSize: 48)),
-              SizedBox(height: 12),
-              Text(
-                tr(context, 'no_history'),
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  color: context.fast.t1,
-                ),
-              ),
-              SizedBox(height: 6),
-              Text(
-                tr(context, 'history_hint'),
-                style: TextStyle(fontSize: 11, color: context.fast.t2),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
+        child: FastEmpty(
+          icon: Icons.receipt_long_outlined,
+          title: tr(context, 'no_history'),
+          subtitle: tr(context, 'history_hint'),
         ),
       );
     }
@@ -1613,22 +1526,21 @@ class _CommandesScreenState extends State<CommandesScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header
-          Container(
+          Padding(
             padding: EdgeInsets.all(16),
-            color: context.fast.cardHigh,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(FASTRadius.sm),
                   child: FastImage(
                     order.restaurantImage,
-                    width: 44,
-                    height: 44,
+                    width: 48,
+                    height: 48,
                     placeholder: Container(
                       color: context.fast.cardHigh,
-                      width: 44,
-                      height: 44,
+                      width: 48,
+                      height: 48,
                     ),
                   ),
                 ),
@@ -1638,28 +1550,21 @@ class _CommandesScreenState extends State<CommandesScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            order.id,
-                            style: TextStyle(
-                              fontFamily: 'monospace',
-                              fontWeight: FontWeight.bold,
-                              fontSize: 9,
-                              color: context.fast.t2,
+                          Expanded(
+                            child: Text(
+                              order.restaurantName,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: FASTText.item.copyWith(
+                                color: context.fast.t1,
+                              ),
                             ),
                           ),
+                          const SizedBox(width: FASTSpace.s8),
                           _buildStatusLabel(order.status),
                         ],
-                      ),
-                      SizedBox(height: 2),
-                      Text(
-                        order.restaurantName,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                          color: context.fast.t1,
-                        ),
                       ),
                       SizedBox(height: 4),
                       Text(
@@ -1667,7 +1572,18 @@ class _CommandesScreenState extends State<CommandesScreen>
                           context,
                           'ordered_on',
                         ).replaceAll('{n}', formattedDate),
-                        style: TextStyle(fontSize: 10, color: context.fast.t3),
+                        style: FASTText.caption.copyWith(
+                          color: context.fast.t2,
+                        ),
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        order.id,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: FASTText.caption.copyWith(
+                          color: context.fast.t3,
+                        ),
                       ),
                     ],
                   ),
@@ -1675,6 +1591,7 @@ class _CommandesScreenState extends State<CommandesScreen>
               ],
             ),
           ),
+          Divider(color: context.fast.line, height: 1),
 
           // Items list
           Padding(
@@ -1684,23 +1601,25 @@ class _CommandesScreenState extends State<CommandesScreen>
               children: [
                 ...order.items.map((cartItem) {
                   return Padding(
-                    padding: EdgeInsets.only(bottom: 6),
+                    padding: EdgeInsets.only(bottom: 8),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          '${cartItem.quantity}x  ${cartItem.menuItem.name}',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: context.fast.t1,
+                        Expanded(
+                          child: Text(
+                            '${cartItem.quantity}x  ${cartItem.menuItem.name}',
+                            style: FASTText.body.copyWith(
+                              color: context.fast.t1,
+                            ),
                           ),
                         ),
+                        const SizedBox(width: FASTSpace.s12),
                         Text(
                           '€${(cartItem.menuItem.price * cartItem.quantity).toStringAsFixed(2)}',
-                          style: TextStyle(
-                            fontSize: 11,
+                          style: FASTText.price.copyWith(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
                             color: context.fast.t2,
-                            fontFamily: 'monospace',
                           ),
                         ),
                       ],
@@ -1708,28 +1627,24 @@ class _CommandesScreenState extends State<CommandesScreen>
                   );
                 }),
 
-                Divider(color: context.fast.line, height: 20),
+                Divider(color: context.fast.line, height: 24),
 
                 // total paid
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      tr(context, 'total_paid'),
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: context.fast.t1,
+                    Expanded(
+                      child: Text(
+                        tr(context, 'total_paid'),
+                        style: FASTText.body.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: context.fast.t1,
+                        ),
                       ),
                     ),
+                    const SizedBox(width: FASTSpace.s12),
                     Text(
                       '€${order.total.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w900,
-                        color: Color(0xFFF59E0B),
-                        fontFamily: 'monospace',
-                      ),
+                      style: FASTText.price.copyWith(color: context.fast.t1),
                     ),
                   ],
                 ),
@@ -1742,23 +1657,23 @@ class _CommandesScreenState extends State<CommandesScreen>
             Divider(color: context.fast.line, height: 1),
             Container(
               padding: EdgeInsets.all(16),
-              color: context.fast.bg.withValues(alpha: 0.3),
               child: order.userRatingSubmitted
                   ? Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
                           Icons.check_circle_outline,
-                          color: Color(0xFF10B981),
+                          color: FASTBrand.success,
                           size: 16,
                         ),
                         SizedBox(width: 8),
-                        Text(
-                          tr(context, 'review_sent_ok'),
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF10B981),
+                        Flexible(
+                          child: Text(
+                            tr(context, 'review_sent_ok'),
+                            style: FASTText.caption.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: FASTBrand.success,
+                            ),
                           ),
                         ),
                       ],
@@ -1766,15 +1681,7 @@ class _CommandesScreenState extends State<CommandesScreen>
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          tr(context, 'rate_venue'),
-                          style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.0,
-                            color: context.fast.t3,
-                          ),
-                        ),
+                        _sectionLabel(tr(context, 'rate_venue')),
                         SizedBox(height: 8),
 
                         // Stars Picker
@@ -1787,15 +1694,18 @@ class _CommandesScreenState extends State<CommandesScreen>
                             final isLit = starValue <= currentRating;
                             return IconButton(
                               onPressed: () {
+                                HapticFeedback.selectionClick();
                                 setState(() {
                                   _orderRatings[order.id] = starValue;
                                 });
                               },
                               icon: Icon(
-                                isLit ? Icons.star : Icons.star_border,
+                                isLit
+                                    ? Icons.star_rounded
+                                    : Icons.star_outline_rounded,
                                 color: isLit
-                                    ? Color(0xFFF59E0B)
-                                    : context.fast.line,
+                                    ? FASTBrand.amber
+                                    : context.fast.faint,
                                 size: 28,
                               ),
                             );
@@ -1808,76 +1718,33 @@ class _CommandesScreenState extends State<CommandesScreen>
                         TextField(
                           controller: _getHistoryController(order.id),
                           maxLines: 1,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: context.fast.t1,
-                          ),
-                          decoration: InputDecoration(
-                            hintText: tr(context, 'review_ph'),
-                            hintStyle: TextStyle(
-                              color: context.fast.t3,
-                              fontSize: 10,
-                            ),
-                            filled: true,
-                            fillColor: context.fast.bg,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide(color: context.fast.line),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide(color: context.fast.line),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFF59E0B),
-                              ),
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
-                            ),
+                          style: FASTText.body.copyWith(color: context.fast.t1),
+                          decoration: _reviewFieldDecoration(
+                            tr(context, 'review_ph'),
                           ),
                         ),
 
                         SizedBox(height: 12),
 
                         // Submit button
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              final text = _getHistoryController(
-                                order.id,
-                              ).text.trim();
-                              // Comment is optional — stars alone count.
-                              final rating = _orderRatings[order.id] ?? 5.0;
-                              provider.submitRestaurantRating(
-                                order.id,
-                                order.restaurantId,
-                                rating,
-                                text,
-                              );
-                              _getHistoryController(order.id).clear();
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xFFF59E0B),
-                              foregroundColor: FASTBrand.onAmber,
-                              padding: const EdgeInsets.symmetric(vertical: 10),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              elevation: 0,
-                            ),
-                            child: Text(
-                              tr(context, 'submit_review'),
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 11,
-                              ),
-                            ),
-                          ),
+                        FastButton(
+                          label: tr(context, 'submit_review'),
+                          kind: FastButtonKind.ink,
+                          height: 48,
+                          onPressed: () {
+                            final text = _getHistoryController(
+                              order.id,
+                            ).text.trim();
+                            // Comment is optional — stars alone count.
+                            final rating = _orderRatings[order.id] ?? 5.0;
+                            provider.submitRestaurantRating(
+                              order.id,
+                              order.restaurantId,
+                              rating,
+                              text,
+                            );
+                            _getHistoryController(order.id).clear();
+                          },
                         ),
                       ],
                     ),
@@ -1889,22 +1756,19 @@ class _CommandesScreenState extends State<CommandesScreen>
   }
 
   Widget _buildStatusLabel(OrderStatus status) {
-    Color fg = Colors.grey;
+    Color fg;
     switch (status) {
       case OrderStatus.completed:
-        fg = const Color(0xFF10B981);
+        fg = FASTBrand.success;
         break;
       case OrderStatus.cancelled:
-        fg = Colors.red;
+        fg = FASTBrand.error;
         break;
       default:
-        fg = const Color(0xFFF59E0B);
+        fg = FASTBrand.amber;
         break;
     }
-    return Text(
-      orderStatusLabel(context, status).toUpperCase(),
-      style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: fg),
-    );
+    return _statusPill(context, orderStatusLabel(context, status), fg);
   }
 
   String _parseIsoDate(String isoString) {
@@ -1975,7 +1839,7 @@ class _MyReservationsTabState extends State<_MyReservationsTab> {
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(
               tr(context, 'cancel'),
-              style: const TextStyle(color: Color(0xFFEF4444)),
+              style: const TextStyle(color: FASTBrand.error),
             ),
           ),
         ],
@@ -1999,9 +1863,9 @@ class _MyReservationsTabState extends State<_MyReservationsTab> {
   }
 
   Color _statusColor(String status) => switch (status) {
-    'CONFIRMED' => const Color(0xFF10B981),
-    'DECLINED' || 'CANCELLED' => const Color(0xFFEF4444),
-    _ => const Color(0xFFF59E0B),
+    'CONFIRMED' => FASTBrand.success,
+    'DECLINED' || 'CANCELLED' => FASTBrand.error,
+    _ => FASTBrand.amber,
   };
 
   String _statusLabel(String status) => switch (status) {
@@ -2015,7 +1879,7 @@ class _MyReservationsTabState extends State<_MyReservationsTab> {
   Widget build(BuildContext context) {
     if (_loading) {
       return const Center(
-        child: CircularProgressIndicator(color: Color(0xFFF59E0B)),
+        child: CircularProgressIndicator(color: FASTBrand.amber),
       );
     }
     if (_error != null) {
@@ -2025,7 +1889,11 @@ class _MyReservationsTabState extends State<_MyReservationsTab> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(_error!, style: TextStyle(color: context.fast.t2)),
+              Text(
+                _error!,
+                textAlign: TextAlign.center,
+                style: FASTText.body.copyWith(color: context.fast.t2),
+              ),
               const SizedBox(height: 12),
               TextButton(onPressed: _load, child: Text(tr(context, 'retry'))),
             ],
@@ -2036,29 +1904,10 @@ class _MyReservationsTabState extends State<_MyReservationsTab> {
     final items = _items ?? [];
     if (items.isEmpty) {
       return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text('🪑', style: TextStyle(fontSize: 48)),
-              const SizedBox(height: 12),
-              Text(
-                tr(context, 'no_reservations'),
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  color: context.fast.t1,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                tr(context, 'no_reservations_hint'),
-                style: TextStyle(fontSize: 11, color: context.fast.t2),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
+        child: FastEmpty(
+          icon: Icons.event_seat_outlined,
+          title: tr(context, 'no_reservations'),
+          subtitle: tr(context, 'no_reservations_hint'),
         ),
       );
     }
@@ -2067,7 +1916,7 @@ class _MyReservationsTabState extends State<_MyReservationsTab> {
       child: ListView.separated(
         padding: const EdgeInsets.all(16),
         itemCount: items.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 10),
+        separatorBuilder: (_, __) => const SizedBox(height: 16),
         itemBuilder: (context, i) => _buildCard(items[i]),
       ),
     );
@@ -2080,10 +1929,10 @@ class _MyReservationsTabState extends State<_MyReservationsTab> {
         '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year} '
         '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(FASTSpace.s16),
       decoration: BoxDecoration(
         color: context.fast.card,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(FASTRadius.md),
         border: Border.all(color: context.fast.line),
       ),
       child: Column(
@@ -2092,84 +1941,65 @@ class _MyReservationsTabState extends State<_MyReservationsTab> {
           Row(
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(FASTRadius.sm),
                 child: FastImage(
                   r.restaurantImage,
-                  width: 40,
-                  height: 40,
+                  width: 48,
+                  height: 48,
                   placeholder: Container(
-                    width: 40,
-                    height: 40,
+                    width: 48,
+                    height: 48,
                     color: context.fast.cardHigh,
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: FASTSpace.s12),
               Expanded(
                 child: Text(
                   r.restaurantName.isEmpty ? r.customerName : r.restaurantName,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: context.fast.t1,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
+                  style: FASTText.item.copyWith(color: context.fast.t1),
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  _statusLabel(r.status),
-                  style: TextStyle(
-                    color: color,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
+              const SizedBox(width: FASTSpace.s8),
+              _statusPill(context, _statusLabel(r.status), color),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: FASTSpace.s12),
           Row(
             children: [
               Icon(Icons.schedule, size: 14, color: context.fast.t3),
               const SizedBox(width: 4),
               Text(
                 dateLabel,
-                style: TextStyle(color: context.fast.t2, fontSize: 12),
+                style: FASTText.caption.copyWith(color: context.fast.t2),
               ),
-              const SizedBox(width: 14),
-              Icon(Icons.people, size: 14, color: context.fast.t3),
+              const SizedBox(width: FASTSpace.s16),
+              Icon(Icons.people_outline, size: 14, color: context.fast.t3),
               const SizedBox(width: 4),
               Text(
                 '${r.partySize}',
-                style: TextStyle(color: context.fast.t2, fontSize: 12),
+                style: FASTText.caption.copyWith(color: context.fast.t2),
               ),
             ],
           ),
           if (r.isPending) ...[
-            const SizedBox(height: 10),
+            const SizedBox(height: FASTSpace.s12),
             SizedBox(
               width: double.infinity,
               child: OutlinedButton(
                 onPressed: () => _cancel(r),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFFEF4444),
-                  side: const BorderSide(color: Color(0xFFEF4444)),
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  foregroundColor: FASTBrand.error,
+                  side: const BorderSide(color: FASTBrand.error),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: const StadiumBorder(),
                 ),
                 child: Text(
                   tr(context, 'cancel_reservation'),
                   style: const TextStyle(
-                    fontSize: 12,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
                 ),

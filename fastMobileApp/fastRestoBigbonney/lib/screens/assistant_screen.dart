@@ -87,31 +87,38 @@ class _AssistantScreenState extends State<AssistantScreen> {
   @override
   Widget build(BuildContext context) {
     context.watch<FASTProvider>();
+    final fast = context.fast;
+    OutlineInputBorder inputBorder(Color color, [double width = 1]) =>
+        OutlineInputBorder(
+          borderRadius: BorderRadius.circular(FASTRadius.sm),
+          borderSide: BorderSide(color: color, width: width),
+        );
+    const tail = Radius.circular(FASTSpace.s4);
+    const round = Radius.circular(FASTRadius.md);
     return Scaffold(
-      backgroundColor: context.fast.bg,
+      backgroundColor: fast.bg,
       appBar: AppBar(
-        backgroundColor: context.fast.bg,
+        backgroundColor: fast.bg,
         surfaceTintColor: Colors.transparent,
         title: Row(
           children: [
             Container(
-              width: 28,
-              height: 28,
+              width: 32,
+              height: 32,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFFBBF24), Color(0xFFD97706)],
-                ),
-                borderRadius: BorderRadius.circular(9),
+                color: fast.cardHigh,
+                shape: BoxShape.circle,
+                border: Border.all(color: fast.line),
               ),
-              child: const Icon(Icons.bolt, color: Color(0xFF1A1425), size: 18),
+              child: Icon(Icons.bolt, color: fast.t1, size: 18),
             ),
-            const SizedBox(width: 8),
-            Text(
-              tr(context, 'assistant_title'),
-              style: TextStyle(
-                color: context.fast.t1,
-                fontWeight: FontWeight.w900,
-                fontSize: 16,
+            const SizedBox(width: FASTSpace.s12),
+            Flexible(
+              child: Text(
+                tr(context, 'assistant_title'),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: FASTText.item.copyWith(color: fast.t1),
               ),
             ),
           ],
@@ -122,23 +129,32 @@ class _AssistantScreenState extends State<AssistantScreen> {
           Expanded(
             child: ListView.builder(
               controller: _scroll,
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(FASTSpace.s16),
               itemCount: _messages.length + (_sending ? 1 : 0),
               itemBuilder: (context, i) {
                 if (i == _messages.length) {
                   return Align(
-                    alignment: Alignment.centerLeft,
+                    alignment: AlignmentDirectional.centerStart,
                     child: Container(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      padding: const EdgeInsets.all(12),
+                      margin: const EdgeInsets.only(bottom: FASTSpace.s12),
+                      padding: const EdgeInsets.all(FASTSpace.s12),
                       decoration: BoxDecoration(
-                        color: context.fast.card,
-                        borderRadius: BorderRadius.circular(14),
+                        color: fast.card,
+                        borderRadius: const BorderRadiusDirectional.only(
+                          topStart: round,
+                          topEnd: round,
+                          bottomStart: tail,
+                          bottomEnd: round,
+                        ),
+                        border: Border.all(color: fast.line),
                       ),
-                      child: const SizedBox(
+                      child: SizedBox(
                         width: 16,
                         height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: fast.t2,
+                        ),
                       ),
                     ),
                   );
@@ -146,41 +162,31 @@ class _AssistantScreenState extends State<AssistantScreen> {
                 final m = _messages[i];
                 return Align(
                   alignment: m.mine
-                      ? Alignment.centerRight
-                      : Alignment.centerLeft,
+                      ? AlignmentDirectional.centerEnd
+                      : AlignmentDirectional.centerStart,
                   child: Container(
-                    margin: const EdgeInsets.only(bottom: 10),
+                    margin: const EdgeInsets.only(bottom: FASTSpace.s12),
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 10,
+                      horizontal: FASTSpace.s16,
+                      vertical: FASTSpace.s12,
                     ),
                     constraints: BoxConstraints(
                       maxWidth: MediaQuery.of(context).size.width * 0.78,
                     ),
                     decoration: BoxDecoration(
-                      gradient: m.mine
-                          ? const LinearGradient(
-                              colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
-                            )
-                          : null,
-                      color: m.mine ? null : context.fast.card,
-                      borderRadius: BorderRadius.only(
-                        topLeft: const Radius.circular(14),
-                        topRight: const Radius.circular(14),
-                        bottomLeft: Radius.circular(m.mine ? 14 : 4),
-                        bottomRight: Radius.circular(m.mine ? 4 : 14),
+                      color: m.mine ? fast.ink : fast.card,
+                      borderRadius: BorderRadiusDirectional.only(
+                        topStart: round,
+                        topEnd: round,
+                        bottomStart: m.mine ? round : tail,
+                        bottomEnd: m.mine ? tail : round,
                       ),
-                      border: m.mine
-                          ? null
-                          : Border.all(color: context.fast.line),
+                      border: m.mine ? null : Border.all(color: fast.line),
                     ),
                     child: Text(
                       m.text,
-                      style: TextStyle(
-                        color: m.mine
-                            ? const Color(0xFF1A1425)
-                            : context.fast.t1,
-                        fontSize: 13,
+                      style: FASTText.body.copyWith(
+                        color: m.mine ? fast.onInk : fast.t1,
                         height: 1.4,
                       ),
                     ),
@@ -191,7 +197,12 @@ class _AssistantScreenState extends State<AssistantScreen> {
           ),
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+              padding: const EdgeInsets.fromLTRB(
+                FASTSpace.s16,
+                FASTSpace.s8,
+                FASTSpace.s16,
+                FASTSpace.s12,
+              ),
               child: Row(
                 children: [
                   Expanded(
@@ -199,47 +210,38 @@ class _AssistantScreenState extends State<AssistantScreen> {
                       controller: _input,
                       onSubmitted: (_) => _send(),
                       textCapitalization: TextCapitalization.sentences,
-                      style: TextStyle(color: context.fast.t1, fontSize: 13),
+                      style: FASTText.body.copyWith(color: fast.t1),
                       decoration: InputDecoration(
                         hintText: tr(context, 'assistant_hint'),
-                        hintStyle: TextStyle(color: context.fast.t3),
+                        hintStyle: FASTText.body.copyWith(color: fast.t3),
                         filled: true,
-                        fillColor: context.fast.card,
+                        fillColor: fast.cardHigh,
                         contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
+                          horizontal: FASTSpace.s16,
+                          vertical: 14,
                         ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24),
-                          borderSide: BorderSide(color: context.fast.line),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24),
-                          borderSide: BorderSide(color: context.fast.line),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24),
-                          borderSide: const BorderSide(
-                            color: Color(0xFFF59E0B),
-                          ),
-                        ),
+                        border: inputBorder(fast.line),
+                        enabledBorder: inputBorder(fast.line),
+                        focusedBorder: inputBorder(fast.ink, 1.5),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                  const SizedBox(width: FASTSpace.s8),
+                  SizedBox(
+                    width: 48,
+                    height: 48,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: fast.ink,
+                        shape: BoxShape.circle,
                       ),
-                      shape: BoxShape.circle,
-                    ),
-                    child: IconButton(
-                      onPressed: _send,
-                      icon: const Icon(
-                        Icons.send_rounded,
-                        color: Color(0xFF1A1425),
-                        size: 20,
+                      child: IconButton(
+                        onPressed: _send,
+                        icon: Icon(
+                          Icons.arrow_upward_rounded,
+                          color: fast.onInk,
+                          size: 22,
+                        ),
                       ),
                     ),
                   ),

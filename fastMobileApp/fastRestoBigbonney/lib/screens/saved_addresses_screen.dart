@@ -7,6 +7,7 @@ import '../provider.dart';
 import '../l10n/tr.dart';
 import '../theme.dart';
 import '../widgets/address_autocomplete_field.dart';
+import '../widgets/fast_ui.dart';
 
 class SavedAddressesScreen extends StatefulWidget {
   const SavedAddressesScreen({super.key, this.embedded = false});
@@ -66,10 +67,10 @@ class _SavedAddressesScreenState extends State<SavedAddressesScreen> {
         builder: (ctx) => StatefulBuilder(
           builder: (ctx, setSheet) => SingleChildScrollView(
             padding: EdgeInsets.fromLTRB(
-              20,
-              20,
-              20,
-              MediaQuery.viewInsetsOf(ctx).bottom + 20,
+              FASTSpace.s16,
+              FASTSpace.s24,
+              FASTSpace.s16,
+              MediaQuery.viewInsetsOf(ctx).bottom + FASTSpace.s16,
             ),
             child: Form(
               key: form,
@@ -79,7 +80,7 @@ class _SavedAddressesScreenState extends State<SavedAddressesScreen> {
                 children: [
                   Text(
                     tr(ctx, address == null ? 'address_add' : 'edit'),
-                    style: Theme.of(ctx).textTheme.titleMedium,
+                    style: FASTText.title.copyWith(color: ctx.fast.t1),
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
@@ -106,13 +107,19 @@ class _SavedAddressesScreenState extends State<SavedAddressesScreen> {
                   ),
                   CheckboxListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: Text(tr(ctx, 'address_default')),
+                    title: Text(
+                      tr(ctx, 'address_default'),
+                      style: FASTText.body.copyWith(color: ctx.fast.t1),
+                    ),
                     value: isDefault,
                     onChanged: saving
                         ? null
                         : (value) => setSheet(() => isDefault = value ?? false),
                   ),
-                  ElevatedButton(
+                  const SizedBox(height: FASTSpace.s8),
+                  FastButton(
+                    kind: FastButtonKind.ink,
+                    label: tr(ctx, saving ? 'saving' : 'save'),
                     onPressed: saving
                         ? null
                         : () async {
@@ -153,7 +160,6 @@ class _SavedAddressesScreenState extends State<SavedAddressesScreen> {
                               );
                             }
                           },
-                    child: Text(tr(ctx, saving ? 'saving' : 'save')),
                   ),
                 ],
               ),
@@ -173,15 +179,23 @@ class _SavedAddressesScreenState extends State<SavedAddressesScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(tr(ctx, 'del')),
-        content: Text(address['label'] as String),
+        title: Text(
+          tr(ctx, 'del'),
+          style: FASTText.item.copyWith(color: ctx.fast.t1),
+        ),
+        content: Text(
+          address['label'] as String,
+          style: FASTText.body.copyWith(color: ctx.fast.t2),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
+            style: TextButton.styleFrom(foregroundColor: ctx.fast.t2),
             child: Text(tr(ctx, 'cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: FASTBrand.error),
             child: Text(tr(ctx, 'del')),
           ),
         ],
@@ -212,62 +226,116 @@ class _SavedAddressesScreenState extends State<SavedAddressesScreen> {
               padding: const EdgeInsets.all(16),
               children: [
                 if (_error != null) ...[
-                  Text(_error!, style: const TextStyle(color: FASTBrand.error)),
-                  TextButton(
-                    onPressed: _load,
-                    child: Text(tr(context, 'retry')),
+                  Text(
+                    _error!,
+                    style: FASTText.body.copyWith(color: FASTBrand.error),
+                  ),
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: TextButton(
+                      onPressed: _load,
+                      style: TextButton.styleFrom(
+                        foregroundColor: context.fast.t1,
+                      ),
+                      child: Text(tr(context, 'retry')),
+                    ),
                   ),
                 ] else if (_addresses.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 20),
-                    child: Text(tr(context, 'no_addresses')),
+                  FastEmpty(
+                    icon: Icons.location_on_outlined,
+                    title: tr(context, 'no_addresses'),
                   ),
                 for (final address in _addresses)
-                  Card(
-                    child: ListTile(
-                      leading: Icon(
-                        address['isDefault'] == true
-                            ? Icons.home
-                            : Icons.location_on_outlined,
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: FASTSpace.s12),
+                    child: Material(
+                      color: context.fast.card,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(FASTRadius.md),
+                        side: BorderSide(color: context.fast.line),
                       ),
-                      title: Text(address['label'] as String),
-                      subtitle: Text(
-                        '${address['address']}\n${address['city']}',
-                      ),
-                      onTap: () {
-                        context.read<FASTProvider>().setDeliveryAddress(
-                          '${address['address']}, ${address['city']}',
-                        );
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(tr(context, 'save'))),
-                        );
-                      },
-                      trailing: PopupMenuButton<String>(
-                        onSelected: (value) {
-                          if (value == 'edit') {
-                            _edit(address);
-                          } else {
-                            _remove(address);
-                          }
+                      clipBehavior: Clip.antiAlias,
+                      child: InkWell(
+                        onTap: () {
+                          context.read<FASTProvider>().setDeliveryAddress(
+                            '${address['address']}, ${address['city']}',
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(tr(context, 'save'))),
+                          );
                         },
-                        itemBuilder: (ctx) => [
-                          PopupMenuItem(
-                            value: 'edit',
-                            child: Text(tr(ctx, 'edit')),
+                        child: Padding(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
+                            FASTSpace.s16,
+                            FASTSpace.s16,
+                            FASTSpace.s4,
+                            FASTSpace.s16,
                           ),
-                          PopupMenuItem(
-                            value: 'delete',
-                            child: Text(tr(ctx, 'del')),
+                          child: Row(
+                            children: [
+                              Icon(
+                                address['isDefault'] == true
+                                    ? Icons.home_outlined
+                                    : Icons.location_on_outlined,
+                                color: context.fast.t2,
+                                size: 22,
+                              ),
+                              const SizedBox(width: FASTSpace.s12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      address['label'] as String,
+                                      style: FASTText.item.copyWith(
+                                        color: context.fast.t1,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      '${address['address']}\n${address['city']}',
+                                      style: FASTText.body.copyWith(
+                                        color: context.fast.t2,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              PopupMenuButton<String>(
+                                icon: Icon(
+                                  Icons.more_vert,
+                                  color: context.fast.t2,
+                                ),
+                                onSelected: (value) {
+                                  if (value == 'edit') {
+                                    _edit(address);
+                                  } else {
+                                    _remove(address);
+                                  }
+                                },
+                                itemBuilder: (ctx) => [
+                                  PopupMenuItem(
+                                    value: 'edit',
+                                    child: Text(tr(ctx, 'edit')),
+                                  ),
+                                  PopupMenuItem(
+                                    value: 'delete',
+                                    child: Text(tr(ctx, 'del')),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
-                const SizedBox(height: 16),
-                ElevatedButton.icon(
+                const SizedBox(height: FASTSpace.s12),
+                FastButton(
+                  kind: FastButtonKind.ink,
                   onPressed: _edit,
-                  icon: const Icon(Icons.add_location_alt_outlined),
-                  label: Text(tr(context, 'address_add')),
+                  icon: Icons.add_location_alt_outlined,
+                  label: tr(context, 'address_add'),
                 ),
               ],
             ),
@@ -275,7 +343,16 @@ class _SavedAddressesScreenState extends State<SavedAddressesScreen> {
     return widget.embedded
         ? body
         : Scaffold(
-            appBar: AppBar(title: Text(tr(context, 'addresses'))),
+            backgroundColor: context.fast.bg,
+            appBar: AppBar(
+              title: Text(
+                tr(context, 'addresses'),
+                style: FASTText.item.copyWith(
+                  color: context.fast.t1,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
             body: body,
           );
   }

@@ -31,17 +31,24 @@ class FastNightSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final shape = BorderRadius.circular(radius);
+    // A radius of 0 means a full-bleed band (the drawer header): it gets
+    // no hairline and no outer glow, since it has no edges to set apart.
+    final isCard = radius > 0;
     return Container(
       decoration: BoxDecoration(
         borderRadius: shape,
-        border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
-        boxShadow: [
-          BoxShadow(
-            color: FASTBrand.amber.withValues(alpha: 0.18),
-            blurRadius: 28,
-            offset: const Offset(0, 10),
-          ),
-        ],
+        border: isCard
+            ? Border.all(color: Colors.white.withValues(alpha: 0.10))
+            : null,
+        boxShadow: isCard
+            ? [
+                BoxShadow(
+                  color: FASTBrand.amber.withValues(alpha: 0.18),
+                  blurRadius: 28,
+                  offset: const Offset(0, 10),
+                ),
+              ]
+            : null,
       ),
       child: ClipRRect(
         borderRadius: shape,
