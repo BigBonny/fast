@@ -38,44 +38,57 @@ class _GuestMenuShellState extends State<GuestMenuShell> {
 
   @override
   Widget build(BuildContext context) {
+    final fast = context.fast;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: context.fast.bg,
+      backgroundColor: fast.bg,
       appBar: AppBar(
-        backgroundColor: FASTPro.header,
-        systemOverlayStyle: SystemUiOverlayStyle.light,
+        backgroundColor: fast.bg,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         automaticallyImplyLeading: false,
-        titleSpacing: 16,
+        titleSpacing: FASTSpace.s16,
         title: Row(
           children: [
             ShaderMask(
-              shaderCallback: (b) => FASTPro.logoGradient.createShader(b),
-              child: const Text(
-                '⚡ FAST',
-                style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 20,
-                  letterSpacing: 3,
-                  color: Colors.white,
-                ),
+              shaderCallback: (b) => FASTBrand.neonGradient.createShader(b),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.bolt, color: Colors.white, size: 22),
+                  Text(
+                    'FAST',
+                    style: FASTText.title.copyWith(
+                      fontWeight: FontWeight.w900,
+                      fontStyle: FontStyle.italic,
+                      letterSpacing: 1,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-              decoration: BoxDecoration(
-                color: FASTPro.teal.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(5),
-                border: Border.all(color: FASTPro.teal.withValues(alpha: 0.4)),
-              ),
-              child: Text(
-                tr(context, 'guest_badge'),
-                style: const TextStyle(
-                  color: FASTPro.teal,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 2,
+            const SizedBox(width: FASTSpace.s8),
+            Flexible(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: FASTSpace.s8,
+                  vertical: 2,
+                ),
+                decoration: BoxDecoration(
+                  color: FASTPro.teal.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(FASTRadius.pill),
+                  border: Border.all(
+                    color: FASTPro.teal.withValues(alpha: 0.4),
+                  ),
+                ),
+                child: Text(
+                  tr(context, 'guest_badge'),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: FASTText.label.copyWith(
+                    color: isDark ? FASTPro.teal : FASTPro.tealDark,
+                  ),
                 ),
               ),
             ),
@@ -84,15 +97,15 @@ class _GuestMenuShellState extends State<GuestMenuShell> {
         actions: [
           IconButton(
             tooltip: tr(context, 'settings'),
-            icon: const Icon(Icons.settings_outlined, color: Colors.white70),
+            icon: Icon(Icons.settings_outlined, color: fast.t1),
             onPressed: () => _showSettings(context),
           ),
           IconButton(
             tooltip: tr(context, 'logout'),
-            icon: const Icon(Icons.logout, color: Color(0xFFEF4444)),
+            icon: const Icon(Icons.logout, color: FASTBrand.error),
             onPressed: () => context.read<AuthProvider>().logout(),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: FASTSpace.s8),
         ],
       ),
       body: const RestoMenuScreen(),
@@ -111,9 +124,16 @@ class _GuestMenuShellState extends State<GuestMenuShell> {
         return Container(
           decoration: BoxDecoration(
             color: sheetContext.fast.card,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(FASTRadius.md),
+            ),
           ),
-          padding: const EdgeInsets.fromLTRB(20, 14, 20, 28),
+          padding: const EdgeInsets.fromLTRB(
+            FASTSpace.s16,
+            FASTSpace.s12,
+            FASTSpace.s16,
+            FASTSpace.s24,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,107 +151,100 @@ class _GuestMenuShellState extends State<GuestMenuShell> {
               const SizedBox(height: 16),
               Text(
                 tr(sheetContext, 'settings'),
-                style: TextStyle(
-                  color: sheetContext.fast.t1,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w900,
-                ),
+                style: FASTText.title.copyWith(color: sheetContext.fast.t1),
               ),
               const SizedBox(height: 16),
               // Client mode — order like a customer with the same account
               Material(
-                borderRadius: BorderRadius.circular(12),
+                color: sheetContext.fast.cardHigh,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(FASTRadius.md),
+                  side: BorderSide(color: sheetContext.fast.line),
+                ),
+                clipBehavior: Clip.antiAlias,
                 child: InkWell(
-                  borderRadius: BorderRadius.circular(12),
                   onTap: () {
                     Navigator.pop(sheetContext);
                     final fast = context.read<FASTProvider>();
                     fast.loadFromApi();
                     fast.setViewAsClient(true);
                   },
-                  child: Ink(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 12,
-                    ),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF00C8B3), Color(0xFF0EA5E9)],
-                      ),
-                    ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(FASTSpace.s16),
                     child: Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.shopping_bag_outlined,
-                          color: Colors.white,
-                          size: 18,
+                          color: sheetContext.fast.t1,
+                          size: 22,
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: FASTSpace.s12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 fast.tr('client_mode'),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 14,
+                                style: FASTText.item.copyWith(
+                                  color: sheetContext.fast.t1,
                                 ),
                               ),
+                              const SizedBox(height: 2),
                               Text(
                                 fast.tr('client_mode_sub'),
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.85),
-                                  fontSize: 11,
+                                style: FASTText.caption.copyWith(
+                                  color: sheetContext.fast.t2,
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        const Icon(
+                        const SizedBox(width: FASTSpace.s8),
+                        Icon(
                           Icons.arrow_forward,
-                          color: Colors.white,
-                          size: 18,
+                          color: sheetContext.fast.t2,
+                          size: 20,
                         ),
                       ],
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: FASTSpace.s24),
               Text(
-                fast.tr('lang_label'),
-                style: TextStyle(
-                  color: sheetContext.fast.t2,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                ),
+                fastLabelCase(sheetContext, fast.tr('lang_label')),
+                style: FASTText.label.copyWith(color: sheetContext.fast.t2),
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
                 initialValue: fast.appLanguage,
                 dropdownColor: sheetContext.fast.card,
-                style: TextStyle(color: sheetContext.fast.t1, fontSize: 14),
+                style: FASTText.body.copyWith(color: sheetContext.fast.t1),
                 icon: Icon(
                   Icons.keyboard_arrow_down,
                   color: sheetContext.fast.t3,
                 ),
                 decoration: InputDecoration(
                   filled: true,
-                  fillColor: sheetContext.fast.bg,
+                  fillColor: sheetContext.fast.cardHigh,
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 12,
                     vertical: 10,
                   ),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(FASTRadius.sm),
                     borderSide: BorderSide(color: sheetContext.fast.line),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(FASTRadius.sm),
                     borderSide: BorderSide(color: sheetContext.fast.line),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(FASTRadius.sm),
+                    borderSide: const BorderSide(
+                      color: FASTPro.teal,
+                      width: 1.5,
+                    ),
                   ),
                 ),
                 items: AppStrings.languages
@@ -243,14 +256,10 @@ class _GuestMenuShellState extends State<GuestMenuShell> {
                   if (v != null) fast.setAppLanguage(v);
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: FASTSpace.s24),
               Text(
-                fast.tr('theme_interface'),
-                style: TextStyle(
-                  color: sheetContext.fast.t2,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                ),
+                fastLabelCase(sheetContext, fast.tr('theme_interface')),
+                style: FASTText.label.copyWith(color: sheetContext.fast.t2),
               ),
               const SizedBox(height: 8),
               Row(
@@ -259,7 +268,7 @@ class _GuestMenuShellState extends State<GuestMenuShell> {
                     sheetContext,
                     fast,
                     ThemeMode.system,
-                    Icons.brightness_auto,
+                    Icons.phone_android,
                     fast.tr('theme_auto'),
                   ),
                   const SizedBox(width: 8),
@@ -267,7 +276,7 @@ class _GuestMenuShellState extends State<GuestMenuShell> {
                     sheetContext,
                     fast,
                     ThemeMode.light,
-                    Icons.light_mode,
+                    Icons.wb_sunny_outlined,
                     fast.tr('theme_light'),
                   ),
                   const SizedBox(width: 8),
@@ -275,7 +284,7 @@ class _GuestMenuShellState extends State<GuestMenuShell> {
                     sheetContext,
                     fast,
                     ThemeMode.dark,
-                    Icons.dark_mode,
+                    Icons.nightlight_outlined,
                     fast.tr('theme_dark'),
                   ),
                 ],
@@ -295,30 +304,38 @@ class _GuestMenuShellState extends State<GuestMenuShell> {
     String label,
   ) {
     final selected = fast.themeMode == mode;
+    final shades = context.fast;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final fg = selected
+        ? (isDark ? FASTPro.teal : FASTPro.tealDark)
+        : shades.t2;
     return Expanded(
       child: GestureDetector(
-        onTap: () => fast.setThemeMode(mode),
+        onTap: () {
+          HapticFeedback.selectionClick();
+          fast.setThemeMode(mode);
+        },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: selected ? const Color(0xFF10B981) : context.fast.line,
-            borderRadius: BorderRadius.circular(8),
+            color: selected
+                ? FASTPro.teal.withValues(alpha: 0.14)
+                : shades.cardHigh,
+            borderRadius: BorderRadius.circular(FASTRadius.sm),
+            border: Border.all(color: selected ? FASTPro.teal : shades.line),
           ),
           child: Column(
             children: [
-              Icon(
-                icon,
-                color: selected ? Colors.white : context.fast.t2,
-                size: 16,
-              ),
-              const SizedBox(height: 4),
+              Icon(icon, color: fg, size: 18),
+              const SizedBox(height: 2),
               Text(
                 label,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  color: selected ? Colors.white : context.fast.t2,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: FASTText.caption.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: fg,
                 ),
               ),
             ],

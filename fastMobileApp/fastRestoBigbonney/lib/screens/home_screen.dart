@@ -219,19 +219,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   begin: Alignment.centerLeft,
                                                   end: Alignment.centerRight,
                                                   colors: [
-                                                    Color(0xFFF59E0B),
-                                                    Color(0xFFFBBF24),
-                                                    Color(0xFFFFFBEB),
-                                                    Color(0xFFFBBF24),
-                                                    Color(0xFFD97706),
+                                                    FASTBrand.gold,
+                                                    FASTBrand.neonOrange,
+                                                    FASTBrand.neonPink,
+                                                    FASTBrand.neonMagenta,
                                                   ],
-                                                  stops: [
-                                                    0.0,
-                                                    0.28,
-                                                    0.5,
-                                                    0.72,
-                                                    1.0,
-                                                  ],
+                                                  stops: [0.0, 0.38, 0.74, 1.0],
                                                 ).createShader(rect),
                                             child: const Text(
                                               'FAST',
@@ -327,9 +320,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 begin: Alignment.topLeft,
                                                 end: Alignment.bottomRight,
                                                 colors: [
-                                                  Color(0xFFFBBF24),
-                                                  Color(0xFFF59E0B),
-                                                  Color(0xFFD97706),
+                                                  FASTBrand.gold,
+                                                  FASTBrand.neonOrange,
+                                                  FASTBrand.neonPink,
+                                                  FASTBrand.neonMagenta,
                                                 ],
                                               ).createShader(rect),
                                           // Side padding gives the italic's overhang room
@@ -499,7 +493,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                               borderRadius:
                                                   BorderRadius.circular(30),
                                               borderSide: const BorderSide(
-                                                color: Color(0xFFF59E0B),
+                                                color: FASTBrand.gold,
                                                 width: 1.5,
                                               ),
                                             ),
@@ -1013,7 +1007,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 children: [
                                   const Icon(
                                     Icons.star_rounded,
-                                    color: FASTBrand.amber,
+                                    color: FASTBrand.gold,
                                     size: 14,
                                   ),
                                   const SizedBox(width: FASTSpace.s4),
@@ -1394,7 +1388,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         const Icon(
                           Icons.star_rounded,
-                          color: FASTBrand.amber,
+                          color: FASTBrand.gold,
                           size: 18,
                         ),
                         const SizedBox(width: 2),
@@ -1590,7 +1584,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   borderRadius: BorderRadius.circular(FASTRadius.sm),
                 ),
                 child: randRest == null
-                    ? const CircularProgressIndicator(color: FASTBrand.amber)
+                    ? const CircularProgressIndicator(color: FASTBrand.gold)
                     : Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -1624,7 +1618,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 height: 16,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(FASTBrand.amber),
+                  valueColor: AlwaysStoppedAnimation<Color>(FASTBrand.gold),
                 ),
               ),
             ],

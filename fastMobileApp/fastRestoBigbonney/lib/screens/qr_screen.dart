@@ -55,7 +55,7 @@ class _QRVerificationScreenState extends State<QRVerificationScreen> {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.info_outline, color: Color(0xFFF59E0B), size: 16),
+                  Icon(Icons.info_outline, color: FASTBrand.gold, size: 16),
                   SizedBox(width: 10),
                   Expanded(
                     child: Text(
@@ -193,7 +193,7 @@ class _QRVerificationScreenState extends State<QRVerificationScreen> {
         icon = Icons.receipt_long;
         break;
       case OrderStatus.preparing:
-        color = Color(0xFFF59E0B);
+        color = FASTBrand.gold;
         label = tr(context, 'qs_preparing');
         icon = Icons.restaurant_menu;
         break;

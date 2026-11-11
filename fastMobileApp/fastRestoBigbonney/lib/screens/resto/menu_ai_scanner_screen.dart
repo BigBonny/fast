@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:camera/camera.dart';
@@ -10,6 +11,8 @@ import 'package:video_thumbnail/video_thumbnail.dart' as vt;
 import '../../resto_provider.dart';
 import '../../services/restaurant_service.dart';
 import '../../theme.dart';
+import '../../widgets/fast_night_surface.dart';
+import '../../widgets/fast_ui.dart';
 import '../../l10n/tr.dart';
 
 class MenuAiScannerScreen extends StatefulWidget {
@@ -44,9 +47,16 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
     debugPrint('[Scanner] fail: $error');
     if (!mounted) return;
     final denied = error is CameraException && error.code.contains('Denied');
-    final message = error is ApiException ? error.message
-        : tr(context, denied ? 'camera_permission_hint'
-            : camera ? 'camera_unavailable' : 'scan_failed');
+    final message = error is ApiException
+        ? error.message
+        : tr(
+            context,
+            denied
+                ? 'camera_permission_hint'
+                : camera
+                ? 'camera_unavailable'
+                : 'scan_failed',
+          );
     setState(() {
       _state = -1;
       _cameraPermissionDenied = denied;
@@ -90,7 +100,9 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
         enableAudio: false,
       );
 
-      await _cameraController!.initialize().timeout(const Duration(seconds: 15));
+      await _cameraController!.initialize().timeout(
+        const Duration(seconds: 15),
+      );
       if (mounted) {
         setState(() {
           _isCameraInitialized = true;
@@ -122,7 +134,10 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
   Future<void> _startVideoRecording() async {
     if (_cameraController == null ||
         !_cameraController!.value.isInitialized ||
-        _isRecording || _startingRecording || _stoppingRecording || _state != 0) {
+        _isRecording ||
+        _startingRecording ||
+        _stoppingRecording ||
+        _state != 0) {
       return;
     }
     _startingRecording = true;
@@ -130,7 +145,9 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
     try {
       await _cameraController!.startVideoRecording();
       if (!mounted) return;
-      _recordWatch..reset()..start();
+      _recordWatch
+        ..reset()
+        ..start();
       setState(() {
         _state = 3;
         _recordElapsed = 0;
@@ -327,15 +344,23 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final fast = context.fast;
+    // The viewfinder (idle and recording) is always dark, whatever the
+    // theme; the result states follow the theme.
+    final live = _state == 0 || _state == 3;
+    const onCameraShadow = [
+      Shadow(offset: Offset(0, 1), blurRadius: 4, color: Color(0x99000000)),
+    ];
     return Scaffold(
-      backgroundColor: (_state == 0 || _state == 3) ? Colors.black : context.fast.bg,
+      backgroundColor: live ? Colors.black : fast.bg,
       appBar: AppBar(
-        backgroundColor: (_state == 0 || _state == 3) ? Colors.black : context.fast.bg,
+        backgroundColor: live ? Colors.black : fast.bg,
         elevation: 0,
-        iconTheme: IconThemeData(color: (_state == 0 || _state == 3) ? Colors.white : context.fast.t1),
+        systemOverlayStyle: live ? SystemUiOverlayStyle.light : null,
+        iconTheme: IconThemeData(color: live ? Colors.white : fast.t1),
         title: Text(
           tr(context, 'ai_assistant'),
-          style: TextStyle(color: (_state == 0 || _state == 3) ? Colors.white : context.fast.t1, fontWeight: FontWeight.bold),
+          style: FASTText.title.copyWith(color: live ? Colors.white : fast.t1),
         ),
       ),
       extendBodyBehindAppBar: false,
@@ -358,14 +383,14 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                         ),
                       ),
                     )
-                  : Container(color: context.fast.bg),
+                  : Container(color: FastNightSurface.bottom),
             ),
 
           // Viewfinder darkened overlay with a clear center cutout
           if (_state == 0)
             Positioned.fill(child: CustomPaint(painter: ViewfinderPainter())),
 
-          // Green Finder cadre box and guidelines
+          // Finder frame and guidelines
           if (_state == 0)
             Positioned.fill(
               child: Column(
@@ -375,11 +400,8 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                     width: 260,
                     height: 360,
                     decoration: BoxDecoration(
-                      border: Border.all(
-                        color: const Color(0xFF10B981),
-                        width: 1.5,
-                      ),
-                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: FASTPro.teal, width: 1.5),
+                      borderRadius: BorderRadius.circular(FASTRadius.sm),
                     ),
                     child: Stack(
                       children: [
@@ -390,15 +412,15 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                         _scannerCorner(bottom: 0, right: 0),
                         Center(
                           child: Padding(
-                            padding: const EdgeInsets.all(24.0),
+                            padding: const EdgeInsets.all(FASTSpace.s24),
                             child: Text(
                               tr(context, 'frame_menu'),
                               textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Color(0xFF10B981),
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
+                              style: FASTText.body.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
                                 height: 1.5,
+                                shadows: onCameraShadow,
                               ),
                             ),
                           ),
@@ -406,20 +428,19 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                       ],
                     ),
                   ),
-                  SizedBox(height: 40),
-                  Text(
-                    tr(context, 'scan_hint'),
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 13,
-                      shadows: [
-                        Shadow(
-                          offset: Offset(0, 1),
-                          blurRadius: 4,
-                          color: Color(0x80000000),
-                        ),
-                      ],
+                  const SizedBox(height: FASTSpace.s40),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: FASTSpace.s24,
+                    ),
+                    child: Text(
+                      tr(context, 'scan_hint'),
+                      textAlign: TextAlign.center,
+                      style: FASTText.body.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        shadows: onCameraShadow,
+                      ),
                     ),
                   ),
                 ],
@@ -430,31 +451,64 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
           if (_state == 0 || _state == 3)
             Positioned(
               key: const ValueKey('scanner-controls'),
-              bottom: 48,
+              bottom: 32,
               left: 0,
               right: 0,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Gallery picker button
-                  IconButton(
-                    onPressed: _isRecording ? null : () => _captureAndScan(ImageSource.gallery),
-                    icon: Icon(
-                      Icons.photo_library_outlined,
-                      color: Colors.white,
-                      size: 28,
+                  // While recording: how to move the phone.
+                  if (_state == 3)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        FASTSpace.s24,
+                        0,
+                        FASTSpace.s24,
+                        FASTSpace.s16,
+                      ),
+                      child: Text(
+                        tr(context, 'scan_sweep'),
+                        textAlign: TextAlign.center,
+                        style: FASTText.body.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          shadows: onCameraShadow,
+                        ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 20),
-                  // Capture button in the absolute center — Snapchat style:
-                  // tap = photo, press & hold = video (release to stop).
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
+                      // Gallery picker button
+                      IconButton(
+                        onPressed: _isRecording
+                            ? null
+                            : () => _captureAndScan(ImageSource.gallery),
+                        style: IconButton.styleFrom(
+                          backgroundColor: Colors.white.withValues(alpha: 0.16),
+                          disabledBackgroundColor: Colors.white.withValues(
+                            alpha: 0.08,
+                          ),
+                          foregroundColor: Colors.white,
+                          disabledForegroundColor: Colors.white38,
+                          fixedSize: const Size(48, 48),
+                        ),
+                        icon: const Icon(
+                          Icons.photo_library_outlined,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 20),
+                      // Capture button in the absolute center — Snapchat
+                      // style: tap = photo, press & hold = video (release
+                      // to stop).
                       GestureDetector(
-                        onTap: _isRecording ? _stopVideoAndProcess
-                            : _isCameraInitialized ? _takeInAppPicture : null,
+                        onTap: _isRecording
+                            ? _stopVideoAndProcess
+                            : _isCameraInitialized
+                            ? _takeInAppPicture
+                            : null,
                         onLongPressStart: (_) => _startVideoRecording(),
                         onLongPressEnd: (_) => _stopVideoAndProcess(),
                         onLongPressCancel: _stopVideoAndProcess,
@@ -465,53 +519,63 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                             color: Colors.white,
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: context.fast.line,
+                              color: _isRecording
+                                  ? FASTBrand.error
+                                  : const Color(0xFFB8B4BE),
                               width: 6,
                             ),
                           ),
                           child: Center(
                             child: Icon(
                               _isRecording ? Icons.stop : Icons.camera_alt,
-                              color: _isRecording ? FASTBrand.error : FASTBrand.onAmber,
+                              color: _isRecording
+                                  ? FASTBrand.error
+                                  : FASTBrand.onAmber,
                               size: 28,
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(height: 6),
-                      Text(
-                        tr(context, 'scan_gesture'),
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 8,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0.5,
-                          shadows: [Shadow(blurRadius: 4, color: Colors.black)],
-                        ),
-                      ),
+                      // Spacing balance (matches the gallery button + gap)
+                      const SizedBox(width: 68),
                     ],
                   ),
-                  // Spacing balance (matches the gallery button width)
-                  const SizedBox(width: 48),
+                  const SizedBox(height: FASTSpace.s8),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: FASTSpace.s24,
+                    ),
+                    child: Text(
+                      tr(context, 'scan_gesture'),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      style: FASTText.label.copyWith(
+                        color: Colors.white70,
+                        shadows: const [
+                          Shadow(blurRadius: 4, color: Colors.black),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
 
-          // Recording overlay — red REC + elapsed + stop button
-          if (_state == 3) ...[
+          // Recording overlay — red REC + elapsed
+          if (_state == 3)
             Positioned(
-              top: 60,
+              top: FASTSpace.s24,
               left: 0,
               right: 0,
               child: Center(
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
+                    horizontal: FASTSpace.s12,
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.6),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(FASTRadius.pill),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -520,18 +584,17 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                         width: 10,
                         height: 10,
                         decoration: const BoxDecoration(
-                          color: Color(0xFFEF4444),
+                          color: FASTBrand.error,
                           shape: BoxShape.circle,
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: FASTSpace.s8),
                       Text(
                         'REC ${(_recordElapsed ~/ 60).toString().padLeft(2, '0')}:${(_recordElapsed % 60).toString().padLeft(2, '0')}',
-                        style: const TextStyle(
+                        style: FASTText.price.copyWith(
                           color: Colors.white,
-                          fontFamily: 'monospace',
-                          fontWeight: FontWeight.w900,
                           fontSize: 14,
+                          fontWeight: FontWeight.w800,
                         ),
                       ),
                     ],
@@ -539,112 +602,152 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
                 ),
               ),
             ),
-            Positioned(
-              bottom: 130,
-              left: 24,
-              right: 24,
-              child: Text(
-                tr(context, 'scan_sweep'),
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  shadows: [Shadow(blurRadius: 6, color: Colors.black)],
-                ),
-              ),
-            ),
-
-          ],
 
           if (_state == 1)
             Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(color: Color(0xFF8B5CF6)),
-                  SizedBox(height: 24),
-                  Text(
-                    tr(context, 'ai_analyzing'),
-                    style: TextStyle(
-                      color: Color(0xFF8B5CF6),
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+              child: Padding(
+                padding: const EdgeInsets.all(FASTSpace.s24),
+                child: FastNightSurface(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: FASTSpace.s24,
+                    vertical: FASTSpace.s40,
+                  ),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const CircularProgressIndicator(color: FASTPro.teal),
+                        const SizedBox(height: FASTSpace.s24),
+                        Text(
+                          tr(context, 'ai_analyzing'),
+                          textAlign: TextAlign.center,
+                          style: FASTText.title.copyWith(
+                            color: FastNightSurface.onNight,
+                          ),
+                        ),
+                        const SizedBox(height: FASTSpace.s8),
+                        Text(
+                          tr(context, 'extracting'),
+                          textAlign: TextAlign.center,
+                          style: FASTText.body.copyWith(
+                            color: FastNightSurface.onNightMuted,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  SizedBox(height: 8),
-                  Text(
-                    tr(context, 'extracting'),
-                    style: TextStyle(color: context.fast.t2),
-                  ),
-                ],
+                ),
               ),
             ),
 
           if (_state == 2)
             Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.check_circle, color: Color(0xFF10B981), size: 80),
-                  SizedBox(height: 24),
-                  Text(
-                    tr(context, 'menu_imported'),
-                    style: TextStyle(
-                      color: Color(0xFF10B981),
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+              child: Padding(
+                padding: const EdgeInsets.all(FASTSpace.s24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.check_circle,
+                      color: FASTBrand.success,
+                      size: 72,
                     ),
-                  ),
-                ],
+                    const SizedBox(height: FASTSpace.s24),
+                    Text(
+                      tr(context, 'menu_imported'),
+                      textAlign: TextAlign.center,
+                      style: FASTText.title.copyWith(color: fast.t1),
+                    ),
+                  ],
+                ),
               ),
             ),
 
           if (_state == -1)
             Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline, color: Color(0xFFEF4444), size: 80),
-                  SizedBox(height: 24),
-                  Text(
-                    tr(context, 'scan_failed'),
-                    style: TextStyle(
-                      color: Color(0xFFEF4444),
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(FASTSpace.s24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.error_outline,
+                      color: FASTBrand.error,
+                      size: 72,
                     ),
-                  ),
-                  SizedBox(height: 8),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 32),
-                    child: Text(
+                    const SizedBox(height: FASTSpace.s24),
+                    Text(
+                      tr(context, 'scan_failed'),
+                      textAlign: TextAlign.center,
+                      style: FASTText.title.copyWith(color: fast.t1),
+                    ),
+                    const SizedBox(height: FASTSpace.s8),
+                    Text(
                       _errorMessage,
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: context.fast.t2, fontSize: 14),
+                      style: FASTText.body.copyWith(color: fast.t2),
                     ),
-                  ),
-                  SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: _initializeCamera,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF00C8B3),
-                      foregroundColor: FASTBrand.onAmber,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                    const SizedBox(height: FASTSpace.s24),
+                    FastButton(
+                      kind: FastButtonKind.ink,
+                      expand: false,
+                      icon: Icons.refresh,
+                      label: tr(context, 'retry'),
+                      onPressed: _initializeCamera,
+                    ),
+                    if (_cameraPermissionDenied) ...[
+                      const SizedBox(height: FASTSpace.s4),
+                      TextButton(
+                        onPressed: Geolocator.openAppSettings,
+                        child: Text(
+                          tr(context, 'open_settings'),
+                          style: FASTText.body.copyWith(
+                            color: FASTPro.teal,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: FASTSpace.s12),
+                    FastTap(
+                      onTap: () => _captureAndScan(ImageSource.gallery),
+                      child: Container(
+                        height: 52,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: FASTSpace.s24,
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(FASTRadius.pill),
+                          border: Border.all(color: fast.line),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.photo_library_outlined,
+                              size: 18,
+                              color: fast.t1,
+                            ),
+                            const SizedBox(width: FASTSpace.s8),
+                            Flexible(
+                              child: Text(
+                                tr(context, 'choose_photo'),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: fast.t1,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    child: Text(tr(context, 'retry')),
-                  ),
-                  if (_cameraPermissionDenied)
-                    TextButton(onPressed: Geolocator.openAppSettings,
-                        child: Text(tr(context, 'open_settings'))),
-                  TextButton.icon(
-                    onPressed: () => _captureAndScan(ImageSource.gallery),
-                    icon: const Icon(Icons.photo_library_outlined),
-                    label: Text(tr(context, 'choose_photo')),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
         ],
@@ -667,13 +770,15 @@ class _MenuAiScannerScreenState extends State<MenuAiScannerScreen> {
         width: 16,
         height: 16,
         decoration: BoxDecoration(
-          color: const Color(0xFF10B981),
+          color: FASTPro.teal,
           borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(top != null && left != null ? 8 : 0),
-            topRight: Radius.circular(top != null && right != null ? 8 : 0),
-            bottomLeft: Radius.circular(bottom != null && left != null ? 8 : 0),
+            topLeft: Radius.circular(top != null && left != null ? 10 : 0),
+            topRight: Radius.circular(top != null && right != null ? 10 : 0),
+            bottomLeft: Radius.circular(
+              bottom != null && left != null ? 10 : 0,
+            ),
             bottomRight: Radius.circular(
-              bottom != null && right != null ? 8 : 0,
+              bottom != null && right != null ? 10 : 0,
             ),
           ),
         ),

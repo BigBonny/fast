@@ -72,8 +72,8 @@ class _FastTapState extends State<FastTap> with SingleTickerProviderStateMixin {
   }
 }
 
-/// `ink` is the neutral pill used by the rebuilt customer screens:
-/// near-black in light mode, near-white in dark mode, no gradient.
+/// `ink` is the primary pill on the rebuilt screens: the neon gradient
+/// from the app icon (gold → orange → pink → magenta) with dark text.
 enum FastButtonKind { primary, soft, outline, ghost, ink }
 
 /// Primary FAST call-to-action — amber gradient, warm glow, springy
@@ -120,7 +120,13 @@ class FastButton extends StatelessWidget {
         null,
       ),
       FastButtonKind.ghost => (null, FASTBrand.amberDeep, null, null),
-      FastButtonKind.ink => (null, fast.onInk, null, null),
+      // The neon sign: gradient fill, near-black text, a soft pink glow.
+      FastButtonKind.ink => (
+        FASTBrand.neonGradient,
+        FASTBrand.onAmber,
+        null,
+        FASTBrand.neonPink.withValues(alpha: enabled ? 0.28 : 0.0),
+      ),
     };
 
     final content = loading
@@ -166,13 +172,16 @@ class FastButton extends StatelessWidget {
           height: height,
           width: expand ? double.infinity : null,
           padding: expand ? null : const EdgeInsets.symmetric(horizontal: 20),
-          alignment: Alignment.center,
+          // Only a full-width button aligns its content: an alignment makes
+          // a Container grow to fill its parent, which stretched
+          // `expand: false` buttons across the screen in loose layouts.
+          alignment: expand ? Alignment.center : null,
           decoration: BoxDecoration(
             gradient: bg,
             color: switch (kind) {
               FastButtonKind.soft => fast.amberSoftBg,
               FastButtonKind.primary => FASTBrand.amber,
-              FastButtonKind.ink => fast.ink,
+              FastButtonKind.ink => FASTBrand.neonOrange,
               _ => Colors.transparent,
             },
             border:
@@ -193,7 +202,7 @@ class FastButton extends StatelessWidget {
                     ),
                   ],
           ),
-          child: content,
+          child: expand ? content : Center(widthFactor: 1, child: content),
         ),
       ),
     );
@@ -559,6 +568,13 @@ class FastNavBar extends StatefulWidget {
   /// and labels are 12. With `false` the bar is exactly the original.
   final bool calm;
 
+  /// Calm mode only: colour of the pill behind the selected tab and of
+  /// the icon and label on it. Defaults to the theme's selected-state
+  /// colour. FAST Pro passes teal so the pill cannot be mistaken for a
+  /// red status next to the RUSH button.
+  final Color? calmPill;
+  final Color? calmOnPill;
+
   const FastNavBar({
     super.key,
     required this.currentIndex,
@@ -570,6 +586,8 @@ class FastNavBar extends StatefulWidget {
     this.inactive,
     this.itemKeys,
     this.calm = false,
+    this.calmPill,
+    this.calmOnPill,
   });
 
   @override
@@ -613,7 +631,7 @@ class _FastNavBarState extends State<FastNavBar>
     // Icon/label color inside the filled indicator — dark on bright
     // accents (teal, amber), white on dark ones. Calm: content on ink.
     final onAccent = calm
-        ? fast.onInk
+        ? (widget.calmOnPill ?? fast.onInk)
         : (accent.computeLuminance() > 0.35
               ? const Color(0xFF10141F)
               : Colors.white);
@@ -671,7 +689,7 @@ class _FastNavBarState extends State<FastNavBar>
                           child: calm
                               ? DecoratedBox(
                                   decoration: BoxDecoration(
-                                    color: fast.ink,
+                                    color: widget.calmPill ?? fast.ink,
                                     borderRadius: BorderRadius.circular(22),
                                   ),
                                 )
@@ -758,8 +776,12 @@ class _FastNavBarState extends State<FastNavBar>
                         top: calm ? -8 : -6,
                         child: Container(
                           padding: EdgeInsets.all(calm ? 1 : 2),
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFEF4444),
+                          // Calm mode: gold badge with dark digits, so it
+                          // shows on the rose pill of the selected tab.
+                          decoration: BoxDecoration(
+                            color: calm
+                                ? FASTBrand.gold
+                                : const Color(0xFFEF4444),
                             shape: BoxShape.circle,
                           ),
                           constraints: BoxConstraints(
@@ -769,7 +791,7 @@ class _FastNavBarState extends State<FastNavBar>
                           child: Text(
                             '${item.badge}',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: calm ? FASTBrand.onAmber : Colors.white,
                               fontSize: calm ? 12 : 8,
                               fontWeight: FontWeight.w900,
                               height: calm ? 1.3 : null,
@@ -779,7 +801,7 @@ class _FastNavBarState extends State<FastNavBar>
                         ),
                       ),
                     if (item.dot)
-                      const Positioned(
+                      Positioned(
                         right: -6,
                         top: -4,
                         child: SizedBox(
@@ -787,7 +809,9 @@ class _FastNavBarState extends State<FastNavBar>
                           height: 8,
                           child: DecoratedBox(
                             decoration: BoxDecoration(
-                              color: Color(0xFFEF4444),
+                              color: calm
+                                  ? FASTBrand.gold
+                                  : const Color(0xFFEF4444),
                               shape: BoxShape.circle,
                             ),
                           ),

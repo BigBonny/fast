@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
@@ -12,10 +13,12 @@ import '../../resto_provider.dart';
 import '../../services/stats_service.dart';
 import '../../theme.dart';
 import '../../l10n/tr.dart';
+import '../../widgets/fast_ui.dart';
 
-const _brand = Color(0xFF00C8B3);
-const _positive = Color(0xFF34D399);
-const _negative = Color(0xFFFB7185);
+// Teal is the main series and the accent; a rise is green, a drop red.
+const _brand = FASTPro.teal;
+const _positive = FASTBrand.success;
+const _negative = FASTBrand.error;
 
 class RestoStatsScreen extends StatefulWidget {
   const RestoStatsScreen({super.key});
@@ -84,29 +87,30 @@ class _RestoStatsScreenState extends State<RestoStatsScreen> {
         onRefresh: provider.loadStats,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+          padding: const EdgeInsets.fromLTRB(
+            FASTSpace.s16,
+            FASTSpace.s16,
+            FASTSpace.s16,
+            FASTSpace.s40,
+          ),
           children: [
             Text(
               tr(context, 'analytics'),
-              style: TextStyle(
-                color: context.fast.t1,
-                fontSize: 26,
-                fontWeight: FontWeight.w800,
-              ),
+              style: FASTText.title.copyWith(color: context.fast.t1),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: FASTSpace.s4),
             Text(
               tr(context, 'revenue_note'),
-              style: TextStyle(color: context.fast.t2, fontSize: 14),
+              style: FASTText.body.copyWith(color: context.fast.t2),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: FASTSpace.s16),
             _PeriodSelector(
               selected: provider.statsPeriodDays,
               onSelected: (days) => provider.loadStats(periodDays: days),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: FASTSpace.s12),
             Align(
-              alignment: Alignment.centerRight,
+              alignment: AlignmentDirectional.centerStart,
               child: OutlinedButton.icon(
                 onPressed: _exporting
                     ? null
@@ -120,22 +124,36 @@ class _RestoStatsScreenState extends State<RestoStatsScreen> {
                           color: _brand,
                         ),
                       )
-                    : const Icon(Icons.download_outlined, size: 18),
+                    : const Icon(
+                        Icons.download_outlined,
+                        size: 18,
+                        color: _brand,
+                      ),
                 label: Text(
                   _exporting
                       ? tr(context, 'exporting')
                       : tr(context, 'export_csv'),
                 ),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: _brand,
-                  side: const BorderSide(color: _brand),
+                  foregroundColor: context.fast.t1,
+                  disabledForegroundColor: context.fast.t3,
+                  side: BorderSide(color: context.fast.line),
+                  shape: const StadiumBorder(),
+                  minimumSize: const Size(0, 44),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: FASTSpace.s16,
+                  ),
+                  textStyle: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: FASTSpace.s24),
             if (provider.statsLoading && stats != null)
               Padding(
-                padding: EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.only(bottom: FASTSpace.s16),
                 child: LinearProgressIndicator(
                   color: _brand,
                   backgroundColor: context.fast.line,
@@ -153,13 +171,13 @@ class _RestoStatsScreenState extends State<RestoStatsScreen> {
               _EmptyState(onRetry: provider.loadStats)
             else ...[
               _OverviewSection(stats: stats),
-              const SizedBox(height: 28),
+              const SizedBox(height: FASTSpace.s40),
               _RevenueChart(stats: stats),
-              const SizedBox(height: 28),
+              const SizedBox(height: FASTSpace.s40),
               _LoyaltySection(kpis: stats.kpis),
-              const SizedBox(height: 28),
+              const SizedBox(height: FASTSpace.s40),
               _OperationsSection(stats: stats),
-              const SizedBox(height: 28),
+              const SizedBox(height: FASTSpace.s40),
               _PopularProducts(items: stats.popularItems),
             ],
           ],
@@ -179,37 +197,71 @@ class _PeriodSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       label: tr(context, 'stats_period'),
-      child: SegmentedButton<int>(
-        segments: [
-          ButtonSegment(
-            value: 7,
-            label: Text(tr(context, 'days_n').replaceAll('{n}', '7')),
-          ),
-          ButtonSegment(
-            value: 30,
-            label: Text(tr(context, 'days_n').replaceAll('{n}', '30')),
-          ),
-          ButtonSegment(
-            value: 90,
-            label: Text(tr(context, 'days_n').replaceAll('{n}', '90')),
-          ),
+      child: Wrap(
+        spacing: FASTSpace.s8,
+        runSpacing: FASTSpace.s8,
+        children: [
+          for (final days in const [7, 30, 90])
+            _PeriodPill(
+              label: tr(context, 'days_n').replaceAll('{n}', '$days'),
+              active: days == selected,
+              // Like the segmented control it replaces: tapping the
+              // period already shown does nothing.
+              onTap: () {
+                if (days == selected) return;
+                HapticFeedback.selectionClick();
+                onSelected(days);
+              },
+            ),
         ],
-        selected: {selected},
-        showSelectedIcon: false,
-        onSelectionChanged: (value) => onSelected(value.first),
-        style: ButtonStyle(
-          minimumSize: const WidgetStatePropertyAll(Size(72, 48)),
-          foregroundColor: WidgetStateProperty.resolveWith(
-            (states) => states.contains(WidgetState.selected)
-                ? context.fast.bg
-                : context.fast.t1,
+      ),
+    );
+  }
+}
+
+class _PeriodPill extends StatelessWidget {
+  final String label;
+  final bool active;
+  final VoidCallback onTap;
+
+  const _PeriodPill({
+    required this.label,
+    required this.active,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final fast = context.fast;
+    return Semantics(
+      button: true,
+      selected: active,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          height: 44,
+          constraints: const BoxConstraints(minWidth: 72),
+          padding: const EdgeInsets.symmetric(horizontal: FASTSpace.s16),
+          decoration: BoxDecoration(
+            color: active ? _brand : fast.cardHigh,
+            borderRadius: BorderRadius.circular(FASTRadius.pill),
+            border: Border.all(color: active ? _brand : fast.line),
           ),
-          backgroundColor: WidgetStateProperty.resolveWith(
-            (states) => states.contains(WidgetState.selected)
-                ? _brand
-                : context.fast.card,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                label,
+                style: FASTText.body.copyWith(
+                  color: active ? FASTBrand.onAmber : fast.t1,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
           ),
-          side: WidgetStatePropertyAll(BorderSide(color: context.fast.line)),
         ),
       ),
     );
@@ -231,7 +283,7 @@ class _OverviewSection extends StatelessWidget {
           title: tr(context, 'stats_overview_t'),
           subtitle: tr(context, 'stats_overview_s'),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: FASTSpace.s16),
         LayoutBuilder(
           builder: (context, constraints) {
             final columns = constraints.maxWidth >= 760 ? 4 : 2;
@@ -301,7 +353,7 @@ class _RevenueChart extends StatelessWidget {
           title: tr(context, 'ca_evo_t'),
           subtitle: tr(context, 'ca_evo_s'),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: FASTSpace.s16),
         Semantics(
           label: tr(context, 'revenue_curve')
               .replaceAll('{n}', '${stats.periodDays}')
@@ -323,9 +375,9 @@ class _RevenueChart extends StatelessWidget {
                           .map(
                             (spot) => LineTooltipItem(
                               _money(spot.y),
-                              TextStyle(
+                              FASTText.price.copyWith(
                                 color: context.fast.t1,
-                                fontWeight: FontWeight.w700,
+                                fontSize: 14,
                               ),
                             ),
                           )
@@ -349,15 +401,14 @@ class _RevenueChart extends StatelessWidget {
                     leftTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
-                        reservedSize: 46,
+                        reservedSize: 54,
                         interval: maxY / 4,
                         getTitlesWidget: (value, meta) => SideTitleWidget(
                           meta: meta,
                           child: Text(
                             _compactMoney(value),
-                            style: TextStyle(
+                            style: FASTText.caption.copyWith(
                               color: context.fast.t2,
-                              fontSize: 11,
                             ),
                           ),
                         ),
@@ -378,9 +429,8 @@ class _RevenueChart extends StatelessWidget {
                             space: 8,
                             child: Text(
                               _shortDate(stats.daily[index].date),
-                              style: TextStyle(
+                              style: FASTText.caption.copyWith(
                                 color: context.fast.t2,
-                                fontSize: 11,
                               ),
                             ),
                           );
@@ -426,11 +476,11 @@ class _LoyaltySection extends StatelessWidget {
           title: tr(context, 'retention_t'),
           subtitle: tr(context, 'retention_s'),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: FASTSpace.s16),
         _Panel(
           child: Wrap(
-            spacing: 24,
-            runSpacing: 20,
+            spacing: FASTSpace.s24,
+            runSpacing: FASTSpace.s24,
             children: [
               _Metric(
                 label: tr(context, 'new_clients'),
@@ -472,28 +522,24 @@ class _OperationsSection extends StatelessWidget {
           title: tr(context, 'annulations'),
           subtitle: tr(context, 'cancelled_stat_sub'),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: FASTSpace.s16),
         _Panel(
           child: Row(
             children: [
               const Icon(Icons.cancel_outlined, color: _negative, size: 28),
-              const SizedBox(width: 14),
+              const SizedBox(width: FASTSpace.s16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       '${kpis.cancelledOrders} commande${kpis.cancelledOrders > 1 ? 's' : ''}',
-                      style: TextStyle(
-                        color: context.fast.t1,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: FASTText.title.copyWith(color: context.fast.t1),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: FASTSpace.s4),
                     Text(
                       '${_percent(kpis.cancellationRate)} · ${_signedPoints(delta)} ${tr(context, 'vs_prev_period')}',
-                      style: TextStyle(color: context.fast.t2),
+                      style: FASTText.body.copyWith(color: context.fast.t2),
                     ),
                   ],
                 ),
@@ -522,21 +568,19 @@ class _PopularProducts extends StatelessWidget {
           title: tr(context, 'popular_products'),
           subtitle: tr(context, 'qty_sold_sub'),
         ),
-        const SizedBox(height: 12),
-        _Panel(
-          child: Column(
-            children: [
-              for (var index = 0; index < items.length; index++) ...[
-                _ProductRow(
-                  rank: index + 1,
-                  item: items[index],
-                  maximum: maximum,
-                ),
-                if (index < items.length - 1)
-                  Divider(height: 24, color: context.fast.line),
-              ],
+        const SizedBox(height: FASTSpace.s4),
+        Column(
+          children: [
+            for (var index = 0; index < items.length; index++) ...[
+              _ProductRow(
+                rank: index + 1,
+                item: items[index],
+                maximum: maximum,
+              ),
+              if (index < items.length - 1)
+                Divider(height: 1, color: context.fast.line),
             ],
-          ),
+          ],
         ),
       ],
     );
@@ -558,49 +602,48 @@ class _ProductRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       label: '$rank, ${item.name}, ${item.totalSold} vendus',
-      child: Row(
-        children: [
-          SizedBox(
-            width: 28,
-            child: Text(
-              '$rank',
-              style: const TextStyle(
-                color: _brand,
-                fontWeight: FontWeight.w800,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: FASTSpace.s12),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 28,
+              child: Text(
+                '$rank',
+                style: FASTText.price.copyWith(
+                  color: context.fast.t3,
+                  fontSize: 14,
+                ),
               ),
             ),
-          ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.name,
-                  style: TextStyle(
-                    color: context.fast.t1,
-                    fontWeight: FontWeight.w600,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: FASTText.item.copyWith(color: context.fast.t1),
                   ),
-                ),
-                const SizedBox(height: 8),
-                LinearProgressIndicator(
-                  value: maximum == 0 ? 0 : item.totalSold / maximum,
-                  minHeight: 5,
-                  borderRadius: BorderRadius.circular(4),
-                  color: _brand,
-                  backgroundColor: context.fast.line,
-                ),
-              ],
+                  const SizedBox(height: FASTSpace.s8),
+                  LinearProgressIndicator(
+                    value: maximum == 0 ? 0 : item.totalSold / maximum,
+                    minHeight: 4,
+                    borderRadius: BorderRadius.circular(FASTRadius.pill),
+                    color: _brand,
+                    backgroundColor: context.fast.line,
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: 16),
-          Text(
-            '${item.totalSold}',
-            style: TextStyle(
-              color: context.fast.t1,
-              fontWeight: FontWeight.w700,
+            const SizedBox(width: FASTSpace.s16),
+            Text(
+              '${item.totalSold}',
+              style: FASTText.price.copyWith(color: context.fast.t1),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -635,38 +678,36 @@ class _KpiCard extends StatelessWidget {
           '$label, $value${hasDelta ? ', ${tr(context, 'evolution_lbl')} $deltaLabel' : ''}',
       child: Container(
         width: width,
-        constraints: const BoxConstraints(minHeight: 154),
-        padding: const EdgeInsets.all(16),
+        constraints: const BoxConstraints(minHeight: 164),
+        padding: const EdgeInsets.all(FASTSpace.s16),
         decoration: BoxDecoration(
           color: context.fast.card,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(FASTRadius.md),
           border: Border.all(color: context.fast.line),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: _brand, size: 24),
-            const SizedBox(height: 14),
+            Icon(icon, color: _brand, size: 22),
+            const SizedBox(height: FASTSpace.s12),
             FittedBox(
               fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
+              alignment: AlignmentDirectional.centerStart,
               child: Text(
                 value,
-                style: TextStyle(
-                  color: context.fast.t1,
-                  fontSize: 23,
-                  fontWeight: FontWeight.w800,
-                ),
+                maxLines: 1,
+                style: FASTText.display.copyWith(color: context.fast.t1),
               ),
             ),
-            const SizedBox(height: 5),
+            const SizedBox(height: FASTSpace.s4),
             Text(
               label,
               maxLines: 2,
-              style: TextStyle(color: context.fast.t2, fontSize: 13),
+              overflow: TextOverflow.ellipsis,
+              style: FASTText.caption.copyWith(color: context.fast.t2),
             ),
             if (hasDelta) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: FASTSpace.s8),
               Row(
                 children: [
                   Icon(
@@ -678,10 +719,10 @@ class _KpiCard extends StatelessWidget {
                   Flexible(
                     child: Text(
                       deltaLabel,
-                      style: TextStyle(
+                      style: FASTText.caption.copyWith(
                         color: deltaColor,
-                        fontSize: 12,
                         fontWeight: FontWeight.w700,
+                        fontFeatures: const [FontFeature.tabularFigures()],
                       ),
                     ),
                   ),
@@ -708,16 +749,17 @@ class _Metric extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            value,
-            style: TextStyle(
-              color: context.fast.t1,
-              fontSize: 21,
-              fontWeight: FontWeight.w800,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: AlignmentDirectional.centerStart,
+            child: Text(
+              value,
+              maxLines: 1,
+              style: FASTText.display.copyWith(color: context.fast.t1),
             ),
           ),
-          const SizedBox(height: 5),
-          Text(label, style: TextStyle(color: context.fast.t2, fontSize: 13)),
+          const SizedBox(height: FASTSpace.s4),
+          Text(label, style: FASTText.caption.copyWith(color: context.fast.t2)),
         ],
       ),
     );
@@ -733,10 +775,10 @@ class _Panel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(FASTSpace.s16),
       decoration: BoxDecoration(
         color: context.fast.card,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(FASTRadius.md),
         border: Border.all(color: context.fast.line),
       ),
       child: child,
@@ -755,16 +797,9 @@ class _SectionTitle extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: TextStyle(
-            color: context.fast.t1,
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(subtitle, style: TextStyle(color: context.fast.t2, fontSize: 13)),
+        Text(title, style: FASTText.title.copyWith(color: context.fast.t1)),
+        const SizedBox(height: FASTSpace.s4),
+        Text(subtitle, style: FASTText.body.copyWith(color: context.fast.t2)),
       ],
     );
   }
@@ -839,40 +874,21 @@ class _StatePanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _Panel(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 32),
-        child: Column(
-          children: [
-            Icon(icon, color: _brand, size: 42),
-            const SizedBox(height: 16),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: context.fast.t1,
-                fontSize: 19,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: TextStyle(color: context.fast.t2, height: 1.5),
-            ),
-            const SizedBox(height: 20),
-            FilledButton.icon(
-              onPressed: onPressed,
-              icon: const Icon(Icons.refresh),
-              label: Text(actionLabel),
-              style: FilledButton.styleFrom(
-                minimumSize: const Size(140, 48),
-                backgroundColor: _brand,
-                foregroundColor: context.fast.bg,
-              ),
-            ),
-          ],
+    return FastEmpty(
+      icon: icon,
+      accent: _brand,
+      title: title,
+      subtitle: message,
+      action: OutlinedButton.icon(
+        onPressed: onPressed,
+        icon: const Icon(Icons.refresh, size: 18, color: _brand),
+        label: Text(actionLabel),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: context.fast.t1,
+          side: BorderSide(color: context.fast.line),
+          shape: const StadiumBorder(),
+          minimumSize: const Size(140, 48),
+          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
         ),
       ),
     );

@@ -154,110 +154,128 @@ class _RestoMainShellState extends State<RestoMainShell> {
   Widget build(BuildContext context) {
     final provider = Provider.of<RestoProvider>(context);
     final tutorial = _tutorialSteps[_tutorialStep];
+    final fast = context.fast;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Stack(
       children: [
         Scaffold(
           key: _scaffoldKey,
-          backgroundColor: context.fast.bg,
+          backgroundColor: fast.bg,
           // extendBody stays off: the Scaffold reserves the nav pill's
           // footprint so page content (save/disconnect buttons) can
           // never scroll underneath it and get hidden.
           extendBody: false,
           appBar: AppBar(
-            backgroundColor: FASTPro.header,
-            systemOverlayStyle: SystemUiOverlayStyle.light,
+            backgroundColor: fast.bg,
             surfaceTintColor: Colors.transparent,
             elevation: 0,
-            toolbarHeight: 52,
-            titleSpacing: 16,
-            iconTheme: const IconThemeData(color: Color(0xFFF1F5F9)),
-            title: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    ShaderMask(
-                      shaderCallback: (b) =>
-                          FASTPro.logoGradient.createShader(b),
-                      child: const Text(
-                        '⚡ FAST',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w900,
-                          fontSize: 17,
-                          letterSpacing: 3,
-                          color: Colors.white,
+            toolbarHeight: 56,
+            titleSpacing: FASTSpace.s4,
+            iconTheme: IconThemeData(color: fast.t1),
+            // Scales down instead of overflowing when a long kitchen
+            // label leaves the wordmark little room.
+            title: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: AlignmentDirectional.centerStart,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ShaderMask(
+                        shaderCallback: (b) =>
+                            FASTBrand.neonGradient.createShader(b),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.bolt,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                            Text(
+                              'FAST',
+                              style: FASTText.title.copyWith(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w900,
+                                fontStyle: FontStyle.italic,
+                                letterSpacing: 1,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 7,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: FASTPro.teal.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(5),
-                        border: Border.all(
-                          color: FASTPro.teal.withValues(alpha: 0.4),
+                      const SizedBox(width: FASTSpace.s8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: FASTSpace.s8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: FASTPro.teal.withValues(alpha: 0.14),
+                          borderRadius: BorderRadius.circular(FASTRadius.pill),
+                          border: Border.all(
+                            color: FASTPro.teal.withValues(alpha: 0.4),
+                          ),
+                        ),
+                        child: Text(
+                          'PRO',
+                          style: FASTText.label.copyWith(
+                            color: isDark ? FASTPro.teal : FASTPro.tealDark,
+                          ),
                         ),
                       ),
-                      child: const Text(
-                        'PRO',
-                        style: TextStyle(
-                          color: FASTPro.teal,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 2,
+                      const SizedBox(width: FASTSpace.s8),
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: FASTBrand.success, // Green live dot
+                          shape: BoxShape.circle,
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF10B981), // Green live dot
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ],
-                ),
-                const Text(
-                  'RESTAURATEUR PRO',
-                  style: TextStyle(
-                    color: Color(0xFF94A3B8),
-                    fontSize: 8,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 2,
+                    ],
                   ),
-                ),
-              ],
+                  Text(
+                    'RESTAURATEUR PRO',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: FASTText.caption.copyWith(
+                      color: fast.t3,
+                      letterSpacing: 0.6,
+                    ),
+                  ),
+                ],
+              ),
             ),
             actions: [
-              ElevatedButton.icon(
+              OutlinedButton.icon(
                 key: _kitchenKey,
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const KitchenScreen()),
                   );
                 },
-                icon: Icon(Icons.soup_kitchen, size: 18),
+                icon: const Icon(Icons.soup_kitchen_outlined, size: 18),
                 label: Text(
                   tr(context, 'kitchen_btn'),
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: FASTText.body.copyWith(fontWeight: FontWeight.w700),
                 ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: FASTPro.teal.withValues(alpha: 0.15),
-                  foregroundColor: FASTPro.teal,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: fast.t1,
+                  side: BorderSide(color: fast.line),
+                  minimumSize: const Size(0, 40),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: FASTSpace.s12,
                   ),
+                  shape: const StadiumBorder(),
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: FASTSpace.s16),
             ],
           ),
           drawer: RestoDrawer(
@@ -276,10 +294,9 @@ class _RestoMainShellState extends State<RestoMainShell> {
                         ? '${tr(context, 'rush_banner')}  ·  ${tr(context, 'rush_remaining').replaceAll('{m}', '${provider.rushMinutesRemaining}')}'
                         : tr(context, 'rush_banner'),
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: FASTText.caption.copyWith(
                       color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
@@ -290,10 +307,11 @@ class _RestoMainShellState extends State<RestoMainShell> {
             ],
           ),
           bottomNavigationBar: FastNavBar(
-            accent: FASTPro.teal,
-            surface: FASTPro.header,
-            line: const Color(0xFF1E293B),
-            inactive: const Color(0xFF94A3B8),
+            // Same calm bar as the customer shell: flat pill behind the
+            // selected tab, 12 pt labels that ellipsize when tight.
+            calm: true,
+            calmPill: FASTPro.teal,
+            calmOnPill: FASTBrand.onAmber,
             currentIndex: _navIndex,
             onTap: (i) {
               if (i == 2) {
@@ -365,11 +383,7 @@ class _RestoMainShellState extends State<RestoMainShell> {
         gradient: const RadialGradient(
           center: Alignment(0, -0.35),
           radius: 0.9,
-          colors: [
-            Color(0xFFF87171),
-            Color(0xFFEF4444),
-            Color(0xFFB91C1C),
-          ],
+          colors: [Color(0xFFF87171), Color(0xFFEF4444), Color(0xFFB91C1C)],
           stops: [0.0, 0.55, 1.0],
         ),
         border: Border.all(color: const Color(0xFFFCA5A5), width: 1.5),
@@ -423,9 +437,11 @@ class _RestoMainShellState extends State<RestoMainShell> {
       final remaining = provider.rushMinutesRemaining;
       final confirmed = await showModalBottomSheet<bool>(
         context: context,
-        backgroundColor: FASTPro.header,
+        backgroundColor: context.fast.card,
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(FASTRadius.md),
+          ),
         ),
         builder: (sheetContext) => SafeArea(
           child: Padding(
@@ -436,11 +452,7 @@ class _RestoMainShellState extends State<RestoMainShell> {
               children: [
                 Text(
                   tr(context, 'rush_off_title'),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                  ),
+                  style: FASTText.title.copyWith(color: context.fast.t1),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -450,11 +462,7 @@ class _RestoMainShellState extends State<RestoMainShell> {
                           'rush_off_desc_timed',
                         ).replaceAll('{m}', '$remaining')
                       : tr(context, 'rush_off_desc'),
-                  style: const TextStyle(
-                    color: Color(0xFF94A3B8),
-                    fontSize: 13,
-                    height: 1.4,
-                  ),
+                  style: FASTText.body.copyWith(color: context.fast.t2),
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton.icon(
@@ -465,12 +473,10 @@ class _RestoMainShellState extends State<RestoMainShell> {
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFEF4444),
+                    backgroundColor: FASTBrand.error,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                    shape: const StadiumBorder(),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -478,7 +484,7 @@ class _RestoMainShellState extends State<RestoMainShell> {
                   onPressed: () => Navigator.pop(sheetContext, false),
                   child: Text(
                     tr(context, 'cancel'),
-                    style: const TextStyle(color: Color(0xFF94A3B8)),
+                    style: FASTText.body.copyWith(color: context.fast.t2),
                   ),
                 ),
               ],
@@ -493,10 +499,12 @@ class _RestoMainShellState extends State<RestoMainShell> {
     int? selected = 30;
     final confirmed = await showModalBottomSheet<int?>(
       context: context,
-      backgroundColor: FASTPro.header,
+      backgroundColor: context.fast.card,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(FASTRadius.md),
+        ),
       ),
       builder: (sheetContext) => StatefulBuilder(
         builder: (sheetContext, setSheetState) {
@@ -510,30 +518,17 @@ class _RestoMainShellState extends State<RestoMainShell> {
                 children: [
                   Text(
                     tr(context, 'rush_confirm_title'),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
-                    ),
+                    style: FASTText.title.copyWith(color: context.fast.t1),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     tr(context, 'rush_confirm_desc'),
-                    style: const TextStyle(
-                      color: Color(0xFF94A3B8),
-                      fontSize: 13,
-                      height: 1.4,
-                    ),
+                    style: FASTText.body.copyWith(color: context.fast.t2),
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    tr(context, 'rush_duration'),
-                    style: const TextStyle(
-                      color: Color(0xFF94A3B8),
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1,
-                    ),
+                    fastLabelCase(context, tr(context, 'rush_duration')),
+                    style: FASTText.label.copyWith(color: context.fast.t2),
                   ),
                   const SizedBox(height: 10),
                   Wrap(
@@ -544,37 +539,49 @@ class _RestoMainShellState extends State<RestoMainShell> {
                         ChoiceChip(
                           label: Text('$m min'),
                           selected: selected == m,
-                          onSelected: (_) => setSheetState(() => selected = m),
-                          selectedColor: const Color(0xFFEF4444),
-                          backgroundColor: const Color(0xFF1E293B),
+                          onSelected: (_) {
+                            HapticFeedback.selectionClick();
+                            setSheetState(() => selected = m);
+                          },
+                          selectedColor: FASTBrand.error,
+                          showCheckmark: false,
+                          shape: const StadiumBorder(),
+                          backgroundColor: context.fast.cardHigh,
                           labelStyle: TextStyle(
                             color: selected == m
                                 ? Colors.white
-                                : const Color(0xFF94A3B8),
+                                : context.fast.t2,
+                            fontSize: 14,
                             fontWeight: FontWeight.bold,
                           ),
                           side: BorderSide(
                             color: selected == m
-                                ? const Color(0xFFEF4444)
-                                : const Color(0xFF334155),
+                                ? FASTBrand.error
+                                : context.fast.line,
                           ),
                         ),
                       ChoiceChip(
                         label: Text(tr(context, 'rush_until_off')),
                         selected: selected == null,
-                        onSelected: (_) => setSheetState(() => selected = null),
-                        selectedColor: const Color(0xFFEF4444),
-                        backgroundColor: const Color(0xFF1E293B),
+                        onSelected: (_) {
+                          HapticFeedback.selectionClick();
+                          setSheetState(() => selected = null);
+                        },
+                        selectedColor: FASTBrand.error,
+                        showCheckmark: false,
+                        shape: const StadiumBorder(),
+                        backgroundColor: context.fast.cardHigh,
                         labelStyle: TextStyle(
                           color: selected == null
                               ? Colors.white
-                              : const Color(0xFF94A3B8),
+                              : context.fast.t2,
+                          fontSize: 14,
                           fontWeight: FontWeight.bold,
                         ),
                         side: BorderSide(
                           color: selected == null
-                              ? const Color(0xFFEF4444)
-                              : const Color(0xFF334155),
+                              ? FASTBrand.error
+                              : context.fast.line,
                         ),
                       ),
                     ],
@@ -589,12 +596,10 @@ class _RestoMainShellState extends State<RestoMainShell> {
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFEF4444),
+                      backgroundColor: FASTBrand.error,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
+                      shape: const StadiumBorder(),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -602,7 +607,7 @@ class _RestoMainShellState extends State<RestoMainShell> {
                     onPressed: () => Navigator.pop(sheetContext),
                     child: Text(
                       tr(context, 'cancel'),
-                      style: const TextStyle(color: Color(0xFF94A3B8)),
+                      style: FASTText.body.copyWith(color: context.fast.t2),
                     ),
                   ),
                 ],
@@ -678,8 +683,7 @@ class _StripeSetupBannerState extends State<_StripeSetupBanner>
       if (!mounted) return;
       setState(() {
         _connected = status['connected'] as bool? ?? false;
-        _ready =
-            _connected && (status['chargesEnabled'] as bool? ?? false);
+        _ready = _connected && (status['chargesEnabled'] as bool? ?? false);
       });
     } catch (_) {
       // Status check failing (e.g. Stripe not configured server-side)
@@ -690,42 +694,44 @@ class _StripeSetupBannerState extends State<_StripeSetupBanner>
   @override
   Widget build(BuildContext context) {
     if (_ready) return const SizedBox.shrink();
-    return InkWell(
-      onTap: () {
-        widget.onSetup();
-        _refresh();
-      },
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-        color: const Color(0xFFF59E0B),
-        child: Row(
-          children: [
-            const Icon(
-              Icons.account_balance_outlined,
-              color: Colors.white,
-              size: 16,
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                tr(
-                  context,
-                  _connected ? 'stripe_connected' : 'stripe_required',
-                ),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 11,
+    final fast = context.fast;
+    // Action needed keeps a status colour (red), on a quiet tint so it
+    // cannot be mistaken for the proximity colour of an order below it.
+    return Material(
+      color: Color.alphaBlend(FASTBrand.error.withValues(alpha: 0.12), fast.bg),
+      child: InkWell(
+        onTap: () {
+          widget.onSetup();
+          _refresh();
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            vertical: FASTSpace.s8,
+            horizontal: FASTSpace.s16,
+          ),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.account_balance_outlined,
+                color: FASTBrand.error,
+                size: 18,
+              ),
+              const SizedBox(width: FASTSpace.s8),
+              Expanded(
+                child: Text(
+                  tr(
+                    context,
+                    _connected ? 'stripe_connected' : 'stripe_required',
+                  ),
+                  style: FASTText.caption.copyWith(
+                    color: fast.t1,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
-            ),
-            const Icon(
-              Icons.chevron_right,
-              color: Colors.white,
-              size: 18,
-            ),
-          ],
+              Icon(Icons.chevron_right, color: fast.t2, size: 18),
+            ],
+          ),
         ),
       ),
     );

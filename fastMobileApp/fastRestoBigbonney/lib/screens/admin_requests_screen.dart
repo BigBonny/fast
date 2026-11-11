@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../api/api_exceptions.dart';
 import '../l10n/tr.dart';
 import '../services/restaurant_service.dart';
 import '../theme.dart';
+import '../widgets/fast_ui.dart';
 
 /// FAST-team pipeline: restaurants clients asked for. Each card keeps the
 /// requester's contact info so ops can call the restaurant, onboard it,
@@ -57,10 +59,11 @@ class _AdminRequestsScreenState extends State<AdminRequestsScreen> {
   };
 
   Color _statusColor(String status) => switch (status) {
-    'CONTACTED' => const Color(0xFF3B82F6),
-    'ONBOARDED' => const Color(0xFF10B981),
+    'CONTACTED' => FASTBrand.info,
+    'ONBOARDED' => FASTBrand.success,
     'DECLINED' => context.fast.t3,
-    _ => const Color(0xFFF59E0B),
+    // New request: teal, the accent with no order-status meaning.
+    _ => FASTPro.teal,
   };
 
   String _fmtDate(dynamic iso) {
@@ -80,7 +83,9 @@ class _AdminRequestsScreenState extends State<AdminRequestsScreen> {
       context: context,
       backgroundColor: context.fast.card,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(FASTRadius.md),
+        ),
       ),
       builder: (ctx) => SafeArea(
         child: Column(
@@ -90,11 +95,7 @@ class _AdminRequestsScreenState extends State<AdminRequestsScreen> {
               padding: const EdgeInsets.all(16),
               child: Text(
                 tr(ctx, 'admin_req_mark'),
-                style: TextStyle(
-                  color: ctx.fast.t1,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 15,
-                ),
+                style: FASTText.title.copyWith(color: ctx.fast.t1),
               ),
             ),
             for (final s in _statuses)
@@ -108,7 +109,10 @@ class _AdminRequestsScreenState extends State<AdminRequestsScreen> {
                 ),
                 title: Text(
                   _statusLabel(s),
-                  style: TextStyle(color: ctx.fast.t1, fontSize: 14),
+                  style: FASTText.body.copyWith(
+                    color: ctx.fast.t1,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 onTap: () => Navigator.pop(ctx, s),
               ),
@@ -124,7 +128,9 @@ class _AdminRequestsScreenState extends State<AdminRequestsScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(e is ApiException ? e.message : tr(context, 'err_retry')),
+          content: Text(
+            e is ApiException ? e.message : tr(context, 'err_retry'),
+          ),
         ),
       );
     }
@@ -135,30 +141,38 @@ class _AdminRequestsScreenState extends State<AdminRequestsScreen> {
     return Scaffold(
       backgroundColor: context.fast.bg,
       appBar: AppBar(
-        title: Text(tr(context, 'admin_req_title')),
+        title: Text(
+          tr(context, 'admin_req_title'),
+          style: FASTText.title.copyWith(color: context.fast.t1),
+        ),
         backgroundColor: context.fast.bg,
+        surfaceTintColor: Colors.transparent,
       ),
       body: Column(
         children: [
           SizedBox(
-            height: 46,
+            height: 48,
             child: ListView(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: FASTSpace.s16),
               children: [
                 for (final s in [null, ..._statuses])
                   Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: ChoiceChip(
-                      label: Text(
-                        s == null ? tr(context, 'admin_req_all') : _statusLabel(s),
-                        style: const TextStyle(fontSize: 12),
+                    padding: const EdgeInsetsDirectional.only(
+                      end: FASTSpace.s8,
+                    ),
+                    child: Center(
+                      child: _filterChip(
+                        s == null
+                            ? tr(context, 'admin_req_all')
+                            : _statusLabel(s),
+                        _filter == s,
+                        () {
+                          HapticFeedback.selectionClick();
+                          setState(() => _filter = s);
+                          _load();
+                        },
                       ),
-                      selected: _filter == s,
-                      onSelected: (_) {
-                        setState(() => _filter = s);
-                        _load();
-                      },
                     ),
                   ),
               ],
@@ -166,28 +180,69 @@ class _AdminRequestsScreenState extends State<AdminRequestsScreen> {
           ),
           Expanded(
             child: _loading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(
+                    child: CircularProgressIndicator(color: FASTPro.teal),
+                  )
                 : _error != null
                 ? Center(
-                    child: Text(_error!, style: TextStyle(color: context.fast.t3)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(FASTSpace.s24),
+                      child: Text(
+                        _error!,
+                        textAlign: TextAlign.center,
+                        style: FASTText.body.copyWith(color: context.fast.t2),
+                      ),
+                    ),
                   )
                 : _requests.isEmpty
                 ? Center(
-                    child: Text(
-                      tr(context, 'admin_req_empty'),
-                      style: TextStyle(color: context.fast.t3),
+                    child: FastEmpty(
+                      icon: Icons.inbox_outlined,
+                      title: tr(context, 'admin_req_empty'),
+                      accent: FASTPro.teal,
                     ),
                   )
                 : RefreshIndicator(
+                    color: FASTPro.teal,
                     onRefresh: _load,
                     child: ListView.builder(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(FASTSpace.s16),
                       itemCount: _requests.length,
                       itemBuilder: (_, i) => _requestCard(_requests[i]),
                     ),
                   ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Filter pill: teal when selected, outline otherwise.
+  Widget _filterChip(String label, bool selected, VoidCallback onTap) {
+    final fast = context.fast;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(
+          horizontal: FASTSpace.s16,
+          vertical: FASTSpace.s8,
+        ),
+        decoration: BoxDecoration(
+          color: selected ? FASTPro.teal.withValues(alpha: 0.14) : fast.card,
+          borderRadius: BorderRadius.circular(FASTRadius.pill),
+          border: Border.all(color: selected ? FASTPro.teal : fast.line),
+        ),
+        child: Text(
+          label,
+          style: FASTText.caption.copyWith(
+            fontWeight: FontWeight.w700,
+            color: selected
+                ? (isDark ? FASTPro.teal : FASTPro.tealDark)
+                : fast.t2,
+          ),
+        ),
       ),
     );
   }
@@ -202,11 +257,11 @@ class _AdminRequestsScreenState extends State<AdminRequestsScreen> {
     final userEmail = '${r['userEmail'] ?? ''}'.trim();
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(bottom: FASTSpace.s12),
+      padding: const EdgeInsets.all(FASTSpace.s16),
       decoration: BoxDecoration(
         color: context.fast.card,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(FASTRadius.md),
         border: Border.all(color: context.fast.line),
       ),
       child: Column(
@@ -217,32 +272,28 @@ class _AdminRequestsScreenState extends State<AdminRequestsScreen> {
               Expanded(
                 child: Text(
                   '${r['name'] ?? ''}',
-                  style: TextStyle(
-                    color: context.fast.t1,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 15,
-                  ),
+                  style: FASTText.item.copyWith(color: context.fast.t1),
                 ),
               ),
+              const SizedBox(width: FASTSpace.s8),
               GestureDetector(
                 onTap: () => _pickStatus(r),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
+                    horizontal: FASTSpace.s12,
+                    vertical: FASTSpace.s4,
                   ),
                   decoration: BoxDecoration(
                     color: _statusColor(status).withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(FASTRadius.pill),
                     border: Border.all(
                       color: _statusColor(status).withValues(alpha: 0.4),
                     ),
                   ),
                   child: Text(
                     _statusLabel(status),
-                    style: TextStyle(
+                    style: FASTText.caption.copyWith(
                       color: _statusColor(status),
-                      fontSize: 11,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -257,7 +308,7 @@ class _AdminRequestsScreenState extends State<AdminRequestsScreen> {
               address,
               _fmtDate(r['createdAt']),
             ].where((s) => s.isNotEmpty).join(' · '),
-            style: TextStyle(color: context.fast.t3, fontSize: 12),
+            style: FASTText.caption.copyWith(color: context.fast.t2),
           ),
           if (phone.isNotEmpty)
             Padding(
@@ -267,18 +318,21 @@ class _AdminRequestsScreenState extends State<AdminRequestsScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.phone_outlined,
-                      size: 15,
-                      color: Color(0xFF10B981),
+                      size: 16,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? FASTPro.teal
+                          : FASTPro.tealDark,
                     ),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: FASTSpace.s8),
                     Text(
                       phone,
-                      style: const TextStyle(
-                        color: Color(0xFF10B981),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
+                      style: FASTText.price.copyWith(
+                        fontSize: 14,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? FASTPro.teal
+                            : FASTPro.tealDark,
                       ),
                     ),
                   ],
@@ -290,9 +344,8 @@ class _AdminRequestsScreenState extends State<AdminRequestsScreen> {
               padding: const EdgeInsets.only(top: 8),
               child: Text(
                 '“$note”',
-                style: TextStyle(
+                style: FASTText.body.copyWith(
                   color: context.fast.t2,
-                  fontSize: 12,
                   fontStyle: FontStyle.italic,
                 ),
               ),
@@ -303,7 +356,7 @@ class _AdminRequestsScreenState extends State<AdminRequestsScreen> {
               child: Text(
                 '${tr(context, 'admin_req_client')}: '
                 '${[userName, userEmail].where((s) => s.isNotEmpty).join(' · ')}',
-                style: TextStyle(color: context.fast.t3, fontSize: 11),
+                style: FASTText.caption.copyWith(color: context.fast.t3),
               ),
             ),
         ],

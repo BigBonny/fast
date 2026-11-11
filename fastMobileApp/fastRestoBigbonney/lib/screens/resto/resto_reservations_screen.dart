@@ -11,6 +11,7 @@ import '../../models.dart';
 import '../../resto_provider.dart';
 import '../../services/reservation_service.dart';
 import '../../theme.dart';
+import '../../widgets/fast_ui.dart';
 
 class RestoReservationsScreen extends StatefulWidget {
   const RestoReservationsScreen({super.key});
@@ -58,17 +59,23 @@ class _RestoReservationsScreenState extends State<RestoReservationsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e is ApiException ? e.message : tr(context, 'load_err')),
+            content: Text(
+              e is ApiException ? e.message : tr(context, 'load_err'),
+            ),
           ),
         );
       }
     }
   }
 
+  // Reservation status: green = confirmed, red = declined/cancelled,
+  // amber = waiting for an answer. Amber is a status here (pending), kept
+  // with its value; this screen has no client-proximity yellow to clash
+  // with.
   Color _statusColor(String status) => switch (status) {
-    'CONFIRMED' => const Color(0xFF10B981),
-    'DECLINED' || 'CANCELLED' => const Color(0xFFEF4444),
-    _ => const Color(0xFFF59E0B),
+    'CONFIRMED' => FASTBrand.success,
+    'DECLINED' || 'CANCELLED' => FASTBrand.error,
+    _ => FASTBrand.amber,
   };
 
   String _statusLabel(String status) => switch (status) {
@@ -79,152 +86,175 @@ class _RestoReservationsScreenState extends State<RestoReservationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final fast = context.fast;
     return Scaffold(
-      backgroundColor: const Color(0xFF0B1020),
+      backgroundColor: fast.bg,
       appBar: AppBar(
-        backgroundColor: FASTPro.header,
-        title: Text(tr(context, 'reservations')),
-        iconTheme: const IconThemeData(color: Color(0xFFF1F5F9)),
+        backgroundColor: fast.bg,
+        title: Text(
+          tr(context, 'reservations'),
+          style: FASTText.title.copyWith(color: fast.t1),
+        ),
+        iconTheme: IconThemeData(color: fast.t1),
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: FASTPro.teal))
           : _error != null
-              ? Center(
-                  child: Text(
-                    _error!,
-                    style: const TextStyle(color: Color(0xFF94A3B8)),
-                  ),
-                )
-              : RefreshIndicator(
-                  onRefresh: _load,
-                  child: _items.isEmpty
-                      ? ListView(
-                          children: [
-                            const SizedBox(height: 120),
-                            Center(
-                              child: Text(
-                                tr(context, 'no_items'),
-                                style: const TextStyle(
-                                  color: Color(0xFF94A3B8),
-                                ),
-                              ),
-                            ),
-                          ],
-                        )
-                      : ListView.separated(
-                          padding: const EdgeInsets.all(16),
-                          itemCount: _items.length,
-                          separatorBuilder: (_, __) =>
-                              const SizedBox(height: 10),
-                          itemBuilder: (context, i) =>
-                              _buildCard(_items[i]),
-                        ),
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(FASTSpace.s24),
+                child: Text(
+                  _error!,
+                  textAlign: TextAlign.center,
+                  style: FASTText.body.copyWith(color: fast.t2),
                 ),
+              ),
+            )
+          : RefreshIndicator(
+              color: FASTPro.teal,
+              backgroundColor: fast.card,
+              onRefresh: _load,
+              child: _items.isEmpty
+                  ? ListView(
+                      children: [
+                        const SizedBox(height: 80),
+                        FastEmpty(
+                          icon: Icons.event_available_outlined,
+                          title: tr(context, 'no_items'),
+                          accent: fast.t2,
+                        ),
+                      ],
+                    )
+                  : ListView.separated(
+                      padding: const EdgeInsets.all(FASTSpace.s16),
+                      itemCount: _items.length,
+                      separatorBuilder: (_, __) =>
+                          const SizedBox(height: FASTSpace.s12),
+                      itemBuilder: (context, i) => _buildCard(_items[i]),
+                    ),
+            ),
+    );
+  }
+
+  Widget _meta(IconData icon, String text) {
+    final fast = context.fast;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 16, color: fast.t3),
+        const SizedBox(width: FASTSpace.s4),
+        Text(
+          text,
+          style: FASTText.body.copyWith(
+            color: fast.t2,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          ),
+        ),
+      ],
     );
   }
 
   Widget _buildCard(Reservation r) {
+    final fast = context.fast;
     final color = _statusColor(r.status);
     final dt = r.dateTime;
     final dateLabel =
         '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')} '
         '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(FASTSpace.s16),
       decoration: BoxDecoration(
-        color: const Color(0xFF131A2E),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF1E293B)),
+        color: fast.card,
+        borderRadius: BorderRadius.circular(FASTRadius.md),
+        border: Border.all(color: fast.line),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: Text(
                   r.customerName.isEmpty ? '—' : r.customerName,
-                  style: const TextStyle(
-                    color: Color(0xFFF1F5F9),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
+                  style: FASTText.item.copyWith(color: fast.t1),
                 ),
               ),
+              const SizedBox(width: FASTSpace.s12),
               Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 3,
+                  horizontal: 10,
+                  vertical: 4,
                 ),
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(FASTRadius.pill),
                 ),
                 child: Text(
                   _statusLabel(r.status),
-                  style: TextStyle(
+                  style: FASTText.caption.copyWith(
                     color: color,
-                    fontSize: 10,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
-          Row(
+          const SizedBox(height: FASTSpace.s8),
+          Wrap(
+            spacing: FASTSpace.s16,
+            runSpacing: FASTSpace.s4,
             children: [
-              const Icon(Icons.schedule, size: 14, color: Color(0xFF94A3B8)),
-              const SizedBox(width: 4),
-              Text(
-                dateLabel,
-                style: const TextStyle(
-                  color: Color(0xFF94A3B8),
-                  fontSize: 12,
-                ),
-              ),
-              const SizedBox(width: 14),
-              const Icon(Icons.people, size: 14, color: Color(0xFF94A3B8)),
-              const SizedBox(width: 4),
-              Text(
-                '${r.partySize}',
-                style: const TextStyle(
-                  color: Color(0xFF94A3B8),
-                  fontSize: 12,
-                ),
-              ),
+              _meta(Icons.schedule, dateLabel),
+              _meta(Icons.people_outline, '${r.partySize}'),
             ],
           ),
           if (r.note != null && r.note!.isNotEmpty) ...[
-            const SizedBox(height: 6),
-            Text(
-              r.note!,
-              style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11),
-            ),
+            const SizedBox(height: FASTSpace.s8),
+            Text(r.note!, style: FASTText.caption.copyWith(color: fast.t2)),
           ],
           if (r.isPending) ...[
-            const SizedBox(height: 10),
+            const SizedBox(height: FASTSpace.s16),
             Row(
               children: [
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () => _setStatus(r, 'DECLINED'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFFEF4444),
-                      side: const BorderSide(color: Color(0xFFEF4444)),
+                      foregroundColor: FASTBrand.error,
+                      side: const BorderSide(color: FASTBrand.error),
+                      minimumSize: const Size(0, 48),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      shape: const StadiumBorder(),
                     ),
-                    child: Text(tr(context, 'reservation_declined')),
+                    child: Text(
+                      tr(context, 'reservation_declined'),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: FASTSpace.s12),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () => _setStatus(r, 'CONFIRMED'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF10B981),
+                      backgroundColor: FASTBrand.success,
                       foregroundColor: Colors.white,
+                      elevation: 0,
+                      minimumSize: const Size(0, 48),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      shape: const StadiumBorder(),
                     ),
-                    child: Text(tr(context, 'reservation_confirmed')),
+                    child: Text(
+                      tr(context, 'reservation_confirmed'),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 ),
               ],

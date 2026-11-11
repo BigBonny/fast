@@ -34,8 +34,8 @@ Widget _statusPill(BuildContext context, String label, Color? color) {
   if (color == null) {
     bg = fast.cardHigh;
     fg = fast.t2;
-  } else if (color == FASTBrand.amber) {
-    bg = FASTBrand.amber;
+  } else if (color == FASTBrand.gold) {
+    bg = FASTBrand.gold;
     fg = FASTBrand.onAmber;
   } else {
     bg = color.withValues(alpha: 0.15);
@@ -512,7 +512,7 @@ class _CommandesScreenState extends State<CommandesScreen>
       label = fast.tr('at_door');
       icon = Icons.storefront;
     } else if (eta <= 3) {
-      c = FASTBrand.amber;
+      c = FASTBrand.gold;
       label = fast.tr('almost').replaceAll('{n}', '$eta');
       icon = Icons.near_me;
     } else {
@@ -558,7 +558,7 @@ class _CommandesScreenState extends State<CommandesScreen>
         label = fast.tr('st_ordered');
         break;
       case OrderStatus.preparing:
-        color = FASTBrand.amber;
+        color = FASTBrand.gold;
         label = fast.tr('st_preparing');
         break;
       case OrderStatus.readyForPickup:
@@ -640,7 +640,7 @@ class _CommandesScreenState extends State<CommandesScreen>
                     ),
                   ),
                 ],
-                color: const Color(0xFFF59E0B).withValues(alpha: 0.6),
+                color: FASTBrand.gold.withValues(alpha: 0.6),
                 width: 3,
               ),
               MarkerLayer(
@@ -895,7 +895,7 @@ class _CommandesScreenState extends State<CommandesScreen>
     String title = '';
     String desc = '';
     IconData icon = Icons.info;
-    Color iconColor = FASTBrand.amber;
+    Color iconColor = FASTBrand.gold;
 
     final fast = context.read<FASTProvider>();
     if (isCancelled) {
@@ -920,7 +920,7 @@ class _CommandesScreenState extends State<CommandesScreen>
           title = fast.tr('cooking_title');
           desc = fast.tr('cooking_desc');
           icon = Icons.restaurant_menu;
-          iconColor = FASTBrand.amber;
+          iconColor = FASTBrand.gold;
           break;
         case OrderStatus.readyForPickup:
           title = fast.tr('ready_title');
@@ -935,7 +935,7 @@ class _CommandesScreenState extends State<CommandesScreen>
 
     // Amber is drawn as a fill with a dark icon; the other status
     // colours as a tint with the icon in the status colour.
-    final amberIcon = iconColor == FASTBrand.amber;
+    final amberIcon = iconColor == FASTBrand.gold;
 
     return Container(
       padding: EdgeInsets.all(16),
@@ -951,7 +951,7 @@ class _CommandesScreenState extends State<CommandesScreen>
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: amberIcon
-                  ? FASTBrand.amber
+                  ? FASTBrand.gold
                   : iconColor.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
@@ -1451,7 +1451,7 @@ class _CommandesScreenState extends State<CommandesScreen>
                         filled
                             ? Icons.star_rounded
                             : Icons.star_outline_rounded,
-                        color: filled ? FASTBrand.amber : context.fast.faint,
+                        color: filled ? FASTBrand.gold : context.fast.faint,
                         size: 32,
                       ),
                     ),
@@ -1731,7 +1731,7 @@ class _CommandesScreenState extends State<CommandesScreen>
                                     ? Icons.star_rounded
                                     : Icons.star_outline_rounded,
                                 color: isLit
-                                    ? FASTBrand.amber
+                                    ? FASTBrand.gold
                                     : context.fast.faint,
                                 size: 28,
                               ),
@@ -1792,7 +1792,7 @@ class _CommandesScreenState extends State<CommandesScreen>
         fg = FASTBrand.error;
         break;
       default:
-        fg = FASTBrand.amber;
+        fg = FASTBrand.gold;
         break;
     }
     return _statusPill(context, orderStatusLabel(context, status), fg);
@@ -1892,7 +1892,7 @@ class _MyReservationsTabState extends State<_MyReservationsTab> {
   Color _statusColor(String status) => switch (status) {
     'CONFIRMED' => FASTBrand.success,
     'DECLINED' || 'CANCELLED' => FASTBrand.error,
-    _ => FASTBrand.amber,
+    _ => FASTBrand.gold,
   };
 
   String _statusLabel(String status) => switch (status) {
@@ -1906,7 +1906,7 @@ class _MyReservationsTabState extends State<_MyReservationsTab> {
   Widget build(BuildContext context) {
     if (_loading) {
       return const Center(
-        child: CircularProgressIndicator(color: FASTBrand.amber),
+        child: CircularProgressIndicator(color: FASTBrand.gold),
       );
     }
     if (_error != null) {
@@ -2052,7 +2052,7 @@ class _ConfettiPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final random = Random(seed);
     final colors = [
-      const Color(0xFFF59E0B),
+      FASTBrand.gold,
       const Color(0xFF10B981),
       const Color(0xFF3B82F6),
       const Color(0xFFEC4899),
@@ -2165,7 +2165,7 @@ class MapRoadmapPainter extends CustomPainter {
     canvas.drawPath(path, roadPaint);
 
     final neonPaint = Paint()
-      ..color = const Color(0xFFF59E0B).withValues(alpha: 0.4)
+      ..color = FASTBrand.gold.withValues(alpha: 0.4)
       ..strokeWidth = 4.0
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
@@ -2182,12 +2182,12 @@ class MapRoadmapPainter extends CustomPainter {
     );
 
     final radarPaint = Paint()
-      ..color = const Color(0xFFF59E0B).withValues(alpha: 0.15 + (pulse * 0.15))
+      ..color = FASTBrand.gold.withValues(alpha: 0.15 + (pulse * 0.15))
       ..style = PaintingStyle.fill;
     canvas.drawCircle(progressPt, 12 + (pulse * 8), radarPaint);
 
     final dotPaint = Paint()
-      ..color = const Color(0xFFF59E0B)
+      ..color = FASTBrand.gold
       ..style = PaintingStyle.fill;
     canvas.drawCircle(progressPt, 5.0, dotPaint);
 

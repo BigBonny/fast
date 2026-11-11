@@ -405,7 +405,7 @@ class _SplashScreen extends StatelessWidget {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.bolt, color: FASTBrand.amber, size: 30),
+                const Icon(Icons.bolt, color: FASTBrand.gold, size: 30),
                 Text(
                   'FAST',
                   style: FASTText.display.copyWith(
@@ -413,7 +413,7 @@ class _SplashScreen extends StatelessWidget {
                     color: context.fast.t1,
                   ),
                 ),
-                const Icon(Icons.bolt, color: FASTBrand.amber, size: 30),
+                const Icon(Icons.bolt, color: FASTBrand.gold, size: 30),
               ],
             ),
             const SizedBox(height: FASTSpace.s24),
@@ -421,7 +421,7 @@ class _SplashScreen extends StatelessWidget {
               width: 24,
               height: 24,
               child: CircularProgressIndicator(
-                color: FASTBrand.amber,
+                color: FASTBrand.gold,
                 strokeWidth: 2.5,
               ),
             ),
@@ -552,7 +552,7 @@ class _MainShellState extends State<MainShell>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.bolt, color: FASTBrand.amber, size: 22),
+                    const Icon(Icons.bolt, color: FASTBrand.gold, size: 22),
                     Text(
                       'FAST',
                       style: TextStyle(
@@ -563,7 +563,7 @@ class _MainShellState extends State<MainShell>
                         color: context.fast.t1,
                       ),
                     ),
-                    const Icon(Icons.bolt, color: FASTBrand.amber, size: 22),
+                    const Icon(Icons.bolt, color: FASTBrand.gold, size: 22),
                   ],
                 ),
               ),

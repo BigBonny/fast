@@ -733,7 +733,7 @@ class _CartScreenState extends State<CartScreen> {
             height: 48,
             child: CircularProgressIndicator(
               strokeWidth: 3,
-              valueColor: AlwaysStoppedAnimation<Color>(FASTBrand.amber),
+              valueColor: AlwaysStoppedAnimation<Color>(FASTBrand.gold),
             ),
           ),
           const SizedBox(height: FASTSpace.s24),

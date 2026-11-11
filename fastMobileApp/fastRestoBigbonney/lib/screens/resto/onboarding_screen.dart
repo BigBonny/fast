@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../resto_provider.dart';
 import '../../models.dart';
@@ -12,6 +13,7 @@ import '../../widgets/intro_carousel.dart';
 import '../../theme.dart';
 import '../../l10n/tr.dart';
 import '../../widgets/address_autocomplete_field.dart';
+import '../../widgets/fast_ui.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -288,8 +290,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     if (_checkingBackend) {
       return Scaffold(
         backgroundColor: context.fast.bg,
-        body: Center(
-          child: CircularProgressIndicator(color: Color(0xFF00C8B3)),
+        body: const Center(
+          child: CircularProgressIndicator(color: FASTPro.teal),
         ),
       );
     }
@@ -310,7 +312,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         content = _buildForm();
         break;
       default:
-        content = const Center(child: CircularProgressIndicator());
+        content = const Center(
+          child: CircularProgressIndicator(color: FASTPro.teal),
+        );
     }
 
     return Scaffold(
@@ -319,40 +323,56 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  Widget _buildRgpd() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Icon(Icons.privacy_tip, size: 64, color: Color(0xFF00C8B3)),
-        const SizedBox(height: 24),
-        Text(
-          tr(context, 'privacy_cgu'),
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: context.fast.t1,
-          ),
+  /// Centred column for the two single-message steps, capped in width so
+  /// it does not stretch across a tablet.
+  Widget _stepColumn(List<Widget> children) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(FASTSpace.s24),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 420),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: children,
         ),
-        const SizedBox(height: 16),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 32.0),
-          child: Text(
-            tr(context, 'accept_terms'),
-            textAlign: TextAlign.center,
-            style: TextStyle(color: context.fast.t2),
-          ),
-        ),
-        const SizedBox(height: 48),
-        ElevatedButton(
-          onPressed: _nextStep,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF00C8B3),
-            foregroundColor: Colors.black,
-          ),
-          child: Text(tr(context, 'accept_continue')),
-        ),
-      ],
+      ),
     );
+  }
+
+  Widget _buildRgpd() {
+    return _stepColumn([
+      Container(
+        width: 72,
+        height: 72,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: FASTPro.teal.withValues(alpha: 0.12),
+          border: Border.all(color: FASTPro.teal.withValues(alpha: 0.3)),
+        ),
+        child: const Icon(
+          Icons.privacy_tip_outlined,
+          size: 32,
+          color: FASTPro.teal,
+        ),
+      ),
+      const SizedBox(height: FASTSpace.s24),
+      Text(
+        tr(context, 'privacy_cgu'),
+        textAlign: TextAlign.center,
+        style: FASTText.display.copyWith(color: context.fast.t1),
+      ),
+      const SizedBox(height: FASTSpace.s16),
+      Text(
+        tr(context, 'accept_terms'),
+        textAlign: TextAlign.center,
+        style: FASTText.body.copyWith(color: context.fast.t2, height: 1.5),
+      ),
+      const SizedBox(height: FASTSpace.s40),
+      FastButton(
+        label: tr(context, 'accept_continue'),
+        onPressed: _nextStep,
+        kind: FastButtonKind.ink,
+      ),
+    ]);
   }
 
   /// Branded FAST Pro intro — same native carousel as the client side
@@ -402,43 +422,57 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _buildSplash() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          width: 120,
-          height: 120,
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
-          clipBehavior: Clip.antiAlias,
-          child: Transform.scale(
-            scale: 1.35,
-            child: Image.asset('assets/images/logo.png', fit: BoxFit.cover),
-          ),
+    return _stepColumn([
+      Container(
+        width: 120,
+        height: 120,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(FASTRadius.md),
         ),
-        SizedBox(height: 32),
-        Text(
-          tr(context, 'grow_title'),
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.w900,
-            color: context.fast.t1,
-          ),
+        clipBehavior: Clip.antiAlias,
+        child: Transform.scale(
+          scale: 1.35,
+          child: Image.asset('assets/images/logo.png', fit: BoxFit.cover),
         ),
-        const SizedBox(height: 48),
-        ElevatedButton(
-          onPressed: _nextStep,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF00C8B3),
-            foregroundColor: Colors.black,
-            padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
-          ),
-          child: Text(
-            tr(context, 'create_space'),
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-        ),
-      ],
+      ),
+      const SizedBox(height: FASTSpace.s24),
+      Text(
+        tr(context, 'grow_title'),
+        textAlign: TextAlign.center,
+        style: FASTText.display.copyWith(color: context.fast.t1),
+      ),
+      const SizedBox(height: FASTSpace.s40),
+      FastButton(
+        label: tr(context, 'create_space'),
+        onPressed: _nextStep,
+        kind: FastButtonKind.ink,
+      ),
+    ]);
+  }
+
+  /// Inputs: radius 12 on cardHigh, teal focus border.
+  InputDecoration _input(String label) {
+    final fast = context.fast;
+    OutlineInputBorder border(Color color, [double width = 1]) =>
+        OutlineInputBorder(
+          borderRadius: BorderRadius.circular(FASTRadius.sm),
+          borderSide: BorderSide(color: color, width: width),
+        );
+    return InputDecoration(
+      labelText: label,
+      labelStyle: FASTText.body.copyWith(color: fast.t2),
+      floatingLabelStyle: FASTText.body.copyWith(
+        color: Theme.of(context).brightness == Brightness.dark
+            ? FASTPro.teal
+            : FASTPro.tealDark,
+      ),
+      filled: true,
+      fillColor: fast.cardHigh,
+      border: border(fast.line),
+      enabledBorder: border(fast.line),
+      focusedBorder: border(FASTPro.teal, 1.5),
+      errorBorder: border(FASTBrand.error),
+      focusedErrorBorder: border(FASTBrand.error, 1.5),
     );
   }
 
@@ -446,68 +480,61 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return Form(
       key: _formKey,
       child: ListView(
-        padding: EdgeInsets.all(24.0),
+        padding: const EdgeInsets.fromLTRB(
+          FASTSpace.s16,
+          FASTSpace.s8,
+          FASTSpace.s16,
+          FASTSpace.s40,
+        ),
         children: [
           // Escape hatch — without it a failed creation traps the user
           // on this form with no way back to login/role selection.
           Align(
-            alignment: Alignment.centerLeft,
+            alignment: AlignmentDirectional.centerStart,
             child: TextButton.icon(
               onPressed: () async {
                 await context.read<AuthProvider>().logout();
                 // AuthProvider rebuild sends the app back to role selection.
               },
-              icon: Icon(Icons.logout, size: 16, color: context.fast.t3),
+              icon: Icon(Icons.logout, size: 18, color: context.fast.t2),
               label: Text(
                 tr(context, 'logout'),
-                style: TextStyle(color: context.fast.t3, fontSize: 13),
+                style: FASTText.body.copyWith(color: context.fast.t2),
               ),
             ),
           ),
           Text(
             tr(context, 'configuration'),
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.w900,
-              color: context.fast.t1,
-            ),
+            style: FASTText.display.copyWith(color: context.fast.t1),
           ),
-          SizedBox(height: 24),
+          const SizedBox(height: FASTSpace.s24),
           TextFormField(
             controller: _managerNameCtrl,
-            style: TextStyle(color: context.fast.t1),
-            decoration: InputDecoration(
-              labelText: tr(context, 'manager_name'),
-              labelStyle: TextStyle(color: context.fast.t2),
-            ),
+            style: FASTText.body.copyWith(fontSize: 16, color: context.fast.t1),
+            cursorColor: FASTPro.teal,
+            decoration: _input(tr(context, 'manager_name')),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: FASTSpace.s16),
           TextFormField(
             controller: _restoNameCtrl,
-            style: TextStyle(color: context.fast.t1),
-            decoration: InputDecoration(
-              labelText: tr(context, 'resto_name_lbl'),
-              labelStyle: TextStyle(color: context.fast.t2),
-            ),
+            style: FASTText.body.copyWith(fontSize: 16, color: context.fast.t1),
+            cursorColor: FASTPro.teal,
+            decoration: _input(tr(context, 'resto_name_lbl')),
             validator: (val) => val == null || val.trim().isEmpty
                 ? tr(context, 'required_f')
                 : null,
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: FASTSpace.s16),
           AddressAutocompleteField(
             controller: _cityOnboardingCtrl,
             label: tr(context, 'city'),
             onChanged: (v) => _city = v,
             onSelected: (s) => _city = s.label,
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: FASTSpace.s24),
           Text(
-            tr(context, 'cuisine_types_lbl'),
-            style: TextStyle(
-              color: context.fast.t2,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
+            fastLabelCase(context, tr(context, 'cuisine_types_lbl')),
+            style: FASTText.label.copyWith(color: context.fast.t2),
           ),
           const SizedBox(height: 8),
           Wrap(
@@ -515,42 +542,43 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             runSpacing: 8,
             children: _cuisines.map((c) {
               final sel = _cuisineTypes.contains(c);
+              final onSel = Theme.of(context).brightness == Brightness.dark
+                  ? FASTPro.teal
+                  : FASTPro.tealDark;
               return FilterChip(
                 label: Text(
                   catLabel(context, c),
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: sel ? Colors.white : context.fast.t2,
-                    fontWeight: sel ? FontWeight.w700 : FontWeight.normal,
+                  style: FASTText.caption.copyWith(
+                    color: sel ? onSel : context.fast.t2,
+                    fontWeight: sel ? FontWeight.w700 : FontWeight.w500,
                   ),
                 ),
                 selected: sel,
-                onSelected: (v) => setState(() {
-                  if (v) {
-                    _cuisineTypes.add(c);
-                  } else if (_cuisineTypes.length > 1) {
-                    _cuisineTypes.remove(c);
-                  }
-                }),
-                selectedColor: const Color(0xFF00C8B3),
+                onSelected: (v) {
+                  HapticFeedback.selectionClick();
+                  setState(() {
+                    if (v) {
+                      _cuisineTypes.add(c);
+                    } else if (_cuisineTypes.length > 1) {
+                      _cuisineTypes.remove(c);
+                    }
+                  });
+                },
+                selectedColor: FASTPro.teal.withValues(alpha: 0.14),
                 backgroundColor: context.fast.card,
-                checkmarkColor: Colors.white,
-                side: BorderSide(
-                  color: sel ? const Color(0xFF00C8B3) : context.fast.faint,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
+                checkmarkColor: onSel,
+                side: BorderSide(color: sel ? FASTPro.teal : context.fast.line),
+                shape: const StadiumBorder(),
               );
             }).toList(),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: FASTSpace.s40),
           _buildTimeSlider(
             tr(context, 'normal_prep'),
             _normalPrepTime,
             5,
             60,
-            const Color(0xFF00C8B3),
+            FASTPro.teal,
             (val) => setState(() => _normalPrepTime = val),
           ),
           const SizedBox(height: 24),
@@ -559,7 +587,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             _rushPrepTime,
             10,
             90,
-            const Color(0xFFEF4444),
+            FASTBrand.error,
             (val) => setState(() => _rushPrepTime = val),
           ),
           const SizedBox(height: 24),
@@ -569,30 +597,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: Text(
                 _formError!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Color(0xFFEF4444), fontSize: 13),
+                style: FASTText.body.copyWith(color: FASTBrand.error),
               ),
             ),
           const SizedBox(height: 8),
-          ElevatedButton(
+          FastButton(
+            label: tr(context, 'save_dashboard'),
             onPressed: _formLoading ? null : _nextStep,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF00C8B3),
-              foregroundColor: Colors.black,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-            ),
-            child: _formLoading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.black,
-                    ),
-                  )
-                : Text(
-                    tr(context, 'save_dashboard'),
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
+            loading: _formLoading,
+            kind: FastButtonKind.ink,
           ),
           const SizedBox(height: 20),
           // Assistant path — a staff member redeems the owner's code here
@@ -602,14 +615,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               onPressed: _formLoading ? null : _showInviteCodeSheet,
               icon: Icon(
                 Icons.vpn_key_outlined,
-                size: 15,
-                color: context.fast.t3,
+                size: 18,
+                color: context.fast.t2,
               ),
               label: Text(
                 tr(context, 'have_invite_code'),
-                style: TextStyle(
-                  color: context.fast.t3,
-                  fontSize: 12,
+                style: FASTText.body.copyWith(
+                  color: context.fast.t2,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -625,21 +637,34 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(tr(context, 'join_with_code')),
+        backgroundColor: context.fast.card,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(FASTRadius.md),
+          side: BorderSide(color: context.fast.line),
+        ),
+        title: Text(
+          tr(context, 'join_with_code'),
+          style: FASTText.title.copyWith(color: context.fast.t1),
+        ),
         content: TextField(
           controller: codeCtrl,
           autofocus: true,
           textCapitalization: TextCapitalization.characters,
-          decoration: InputDecoration(
-            labelText: tr(context, 'invite_code'),
-            // Invite codes look like FAST-XXXX-XXXX (backend staff.controller).
-            hintText: 'FAST-XXXX-XXXX',
-          ),
+          cursorColor: FASTPro.teal,
+          style: FASTText.price.copyWith(color: context.fast.t1),
+          // Invite codes look like FAST-XXXX-XXXX (backend staff.controller).
+          decoration: _input(
+            tr(context, 'invite_code'),
+          ).copyWith(hintText: 'FAST-XXXX-XXXX'),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text(tr(context, 'cancel')),
+            style: TextButton.styleFrom(foregroundColor: context.fast.t2),
+            child: Text(
+              tr(context, 'cancel'),
+              style: const TextStyle(fontSize: 14),
+            ),
           ),
           Consumer<AuthProvider>(
             builder: (ctx2, auth, _) => FilledButton(
@@ -654,7 +679,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         _finishOnboarding();
                       }
                     },
-              child: Text(tr(context, 'join_with_code')),
+              style: FilledButton.styleFrom(
+                backgroundColor: FASTPro.teal,
+                foregroundColor: FASTBrand.onAmber,
+                shape: const StadiumBorder(),
+              ),
+              child: Text(
+                tr(context, 'join_with_code'),
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
           ),
         ],
@@ -674,45 +710,40 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              title,
-              style: TextStyle(
-                color: context.fast.t1,
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
+            Expanded(
+              child: Text(
+                title,
+                style: FASTText.item.copyWith(color: context.fast.t1),
               ),
             ),
+            const SizedBox(width: FASTSpace.s8),
             Text(
               '${value.round()} min',
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
+              style: FASTText.price.copyWith(color: color),
             ),
           ],
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: FASTSpace.s8),
         Row(
           children: [
             Padding(
-              padding: const EdgeInsets.only(right: 8.0),
+              padding: const EdgeInsetsDirectional.only(end: FASTSpace.s8),
               child: Text(
                 '${min.round()}',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.38),
-                  fontSize: 11,
-                ),
+                style: FASTText.caption.copyWith(color: context.fast.t3),
               ),
             ),
             Expanded(
               child: SliderTheme(
                 data: SliderTheme.of(context).copyWith(
-                  trackHeight: 6.0,
-                  thumbShape: RoundSliderThumbShape(enabledThumbRadius: 14.0),
-                  overlayShape: RoundSliderOverlayShape(overlayRadius: 28.0),
+                  trackHeight: 4.0,
+                  thumbShape: const RoundSliderThumbShape(
+                    enabledThumbRadius: 12.0,
+                  ),
+                  overlayShape: const RoundSliderOverlayShape(
+                    overlayRadius: 24.0,
+                  ),
                   activeTrackColor: color,
                   inactiveTrackColor: context.fast.line,
                   thumbColor: color,
@@ -729,13 +760,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(left: 8.0),
+              padding: const EdgeInsetsDirectional.only(start: FASTSpace.s8),
               child: Text(
                 '${max.round()}',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.38),
-                  fontSize: 11,
-                ),
+                style: FASTText.caption.copyWith(color: context.fast.t3),
               ),
             ),
           ],

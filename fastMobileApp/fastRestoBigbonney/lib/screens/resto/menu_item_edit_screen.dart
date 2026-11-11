@@ -9,6 +9,7 @@ import '../../services/upload_service.dart';
 import '../../theme.dart';
 import '../../l10n/tr.dart';
 import '../../widgets/fast_image.dart';
+import '../../widgets/fast_parts.dart';
 import '../../widgets/fast_ui.dart';
 
 class MenuItemEditScreen extends StatefulWidget {
@@ -95,9 +96,9 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(tr(context, 'error_save'))),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(tr(context, 'error_save'))));
       }
     } finally {
       if (mounted) setState(() => _enhancing = false);
@@ -119,9 +120,9 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
       if (mounted) setState(() => _image.text = url);
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(tr(context, 'error_save'))),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(tr(context, 'error_save'))));
       }
     } finally {
       if (mounted) setState(() => _uploadingPhoto = false);
@@ -140,9 +141,9 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
       if (mounted) setState(() => _videoUrl.text = url);
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(tr(context, 'error_save'))),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(tr(context, 'error_save'))));
       }
     } finally {
       if (mounted) setState(() => _uploadingVideo = false);
@@ -169,9 +170,9 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
       }
     } catch (_) {
       if (mounted && !silent) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(tr(context, 'error_save'))),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(tr(context, 'error_save'))));
       }
     } finally {
       if (mounted) setState(() => _generatingPhoto = false);
@@ -182,45 +183,59 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
     required IconData icon,
     required String label,
     required VoidCallback? onTap,
-    Color? accent,
     bool loading = false,
   }) {
-    final color = accent ?? const Color(0xFF00C8B3);
+    const color = FASTPro.teal;
     return FastTap(
       onTap: loading ? null : onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+        height: 40,
+        padding: const EdgeInsets.symmetric(horizontal: FASTSpace.s16),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: color.withValues(alpha: 0.4)),
+          color: context.fast.cardHigh,
+          borderRadius: BorderRadius.circular(FASTRadius.pill),
+          border: Border.all(color: context.fast.line),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             if (loading)
-              SizedBox(
-                width: 15,
-                height: 15,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: color,
-                ),
+              const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2, color: color),
               )
             else
-              Icon(icon, size: 15, color: color),
-            const SizedBox(width: 6),
+              Icon(icon, size: 16, color: color),
+            const SizedBox(width: FASTSpace.s8),
             Text(
               label,
-              style: TextStyle(
-                color: color,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
+              style: FASTText.caption.copyWith(
+                color: context.fast.t1,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  /// Small section label above a group of fields.
+  Widget _sectionLabel(String text, {IconData? icon}) {
+    return Row(
+      children: [
+        if (icon != null) ...[
+          Icon(icon, size: 16, color: context.fast.t3),
+          const SizedBox(width: FASTSpace.s8),
+        ],
+        Flexible(
+          child: Text(
+            fastLabelCase(context, text),
+            style: FASTText.label.copyWith(color: context.fast.t2),
+          ),
+        ),
+      ],
     );
   }
 
@@ -232,30 +247,16 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Icon(
-                  Icons.image_outlined,
-                  size: 16,
-                  color: context.fast.t3,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  tr(context, 'media_photo'),
-                  style: TextStyle(
-                    color: context.fast.t2,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
+            _sectionLabel(
+              tr(context, 'media_photo'),
+              icon: Icons.image_outlined,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: FASTSpace.s12),
             if (url.isNotEmpty)
               Stack(
                 children: [
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(FASTRadius.sm),
                     child: FastImage(
                       url,
                       width: double.infinity,
@@ -267,20 +268,20 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                       ),
                     ),
                   ),
-                  Positioned(
-                    top: 6,
-                    right: 6,
+                  PositionedDirectional(
+                    top: FASTSpace.s8,
+                    end: FASTSpace.s8,
                     child: FastTap(
                       onTap: () => setState(() => _image.text = ''),
                       child: Container(
-                        padding: const EdgeInsets.all(5),
+                        padding: const EdgeInsets.all(8),
                         decoration: const BoxDecoration(
                           color: Colors.black54,
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
                           Icons.close,
-                          size: 14,
+                          size: 16,
                           color: Colors.white,
                         ),
                       ),
@@ -294,16 +295,16 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                 width: double.infinity,
                 decoration: BoxDecoration(
                   color: context.fast.cardHigh,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(FASTRadius.sm),
                   border: Border.all(color: context.fast.line),
                 ),
                 child: Icon(
                   Icons.add_photo_alternate_outlined,
-                  color: context.fast.faint,
+                  color: context.fast.t3,
                   size: 28,
                 ),
               ),
-            const SizedBox(height: 8),
+            const SizedBox(height: FASTSpace.s12),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -323,13 +324,12 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                 _mediaBtn(
                   icon: Icons.auto_awesome,
                   label: tr(context, 'media_ai'),
-                  accent: const Color(0xFF8B5CF6),
                   loading: _generatingPhoto,
                   onTap: _generateAiPhoto,
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: FASTSpace.s12),
             _field(
               controller: _image,
               label: tr(context, 'image_url_optional'),
@@ -349,62 +349,48 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Icon(
-                  Icons.play_circle_outline,
-                  size: 16,
-                  color: context.fast.t3,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  tr(context, 'media_video_lbl'),
-                  style: TextStyle(
-                    color: context.fast.t2,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
+            _sectionLabel(
+              tr(context, 'media_video_lbl'),
+              icon: Icons.play_circle_outline,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: FASTSpace.s12),
             if (url.isNotEmpty)
               Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 8,
+                  horizontal: FASTSpace.s12,
+                  vertical: FASTSpace.s12,
                 ),
-                margin: const EdgeInsets.only(bottom: 8),
+                margin: const EdgeInsets.only(bottom: FASTSpace.s12),
                 decoration: BoxDecoration(
                   color: context.fast.cardHigh,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(FASTRadius.sm),
                   border: Border.all(color: context.fast.line),
                 ),
                 child: Row(
                   children: [
                     const Icon(
                       Icons.play_circle_fill,
-                      size: 18,
-                      color: Color(0xFF00C8B3),
+                      size: 20,
+                      color: FASTPro.teal,
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: FASTSpace.s8),
                     Expanded(
                       child: Text(
                         url,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: context.fast.t3,
-                          fontSize: 11,
+                        style: FASTText.caption.copyWith(
+                          color: context.fast.t2,
                         ),
                       ),
                     ),
+                    const SizedBox(width: FASTSpace.s8),
                     FastTap(
                       onTap: () => setState(() => _videoUrl.text = ''),
                       child: Icon(
                         Icons.close,
-                        size: 16,
-                        color: context.fast.t3,
+                        size: 18,
+                        color: context.fast.t2,
                       ),
                     ),
                   ],
@@ -428,7 +414,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: FASTSpace.s12),
             _field(
               controller: _videoUrl,
               label: tr(context, 'video_url_lbl'),
@@ -459,7 +445,10 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
       'image': _image.text.trim(),
       'category': _category.text.trim(),
       'prepTime': (int.tryParse(_prepTime.text.trim()) ?? 0).clamp(0, 120),
-      'prepTimeRush': (int.tryParse(_prepTimeRush.text.trim()) ?? 0).clamp(0, 120),
+      'prepTimeRush': (int.tryParse(_prepTimeRush.text.trim()) ?? 0).clamp(
+        0,
+        120,
+      ),
       'videoUrl': _videoUrl.text.trim(),
       'isAvailable': _available,
       'dietaryTags': _dietary.map((d) => d.apiValue).toList(),
@@ -499,7 +488,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(provider.error ?? tr(context, 'error_save')),
-          backgroundColor: const Color(0xFFEF4444),
+          backgroundColor: FASTBrand.error,
         ),
       );
     }
@@ -510,13 +499,16 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: context.fast.card,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(FASTRadius.md),
+        ),
         title: Text(
           tr(context, 'del_dish'),
-          style: TextStyle(color: context.fast.t1),
+          style: FASTText.title.copyWith(color: context.fast.t1),
         ),
         content: Text(
           tr(context, 'del_dish_confirm').replaceAll('{n}', widget.item!.name),
-          style: TextStyle(color: context.fast.t2),
+          style: FASTText.body.copyWith(color: context.fast.t2),
         ),
         actions: [
           TextButton(
@@ -530,7 +522,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
             onPressed: () => Navigator.pop(context, true),
             child: Text(
               tr(context, 'del'),
-              style: TextStyle(color: Color(0xFFEF4444)),
+              style: TextStyle(color: FASTBrand.error),
             ),
           ),
         ],
@@ -559,9 +551,12 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: context.fast.card,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(FASTRadius.md),
+        ),
         title: Text(
           existing == null ? tr(context, 'add_supp') : tr(context, 'edit_supp'),
-          style: TextStyle(color: context.fast.t1, fontSize: 16),
+          style: FASTText.title.copyWith(color: context.fast.t1),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -613,7 +608,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(tr(context, 'error_add')),
-                          backgroundColor: Color(0xFFEF4444),
+                          backgroundColor: FASTBrand.error,
                         ),
                       );
                     }
@@ -653,7 +648,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
             child: Text(
               tr(context, existing == null ? 'add' : 'save'),
               style: const TextStyle(
-                color: Color(0xFF00C8B3),
+                color: FASTPro.teal,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -683,7 +678,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(tr(context, key)),
-        backgroundColor: const Color(0xFFEF4444),
+        backgroundColor: FASTBrand.error,
       ),
     );
   }
@@ -701,16 +696,12 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
         ),
         title: Text(
           _isEdit ? tr(context, 'edit_dish') : tr(context, 'new_dish'),
-          style: TextStyle(
-            color: context.fast.t1,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
+          style: FASTText.title.copyWith(color: context.fast.t1),
         ),
         actions: [
           if (_isEdit)
             IconButton(
-              icon: const Icon(Icons.delete_outline, color: Color(0xFFEF4444)),
+              icon: const Icon(Icons.delete_outline, color: FASTBrand.error),
               onPressed: _loading ? null : _delete,
             ),
         ],
@@ -718,7 +709,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: EdgeInsets.all(20),
+          padding: const EdgeInsets.all(FASTSpace.s16),
           children: [
             _field(
               controller: _name,
@@ -741,25 +732,28 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
             // saving; nothing is applied automatically.
             if (_isEdit)
               Align(
-                alignment: Alignment.centerRight,
+                alignment: AlignmentDirectional.centerEnd,
                 child: TextButton.icon(
                   onPressed: _enhancing ? null : _enhanceDescription,
                   icon: _enhancing
                       ? const SizedBox(
-                          width: 12,
-                          height: 12,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: FASTPro.teal,
+                          ),
                         )
                       : const Icon(
                           Icons.auto_awesome,
-                          size: 14,
-                          color: Color(0xFF00C8B3),
+                          size: 16,
+                          color: FASTPro.teal,
                         ),
                   label: Text(
                     tr(context, 'ai_suggest_desc'),
-                    style: const TextStyle(
-                      color: Color(0xFF00C8B3),
-                      fontSize: 11,
+                    style: FASTText.caption.copyWith(
+                      color: FASTPro.teal,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
@@ -811,24 +805,23 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                   return const SizedBox.shrink();
                 }
                 return Padding(
-                  padding: const EdgeInsets.only(top: 6),
+                  padding: const EdgeInsetsDirectional.only(
+                    top: FASTSpace.s8,
+                    start: FASTSpace.s4,
+                  ),
                   child: Text(
                     '${tr(context, 'fast_price_hint')} '
                     '${computeFastPrice(base).toStringAsFixed(2)} €',
-                    style: TextStyle(
-                      color: context.fast.t3,
-                      fontSize: 11,
-                      fontStyle: FontStyle.italic,
-                    ),
+                    style: FASTText.caption.copyWith(color: context.fast.t2),
                   ),
                 );
               },
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: FASTSpace.s24),
             _buildPhotoSection(context),
-            SizedBox(height: 16),
+            const SizedBox(height: FASTSpace.s24),
             _buildVideoSection(context),
-            SizedBox(height: 16),
+            const SizedBox(height: FASTSpace.s24),
             // Per-dish prep times (minutes, 0/vide = délai restaurant par défaut)
             Row(
               children: [
@@ -852,14 +845,13 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
               ],
             ),
             Padding(
-              padding: const EdgeInsets.only(top: 6, left: 4),
+              padding: const EdgeInsetsDirectional.only(
+                top: FASTSpace.s8,
+                start: FASTSpace.s4,
+              ),
               child: Text(
                 tr(context, 'prep_example'),
-                style: TextStyle(
-                  color: context.fast.t3,
-                  fontSize: 11,
-                  height: 1.3,
-                ),
+                style: FASTText.caption.copyWith(color: context.fast.t3),
               ),
             ),
             SizedBox(height: 24),
@@ -867,11 +859,11 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
             // Available toggle
             Container(
               decoration: BoxDecoration(
-                color: context.fast.card,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: context.fast.line),
+                border: Border.symmetric(
+                  horizontal: BorderSide(color: context.fast.line),
+                ),
               ),
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              padding: const EdgeInsets.symmetric(vertical: FASTSpace.s12),
               child: Row(
                 children: [
                   Icon(
@@ -879,61 +871,83 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                     color: context.fast.t3,
                     size: 20,
                   ),
-                  SizedBox(width: 12),
+                  const SizedBox(width: FASTSpace.s12),
                   Expanded(
                     child: Text(
                       tr(context, 'available'),
-                      style: TextStyle(color: context.fast.t1, fontSize: 15),
+                      style: FASTText.item.copyWith(color: context.fast.t1),
                     ),
                   ),
                   FastSwitch(
                     value: _available,
                     onChanged: (v) => setState(() => _available = v),
-                    accent: const Color(0xFF10B981),
+                    accent: FASTPro.teal,
                   ),
+                  const SizedBox(width: FASTSpace.s4),
                 ],
               ),
             ),
-            SizedBox(height: 24),
+            const SizedBox(height: FASTSpace.s24),
 
             // Dietary tags
-            Text(
-              tr(context, 'food_labels'),
-              style: TextStyle(
-                color: context.fast.t2,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            SizedBox(height: 10),
+            _sectionLabel(tr(context, 'food_labels')),
+            const SizedBox(height: FASTSpace.s12),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: DietaryPreference.values.map((pref) {
                 final selected = _dietary.contains(pref);
-                return FilterChip(
-                  label: Text(
-                    pref.label,
-                    style: TextStyle(
-                      color: selected ? FASTBrand.onAmber : context.fast.t1,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                return Semantics(
+                  button: true,
                   selected: selected,
-                  onSelected: (v) => setState(() {
-                    if (v) {
-                      _dietary.add(pref);
-                    } else {
-                      _dietary.remove(pref);
-                    }
-                  }),
-                  selectedColor: Color(0xFF00C8B3),
-                  backgroundColor: context.fast.line,
-                  checkmarkColor: FASTBrand.onAmber,
-                  side: BorderSide.none,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
+                  child: GestureDetector(
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      final v = !selected;
+                      setState(() {
+                        if (v) {
+                          _dietary.add(pref);
+                        } else {
+                          _dietary.remove(pref);
+                        }
+                      });
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      height: 40,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: FASTSpace.s16,
+                      ),
+                      decoration: BoxDecoration(
+                        color: selected ? FASTPro.teal : context.fast.cardHigh,
+                        borderRadius: BorderRadius.circular(FASTRadius.pill),
+                        border: Border.all(
+                          color: selected ? FASTPro.teal : context.fast.line,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (selected) ...[
+                            const Icon(
+                              Icons.check,
+                              size: 16,
+                              color: FASTBrand.onAmber,
+                            ),
+                            const SizedBox(width: FASTSpace.s4),
+                          ],
+                          Text(
+                            pref.label,
+                            style: FASTText.body.copyWith(
+                              color: selected
+                                  ? FASTBrand.onAmber
+                                  : context.fast.t1,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 );
               }).toList(),
@@ -943,59 +957,40 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
             // ─── Supplements ──────────────────────────────
             Row(
               children: [
-                Text(
-                  tr(context, 'supplements'),
-                  style: TextStyle(
-                    color: context.fast.t2,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const Spacer(),
+                Expanded(child: _sectionLabel(tr(context, 'supplements'))),
                 TextButton.icon(
                   onPressed: () => _showSupplementDialog(),
-                  icon: const Icon(
-                    Icons.add,
-                    size: 16,
-                    color: Color(0xFF00C8B3),
-                  ),
+                  icon: const Icon(Icons.add, size: 18, color: FASTPro.teal),
                   label: Text(
                     tr(context, 'add'),
-                    style: TextStyle(
-                      color: Color(0xFF00C8B3),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
+                    style: FASTText.body.copyWith(
+                      color: FASTPro.teal,
+                      fontWeight: FontWeight.w700,
                     ),
-                  ),
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                 ),
               ],
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: FASTSpace.s4),
             if (_supplements.isEmpty)
               Container(
-                padding: EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(vertical: FASTSpace.s16),
                 decoration: BoxDecoration(
-                  color: context.fast.card,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: context.fast.line),
-                ),
-                child: Center(
-                  child: Text(
-                    tr(context, 'no_supp'),
-                    style: TextStyle(color: context.fast.faint, fontSize: 13),
+                  border: Border.symmetric(
+                    horizontal: BorderSide(color: context.fast.line),
                   ),
+                ),
+                child: Text(
+                  tr(context, 'no_supp'),
+                  style: FASTText.body.copyWith(color: context.fast.t3),
                 ),
               )
             else
               Container(
                 decoration: BoxDecoration(
-                  color: context.fast.card,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: context.fast.line),
+                  border: Border.symmetric(
+                    horizontal: BorderSide(color: context.fast.line),
+                  ),
                 ),
                 child: Column(
                   children: _supplements.asMap().entries.map((entry) {
@@ -1003,101 +998,108 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                     final s = entry.value;
                     return Column(
                       children: [
-                        ListTile(
-                          dense: true,
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 0,
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: FASTSpace.s4,
                           ),
-                          title: Text(
-                            s.name,
-                            style: TextStyle(
-                              color: context.fast.t1,
-                              fontSize: 14,
-                            ),
-                          ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
+                          child: Row(
                             children: [
-                              Text(
-                                '+${s.price.toStringAsFixed(2)}€',
-                                style: const TextStyle(
-                                  color: Color(0xFF00C8B3),
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
+                              Expanded(
+                                child: Text(
+                                  s.name,
+                                  style: FASTText.body.copyWith(
+                                    color: context.fast.t1,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
-                              SizedBox(width: 8),
+                              const SizedBox(width: FASTSpace.s12),
+                              Text(
+                                '+${fastPriceLabel(s.price)}',
+                                style: FASTText.price.copyWith(
+                                  color: context.fast.t1,
+                                ),
+                              ),
+                              const SizedBox(width: FASTSpace.s4),
                               IconButton(
                                 icon: Icon(
                                   Icons.edit_outlined,
-                                  color: context.fast.t3,
-                                  size: 18,
+                                  color: context.fast.t2,
+                                  size: 20,
                                 ),
                                 onPressed: () =>
                                     _showSupplementDialog(existing: s),
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
                               ),
-                              const SizedBox(width: 4),
                               IconButton(
                                 icon: const Icon(
                                   Icons.close,
-                                  color: Color(0xFFEF4444),
-                                  size: 18,
+                                  color: FASTBrand.error,
+                                  size: 20,
                                 ),
                                 onPressed: () => _deleteSupplement(s),
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
                               ),
                             ],
                           ),
                         ),
                         if (idx < _supplements.length - 1)
-                          Divider(
-                            height: 1,
-                            color: context.fast.line,
-                            indent: 16,
-                          ),
+                          Divider(height: 1, color: context.fast.line),
                       ],
                     );
                   }).toList(),
                 ),
               ),
 
-            SizedBox(height: 32),
+            const SizedBox(height: FASTSpace.s40),
 
-            SizedBox(
-              height: 50,
-              child: ElevatedButton(
-                onPressed: _loading ? null : _save,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF00C8B3),
-                  foregroundColor: FASTBrand.onAmber,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+            FastButton(
+              kind: FastButtonKind.ink,
+              label: _isEdit ? tr(context, 'save') : tr(context, 'create_dish'),
+              loading: _loading,
+              onPressed: _loading ? null : _save,
+            ),
+            if (_isEdit) ...[
+              const SizedBox(height: FASTSpace.s12),
+              // Same action as the bin in the app bar, same confirmation.
+              Opacity(
+                opacity: _loading ? 0.55 : 1,
+                child: FastTap(
+                  onTap: _loading ? null : _delete,
+                  pressedScale: 0.97,
+                  child: Container(
+                    height: 52,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(FASTRadius.pill),
+                      border: Border.all(color: FASTBrand.error),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.delete_outline,
+                          size: 18,
+                          color: FASTBrand.error,
+                        ),
+                        const SizedBox(width: FASTSpace.s8),
+                        Flexible(
+                          child: Text(
+                            tr(context, 'del_dish'),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: FASTBrand.error,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                child: _loading
-                    ? SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: FASTBrand.onAmber,
-                        ),
-                      )
-                    : Text(
-                        _isEdit ? tr(context, 'save') : tr(context, 'create_dish'),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
               ),
-            ),
-            const SizedBox(height: 40),
+            ],
+            const SizedBox(height: FASTSpace.s40),
           ],
         ),
       ),
@@ -1112,23 +1114,29 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
     return TextField(
       controller: ctrl,
       keyboardType: keyboard,
-      style: TextStyle(color: context.fast.t1, fontSize: 14),
+      cursorColor: FASTPro.teal,
+      style: FASTText.body.copyWith(color: context.fast.t1),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: context.fast.t3, fontSize: 13),
+        labelStyle: TextStyle(color: context.fast.t3, fontSize: 14),
+        floatingLabelStyle: const TextStyle(color: FASTPro.teal),
         filled: true,
-        fillColor: context.fast.line,
+        fillColor: context.fast.cardHigh,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(FASTRadius.sm),
+          borderSide: BorderSide(color: context.fast.line),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(FASTRadius.sm),
+          borderSide: BorderSide(color: context.fast.line),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFF00C8B3)),
+          borderRadius: BorderRadius.circular(FASTRadius.sm),
+          borderSide: const BorderSide(color: FASTPro.teal, width: 1.5),
         ),
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 10,
+          horizontal: FASTSpace.s16,
+          vertical: 14,
         ),
       ),
     );
@@ -1151,28 +1159,34 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
       inputFormatters: maxLength != null
           ? [LengthLimitingTextInputFormatter(maxLength)]
           : null,
-      style: TextStyle(color: context.fast.t1, fontSize: 15),
+      cursorColor: FASTPro.teal,
+      style: TextStyle(color: context.fast.t1, fontSize: 15, height: 1.35),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: context.fast.t3),
+        labelStyle: TextStyle(color: context.fast.t3, fontSize: 14),
+        floatingLabelStyle: const TextStyle(color: FASTPro.teal),
         prefixIcon: Icon(icon, color: context.fast.t3, size: 18),
         filled: true,
-        fillColor: context.fast.card,
+        fillColor: context.fast.cardHigh,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(FASTRadius.sm),
+          borderSide: BorderSide(color: context.fast.line),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(FASTRadius.sm),
+          borderSide: BorderSide(color: context.fast.line),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFF00C8B3)),
+          borderRadius: BorderRadius.circular(FASTRadius.sm),
+          borderSide: const BorderSide(color: FASTPro.teal, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFFEF4444)),
+          borderRadius: BorderRadius.circular(FASTRadius.sm),
+          borderSide: const BorderSide(color: FASTBrand.error),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFFEF4444)),
+          borderRadius: BorderRadius.circular(FASTRadius.sm),
+          borderSide: const BorderSide(color: FASTBrand.error, width: 1.5),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,

@@ -51,7 +51,7 @@ class NotificationCenter extends StatelessWidget {
                         width: 8,
                         height: 8,
                         decoration: const BoxDecoration(
-                          color: FASTBrand.amber,
+                          color: FASTBrand.gold,
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -176,7 +176,7 @@ class NotificationCenterList extends StatelessWidget {
                                   width: 8,
                                   height: 8,
                                   decoration: const BoxDecoration(
-                                    color: FASTBrand.amber,
+                                    color: FASTBrand.gold,
                                     shape: BoxShape.circle,
                                   ),
                                 ),
