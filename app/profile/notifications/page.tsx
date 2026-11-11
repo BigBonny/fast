@@ -43,26 +43,28 @@ export default function NotificationsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-20">
-      <div className="bg-white dark:bg-gray-900 px-5 py-4 flex items-center gap-3 border-b border-gray-100 dark:border-gray-800 sticky top-0 z-20">
-        <Link href="/profile" className="w-9 h-9 bg-gray-50 dark:bg-gray-800 rounded-xl flex items-center justify-center">
-          <ArrowLeft className="w-4 h-4 text-gray-600 dark:text-gray-300" />
-        </Link>
-        <h1 className="font-bold text-gray-900 dark:text-white">Notifications</h1>
+    <div className="min-h-screen bg-background pb-24">
+      <div className="bg-background/90 backdrop-blur-md px-4 sm:px-6 py-3 border-b border-border sticky top-0 z-20">
+        <div className="max-w-2xl mx-auto flex items-center gap-3">
+          <Link href="/profile" className="w-11 h-11 rounded-full border border-border bg-card flex items-center justify-center hover:bg-muted transition-colors shrink-0">
+            <ArrowLeft className="w-5 h-5 text-foreground" />
+          </Link>
+          <h1 className="font-display font-bold text-xl text-foreground">Notifications</h1>
+        </div>
       </div>
 
-      <div className="px-5 pt-5">
-        <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 flex items-center gap-4 shadow-sm border border-gray-100 dark:border-gray-800 mb-4">
-          <div className="w-12 h-12 bg-violet-100 dark:bg-violet-500/15 rounded-xl flex items-center justify-center">
-            <Bell className="w-6 h-6 text-violet-600 dark:text-violet-400" />
+      <div className="px-4 sm:px-6 pt-6 max-w-2xl mx-auto">
+        <div className="night-surface p-5 flex items-center gap-4 mb-8">
+          <div className="w-12 h-12 bg-white/10 border border-white/15 rounded-full flex items-center justify-center shrink-0">
+            <Bell className="w-5 h-5 text-fast-gold" />
           </div>
-          <div>
-            <p className="font-bold text-gray-900 dark:text-white">Notifications push</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Activer les notifications</p>
+          <div className="min-w-0">
+            <p className="font-display font-bold text-xl leading-tight">Notifications push</p>
+            <p className="text-sm on-night-muted mt-0.5">Activer les notifications</p>
           </div>
         </div>
 
-        <div className="space-y-2">
+        <div className="border-y border-border divide-y divide-border">
           {OPTIONS.map((opt) => {
             const value = prefs[opt.key];
             return (
@@ -72,17 +74,15 @@ export default function NotificationsPage() {
                 role="switch"
                 aria-checked={value}
                 onClick={() => toggle(opt.key)}
-                className="w-full text-left bg-white dark:bg-gray-900 rounded-2xl p-4 flex items-center gap-3 shadow-sm border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                className="w-full text-left py-4 flex items-center gap-3 hover:bg-muted/60 transition-colors"
               >
-                <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center shrink-0">
-                  <opt.icon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-                </div>
+                <opt.icon className="w-5 h-5 text-muted-foreground shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-900 dark:text-white">{opt.label}</p>
-                  <p className="text-xs text-gray-400">{opt.desc}</p>
+                  <p className="font-semibold text-foreground">{opt.label}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{opt.desc}</p>
                 </div>
-                <div className={`w-10 h-6 rounded-full p-1 transition-colors shrink-0 ${value ? "bg-emerald-500" : "bg-gray-300 dark:bg-gray-600"}`}>
-                  <div className={`w-4 h-4 rounded-full bg-white transition-transform ${value ? "translate-x-4" : "translate-x-0"}`} />
+                <div className={`w-11 h-6 rounded-full p-1 transition-colors shrink-0 ${value ? "bg-primary" : "bg-muted-foreground/30"}`}>
+                  <div className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${value ? "translate-x-5" : "translate-x-0"}`} />
                 </div>
               </button>
             );

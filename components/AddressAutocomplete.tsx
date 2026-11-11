@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { MapPin } from "lucide-react";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ||
@@ -71,10 +72,10 @@ export default function AddressAutocomplete({
         onChange={(e) => handleChange(e.target.value)}
         onFocus={() => suggestions.length > 0 && setOpen(true)}
         placeholder={placeholder}
-        className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none focus:border-amber-500"
+        className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-fast-rose focus:ring-2 focus:ring-fast-rose/25"
       />
       {open && suggestions.length > 0 && (
-        <div className="absolute z-40 mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 shadow-xl overflow-hidden max-h-56 overflow-y-auto">
+        <div className="absolute z-40 mt-1 w-full rounded-xl border border-border bg-card shadow-xl overflow-hidden max-h-56 overflow-y-auto">
           {suggestions.map((s, i) => (
             <button
               key={i}
@@ -84,9 +85,9 @@ export default function AddressAutocomplete({
                 onSelect?.(s);
                 setOpen(false);
               }}
-              className="w-full text-left px-3 py-2 text-xs text-slate-200 hover:bg-slate-800 border-b border-slate-800 last:border-0 flex gap-2 items-start"
+              className="w-full text-left px-4 py-3 min-h-[44px] text-sm text-foreground hover:bg-muted border-b border-border last:border-0 flex gap-2.5 items-start"
             >
-              <span className="text-amber-500 shrink-0">📍</span>
+              <MapPin className="w-4 h-4 mt-0.5 text-fast-rose shrink-0" aria-hidden="true" />
               <span className="line-clamp-2">{s.label}</span>
             </button>
           ))}

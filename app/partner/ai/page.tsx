@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -56,17 +56,17 @@ export default function AIPage() {
   };
 
   return (
-    <div className="space-y-4 h-[calc(100vh-140px)] flex flex-col">
-      <div className="flex items-center gap-2">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#00c8b3] to-[#ff0066] flex items-center justify-center"><Sparkles className="w-4 h-4 text-white" /></div>
-        <h1 className="text-lg font-black text-white">Assistant IA</h1>
+    <div className="space-y-4 h-[calc(100vh-180px)] flex flex-col">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-muted border border-border flex items-center justify-center"><Sparkles className="w-4 h-4 text-fast-teal" /></div>
+        <h1 className="font-display text-2xl font-bold text-foreground">Assistant IA</h1>
       </div>
 
-      <div className="flex-1 overflow-y-auto bg-[#0B1120] border border-white/[0.08] rounded-2xl p-4 space-y-3">
+      <div className="flex-1 overflow-y-auto bg-card border border-border rounded-2xl p-4 space-y-3">
         {messages.map((m, i) => (
           <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-            <div className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm ${m.role === "user" ? "bg-[#00c8b3] text-[#020617] font-medium" : "bg-white/[0.06] text-slate-200"}`}>
-              {m.role === "bot" && <Bot className="w-3 h-3 inline mr-1 text-[#00c8b3]" />}
+            <div className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm ${m.role === "user" ? "bg-fast-teal text-fast-ink font-medium" : "bg-muted text-foreground"}`}>
+              {m.role === "bot" && <Bot className="w-3.5 h-3.5 inline mr-1.5 text-fast-teal" />}
               {m.text}
             </div>
           </div>
@@ -77,7 +77,7 @@ export default function AIPage() {
         {suggestions.map((s) => {
           const Icon = s.icon;
           return (
-            <button key={s.label} onClick={() => handleSend(s.prompt)} className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-[11px] font-bold text-slate-300 hover:bg-[#00c8b3]/10 hover:text-[#00c8b3] transition-all">
+            <button key={s.label} onClick={() => handleSend(s.prompt)} className="flex-shrink-0 inline-flex items-center gap-1.5 px-4 h-11 rounded-full bg-card border border-border text-xs font-bold text-muted-foreground hover:border-fast-teal hover:text-foreground transition-colors focus-visible:outline-fast-teal">
               <Icon className="w-3.5 h-3.5" /> {s.label}
             </button>
           );
@@ -86,16 +86,16 @@ export default function AIPage() {
 
       <form
         onSubmit={(e) => { e.preventDefault(); handleSend(input); }}
-        className="flex items-center gap-2 bg-[#0B1120] border border-white/[0.08] rounded-2xl px-3 py-2"
+        className="flex items-center gap-2 bg-card border border-border rounded-full pl-4 pr-1.5 py-1.5 focus-within:border-fast-teal focus-within:ring-2 focus-within:ring-fast-teal/30"
       >
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Posez une question..."
-          className="flex-1 bg-transparent text-sm text-white placeholder:text-slate-500 outline-none"
+          className="flex-1 min-w-0 h-11 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
         />
-        <button type="submit" className="w-8 h-8 rounded-lg bg-[#00c8b3] text-[#020617] flex items-center justify-center"><Send className="w-4 h-4" /></button>
+        <button type="submit" aria-label="Envoyer" className="w-11 h-11 rounded-full bg-fast-teal text-fast-ink flex items-center justify-center flex-shrink-0 transition-transform active:scale-95"><Send className="w-4 h-4" /></button>
       </form>
     </div>
   );

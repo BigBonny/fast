@@ -20,58 +20,59 @@ interface MenuItemCardProps {
   onAdd: () => void;
 }
 
+// One row, as the app's menu row: name, two-line description and price on
+// the left; a square photo with a round "+" in its corner on the right.
 function MenuItemCard({ item, onAdd }: MenuItemCardProps) {
   return (
     <m.div
       whileTap={{ scale: 0.98 }}
-      className="flex items-center gap-3 bg-white dark:bg-gray-900 rounded-xl p-3 border border-gray-100 dark:border-gray-800 hover:border-amber-200 dark:hover:border-amber-500/30 hover:shadow-md hover:shadow-amber-100/40 dark:hover:shadow-none transition-all duration-200 h-full"
+      className="flex items-start gap-4 bg-card text-card-foreground rounded-2xl p-4 border border-border hover:shadow-md transition-shadow duration-200 h-full"
     >
-      <div className="w-20 h-20 rounded-xl bg-gray-50 dark:bg-gray-800 overflow-hidden flex-shrink-0">
-        {item.image ? (
-          <SafeImage
-            src={item.image}
-            alt={item.name}
-            width={80}
-            height={80}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800">
-            <UtensilsCrossed className="w-7 h-7 text-gray-300 dark:text-gray-600" />
-          </div>
-        )}
-      </div>
-
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 self-stretch flex flex-col">
         <div className="flex items-center gap-1.5">
-          <h4 className="font-semibold text-sm text-gray-900 dark:text-white truncate">
+          <h4 className="font-bold text-base leading-snug text-foreground line-clamp-2">
             {item.name}
           </h4>
           {(item.isPopular || (item.rating ?? 0) >= 4.5) && (
-            <Flame className="w-3.5 h-3.5 text-orange-400 flex-shrink-0" />
+            <Flame className="w-4 h-4 text-fast-orange flex-shrink-0" />
           )}
         </div>
         {item.description && (
-          <p className="text-xs text-gray-400 mt-0.5 line-clamp-2">
+          <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
             {item.description}
           </p>
         )}
-        <div className="flex items-center justify-between mt-2">
-          <span className="font-bold text-gray-900 dark:text-white">
-            {item.price?.toFixed(2)} €
-          </span>
-          <m.button
-            whileTap={{ scale: 0.9 }}
-            onClick={(e) => {
-              e.stopPropagation();
-              onAdd();
-            }}
-            className="w-8 h-8 rounded-xl flex items-center justify-center text-white shadow-sm transition-colors"
-            style={{ background: "linear-gradient(135deg, #14b8a6, #06b6d4)" }}
-          >
-            <Plus className="w-4 h-4" strokeWidth={3} />
-          </m.button>
+        <span className="mt-auto pt-2 font-bold text-foreground tabular-nums">
+          {item.price?.toFixed(2)} €
+        </span>
+      </div>
+
+      <div className="relative flex-shrink-0 w-24 h-24">
+        <div className="w-full h-full rounded-xl bg-muted overflow-hidden">
+          {item.image ? (
+            <SafeImage
+              src={item.image}
+              alt={item.name}
+              width={96}
+              height={96}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-muted">
+              <UtensilsCrossed className="w-7 h-7 text-muted-foreground/60" />
+            </div>
+          )}
         </div>
+        <m.button
+          whileTap={{ scale: 0.9 }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onAdd();
+          }}
+          className="absolute -bottom-2 -right-2 w-11 h-11 rounded-full flex items-center justify-center bg-primary text-primary-foreground border-2 border-background shadow-md transition-transform hover:scale-105"
+        >
+          <Plus className="w-5 h-5" strokeWidth={3} />
+        </m.button>
       </div>
     </m.div>
   );

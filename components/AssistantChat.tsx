@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { Sparkles, X, ArrowUp } from "lucide-react";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ||
@@ -60,66 +61,66 @@ export default function AssistantChat() {
       <button
         onClick={() => setOpen(!open)}
         aria-label="Assistant FAST"
-        className="fixed bottom-5 right-5 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 shadow-lg shadow-amber-500/30 flex items-center justify-center text-2xl hover:scale-105 transition-transform"
+        className="btn-neon fixed bottom-28 md:bottom-5 right-4 md:right-5 z-50 !w-12 !h-12 md:!w-14 md:!h-14 !min-h-0 !p-0"
       >
-        ⚡
+        <Sparkles className="w-6 h-6" strokeWidth={2.2} />
       </button>
       {open && (
-        <div className="fixed bottom-24 right-5 z-50 w-[min(92vw,360px)] h-[min(70vh,480px)] rounded-2xl border border-slate-700 bg-slate-900/95 backdrop-blur-xl shadow-2xl flex flex-col overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700/60">
+        <div className="fixed bottom-44 md:bottom-24 right-4 md:right-5 z-50 w-[min(92vw,360px)] h-[min(70vh,480px)] rounded-2xl border border-border bg-card text-foreground shadow-2xl flex flex-col overflow-hidden">
+          <div className="flex items-center justify-between pl-4 pr-2 py-2 border-b border-border">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-sm font-black text-slate-900">
-                ⚡
+              <div className="w-8 h-8 rounded-full bg-neon flex items-center justify-center text-fast-ink">
+                <Sparkles className="w-4 h-4" strokeWidth={2.4} />
               </div>
-              <span className="font-black text-white text-sm notranslate">
+              <span className="font-display font-bold text-foreground text-base notranslate">
                 Assistant FAST
               </span>
             </div>
             <button
               onClick={() => setOpen(false)}
-              className="text-slate-400 hover:text-white text-lg leading-none"
+              className="w-11 h-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               aria-label="Fermer"
             >
-              ×
+              <X className="w-5 h-5" />
             </button>
           </div>
           <div className="flex-1 overflow-y-auto p-3 space-y-2">
             {messages.map((m, i) => (
               <div
                 key={i}
-                className={`max-w-[80%] px-3 py-2 rounded-2xl text-[13px] leading-relaxed ${
+                className={`w-fit max-w-[80%] px-3.5 py-2 rounded-2xl text-sm leading-relaxed ${
                   m.role === "user"
-                    ? "ml-auto bg-gradient-to-br from-amber-400 to-amber-600 text-slate-900 font-medium rounded-br-md"
-                    : "bg-slate-800 text-slate-100 rounded-bl-md border border-slate-700/60"
+                    ? "ml-auto bg-primary text-primary-foreground font-medium rounded-br-md"
+                    : "bg-muted text-foreground rounded-bl-md"
                 }`}
               >
                 {m.text}
               </div>
             ))}
             {sending && (
-              <div className="bg-slate-800 border border-slate-700/60 rounded-2xl rounded-bl-md px-3 py-2 w-16">
-                <span className="inline-block animate-pulse text-slate-400">
+              <div className="bg-muted rounded-2xl rounded-bl-md px-3 py-2 w-16">
+                <span className="inline-block animate-pulse text-muted-foreground">
                   •••
                 </span>
               </div>
             )}
             <div ref={bottomRef} />
           </div>
-          <div className="p-3 border-t border-slate-700/60 flex gap-2">
+          <div className="p-3 border-t border-border flex items-center gap-2">
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && send()}
               placeholder="Posez votre question…"
-              className="flex-1 bg-slate-800 border border-slate-700 rounded-full px-4 py-2 text-sm text-white placeholder:text-slate-500 outline-none focus:border-amber-500"
+              className="flex-1 min-w-0 h-11 bg-muted border border-border rounded-full px-4 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-fast-rose"
             />
             <button
               onClick={send}
               disabled={sending}
-              className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 text-slate-900 font-black disabled:opacity-50"
+              className="w-11 h-11 shrink-0 rounded-full bg-primary text-primary-foreground flex items-center justify-center transition-transform active:scale-95 disabled:opacity-50"
               aria-label="Envoyer"
             >
-              ➤
+              <ArrowUp className="w-5 h-5" strokeWidth={2.6} />
             </button>
           </div>
         </div>

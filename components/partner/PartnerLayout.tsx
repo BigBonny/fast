@@ -101,10 +101,12 @@ export default function PartnerLayout({ children }: { children: React.ReactNode 
 
   if (isLoadingAuth || (settingsLoading && !settingsError)) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center" style={{ background: "#020617" }}>
-        <div className="font-bebas text-3xl tracking-[8px] animate-pulse flex items-center gap-2" style={{ color: "#00c8b3" }}>
-          <Zap className="w-7 h-7 fill-current" /> <span className="notranslate" translate="no">FAST</span>
+      <div className="fixed inset-0 flex flex-col items-center justify-center gap-5 bg-background">
+        <div className="font-bebas text-3xl tracking-[8px] flex items-center gap-2">
+          <Zap className="w-7 h-7 text-fast-orange fill-current" aria-hidden="true" />
+          <span className="notranslate text-neon" translate="no">FAST</span>
         </div>
+        <span className="w-5 h-5 rounded-full border-2 border-fast-teal/30 border-t-fast-teal animate-spin" aria-hidden="true" />
       </div>
     );
   }
@@ -115,7 +117,7 @@ export default function PartnerLayout({ children }: { children: React.ReactNode 
 
   if (isOnboarding) {
     return (
-      <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
+      <div className="min-h-screen bg-background text-foreground">
         <Toast />
         {children}
       </div>
@@ -123,34 +125,35 @@ export default function PartnerLayout({ children }: { children: React.ReactNode 
   }
 
   return (
-    <div style={{ background: "var(--bg)", minHeight: "100vh", color: "var(--blk)" }}>
+    <div className="min-h-screen bg-background text-foreground">
       <Toast />
 
-      {/* Header */}
-      <header className="bg-[#020617] px-4 h-[56px] flex items-center justify-between sticky top-0 z-[1000] border-b border-white/[0.08] shadow-[0_8px_30px_rgba(0,0,0,0.3)]">
+      {/* Header: the brand block */}
+      <header className="night-band px-4 h-[56px] flex items-center justify-between sticky top-0 z-[1000] border-b border-white/10">
         <Link href="/partner/orders" className="no-underline group">
-          <div className="font-bebas text-[24px] tracking-[5px] bg-gradient-to-br from-[#00c8b3] via-[#00c8b3] to-[#ff0066] bg-clip-text text-transparent leading-none group-hover:brightness-110 transition-all flex items-center gap-1.5">
-            <Zap className="w-6 h-6 fill-current" /> <span className="notranslate" translate="no">FAST</span>
+          <div className="font-bebas text-[24px] tracking-[5px] leading-none flex items-center gap-1.5">
+            <Zap className="w-6 h-6 text-fast-orange fill-current" aria-hidden="true" />
+            <span className="notranslate text-neon" translate="no">FAST</span>
           </div>
-          <div className="text-[9px] text-slate-500 font-semibold tracking-[2px] uppercase">RESTAURATEUR PRO</div>
+          <div className="text-xs on-night-muted font-bold tracking-wide uppercase leading-tight">RESTAURATEUR PRO</div>
         </Link>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-white/[0.04] border border-white/10">
+          <div className="flex items-center gap-1.5 px-2.5 h-8 rounded-full bg-white/[0.06] border border-white/10">
             <div className="w-2 h-2 rounded-full bg-green-500 relative flex-shrink-0">
               <span className="absolute inset-0 rounded-full bg-green-500 animate-ping opacity-75" />
             </div>
-            <span className="text-[10px] font-bold text-green-400">En ligne</span>
+            <span className="text-xs font-bold text-green-400">En ligne</span>
           </div>
           <button
             onClick={() => setSideOpen(true)}
-            className="bg-white/[0.07] border border-white/10 text-slate-200 w-8 h-8 rounded-lg flex items-center justify-center text-xs font-semibold hover:bg-white/12 transition-all active:scale-95"
+            aria-label="Menu"
+            className="bg-white/[0.07] border border-white/10 text-white w-11 h-11 rounded-full flex items-center justify-center hover:bg-white/[0.14] transition-colors active:scale-95 focus-visible:outline-fast-teal"
           >
-            <Menu className="w-4 h-4" />
+            <Menu className="w-5 h-5" />
           </button>
           <button
             onClick={() => setKitchenOpen(true)}
-            className="px-3 h-8 rounded-lg text-xs font-bold text-white border-none shadow-lg shadow-[#00c8b3]/20 hover:shadow-[#00c8b3]/40 hover:scale-105 transition-all active:scale-95 inline-flex items-center gap-1"
-            style={{ background: "linear-gradient(135deg, #00c8b3, #00a090)" }}
+            className="px-4 h-11 rounded-full text-sm font-bold bg-fast-teal text-fast-ink hover:brightness-110 transition-all active:scale-95 inline-flex items-center gap-1.5 focus-visible:outline-fast-teal"
           >
             <ChefHat className="w-4 h-4" /> Cuisine
           </button>
@@ -160,31 +163,29 @@ export default function PartnerLayout({ children }: { children: React.ReactNode 
       <RushBar active={rushActive} />
 
       {/* Tabs */}
-      <div className="bg-[#020617] border-b border-white/[0.07] flex overflow-x-auto scrollbar-hide px-1">
+      <div className="bg-background border-b border-border flex gap-1 overflow-x-auto scrollbar-hide px-2 py-1.5">
         {tabs.map((tab) => {
           const isActive = activeTabId === tab.id;
           return (
             <Link
               key={tab.id}
               href={tab.href}
-              className="relative px-4 py-3 text-xs font-black whitespace-nowrap transition-all flex items-center gap-1.5 border-b-2 no-underline"
-              style={{
-                color: isActive ? "#00c8b3" : "rgba(148,163,184,0.7)",
-                borderColor: isActive ? "#00c8b3" : "transparent",
-                textShadow: isActive ? "0 0 12px rgba(0,200,179,0.25)" : "none",
-              }}
+              aria-current={isActive ? "page" : undefined}
+              className={`relative px-4 h-11 rounded-full text-xs font-bold tracking-wide whitespace-nowrap transition-colors flex items-center gap-1.5 no-underline focus-visible:outline-fast-teal ${
+                isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+              }`}
             >
               {isActive && (
                 <m.div
                   layoutId="partner-tab"
-                  className="absolute inset-0 rounded-lg bg-[#00c8b3]/8 border border-[#00c8b3]/10"
+                  className="absolute inset-0 rounded-full bg-fast-teal/15 border border-fast-teal/40"
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 />
               )}
-              <tab.Icon className="w-4 h-4 relative z-10" />
+              <tab.Icon className={`w-4 h-4 relative z-10 ${isActive ? "text-fast-teal" : ""}`} />
               <span className="relative z-10">{tab.label}</span>
               {tab.badge && pendingCount > 0 && (
-                <span className="relative z-10 bg-red-500 text-white min-w-[16px] h-4 px-1 rounded-full text-[10px] flex items-center justify-center font-black border border-[#020617]">
+                <span className="relative z-10 bg-red-500 text-white min-w-[20px] h-5 px-1.5 rounded-full text-xs tabular-nums flex items-center justify-center font-bold">
                   {pendingCount}
                 </span>
               )}
@@ -193,7 +194,7 @@ export default function PartnerLayout({ children }: { children: React.ReactNode 
         })}
       </div>
 
-      <main className="p-4 max-w-4xl mx-auto">{children}</main>
+      <main className="px-4 py-6 sm:px-6 max-w-4xl mx-auto">{children}</main>
 
       <KitchenScreen open={kitchenOpen} onClose={() => setKitchenOpen(false)} orders={orders} />
       <SideMenu

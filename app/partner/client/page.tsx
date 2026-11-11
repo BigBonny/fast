@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { m } from "framer-motion";
@@ -6,6 +6,10 @@ import { Users, Star, ShoppingBag, Clock, Search, Plus, Trash2 } from "lucide-re
 import { useQuery } from "@tanstack/react-query";
 import { orderApi } from "@/api/fastBackend";
 import { showToast } from "@/components/partner/Toast";
+
+const sectionLabel = "text-xs font-bold uppercase tracking-wide text-muted-foreground";
+const inputClass =
+  "w-full min-h-[44px] bg-background border border-border rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-fast-teal focus:ring-2 focus:ring-fast-teal/30";
 
 export default function ClientPage() {
   const { data: orders = [] } = useQuery({ queryKey: ["orders"], queryFn: () => orderApi.restaurantOrders() });
@@ -47,36 +51,36 @@ export default function ClientPage() {
   const filtered = clients.filter((c) => c.name?.toLowerCase().includes(search.toLowerCase()) || c.phone?.includes(search));
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-lg font-black text-white">Clients</h1>
-        <button onClick={() => setIsOpen(true)} className="px-3 py-2 rounded-xl bg-[#00c8b3] text-[#020617] text-xs font-black flex items-center gap-1"><Plus className="w-4 h-4" /> Ajouter</button>
+    <div className="space-y-5">
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="font-display text-2xl font-bold text-foreground">Clients</h1>
+        <button onClick={() => setIsOpen(true)} className="btn-neon !min-h-[44px] !px-5 text-sm"><Plus className="w-4 h-4" /> Ajouter</button>
       </div>
 
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-        <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Rechercher un client..." className="w-full bg-[#0B1120] border border-white/[0.08] rounded-xl pl-9 pr-3 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none focus:border-[#00c8b3]/50" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Rechercher un client..." className={`${inputClass} !bg-card !pl-9`} />
       </div>
 
       {filtered.length === 0 ? (
-        <div className="bg-[#0B1120] border border-white/[0.08] rounded-2xl p-8 text-center text-slate-400 text-sm"><Users className="w-8 h-8 mx-auto mb-2 text-slate-500" />Aucun client trouvé.</div>
+        <div className="bg-card border border-border rounded-2xl p-8 text-center text-muted-foreground text-sm"><Users className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />Aucun client trouvé.</div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {filtered.map((c) => (
-            <m.div key={c.id} layout className="bg-[#0B1120] border border-white/[0.08] rounded-2xl p-4">
+            <m.div key={c.id} layout className="bg-card border border-border rounded-2xl p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-white">{c.name}</p>
-                  {c.phone && <p className="text-[11px] text-slate-400">{c.phone}</p>}
-                  {c.notes && <p className="text-[11px] text-slate-500 mt-1">{c.notes}</p>}
-                  <div className="flex items-center gap-3 mt-2 text-[11px] text-slate-500">
-                    <span className="flex items-center gap-1"><ShoppingBag className="w-3 h-3" /> {c.orders || 0} commande{(c.orders || 0) > 1 ? "s" : ""}</span>
-                    {c.lastOrder && <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {new Date(c.lastOrder).toLocaleDateString("fr-FR")}</span>}
+                  <p className="text-sm font-bold text-foreground">{c.name}</p>
+                  {c.phone && <p className="text-xs text-muted-foreground tabular-nums">{c.phone}</p>}
+                  {c.notes && <p className="text-xs text-muted-foreground mt-1">{c.notes}</p>}
+                  <div className="flex items-center gap-3 flex-wrap mt-2 text-xs text-muted-foreground tabular-nums">
+                    <span className="flex items-center gap-1"><ShoppingBag className="w-3.5 h-3.5" /> {c.orders || 0} commande{(c.orders || 0) > 1 ? "s" : ""}</span>
+                    {c.lastOrder && <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {new Date(c.lastOrder).toLocaleDateString("fr-FR")}</span>}
                   </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <span className="flex items-center gap-1 text-[11px] font-bold text-yellow-400"><Star className="w-3 h-3 fill-current" /> 5.0</span>
-                  <button onClick={() => remove(c.id)} className="w-8 h-8 rounded-lg bg-red-500/10 text-red-400 flex items-center justify-center hover:bg-red-500/20"><Trash2 className="w-4 h-4" /></button>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className="flex items-center gap-1 text-xs font-bold text-foreground tabular-nums"><Star className="w-3.5 h-3.5 text-yellow-400 fill-current" /> 5.0</span>
+                  <button onClick={() => remove(c.id)} aria-label="Supprimer" className="w-11 h-11 rounded-full border border-[color:var(--red)] text-[color:var(--red)] flex items-center justify-center transition-colors hover:bg-red-500/10"><Trash2 className="w-4 h-4" /></button>
                 </div>
               </div>
             </m.div>
@@ -86,15 +90,15 @@ export default function ClientPage() {
 
       {isOpen && (
         <div className="fixed inset-0 z-[9000] flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-[#0B1120] border border-white/[0.08] rounded-2xl p-5 w-full max-w-md space-y-4">
-            <p className="text-sm font-black text-white">Ajouter un client</p>
+          <div className="bg-card text-foreground border border-border rounded-2xl p-5 w-full max-w-md space-y-4">
+            <p className="font-display text-xl font-bold text-foreground">Ajouter un client</p>
             <form onSubmit={handleSubmit} className="space-y-3">
-              <input type="text" placeholder="Nom" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full bg-[#020617] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none focus:border-[#00c8b3]/50" required />
-              <input type="tel" placeholder="Téléphone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="w-full bg-[#020617] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none focus:border-[#00c8b3]/50" />
-              <textarea placeholder="Notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="w-full bg-[#020617] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none focus:border-[#00c8b3]/50 min-h-[80px] resize-none" />
+              <input type="text" placeholder="Nom" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputClass} required />
+              <input type="tel" placeholder="Téléphone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className={inputClass} />
+              <textarea placeholder="Notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className={`${inputClass} min-h-[80px] resize-none`} />
               <div className="flex gap-2 pt-2">
-                <button type="button" onClick={() => setIsOpen(false)} className="flex-1 py-2.5 rounded-xl border border-white/10 text-slate-300 text-sm font-bold">Annuler</button>
-                <button type="submit" className="flex-1 py-2.5 rounded-xl bg-[#00c8b3] text-[#020617] text-sm font-black">Ajouter</button>
+                <button type="button" onClick={() => setIsOpen(false)} className="btn-outline flex-1 text-sm !min-h-[3rem]">Annuler</button>
+                <button type="submit" className="btn-neon flex-1 text-sm">Ajouter</button>
               </div>
             </form>
           </div>

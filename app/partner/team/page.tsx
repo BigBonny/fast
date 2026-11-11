@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { m } from "framer-motion";
@@ -11,6 +11,10 @@ const ROLES = [
   { value: "livreur", label: "Livreur", icon: Bike },
   { value: "serveur", label: "Serveur", icon: User },
 ];
+
+const sectionLabel = "text-xs font-bold uppercase tracking-wide text-muted-foreground";
+const inputClass =
+  "w-full min-h-[44px] bg-background border border-border rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-fast-teal focus:ring-2 focus:ring-fast-teal/30";
 
 export default function TeamPage() {
   const [members, setMembers] = useState<any[]>([]);
@@ -41,33 +45,33 @@ export default function TeamPage() {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-lg font-black text-white">Mon équipe</h1>
-        <button onClick={() => setIsOpen(true)} className="px-3 py-2 rounded-xl bg-[#00c8b3] text-[#020617] text-xs font-black flex items-center gap-1"><Plus className="w-4 h-4" /> Ajouter</button>
+    <div className="space-y-5">
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="font-display text-2xl font-bold text-foreground">Mon équipe</h1>
+        <button onClick={() => setIsOpen(true)} className="btn-neon !min-h-[44px] !px-5 text-sm"><Plus className="w-4 h-4" /> Ajouter</button>
       </div>
 
       {members.length === 0 ? (
-        <div className="bg-[#0B1120] border border-white/[0.08] rounded-2xl p-8 text-center text-slate-400 text-sm">
-          <User className="w-8 h-8 mx-auto mb-2 text-slate-500" />Aucun membre d'équipe. Ajoutez votre premier collaborateur.
+        <div className="bg-card border border-border rounded-2xl p-8 text-center text-muted-foreground text-sm">
+          <User className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />Aucun membre d'équipe. Ajoutez votre premier collaborateur.
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {members.map((m) => {
             const role = ROLES.find((r) => r.value === m.role) || ROLES[3];
             const Icon = role.icon;
             return (
-              <m.div key={m.id} layout className="bg-[#0B1120] border border-white/[0.08] rounded-2xl p-4 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#00c8b3]/10 flex items-center justify-center text-[#00c8b3]"><Icon className="w-5 h-5" /></div>
+              <m.div key={m.id} layout className="bg-card border border-border rounded-2xl p-4 flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl bg-fast-teal/15 flex items-center justify-center text-fast-teal flex-shrink-0"><Icon className="w-5 h-5" /></div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-white">{m.name}</p>
-                  <p className="text-[11px] text-slate-400">{role.label}</p>
-                  <div className="text-[11px] text-slate-500 flex items-center gap-3 mt-1">
-                    {m.email && <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> {m.email}</span>}
-                    {m.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> {m.phone}</span>}
+                  <p className="text-sm font-bold text-foreground">{m.name}</p>
+                  <p className="text-xs text-muted-foreground">{role.label}</p>
+                  <div className="text-xs text-muted-foreground flex items-center gap-x-3 gap-y-1 flex-wrap mt-1">
+                    {m.email && <span className="flex items-center gap-1 min-w-0"><Mail className="w-3.5 h-3.5 flex-shrink-0" /> <span className="truncate">{m.email}</span></span>}
+                    {m.phone && <span className="flex items-center gap-1 tabular-nums"><Phone className="w-3.5 h-3.5" /> {m.phone}</span>}
                   </div>
                 </div>
-                <button onClick={() => remove(m.id)} className="w-8 h-8 rounded-lg bg-red-500/10 text-red-400 flex items-center justify-center hover:bg-red-500/20"><Trash2 className="w-4 h-4" /></button>
+                <button onClick={() => remove(m.id)} aria-label="Supprimer" className="w-11 h-11 rounded-full border border-[color:var(--red)] text-[color:var(--red)] flex items-center justify-center flex-shrink-0 transition-colors hover:bg-red-500/10"><Trash2 className="w-4 h-4" /></button>
               </m.div>
             );
           })}
@@ -76,20 +80,20 @@ export default function TeamPage() {
 
       {isOpen && (
         <div className="fixed inset-0 z-[9000] flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-[#0B1120] border border-white/[0.08] rounded-2xl p-5 w-full max-w-md space-y-4">
-            <p className="text-sm font-black text-white">Ajouter un membre</p>
+          <div className="bg-card text-foreground border border-border rounded-2xl p-5 w-full max-w-md space-y-4">
+            <p className="font-display text-xl font-bold text-foreground">Ajouter un membre</p>
             <form onSubmit={handleSubmit} className="space-y-3">
-              <input type="text" placeholder="Nom" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full bg-[#020617] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none focus:border-[#00c8b3]/50" required />
-              <input type="email" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full bg-[#020617] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none focus:border-[#00c8b3]/50" />
-              <input type="tel" placeholder="Téléphone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="w-full bg-[#020617] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none focus:border-[#00c8b3]/50" />
+              <input type="text" placeholder="Nom" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputClass} required />
+              <input type="email" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className={inputClass} />
+              <input type="tel" placeholder="Téléphone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className={inputClass} />
               <div className="flex flex-wrap gap-2">
                 {ROLES.map((r) => (
-                  <button key={r.value} type="button" onClick={() => setForm({ ...form, role: r.value })} className={`px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ${form.role === r.value ? "border-[#00c8b3] text-[#00c8b3] bg-[#00c8b3]/10" : "border-white/10 text-slate-400"}`}>{r.label}</button>
+                  <button key={r.value} type="button" onClick={() => setForm({ ...form, role: r.value })} aria-pressed={form.role === r.value} className={`inline-flex items-center px-4 min-h-[44px] rounded-full text-xs font-bold border transition-colors focus-visible:outline-fast-teal ${form.role === r.value ? "border-fast-teal bg-fast-teal/15 text-foreground" : "border-border text-muted-foreground hover:text-foreground"}`}>{r.label}</button>
                 ))}
               </div>
               <div className="flex gap-2 pt-2">
-                <button type="button" onClick={() => setIsOpen(false)} className="flex-1 py-2.5 rounded-xl border border-white/10 text-slate-300 text-sm font-bold">Annuler</button>
-                <button type="submit" className="flex-1 py-2.5 rounded-xl bg-[#00c8b3] text-[#020617] text-sm font-black">Ajouter</button>
+                <button type="button" onClick={() => setIsOpen(false)} className="btn-outline flex-1 text-sm !min-h-[3rem]">Annuler</button>
+                <button type="submit" className="btn-neon flex-1 text-sm">Ajouter</button>
               </div>
             </form>
           </div>

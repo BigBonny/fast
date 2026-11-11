@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
@@ -6,6 +6,10 @@ import { Save, Store, MapPin, Utensils, FileText, Image, Star, Clock } from "luc
 import { restaurantApi } from "@/api/fastBackend";
 import { showToast } from "@/components/partner/Toast";
 import SafeImage from "@/components/SafeImage";
+
+const sectionLabel = "text-xs font-bold uppercase tracking-wide text-muted-foreground";
+const inputClass =
+  "w-full min-h-[44px] bg-background border border-border rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-fast-teal focus:ring-2 focus:ring-fast-teal/30";
 
 export default function RestaurantProfile() {
   const queryClient = useQueryClient();
@@ -54,77 +58,77 @@ export default function RestaurantProfile() {
     });
   };
 
-  if (isLoading) return <div className="py-12 text-center text-slate-500 text-sm">Chargement du profil...</div>;
+  if (isLoading) return <div className="py-12 text-center text-muted-foreground text-sm">Chargement du profil...</div>;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-black text-white">Profil restaurant</h1>
+        <h1 className="font-display text-2xl font-bold text-foreground">Profil restaurant</h1>
       </div>
 
-      <div className="bg-[#0B1120] border border-white/[0.08] rounded-2xl p-4 flex items-center gap-4">
-        <div className="w-16 h-16 rounded-2xl bg-white/[0.06] flex items-center justify-center text-3xl overflow-hidden flex-shrink-0">
-          {restaurant?.image ? <SafeImage src={restaurant.image} alt="" width={64} height={64} className="w-full h-full object-cover" /> : ""}
+      <div className="night-surface p-5 flex items-center gap-4">
+        <div className="w-16 h-16 rounded-xl bg-white/[0.08] border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+          {restaurant?.image ? <SafeImage src={restaurant.image} alt="" width={64} height={64} className="w-full h-full object-cover" /> : <Store className="w-7 h-7 text-white/80" aria-hidden="true" />}
         </div>
-        <div>
-          <p className="text-lg font-black text-white">{restaurant?.name || "Mon restaurant"}</p>
-          <div className="flex items-center gap-2 text-xs text-slate-400">
-            <span className="flex items-center gap-1"><Star className="w-3 h-3 text-yellow-400" /> {restaurant?.rating?.toFixed(1) || "0.0"}</span>
-            <span></span>
+        <div className="min-w-0">
+          <p className="font-display text-xl font-bold text-white truncate">{restaurant?.name || "Mon restaurant"}</p>
+          <div className="flex items-center gap-x-3 gap-y-1 flex-wrap text-xs on-night-muted mt-1 tabular-nums">
+            <span className="flex items-center gap-1"><Star className="w-3.5 h-3.5 text-yellow-400 fill-current" /> {restaurant?.rating?.toFixed(1) || "0.0"}</span>
             <span>{restaurant?.reviewsCount || 0} avis</span>
-            <span></span>
-            <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {restaurant?.normalPrepTime || 15} min</span>
+            <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {restaurant?.normalPrepTime || 15} min</span>
           </div>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-[#0B1120] border border-white/[0.08] rounded-2xl p-4 space-y-4">
-        <div className="flex items-center gap-2 text-sm font-bold text-[#00c8b3]"><Store className="w-4 h-4" /> Modifier le profil</div>
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <div className={`flex items-center gap-2 px-1 ${sectionLabel}`}><Store className="w-4 h-4 text-fast-teal" /> Modifier le profil</div>
 
-        <div className="space-y-1">
-          <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Nom</label>
-          <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full bg-[#020617] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-[#00c8b3]/50 outline-none" required />
-        </div>
+        <div className="bg-card border border-border rounded-2xl p-4 space-y-4">
+          <div className="space-y-1.5">
+            <label className={sectionLabel}>Nom</label>
+            <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputClass} required />
+          </div>
 
-        <div className="space-y-1">
-          <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Description</label>
-          <div className="relative">
-            <FileText className="absolute left-3 top-3 w-4 h-4 text-slate-500" />
-            <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full bg-[#020617] border border-white/[0.08] rounded-xl pl-9 pr-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-[#00c8b3]/50 outline-none min-h-[80px] resize-none" />
+          <div className="space-y-1.5">
+            <label className={sectionLabel}>Description</label>
+            <div className="relative">
+              <FileText className="absolute left-3 top-3.5 w-4 h-4 text-muted-foreground" />
+              <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className={`${inputClass} !pl-9 min-h-[80px] resize-none`} />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className={sectionLabel}>Type de cuisine</label>
+            <div className="relative">
+              <Utensils className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <input type="text" value={form.cuisineType} onChange={(e) => setForm({ ...form, cuisineType: e.target.value })} className={`${inputClass} !pl-9`} />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className={sectionLabel}>Adresse</label>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <input type="text" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className={`${inputClass} !pl-9`} />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className={sectionLabel}>Ville</label>
+            <input type="text" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className={inputClass} />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className={sectionLabel}>Image URL</label>
+            <div className="relative">
+              <Image className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <input type="text" value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} className={`${inputClass} !pl-9`} />
+            </div>
           </div>
         </div>
 
-        <div className="space-y-1">
-          <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Type de cuisine</label>
-          <div className="relative">
-            <Utensils className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-            <input type="text" value={form.cuisineType} onChange={(e) => setForm({ ...form, cuisineType: e.target.value })} className="w-full bg-[#020617] border border-white/[0.08] rounded-xl pl-9 pr-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-[#00c8b3]/50 outline-none" />
-          </div>
-        </div>
-
-        <div className="space-y-1">
-          <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Adresse</label>
-          <div className="relative">
-            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-            <input type="text" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="w-full bg-[#020617] border border-white/[0.08] rounded-xl pl-9 pr-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-[#00c8b3]/50 outline-none" />
-          </div>
-        </div>
-
-        <div className="space-y-1">
-          <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Ville</label>
-          <input type="text" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className="w-full bg-[#020617] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-[#00c8b3]/50 outline-none" />
-        </div>
-
-        <div className="space-y-1">
-          <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Image URL</label>
-          <div className="relative">
-            <Image className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-            <input type="text" value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} className="w-full bg-[#020617] border border-white/[0.08] rounded-xl pl-9 pr-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-[#00c8b3]/50 outline-none" />
-          </div>
-        </div>
-
-        <button type="submit" disabled={updateMutation.isPending} className="w-full bg-[#00c8b3] text-[#020617] rounded-xl py-2.5 text-sm font-black flex items-center justify-center gap-2 disabled:opacity-50">
-          {updateMutation.isPending ? <span className="w-4 h-4 border-2 border-[#020617]/30 border-t-[#020617] rounded-full animate-spin" /> : <Save className="w-4 h-4" />}
+        <button type="submit" disabled={updateMutation.isPending} className="btn-neon w-full text-sm !mt-5">
+          {updateMutation.isPending ? <span className="w-4 h-4 border-2 border-fast-ink/30 border-t-fast-ink rounded-full animate-spin" /> : <Save className="w-4 h-4" />}
           Enregistrer le profil
         </button>
       </form>

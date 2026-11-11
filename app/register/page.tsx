@@ -53,53 +53,44 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex" style={{ background: "#020617" }}>
+    <div className="min-h-screen flex bg-background">
       {/* Desktop branding panel */}
-      <div className="hidden lg:flex flex-col justify-between w-[45%] relative overflow-hidden p-12"
-        style={{ background: "linear-gradient(160deg, #1a0533 0%, #0a1628 60%, #020617 100%)" }}>
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute w-[420px] h-[420px] -top-24 -left-24 rounded-full blur-3xl opacity-25" style={{ background: "radial-gradient(circle, #7c3aed, transparent)" }} />
-          <div className="absolute w-[360px] h-[360px] -bottom-20 -right-20 rounded-full blur-3xl opacity-20" style={{ background: "radial-gradient(circle, #06b6d4, transparent)" }} />
-        </div>
+      <div className="night-band hidden lg:flex flex-col justify-between w-[45%] relative overflow-hidden p-12">
         <div className="relative z-10 flex items-center gap-1.5">
-          <Zap className="w-7 h-7 text-amber-400 fill-amber-400" />
-          <span className="font-black text-3xl italic tracking-tight" style={{
-            background: "linear-gradient(90deg, #f59e0b, #fbbf24, #f97316)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-          }}><span className="notranslate" translate="no">FAST</span></span>
+          <Zap className="w-7 h-7 text-fast-gold fill-fast-gold" />
+          <span className="text-neon font-black text-3xl italic tracking-tight"><span className="notranslate" translate="no">FAST</span></span>
         </div>
         <div className="relative z-10">
-          <h2 className="text-4xl font-black text-white leading-tight mb-4">
+          <h2 className="font-display text-4xl xl:text-5xl font-extrabold leading-tight mb-4">
             Rejoins la<br />communauté.
           </h2>
-          <p className="text-gray-400 text-base max-w-sm">
+          <p className="on-night-muted text-base leading-relaxed max-w-sm">
             Client ou restaurateur, crée ton compte en quelques secondes et gagne du temps à chaque commande.
           </p>
         </div>
-        <p className="relative z-10 text-gray-600 text-xs">© {new Date().getFullYear()} <span className="notranslate" translate="no">FAST</span></p>
+        <p className="relative z-10 on-night-muted text-xs">© {new Date().getFullYear()} <span className="notranslate" translate="no">FAST</span></p>
       </div>
 
       {/* Form side */}
       <div className="flex-1 flex flex-col">
-      <div className="px-5 py-4">
-        <Link href="/" className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors">
-          <ArrowLeft className="w-5 h-5 text-white" />
+      <div className="px-4 sm:px-6 py-4">
+        <Link href="/" className="w-11 h-11 rounded-full border border-border bg-card flex items-center justify-center hover:bg-muted transition-colors">
+          <ArrowLeft className="w-5 h-5 text-foreground" />
         </Link>
       </div>
 
-      <div className="flex-1 flex flex-col items-center justify-center px-6 pb-12">
+      <div className="flex-1 flex flex-col items-center justify-center px-4 sm:px-6 pb-12">
         <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-sm"
+          className="w-full max-w-md bg-card border border-border rounded-2xl p-6 sm:p-8 shadow-sm"
         >
           <div className="text-center mb-8">
-            <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
-              <Zap className="w-7 h-7 text-white fill-white" />
+            <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-neon flex items-center justify-center">
+              <Zap className="w-6 h-6 text-fast-ink fill-fast-ink" />
             </div>
-            <h1 className="font-black text-3xl italic tracking-tight text-white"><span className="notranslate" translate="no">FAST</span></h1>
-            <p className="text-gray-400 text-sm mt-2">Crée ton compte</p>
+            <h1 className="font-black text-4xl italic tracking-tight"><span className="text-neon notranslate" translate="no">FAST</span></h1>
+            <p className="font-display font-bold text-xl text-foreground mt-3">Crée ton compte</p>
           </div>
 
           <Suspense fallback={null}>
@@ -107,66 +98,66 @@ export default function RegisterPage() {
           </Suspense>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3 p-1 rounded-2xl bg-white/5 border border-white/10">
+            <div className="grid grid-cols-2 gap-1 p-1 rounded-full bg-muted border border-border">
               <button
                 type="button"
                 onClick={() => setRole("CLIENT")}
-                className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all ${role === "CLIENT" ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/25" : "text-gray-400 hover:text-white"}`}
+                className={`flex items-center justify-center gap-2 min-h-[44px] rounded-full text-sm font-bold transition-colors ${role === "CLIENT" ? "chip-on" : "text-muted-foreground hover:text-foreground"}`}
               >
                 <ShoppingBag className="w-4 h-4" /> Client
               </button>
               <button
                 type="button"
                 onClick={() => setRole("RESTAURANT")}
-                className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all ${role === "RESTAURANT" ? "bg-violet-500 text-white shadow-lg shadow-violet-500/25" : "text-gray-400 hover:text-white"}`}
+                className={`flex items-center justify-center gap-2 min-h-[44px] rounded-full text-sm font-bold transition-colors ${role === "RESTAURANT" ? "chip-on" : "text-muted-foreground hover:text-foreground"}`}
               >
                 <Store className="w-4 h-4" /> Restaurateur
               </button>
             </div>
 
             {role === "RESTAURANT" && (
-              <div className="p-3 rounded-xl bg-violet-500/10 border border-violet-500/20 text-violet-300 text-xs text-center">
+              <div className="p-3 rounded-xl bg-muted border border-border text-muted-foreground text-xs text-center">
                 Après l'inscription, vous pourrez créer la fiche de votre restaurant.
               </div>
             )}
 
             <div className="relative">
-              <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Nom complet"
                 required
-                className="w-full h-14 pl-12 pr-4 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
+                className="w-full h-14 pl-12 pr-4 rounded-xl bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-fast-rose focus:ring-2 focus:ring-fast-rose/25"
               />
             </div>
 
             <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Email"
                 required
-                className="w-full h-14 pl-12 pr-4 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
+                className="w-full h-14 pl-12 pr-4 rounded-xl bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-fast-rose focus:ring-2 focus:ring-fast-rose/25"
               />
             </div>
 
             <div className="relative">
-              <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <input
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="Téléphone (optionnel)"
-                className="w-full h-14 pl-12 pr-4 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
+                className="w-full h-14 pl-12 pr-4 rounded-xl bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-fast-rose focus:ring-2 focus:ring-fast-rose/25"
               />
             </div>
 
             <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <input
                 type={showPassword ? "text" : "password"}
                 value={password}
@@ -176,20 +167,20 @@ export default function RegisterPage() {
                 minLength={8}
                 pattern="(?=.*[A-Z])(?=.*[0-9]).{8,}"
                 title="8 caractères minimum, 1 majuscule et 1 chiffre"
-                className="w-full h-14 pl-12 pr-12 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
+                className="w-full h-14 pl-12 pr-12 rounded-xl bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-fast-rose focus:ring-2 focus:ring-fast-rose/25"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground transition-colors"
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
-            <p className="text-[11px] text-slate-500">8 caractères minimum, 1 majuscule et 1 chiffre.</p>
+            <p className="text-xs text-muted-foreground">8 caractères minimum, 1 majuscule et 1 chiffre.</p>
 
             {error && (
-              <div className="p-3 rounded-xl bg-red-500/10 text-red-400 text-sm text-center">
+              <div className="p-3 rounded-xl bg-red-500/10 text-red-600 dark:text-red-400 text-sm text-center">
                 {error}
               </div>
             )}
@@ -198,16 +189,16 @@ export default function RegisterPage() {
               whileTap={{ scale: 0.98 }}
               type="submit"
               disabled={isLoadingAuth}
-              className="w-full h-14 rounded-2xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-black text-lg disabled:opacity-50"
+              className="btn-neon w-full !min-h-[3.5rem] text-base"
             >
               {isLoadingAuth ? "Inscription..." : role === "RESTAURANT" ? "S'inscrire comme restaurateur" : "S'inscrire"}
             </m.button>
           </form>
 
-          <div className="my-5 flex items-center gap-3">
-            <div className="h-px flex-1 bg-white/10" />
-            <span className="text-xs font-bold text-gray-500 uppercase">ou</span>
-            <div className="h-px flex-1 bg-white/10" />
+          <div className="my-6 flex items-center gap-3">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wide">ou</span>
+            <div className="h-px flex-1 bg-border" />
           </div>
 
           <GoogleSignInButton
@@ -217,9 +208,9 @@ export default function RegisterPage() {
           />
 
           <div className="mt-6 text-center space-y-2">
-            <p className="text-gray-400 text-sm">
+            <p className="text-muted-foreground text-sm">
               Déjà un compte ?{" "}
-              <Link href="/login" className="text-emerald-400 font-bold">
+              <Link href="/login" className="text-fast-rose font-bold hover:underline">
                 Se connecter
               </Link>
             </p>

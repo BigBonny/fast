@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { m, AnimatePresence } from "framer-motion";
 import {
-  Zap, Home, ClipboardList, Users, ShoppingCart,
+  Home, ClipboardList, Users, ShoppingCart,
   User, Store, Heart, Settings, LogOut, ChevronDown,
 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
@@ -17,6 +17,11 @@ const navLinks = [
   { labelKey: "nav_orders", href: "/orders", icon: ClipboardList },
   { labelKey: "nav_group", href: "/group-order", icon: Users },
 ];
+
+const iconBtn =
+  "relative w-11 h-11 rounded-full flex items-center justify-center text-muted-foreground transition-colors hover:bg-muted hover:text-foreground";
+const menuRow =
+  "flex items-center gap-3 px-3 min-h-[44px] rounded-xl text-foreground hover:bg-muted transition-colors cursor-pointer";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -54,29 +59,15 @@ export default function Navbar() {
     href === "/" ? pathname === "/" : pathname?.startsWith(href);
 
   return (
-    <header
-      className="hidden md:flex fixed top-0 left-0 right-0 z-50 items-center justify-between px-8 h-16 border-b border-white/8"
-      style={{
-        background: "rgba(8,9,15,0.88)",
-        backdropFilter: "blur(20px) saturate(180%)",
-        boxShadow: "0 1px 0 rgba(255,255,255,0.06)",
-      }}
-    >
+    <header className="hidden md:flex fixed top-0 left-0 right-0 z-50 items-center justify-between px-8 h-16 border-b border-border bg-background/85 backdrop-blur-xl backdrop-saturate-150">
       {/* Logo */}
-      <Link href="/" className="flex items-center gap-1.5 shrink-0">
-        <Zap className="w-6 h-6 text-amber-400 fill-amber-400" />
+      <Link href="/" className="flex items-center shrink-0">
         <span
-          className="font-black text-2xl italic tracking-tight notranslate"
+          className="text-neon font-black text-2xl italic tracking-tight notranslate pr-1"
           translate="no"
-          style={{
-            background: "linear-gradient(90deg, #f59e0b, #fbbf24, #f97316)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-          }}
         >
           FAST
         </span>
-        <Zap className="w-6 h-6 text-amber-400 fill-amber-400" />
       </Link>
 
       {/* Nav links */}
@@ -87,21 +78,17 @@ export default function Navbar() {
             <Link
               key={href}
               href={href}
-              className="relative flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 group"
-              style={{
-                color: active ? "#fff" : "rgba(255,255,255,0.55)",
-                background: active ? "rgba(255,255,255,0.08)" : "transparent",
-              }}
+              aria-current={active ? "page" : undefined}
+              className={`relative flex items-center gap-2 px-4 h-10 rounded-full text-sm font-semibold transition-colors duration-200 ${
+                active ? "text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              }`}
             >
-              <Icon
-                className="w-4 h-4 transition-colors"
-                style={{ color: active ? "#06b6d4" : "rgba(255,255,255,0.45)" }}
-              />
+              <Icon className={`w-4 h-4 ${active ? "text-fast-rose" : ""}`} />
               {t(labelKey)}
               {active && (
                 <m.div
                   layoutId="navbar-indicator"
-                  className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full bg-cyan-400"
+                  className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full bg-primary"
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 />
               )}
@@ -112,8 +99,7 @@ export default function Navbar() {
         {user?.role === "RESTAURANT" && (
           <Link
             href="/partner/orders"
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-white ml-2"
-            style={{ background: "linear-gradient(135deg, #00c8b3, #7c3aed)" }}
+            className="btn-outline !min-h-[2.5rem] !px-4 text-sm ml-2"
           >
             <Store className="w-4 h-4" />
             {t("pro_space")}
@@ -122,13 +108,13 @@ export default function Navbar() {
       </nav>
 
       {/* Right actions */}
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex items-center gap-1.5 shrink-0">
         {/* Language picker */}
         <select
           value={lang}
           onChange={(e) => setLang(e.target.value)}
           aria-label="Language"
-          className="h-10 px-2 rounded-xl text-xs font-bold text-white/80 bg-white/5 border border-white/10 cursor-pointer outline-none"
+          className="h-10 px-3 rounded-full text-xs font-bold text-foreground bg-transparent border border-border cursor-pointer outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
         >
           {LANGUAGES.map((l) => (
             <option key={l.code} value={l.code} className="text-black">
@@ -139,13 +125,10 @@ export default function Navbar() {
 
         {/* Cart */}
         <Link href="/cart">
-          <button
-            className="relative w-10 h-10 rounded-xl flex items-center justify-center transition-colors hover:bg-white/10"
-            style={{ background: "rgba(255,255,255,0.06)" }}
-          >
-            <ShoppingCart className="w-5 h-5 text-white/70" />
+          <button className={iconBtn}>
+            <ShoppingCart className="w-5 h-5" />
             {cartCount > 0 && (
-              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 rounded-full flex items-center justify-center text-[10px] font-black text-white border-2 border-[#08090f]">
+              <span className="absolute top-0.5 right-0.5 min-w-[18px] h-[18px] px-1 bg-fast-gold rounded-full flex items-center justify-center text-xs leading-none font-extrabold text-fast-ink tabular-nums">
                 {cartCount}
               </span>
             )}
@@ -154,11 +137,8 @@ export default function Navbar() {
 
         {/* Favorites */}
         <Link href="/favorites">
-          <button
-            className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors hover:bg-white/10"
-            style={{ background: "rgba(255,255,255,0.06)" }}
-          >
-            <Heart className="w-5 h-5 text-white/70" />
+          <button className={iconBtn}>
+            <Heart className="w-5 h-5" />
           </button>
         </Link>
 
@@ -167,20 +147,16 @@ export default function Navbar() {
           <div ref={userMenuRef} className="relative">
             <button
               onClick={() => setUserMenuOpen((o) => !o)}
-              className="flex items-center gap-2 px-3 py-2 rounded-xl transition-colors hover:bg-white/10"
-              style={{ background: "rgba(255,255,255,0.06)" }}
+              className="flex items-center gap-2 pl-1.5 pr-3 h-11 rounded-full border border-border transition-colors hover:bg-muted"
             >
-              <div
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-black text-white"
-                style={{ background: "linear-gradient(135deg, #14b8a6, #8b5cf6)" }}
-              >
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-extrabold bg-primary text-primary-foreground">
                 {user?.name ? user.name[0].toUpperCase() : <User className="w-4 h-4" />}
               </div>
-              <span className="text-sm font-semibold text-white/80 max-w-[100px] truncate hidden lg:block">
+              <span className="text-sm font-semibold text-foreground max-w-[100px] truncate hidden lg:block">
                 {user?.name?.split(" ")[0]}
               </span>
               <ChevronDown
-                className="w-3.5 h-3.5 text-white/40 transition-transform"
+                className="w-3.5 h-3.5 text-muted-foreground transition-transform"
                 style={{ transform: userMenuOpen ? "rotate(180deg)" : "rotate(0deg)" }}
               />
             </button>
@@ -192,45 +168,44 @@ export default function Navbar() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -8, scale: 0.97 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-12 w-56 rounded-2xl border border-white/10 overflow-hidden shadow-2xl"
-                  style={{ background: "#0d1117" }}
+                  className="absolute right-0 top-[3.25rem] w-60 rounded-2xl border border-border bg-popover text-popover-foreground overflow-hidden shadow-xl"
                 >
-                  <div className="px-4 py-3 border-b border-white/8">
-                    <p className="text-white font-bold text-sm">{user?.name}</p>
-                    <p className="text-gray-400 text-xs truncate">{user?.email}</p>
+                  <div className="px-4 py-3 border-b border-border">
+                    <p className="text-foreground font-bold text-sm">{user?.name}</p>
+                    <p className="text-muted-foreground text-xs truncate">{user?.email}</p>
                   </div>
                   <div className="p-2 space-y-0.5">
                     <Link href="/profile" onClick={() => setUserMenuOpen(false)}>
-                      <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/8 transition-colors group cursor-pointer">
-                        <User className="w-4 h-4 text-violet-400" />
-                        <span className="text-sm text-white/80 group-hover:text-white">{t("my_account")}</span>
+                      <div className={menuRow}>
+                        <User className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm font-medium">{t("my_account")}</span>
                       </div>
                     </Link>
                     <Link href="/orders" onClick={() => setUserMenuOpen(false)}>
-                      <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/8 transition-colors group cursor-pointer">
-                        <ClipboardList className="w-4 h-4 text-cyan-400" />
-                        <span className="text-sm text-white/80 group-hover:text-white">{t("my_orders")}</span>
+                      <div className={menuRow}>
+                        <ClipboardList className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm font-medium">{t("my_orders")}</span>
                       </div>
                     </Link>
                     <Link href="/favorites" onClick={() => setUserMenuOpen(false)}>
-                      <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/8 transition-colors group cursor-pointer">
-                        <Heart className="w-4 h-4 text-pink-400" />
-                        <span className="text-sm text-white/80 group-hover:text-white">{t("my_favorites")}</span>
+                      <div className={menuRow}>
+                        <Heart className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm font-medium">{t("my_favorites")}</span>
                       </div>
                     </Link>
                     <Link href="/profile/settings" onClick={() => setUserMenuOpen(false)}>
-                      <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/8 transition-colors group cursor-pointer">
-                        <Settings className="w-4 h-4 text-gray-400" />
-                        <span className="text-sm text-white/80 group-hover:text-white">{t("settings")}</span>
+                      <div className={menuRow}>
+                        <Settings className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm font-medium">{t("settings")}</span>
                       </div>
                     </Link>
-                    <div className="border-t border-white/8 mt-1 pt-1">
+                    <div className="border-t border-border mt-1 pt-1">
                       <button
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-red-500/10 transition-colors group"
+                        className="w-full flex items-center gap-3 px-3 min-h-[44px] rounded-xl text-red-600 dark:text-red-400 hover:bg-red-500/10 transition-colors"
                       >
-                        <LogOut className="w-4 h-4 text-red-400" />
-                        <span className="text-sm text-red-400 group-hover:text-red-300">{t("logout")}</span>
+                        <LogOut className="w-4 h-4" />
+                        <span className="text-sm font-medium">{t("logout")}</span>
                       </button>
                     </div>
                   </div>
@@ -239,17 +214,14 @@ export default function Navbar() {
             </AnimatePresence>
           </div>
         ) : (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 ml-1">
             <Link href="/login">
-              <button className="px-4 py-2 rounded-xl text-sm font-semibold text-white/70 hover:text-white hover:bg-white/8 transition-colors">
+              <button className="btn-outline !min-h-[2.5rem] !px-4 text-sm">
                 {t("login_btn")}
               </button>
             </Link>
             <Link href="/register">
-              <button
-                className="px-4 py-2 rounded-xl text-sm font-bold text-white"
-                style={{ background: "linear-gradient(135deg, #7c3aed, #06b6d4)" }}
-              >
+              <button className="btn-neon !min-h-[2.5rem] !px-4 text-sm">
                 {t("signup_btn")}
               </button>
             </Link>

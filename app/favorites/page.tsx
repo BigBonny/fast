@@ -28,39 +28,37 @@ export default function FavoritesPage() {
   }, [favoriteIds, restaurants]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-20">
+    <div className="min-h-screen bg-background pb-24">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-900 px-5 py-4 flex items-center gap-3 border-b border-gray-100 dark:border-gray-800 sticky top-0 z-20">
-        <Link href="/" className="w-9 h-9 bg-gray-50 dark:bg-gray-800 rounded-xl flex items-center justify-center">
-          <ArrowLeft className="w-4 h-4 text-gray-600 dark:text-gray-300" />
-        </Link>
-        <div className="flex items-center gap-2">
-          <Heart className="w-5 h-5 text-red-400 fill-red-400" />
-          <h1 className="font-bold text-gray-900 dark:text-white">Mes favoris</h1>
+      <div className="bg-background/90 backdrop-blur-md px-4 sm:px-6 py-3 border-b border-border sticky top-0 z-20">
+        <div className="max-w-2xl mx-auto flex items-center gap-3">
+          <Link href="/" className="w-11 h-11 rounded-full border border-border bg-card flex items-center justify-center hover:bg-muted transition-colors shrink-0">
+            <ArrowLeft className="w-5 h-5 text-foreground" />
+          </Link>
+          <div className="flex items-center gap-2">
+            <Heart className="w-5 h-5 text-fast-rose fill-fast-rose" />
+            <h1 className="font-display font-bold text-xl text-foreground">Mes favoris</h1>
+          </div>
         </div>
       </div>
 
       {favRestaurants.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 px-5">
-          <div className="w-20 h-20 rounded-3xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center mb-4">
-            <HeartOff className="w-9 h-9 text-red-300 dark:text-red-400/60" />
+        <div className="flex flex-col items-center justify-center py-24 px-4">
+          <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mb-6">
+            <HeartOff className="w-10 h-10 text-muted-foreground" />
           </div>
-          <h2 className="font-bold text-gray-900 dark:text-white text-lg mb-1">Aucun favori</h2>
-          <p className="text-sm text-gray-400 text-center mb-6">
+          <h2 className="font-display font-bold text-foreground text-2xl mb-2">Aucun favori</h2>
+          <p className="text-sm text-muted-foreground text-center mb-7 max-w-xs">
             Ajoutez des restaurants à vos favoris pour les retrouver ici
           </p>
           <Link href="/">
-            <m.button
-              whileTap={{ scale: 0.98 }}
-              className="px-6 py-3 rounded-xl font-bold text-white"
-              style={{ background: "linear-gradient(135deg, #7c3aed, #06b6d4)" }}
-            >
+            <m.button whileTap={{ scale: 0.98 }} className="btn-neon">
               Découvrir des restaurants
             </m.button>
           </Link>
         </div>
       ) : (
-        <div className="px-5 pt-4 space-y-3">
+        <div className="px-4 sm:px-6 pt-6 space-y-3 max-w-2xl mx-auto">
           {favRestaurants.map((restaurant: any, index: number) => (
             <m.div
               key={restaurant.id}
@@ -68,19 +66,19 @@ export default function FavoritesPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
             >
-              <Link href={`/restaurant/${restaurant.id}`}>
-                <div className="bg-white dark:bg-gray-900 rounded-2xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800 flex">
-                  <div className="w-28 h-28 bg-gray-50 dark:bg-gray-800 flex-shrink-0">
+              <Link href={`/restaurant/${restaurant.id}`} className="block">
+                <div className="bg-card rounded-2xl p-3 border border-border flex items-center gap-4 card-lift">
+                  <div className="w-24 h-24 rounded-xl overflow-hidden bg-muted flex-shrink-0">
                     {restaurant.image ? (
                       <SafeImage src={restaurant.image} alt={restaurant.name} width={112} height={112} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800"><UtensilsCrossed className="w-7 h-7 text-gray-300 dark:text-gray-600" /></div>
+                      <div className="w-full h-full flex items-center justify-center bg-muted"><UtensilsCrossed className="w-7 h-7 text-muted-foreground" /></div>
                     )}
                   </div>
-                  <div className="p-4 flex-1">
-                    <h3 className="font-bold text-gray-900 dark:text-white">{restaurant.name}</h3>
-                    <p className="flex items-center gap-1 text-xs text-gray-400 mt-1">
-                      {restaurant.normalPrepTime || 5} min • {restaurant.rating || "4.5"} <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-display font-bold text-lg text-foreground truncate">{restaurant.name}</h3>
+                    <p className="flex items-center gap-1 text-sm text-muted-foreground mt-1 tabular-nums">
+                      {restaurant.normalPrepTime || 5} min • {restaurant.rating || "4.5"} <Star className="w-3.5 h-3.5 text-fast-gold fill-fast-gold" />
                     </p>
                   </div>
                 </div>

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { m, AnimatePresence } from "framer-motion";
-import { Plus, Pencil, Trash2, Save, X, ChevronDown, ChevronUp, AlertCircle } from "lucide-react";
+import { Plus, Pencil, Trash2, Save, X, ChevronDown, ChevronUp, AlertCircle, UtensilsCrossed } from "lucide-react";
 import { menuApi, restaurantApi } from "@/api/fastBackend";
 import { showToast } from "@/components/partner/Toast";
 import SafeImage from "@/components/SafeImage";
@@ -16,6 +16,16 @@ const DIETARY_OPTIONS = [
   { value: "KETO", label: "Keto", color: "bg-orange-500" },
   { value: "DAIRY_FREE", label: "Sans lactose", color: "bg-blue-500" },
 ];
+
+const sectionLabel = "text-xs font-bold uppercase tracking-wide text-muted-foreground";
+const inputClass =
+  "w-full min-h-[44px] bg-background border border-border rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-fast-teal focus:ring-2 focus:ring-fast-teal/30";
+const chipClass = (on: boolean) =>
+  `inline-flex items-center px-4 min-h-[44px] rounded-full text-xs font-bold border transition-colors focus-visible:outline-fast-teal ${
+    on ? "border-fast-teal bg-fast-teal/15 text-foreground" : "border-border text-muted-foreground hover:text-foreground"
+  }`;
+const iconButton =
+  "w-11 h-11 rounded-full border border-border text-muted-foreground flex items-center justify-center transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-fast-teal";
 
 export default function MenuManager() {
   const queryClient = useQueryClient();
@@ -151,84 +161,103 @@ export default function MenuManager() {
   const isPending = createMutation.isPending || updateMutation.isPending || deleteMutation.isPending || toggleAvailMutation.isPending;
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-lg font-black text-white">Gestion du menu</h1>
-        <span className="text-xs text-slate-400">{items.length} article{items.length > 1 ? "s" : ""}</span>
+    <div className="space-y-8">
+      <div className="flex items-end justify-between gap-3">
+        <h1 className="font-display text-2xl font-bold text-foreground">Gestion du menu</h1>
+        <span className="text-xs text-muted-foreground tabular-nums">{items.length} article{items.length > 1 ? "s" : ""}</span>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-[#0B1120] border border-white/[0.08] rounded-2xl p-4 space-y-3">
-        <div className="flex items-center gap-2 text-sm font-bold text-[#00c8b3]">
-          {isEditing ? <Pencil className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+      <form onSubmit={handleSubmit} className="bg-card border border-border rounded-2xl p-4 space-y-3">
+        <div className={`flex items-center gap-2 ${sectionLabel}`}>
+          {isEditing ? <Pencil className="w-4 h-4 text-fast-teal" /> : <Plus className="w-4 h-4 text-fast-teal" />}
           {isEditing ? "Modifier l'article" : "Ajouter un article"}
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <input type="text" placeholder="Nom du plat *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="bg-[#020617] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-[#00c8b3]/50 outline-none" required />
-          <input type="number" step="0.01" min="0.01" placeholder="Prix de base (€) *" title="Votre prix, avant les frais FAST ajoutés au prix client" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="bg-[#020617] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-[#00c8b3]/50 outline-none" required />
+          <input type="text" placeholder="Nom du plat *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputClass} required />
+          <input type="number" step="0.01" min="0.01" placeholder="Prix de base (€) *" title="Votre prix, avant les frais FAST ajoutés au prix client" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className={`${inputClass} tabular-nums`} required />
         </div>
-        <input type="text" placeholder="Catégorie (ex: Burgers, Boissons...)" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="w-full bg-[#020617] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-[#00c8b3]/50 outline-none" />
-        <input type="text" placeholder="URL image (optionnel)" value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} className="w-full bg-[#020617] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-[#00c8b3]/50 outline-none" />
-        <textarea placeholder="Description (optionnel)" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full bg-[#020617] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-[#00c8b3]/50 outline-none min-h-[72px] resize-none" />
+        <input type="text" placeholder="Catégorie (ex: Burgers, Boissons...)" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className={inputClass} />
+        <input type="text" placeholder="URL image (optionnel)" value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} className={inputClass} />
+        <textarea placeholder="Description (optionnel)" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className={`${inputClass} min-h-[72px] resize-none`} />
         <div>
-          <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Tags diététiques</p>
+          <p className={`${sectionLabel} mb-2`}>Tags diététiques</p>
           <div className="flex flex-wrap gap-2">
             {DIETARY_OPTIONS.map((opt) => (
-              <button key={opt.value} type="button" onClick={() => toggleTag(opt.value)} className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all ${form.dietaryTags.includes(opt.value) ? "border-[#00c8b3] text-[#00c8b3] bg-[#00c8b3]/10" : "border-white/10 text-slate-400 hover:border-white/20"}`}>{opt.label}</button>
+              <button key={opt.value} type="button" onClick={() => toggleTag(opt.value)} aria-pressed={form.dietaryTags.includes(opt.value)} className={chipClass(form.dietaryTags.includes(opt.value))}>{opt.label}</button>
             ))}
           </div>
         </div>
         <div className="flex items-center gap-3 pt-1">
-          <button type="submit" disabled={isPending} className="flex-1 bg-[#00c8b3] text-[#020617] rounded-xl py-2.5 text-sm font-black flex items-center justify-center gap-2 disabled:opacity-50">
-            {isPending ? <span className="w-4 h-4 border-2 border-[#020617]/30 border-t-[#020617] rounded-full animate-spin" /> : <Save className="w-4 h-4" />}
+          <button type="submit" disabled={isPending} className="btn-neon flex-1 text-sm">
+            {isPending ? <span className="w-4 h-4 border-2 border-fast-ink/30 border-t-fast-ink rounded-full animate-spin" /> : <Save className="w-4 h-4" />}
             {isEditing ? "Enregistrer" : "Ajouter"}
           </button>
-          {isEditing && <button type="button" onClick={resetForm} className="px-4 py-2.5 rounded-xl border border-white/10 text-slate-300 text-sm font-bold hover:bg-white/5"><X className="w-4 h-4" /></button>}
+          {isEditing && <button type="button" onClick={resetForm} aria-label="Annuler" className="btn-outline !min-h-[3rem] !px-4"><X className="w-4 h-4" /></button>}
         </div>
       </form>
 
       {itemsLoading ? (
-        <div className="py-12 text-center text-slate-500 text-sm">Chargement du menu...</div>
+        <div className="py-12 text-center text-muted-foreground text-sm">Chargement du menu...</div>
       ) : categories.length === 0 ? (
-        <div className="bg-[#0B1120] border border-white/[0.08] rounded-2xl p-8 text-center text-slate-400 text-sm">
-          <AlertCircle className="w-8 h-8 mx-auto mb-2 text-slate-500" />Aucun article. Ajoutez votre premier plat ci-dessus.
+        <div className="bg-card border border-border rounded-2xl p-8 text-center text-muted-foreground text-sm">
+          <AlertCircle className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />Aucun article. Ajoutez votre premier plat ci-dessus.
         </div>
       ) : (
         categories.map(([category, catItems]) => (
-          <div key={category} className="bg-[#0B1120] border border-white/[0.08] rounded-2xl overflow-hidden">
-            <button onClick={() => setExpanded((prev) => ({ ...prev, [category]: !prev[category] }))} className="w-full flex items-center justify-between px-4 py-3 bg-white/[0.02]">
-              <span className="text-sm font-black text-white">{category}</span>
-              <span className="text-xs text-slate-400 flex items-center gap-1">{catItems.length} article{catItems.length > 1 ? "s" : ""}{expanded[category] ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}</span>
+          <section key={category} className="space-y-2">
+            <button onClick={() => setExpanded((prev) => ({ ...prev, [category]: !prev[category] }))} aria-expanded={expanded[category] !== false} className="w-full min-h-[44px] flex items-center justify-between gap-3 text-left focus-visible:outline-fast-teal">
+              <span className="font-display text-xl font-bold text-foreground">{category}</span>
+              <span className="text-xs text-muted-foreground flex items-center gap-1 tabular-nums flex-shrink-0">{catItems.length} article{catItems.length > 1 ? "s" : ""}{expanded[category] ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}</span>
             </button>
             <AnimatePresence>
               {expanded[category] !== false && (
                 <m.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                  <div className="p-2 space-y-2">
-                    {catItems.map((item: any) => (
-                      <div key={item.id} className={`flex items-center gap-3 p-3 rounded-xl border ${item.isAvailable === false ? "border-white/5 bg-white/[0.02] opacity-60" : "border-white/[0.06] bg-[#020617]"}`}>
-                        <div className="w-12 h-12 rounded-xl bg-white/[0.06] flex items-center justify-center text-lg flex-shrink-0 overflow-hidden">{item.image ? <SafeImage src={item.image} alt="" width={48} height={48} className="w-full h-full object-cover" /> : ""}</div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-sm font-bold text-white truncate">{item.name}</span>
-                            {item.dietaryTags?.map((t: any) => {
-                              const opt = DIETARY_OPTIONS.find((o) => o.value === t.option);
-                              return opt ? <span key={t.option} className={`text-[9px] font-black text-white px-1.5 py-0.5 rounded-full ${opt.color}`}>{opt.label}</span> : null;
-                            })}
+                  <div className="bg-card border border-border rounded-2xl divide-y divide-border">
+                    {catItems.map((item: any) => {
+                      const available = item.isAvailable !== false;
+                      return (
+                        <div key={item.id} className="flex flex-wrap items-center gap-3 p-3 sm:p-4">
+                          <div className={`w-14 h-14 rounded-xl bg-muted text-muted-foreground flex items-center justify-center flex-shrink-0 overflow-hidden ${available ? "" : "opacity-50"}`}>{item.image ? <SafeImage src={item.image} alt="" width={56} height={56} className="w-full h-full object-cover" /> : <UtensilsCrossed className="w-5 h-5" aria-hidden="true" />}</div>
+                          <div className={`flex-1 min-w-[160px] ${available ? "" : "opacity-50"}`}>
+                            <p className="text-sm font-bold text-foreground truncate">{item.name}</p>
+                            <p className="text-xs text-muted-foreground truncate">{item.description || "Pas de description"}</p>
+                            <div className="flex items-center gap-x-3 gap-y-1 flex-wrap mt-1">
+                              <span className="text-sm font-bold text-foreground tabular-nums">{item.price?.toFixed(2)} </span>
+                              {item.dietaryTags?.map((t: any) => {
+                                const opt = DIETARY_OPTIONS.find((o) => o.value === t.option);
+                                return opt ? (
+                                  <span key={t.option} className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+                                    <span className={`w-2 h-2 rounded-full ${opt.color}`} aria-hidden="true" />{opt.label}
+                                  </span>
+                                ) : null;
+                              })}
+                            </div>
                           </div>
-                          <p className="text-xs text-slate-400 truncate">{item.description || "Pas de description"}</p>
-                          <p className="text-xs font-black text-[#00c8b3] mt-0.5">{item.price?.toFixed(2)} </p>
+                          <div className="flex items-center gap-1.5 flex-shrink-0 ml-auto">
+                            <button
+                              type="button"
+                              role="switch"
+                              aria-checked={available}
+                              onClick={() => toggleAvailMutation.mutate({ id: item.id, isAvailable: item.isAvailable === false })}
+                              title={item.isAvailable === false ? "Rendre disponible" : "Rendre indisponible"}
+                              aria-label={item.isAvailable === false ? "Rendre disponible" : "Rendre indisponible"}
+                              className="h-11 px-1 flex items-center focus-visible:outline-fast-teal"
+                            >
+                              <span className={`relative w-11 h-6 rounded-full transition-colors ${available ? "bg-fast-teal" : "bg-muted border border-border"}`}>
+                                <span className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-white shadow transition-all ${available ? "left-[22px]" : "left-0.5"}`} />
+                              </span>
+                            </button>
+                            <button onClick={() => startEdit(item)} aria-label="Modifier" className={iconButton}><Pencil className="w-4 h-4" /></button>
+                            <button onClick={() => deleteMutation.mutate(item.id)} aria-label="Supprimer" className={`${iconButton} hover:!text-[color:var(--red)]`}><Trash2 className="w-4 h-4" /></button>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <button onClick={() => startEdit(item)} className="w-8 h-8 rounded-lg bg-white/[0.06] text-slate-300 flex items-center justify-center hover:bg-white/10"><Pencil className="w-4 h-4" /></button>
-                          <button onClick={() => toggleAvailMutation.mutate({ id: item.id, isAvailable: item.isAvailable === false })} className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black ${item.isAvailable === false ? "bg-green-500/20 text-green-400" : "bg-white/[0.06] text-slate-300"}`} title={item.isAvailable === false ? "Rendre disponible" : "Rendre indisponible"}>{item.isAvailable === false ? "" : ""}</button>
-                          <button onClick={() => deleteMutation.mutate(item.id)} className="w-8 h-8 rounded-lg bg-red-500/10 text-red-400 flex items-center justify-center hover:bg-red-500/20"><Trash2 className="w-4 h-4" /></button>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </m.div>
               )}
             </AnimatePresence>
-          </div>
+          </section>
         ))
       )}
     </div>

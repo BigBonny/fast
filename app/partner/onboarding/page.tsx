@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -15,6 +15,14 @@ const DIETARY_OPTIONS = [
   { value: "KETO", label: "Keto" },
   { value: "DAIRY_FREE", label: "Sans lactose" },
 ];
+
+const sectionLabel = "text-xs font-bold uppercase tracking-wide text-muted-foreground";
+const inputClass =
+  "w-full min-h-[44px] bg-background border border-border rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-fast-teal focus:ring-2 focus:ring-fast-teal/30";
+const chipClass = (on: boolean) =>
+  `inline-flex items-center px-4 min-h-[44px] rounded-full text-xs font-bold border transition-colors focus-visible:outline-fast-teal ${
+    on ? "border-fast-teal bg-fast-teal/15 text-foreground" : "border-border text-muted-foreground hover:text-foreground"
+  }`;
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -76,75 +84,78 @@ export default function OnboardingPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "#020617" }}>
-        <div className="font-bebas text-3xl tracking-[8px] animate-pulse" style={{ color: "#00c8b3" }}><span className="notranslate" translate="no">FAST</span></div>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-5 bg-background">
+        <div className="font-bebas text-3xl tracking-[8px]"><span className="notranslate text-neon" translate="no">FAST</span></div>
+        <span className="w-5 h-5 rounded-full border-2 border-fast-teal/30 border-t-fast-teal animate-spin" aria-hidden="true" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen p-4" style={{ background: "#020617" }}>
-      <div className="max-w-md mx-auto pt-8 pb-12">
-        <div className="text-center mb-8">
-          <div className="font-bebas text-4xl tracking-[8px] bg-gradient-to-br from-[#00c8b3] to-[#ff0066] bg-clip-text text-transparent mb-2"><span className="notranslate" translate="no">FAST</span></div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-300 text-xs font-bold mb-3">
+    <div className="min-h-screen px-4 sm:px-6 bg-background text-foreground">
+      <div className="max-w-md mx-auto pt-6 pb-12 space-y-6">
+        <div className="night-surface text-center px-5 py-8">
+          <div className="font-bebas text-4xl tracking-[8px] mb-3"><span className="notranslate text-neon" translate="no">FAST</span></div>
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.08] border border-white/15 text-white text-xs font-bold mb-4">
             Étape 1 / 2 : Créer le compte restaurateur
           </div>
-          <h1 className="text-2xl font-black text-white mb-2">Créez votre restaurant</h1>
-          <p className="text-sm text-slate-400">Remplissez les informations ci-dessous pour ouvrir votre restaurant sur <span className="notranslate" translate="no">FAST</span> et commencer à recevoir des commandes.</p>
+          <h1 className="font-display text-3xl font-bold text-white mb-2">Créez votre restaurant</h1>
+          <p className="text-sm on-night-muted">Remplissez les informations ci-dessous pour ouvrir votre restaurant sur <span className="notranslate" translate="no">FAST</span> et commencer à recevoir des commandes.</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-[#0B1120] border border-white/[0.08] rounded-2xl p-5 space-y-4">
-          <div className="space-y-1">
-            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1"><Store className="w-3 h-3" /> Nom du restaurant *</label>
-            <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full bg-[#020617] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-[#00c8b3]/50 outline-none" required />
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Description</label>
-            <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full bg-[#020617] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-[#00c8b3]/50 outline-none min-h-[80px] resize-none" />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1"><Utensils className="w-3 h-3" /> Cuisine</label>
-              <input type="text" value={form.cuisineType} onChange={(e) => setForm({ ...form, cuisineType: e.target.value })} className="w-full bg-[#020617] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-[#00c8b3]/50 outline-none" />
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="bg-card border border-border rounded-2xl p-4 space-y-4">
+            <div className="space-y-1.5">
+              <label className={`${sectionLabel} flex items-center gap-1.5`}><Store className="w-3.5 h-3.5" /> Nom du restaurant *</label>
+              <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputClass} required />
             </div>
-            <div className="space-y-1">
-              <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Catégorie</label>
-              <input type="text" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="w-full bg-[#020617] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-[#00c8b3]/50 outline-none" placeholder="fast-food" />
+
+            <div className="space-y-1.5">
+              <label className={sectionLabel}>Description</label>
+              <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className={`${inputClass} min-h-[80px] resize-none`} />
             </div>
-          </div>
 
-          <div className="space-y-1">
-            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1"><MapPin className="w-3 h-3" /> Adresse</label>
-            <input type="text" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="w-full bg-[#020617] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-[#00c8b3]/50 outline-none" />
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Ville</label>
-            <input type="text" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className="w-full bg-[#020617] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-[#00c8b3]/50 outline-none" />
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1"><Clock className="w-3 h-3" /> Temps de préparation (min)</label>
             <div className="grid grid-cols-2 gap-3">
-              <input type="number" min="5" max="60" value={form.normalPrepTime} onChange={(e) => setForm({ ...form, normalPrepTime: Number(e.target.value) })} className="w-full bg-[#020617] border border-white/[0.08] rounded-xl px-3 py-2 text-sm text-white focus:border-[#00c8b3]/50 outline-none" />
-              <input type="number" min="10" max="90" value={form.rushPrepTime} onChange={(e) => setForm({ ...form, rushPrepTime: Number(e.target.value) })} className="w-full bg-[#020617] border border-white/[0.08] rounded-xl px-3 py-2 text-sm text-white focus:border-[#00c8b3]/50 outline-none" placeholder="Rush" />
+              <div className="space-y-1.5">
+                <label className={`${sectionLabel} flex items-center gap-1.5`}><Utensils className="w-3.5 h-3.5" /> Cuisine</label>
+                <input type="text" value={form.cuisineType} onChange={(e) => setForm({ ...form, cuisineType: e.target.value })} className={inputClass} />
+              </div>
+              <div className="space-y-1.5">
+                <label className={`${sectionLabel} flex items-center min-h-[16px]`}>Catégorie</label>
+                <input type="text" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className={inputClass} placeholder="fast-food" />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className={`${sectionLabel} flex items-center gap-1.5`}><MapPin className="w-3.5 h-3.5" /> Adresse</label>
+              <input type="text" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className={inputClass} />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className={sectionLabel}>Ville</label>
+              <input type="text" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className={inputClass} />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className={`${sectionLabel} flex items-center gap-1.5`}><Clock className="w-3.5 h-3.5" /> Temps de préparation (min)</label>
+              <div className="grid grid-cols-2 gap-3">
+                <input type="number" min="5" max="60" value={form.normalPrepTime} onChange={(e) => setForm({ ...form, normalPrepTime: Number(e.target.value) })} className={`${inputClass} tabular-nums`} />
+                <input type="number" min="10" max="90" value={form.rushPrepTime} onChange={(e) => setForm({ ...form, rushPrepTime: Number(e.target.value) })} className={`${inputClass} tabular-nums`} placeholder="Rush" />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className={sectionLabel}>Options diététiques</label>
+              <div className="flex flex-wrap gap-2">
+                {DIETARY_OPTIONS.map((opt) => (
+                  <button key={opt.value} type="button" onClick={() => toggleDietary(opt.value)} aria-pressed={form.dietaryOptions.includes(opt.value)} className={chipClass(form.dietaryOptions.includes(opt.value))}>{opt.label}</button>
+                ))}
+              </div>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Options diététiques</label>
-            <div className="flex flex-wrap gap-2">
-              {DIETARY_OPTIONS.map((opt) => (
-                <button key={opt.value} type="button" onClick={() => toggleDietary(opt.value)} className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all ${form.dietaryOptions.includes(opt.value) ? "border-[#00c8b3] text-[#00c8b3] bg-[#00c8b3]/10" : "border-white/10 text-slate-400 hover:border-white/20"}`}>{opt.label}</button>
-              ))}
-            </div>
-          </div>
-
-          <button type="submit" disabled={createMutation.isPending} className="w-full bg-[#00c8b3] text-[#020617] rounded-xl py-3 text-sm font-black flex items-center justify-center gap-2 disabled:opacity-50 mt-2">
-            {createMutation.isPending ? <span className="w-4 h-4 border-2 border-[#020617]/30 border-t-[#020617] rounded-full animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+          <button type="submit" disabled={createMutation.isPending} className="btn-neon w-full text-sm">
+            {createMutation.isPending ? <span className="w-4 h-4 border-2 border-fast-ink/30 border-t-fast-ink rounded-full animate-spin" /> : <CheckCircle className="w-4 h-4" />}
             Créer mon restaurant
             <ArrowRight className="w-4 h-4" />
           </button>

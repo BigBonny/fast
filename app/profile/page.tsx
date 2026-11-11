@@ -32,87 +32,88 @@ export default function ProfilePage() {
 
   const isRestaurant = user?.role === "RESTAURANT";
   const roleLabel = isRestaurant ? "Restaurateur" : "Client";
-  const roleColor = isRestaurant ? "bg-emerald-500" : "bg-violet-500";
+
   const clientMenu = [{ icon: User, label: "Informations personnelles", action: openEdit }, { icon: MapPin, label: "Mes adresses", action: () => router.push("/profile/addresses") }, { icon: Bell, label: "Notifications", action: () => router.push("/profile/notifications") }, { icon: Moon, label: "Mode sombre", action: toggleTheme, value: darkMode }, { icon: Shield, label: "Confidentialité", action: () => router.push("/privacy-policy") }];
   const restaurantMenu = [{ icon: Store, label: "Tableau de bord", action: () => router.push("/partner/orders"), highlight: true }, { icon: ShoppingBag, label: "Commandes restaurant", action: () => router.push("/partner/orders") }, { icon: BarChart3, label: "Statistiques", action: () => router.push("/partner/analytics") }, { icon: Settings, label: "Réglages restaurant", action: () => router.push("/partner/settings") }, { icon: Utensils, label: "Mon menu", action: () => router.push("/partner/menu") }, { icon: User, label: "Profil restaurant", action: () => router.push("/partner/analytics/profile") }, { icon: Shield, label: "Confidentialité", action: () => router.push("/privacy-policy") }];
   const menuItems = isRestaurant ? restaurantMenu : clientMenu;
 
   return (
-    <div className={`min-h-screen pb-20 transition-colors ${darkMode ? "bg-gray-900" : "bg-gray-50"}`}>
+    <div className="min-h-screen pb-24 bg-background">
       {/* Header */}
-      <div className={`px-5 py-4 border-b sticky top-0 z-20 backdrop-blur-md ${darkMode ? "bg-gray-900/90 border-gray-800" : "bg-white/90 border-gray-100"}`}>
+      <div className="px-4 sm:px-6 py-3 border-b border-border sticky top-0 z-20 backdrop-blur-md bg-background/90">
         <div className="max-w-2xl mx-auto flex items-center gap-3">
-          <Link href="/" className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${darkMode ? "bg-gray-800 hover:bg-gray-700" : "bg-gray-50 hover:bg-gray-100"}`}><ArrowLeft className={`w-4 h-4 ${darkMode ? "text-gray-200" : "text-gray-600"}`} /></Link>
-          <h1 className={`font-bold ${darkMode ? "text-white" : "text-gray-900"}`}>Mon compte</h1>
-          <span className={`ml-auto px-2.5 py-1 rounded-full text-[10px] font-black text-white ${roleColor}`}>{roleLabel}</span>
+          <Link href="/" className="w-11 h-11 rounded-full border border-border bg-card flex items-center justify-center hover:bg-muted transition-colors shrink-0"><ArrowLeft className="w-5 h-5 text-foreground" /></Link>
+          <h1 className="font-display font-bold text-xl text-foreground">Mon compte</h1>
         </div>
       </div>
 
       <div className="max-w-2xl mx-auto">
-        {/* Hero card */}
-        <div className="px-5 pt-5">
-          <div className="rounded-3xl p-6 md:p-8 text-white relative overflow-hidden shadow-xl shadow-violet-500/20" style={{ background: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 40%, #0891b2 100%)" }}>
-            <div className="relative z-10 flex items-center gap-5">
-              <div className="w-20 h-20 md:w-24 md:h-24 bg-white/15 backdrop-blur-sm border border-white/20 rounded-3xl flex items-center justify-center text-3xl md:text-4xl font-black shadow-lg shrink-0">{user?.name ? user.name[0].toUpperCase() : <User className="w-8 h-8" />}</div>
+        {/* Membership card */}
+        <div className="px-4 sm:px-6 pt-6">
+          <div className="night-surface p-6 md:p-8">
+            <div className="flex items-start justify-between gap-3">
+              <span className="text-xs font-bold tracking-wide uppercase on-night-muted">{roleLabel}</span>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-fast-gold px-3 py-1 text-xs font-bold text-fast-ink tabular-nums shrink-0">
+                <Star className="w-3.5 h-3.5 fill-current" />
+                {user?.points ?? 0}
+              </span>
+            </div>
+            <div className="flex items-center gap-4 mt-4">
+              <div className="w-16 h-16 bg-white/10 border border-white/15 rounded-full flex items-center justify-center text-2xl font-display font-bold shrink-0">{user?.name ? user.name[0].toUpperCase() : <User className="w-7 h-7" />}</div>
               <div className="min-w-0">
-                <h2 className="text-xl md:text-2xl font-black truncate">{user?.name || "Mon compte"}</h2>
-                <p className="text-white/70 text-sm truncate">{user?.email || ""}</p>
-                {user?.phone && <p className="text-white/60 text-xs mt-0.5 flex items-center gap-1"><Phone className="w-3 h-3" />{user.phone}</p>}
-                <button onClick={openEdit} className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold bg-white/15 hover:bg-white/25 border border-white/20 rounded-full px-3 py-1.5 transition-colors">
-                  <Pencil className="w-3 h-3" /> Modifier le profil
-                </button>
+                <h2 className="font-display text-2xl md:text-3xl font-extrabold truncate leading-tight">{user?.name || "Mon compte"}</h2>
+                <p className="on-night-muted text-sm truncate">{user?.email || ""}</p>
+                {user?.phone && <p className="on-night-muted text-xs mt-0.5 flex items-center gap-1 tabular-nums"><Phone className="w-3 h-3" />{user.phone}</p>}
               </div>
             </div>
-            <div className="absolute -right-6 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-sm" />
-            <div className="absolute -right-10 -top-10 w-28 h-28 bg-white/5 rounded-full" />
-            <div className="absolute left-1/3 -bottom-14 w-32 h-32 bg-cyan-400/20 rounded-full blur-2xl" />
-          </div>
-        </div>
 
-        {/* Stats row */}
-        <div className="px-5 mt-4 grid grid-cols-2 gap-3">
-          <div className={`rounded-2xl p-4 flex items-center gap-3 border transition-shadow hover:shadow-md ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100 shadow-sm"}`}>
-            <div className="w-11 h-11 rounded-xl bg-yellow-100 flex items-center justify-center shrink-0"><Star className="w-5 h-5 text-yellow-500 fill-yellow-400" /></div>
-            <div className="min-w-0">
-              <p className={`font-black text-lg leading-tight ${darkMode ? "text-white" : "text-gray-900"}`}>{user?.points ?? 0}</p>
-              <p className="text-[11px] text-gray-400 font-semibold">Points <span className="notranslate" translate="no">FAST</span></p>
+            {/* Stats row */}
+            <div className="grid grid-cols-2 gap-3 mt-6 pt-5 border-t border-white/10">
+              <div className="min-w-0">
+                <p className="font-extrabold text-xl leading-tight tabular-nums">{user?.points ?? 0}</p>
+                <p className="text-xs on-night-muted font-semibold mt-0.5">Points <span className="notranslate" translate="no">FAST</span></p>
+              </div>
+              <div className="min-w-0 flex items-start gap-2">
+                {isRestaurant ? <Store className="w-4 h-4 mt-1 text-fast-gold shrink-0" /> : <Zap className="w-4 h-4 mt-1 text-fast-gold fill-fast-gold shrink-0" />}
+                <div className="min-w-0">
+                  <p className="font-extrabold text-xl leading-tight truncate">{roleLabel}</p>
+                  <p className="text-xs on-night-muted font-semibold mt-0.5">{isRestaurant ? "Compte pro" : "Membre actif"}</p>
+                </div>
+              </div>
             </div>
-          </div>
-          <div className={`rounded-2xl p-4 flex items-center gap-3 border transition-shadow hover:shadow-md ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100 shadow-sm"}`}>
-            <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${isRestaurant ? "bg-emerald-100" : "bg-violet-100"}`}>{isRestaurant ? <Store className="w-5 h-5 text-emerald-600" /> : <Zap className="w-5 h-5 text-violet-600 fill-violet-400" />}</div>
-            <div className="min-w-0">
-              <p className={`font-black text-lg leading-tight ${darkMode ? "text-white" : "text-gray-900"}`}>{roleLabel}</p>
-              <p className="text-[11px] text-gray-400 font-semibold">{isRestaurant ? "Compte pro" : "Membre actif"}</p>
-            </div>
+
+            <button onClick={openEdit} className="mt-5 min-h-[44px] inline-flex items-center gap-2 text-sm font-bold bg-white/10 hover:bg-white/20 border border-white/20 rounded-full px-4 transition-colors">
+              <Pencil className="w-3.5 h-3.5" /> Modifier le profil
+            </button>
           </div>
         </div>
 
         {isRestaurant && (
-          <div className="px-5 mt-4">
-            <Link href="/partner/orders">
-              <m.div whileTap={{ scale: 0.98 }} whileHover={{ y: -2 }} className="w-full rounded-2xl p-4 flex items-center justify-between text-white shadow-lg shadow-teal-500/20" style={{ background: "linear-gradient(135deg, #00c8b3, #7c3aed)" }}>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center"><Store className="w-5 h-5 text-white" /></div>
-                  <div><p className="font-black text-sm">Accéder à l'Espace Pro</p><p className="text-white/80 text-xs">Commandes, menu, statistiques</p></div>
+          <div className="px-4 sm:px-6 mt-4">
+            <Link href="/partner/orders" className="block">
+              <m.div whileTap={{ scale: 0.98 }} whileHover={{ y: -2 }} className="w-full rounded-2xl p-4 flex items-center justify-between gap-3 bg-card border border-border text-foreground">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-11 h-11 rounded-full bg-fast-rose/10 flex items-center justify-center shrink-0"><Store className="w-5 h-5 text-fast-rose" /></div>
+                  <div className="min-w-0"><p className="font-bold text-sm">Accéder à l'Espace Pro</p><p className="text-muted-foreground text-xs">Commandes, menu, statistiques</p></div>
                 </div>
-                <ChevronRight className="w-5 h-5 text-white" />
+                <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
               </m.div>
             </Link>
           </div>
         )}
 
         {/* Menu */}
-        <div className="px-5 mt-6 space-y-2">
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider px-1 mb-3">{isRestaurant ? "Restaurant" : "Paramètres"}</p>
-          <div className={`rounded-2xl overflow-hidden border divide-y ${darkMode ? "bg-gray-800 border-gray-700 divide-gray-700/60" : "bg-white border-gray-100 divide-gray-50 shadow-sm"}`}>
+        <div className="px-4 sm:px-6 mt-10">
+          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-2">{isRestaurant ? "Restaurant" : "Paramètres"}</p>
+          <div className="border-y border-border divide-y divide-border">
             {menuItems.map((item: any) => (
-              <button key={item.label} onClick={item.action} className={`w-full p-4 flex items-center gap-3 transition-colors text-left cursor-pointer group ${darkMode ? "hover:bg-gray-700/50" : "hover:bg-gray-50"}`}>
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105 ${item.highlight ? "bg-emerald-100" : darkMode ? "bg-gray-700" : "bg-gray-100"}`}><item.icon className={`w-5 h-5 ${item.highlight ? "text-emerald-600" : darkMode ? "text-gray-300" : "text-gray-600"}`} /></div>
-                <span className={`font-semibold text-sm flex-1 ${item.highlight ? "text-emerald-600" : darkMode ? "text-gray-100" : "text-gray-900"}`}>{item.label}</span>
+              <button key={item.label} onClick={item.action} className="w-full py-3.5 min-h-[56px] flex items-center gap-3 transition-colors text-left cursor-pointer group hover:bg-muted/60">
+                <item.icon className={`w-5 h-5 shrink-0 ${item.highlight ? "text-fast-rose" : "text-muted-foreground"}`} />
+                <span className={`text-sm flex-1 ${item.highlight ? "font-bold text-fast-rose" : "font-semibold text-foreground"}`}>{item.label}</span>
                 {item.value !== undefined ? (
-                  <div className={`w-10 h-6 rounded-full p-1 transition-colors ${item.value ? "bg-emerald-500" : darkMode ? "bg-gray-600" : "bg-gray-300"}`}><div className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${item.value ? "translate-x-4" : "translate-x-0"}`} /></div>
+                  <div className={`w-11 h-6 rounded-full p-1 transition-colors shrink-0 ${item.value ? "bg-primary" : "bg-muted-foreground/30"}`}><div className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${item.value ? "translate-x-5" : "translate-x-0"}`} /></div>
                 ) : (
-                  <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 group-hover:translate-x-0.5 transition-all" />
+                  <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform shrink-0" />
                 )}
               </button>
             ))}
@@ -120,19 +121,19 @@ export default function ProfilePage() {
         </div>
         <AnimatePresence>
         {isEditing && (
-          <m.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="px-5 mt-4">
-            <div className={`rounded-2xl p-5 shadow-sm border ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"}`}>
+          <m.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="px-4 sm:px-6 mt-6">
+            <div className="rounded-2xl p-5 border border-border bg-card">
               <div className="flex items-center justify-between mb-4">
-                <h3 className={`font-bold ${darkMode ? "text-white" : "text-gray-900"}`}>Modifier le profil</h3>
-                <button onClick={() => setIsEditing(false)} className={`w-8 h-8 rounded-lg flex items-center justify-center ${darkMode ? "bg-gray-700" : "bg-gray-100"}`}><X className={`w-4 h-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`} /></button>
+                <h3 className="font-display font-bold text-xl text-foreground">Modifier le profil</h3>
+                <button onClick={() => setIsEditing(false)} className="w-11 h-11 rounded-full border border-border flex items-center justify-center hover:bg-muted transition-colors"><X className="w-4 h-4 text-foreground" /></button>
               </div>
               <form onSubmit={saveProfile} className="space-y-4">
-                <div><label className={`block text-sm font-medium mb-1 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Nom</label><div className="relative"><User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" /><input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} className={`w-full pl-10 pr-4 py-3 rounded-xl border outline-none transition-all ${darkMode ? "bg-gray-900 border-gray-600 text-white focus:border-violet-400 focus:ring-2 focus:ring-violet-900" : "border-gray-200 focus:border-violet-500 focus:ring-2 focus:ring-violet-200"}`} placeholder="Votre nom" /></div></div>
-                <div><label className={`block text-sm font-medium mb-1 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Téléphone</label><div className="relative"><Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" /><input type="tel" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} className={`w-full pl-10 pr-4 py-3 rounded-xl border outline-none transition-all ${darkMode ? "bg-gray-900 border-gray-600 text-white focus:border-violet-400 focus:ring-2 focus:ring-violet-900" : "border-gray-200 focus:border-violet-500 focus:ring-2 focus:ring-violet-200"}`} placeholder="Votre numéro" /></div></div>
-                <div><label className={`block text-sm font-medium mb-1 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Email</label><input type="email" value={user?.email || ""} disabled className={`w-full px-4 py-3 rounded-xl border cursor-not-allowed ${darkMode ? "bg-gray-900 border-gray-600 text-gray-500" : "bg-gray-50 border-gray-200 text-gray-500"}`} /><p className="text-xs text-gray-400 mt-1">L'email ne peut pas être modifié.</p></div>
-                {editError && <p className="text-sm text-red-500">{editError}</p>}
-                {editSuccess && <div className="flex items-center gap-2 text-sm text-emerald-600"><CheckCircle className="w-4 h-4" />Profil mis à jour</div>}
-                <m.button whileTap={{ scale: 0.98 }} type="submit" disabled={editLoading} className="w-full bg-violet-600 text-white rounded-xl py-3 font-bold flex items-center justify-center gap-2 disabled:opacity-50">{editLoading ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save className="w-5 h-5" />}{editLoading ? "Enregistrement..." : "Enregistrer"}</m.button>
+                <div><label className="block text-sm font-semibold mb-1.5 text-foreground">Nom</label><div className="relative"><User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" /><input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} className="w-full pl-11 pr-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-fast-rose focus:ring-2 focus:ring-fast-rose/25" placeholder="Votre nom" /></div></div>
+                <div><label className="block text-sm font-semibold mb-1.5 text-foreground">Téléphone</label><div className="relative"><Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" /><input type="tel" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} className="w-full pl-11 pr-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-fast-rose focus:ring-2 focus:ring-fast-rose/25" placeholder="Votre numéro" /></div></div>
+                <div><label className="block text-sm font-semibold mb-1.5 text-foreground">Email</label><input type="email" value={user?.email || ""} disabled className="w-full px-4 py-3 rounded-xl border border-border bg-muted text-muted-foreground cursor-not-allowed" /><p className="text-xs text-muted-foreground mt-1.5">L'email ne peut pas être modifié.</p></div>
+                {editError && <p className="text-sm text-red-600 dark:text-red-400">{editError}</p>}
+                {editSuccess && <div className="flex items-center gap-2 text-sm text-emerald-700 dark:text-emerald-400"><CheckCircle className="w-4 h-4" />Profil mis à jour</div>}
+                <m.button whileTap={{ scale: 0.98 }} type="submit" disabled={editLoading} className="btn-neon w-full">{editLoading ? <span className="w-5 h-5 border-2 border-fast-ink/30 border-t-fast-ink rounded-full animate-spin" /> : <Save className="w-5 h-5" />}{editLoading ? "Enregistrement..." : "Enregistrer"}</m.button>
               </form>
             </div>
           </m.div>
@@ -140,12 +141,12 @@ export default function ProfilePage() {
         </AnimatePresence>
 
         {/* Logout */}
-        <div className="px-5 mt-6">
-          <m.button whileTap={{ scale: 0.98 }} onClick={handleLogout} className={`w-full rounded-2xl p-4 flex items-center justify-center gap-2.5 font-bold text-sm border transition-colors ${darkMode ? "bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20" : "bg-red-50 border-red-100 text-red-500 hover:bg-red-100"}`}>
+        <div className="px-4 sm:px-6 mt-10">
+          <m.button whileTap={{ scale: 0.98 }} onClick={handleLogout} className="w-full min-h-[48px] rounded-full px-5 flex items-center justify-center gap-2.5 font-bold text-sm border border-red-500/40 text-red-600 dark:text-red-400 hover:bg-red-500/10 transition-colors">
             <LogOut className="w-4 h-4" />
             Se déconnecter
           </m.button>
-          <p className="text-center text-[11px] text-gray-400 mt-4 font-medium"><span className="notranslate" translate="no">FAST</span> — Chaque minute compte</p>
+          <p className="text-center text-xs text-muted-foreground mt-5 font-medium"><span className="notranslate" translate="no">FAST</span> — Chaque minute compte</p>
         </div>
       </div>
     </div>

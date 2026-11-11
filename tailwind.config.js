@@ -17,7 +17,7 @@ module.exports = {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {
-  				DEFAULT: 'hsl(var(--card))',
+  				DEFAULT: 'hsl(var(--surface))',
   				foreground: 'hsl(var(--card-foreground))'
   			},
   			popover: {
@@ -54,6 +54,16 @@ module.exports = {
   				'4': 'hsl(var(--chart-4))',
   				'5': 'hsl(var(--chart-5))'
   			},
+  			fast: {
+  				gold: '#ffb81a',
+  				orange: '#ff7a1a',
+  				rose: '#ee1f5c',
+  				pink: '#ff2d7a',
+  				magenta: '#d61bff',
+  				ink: '#17171b',
+  				night: '#09070c',
+  				teal: '#00c8b3',
+  			},
   			sidebar: {
   				DEFAULT: 'hsl(var(--sidebar-background))',
   				foreground: 'hsl(var(--sidebar-foreground))',
@@ -64,6 +74,12 @@ module.exports = {
   				border: 'hsl(var(--sidebar-border))',
   				ring: 'hsl(var(--sidebar-ring))'
   			}
+  		},
+  		fontFamily: {
+  			display: ['var(--font-display)', 'Georgia', 'Times New Roman', 'serif'],
+  		},
+  		backgroundImage: {
+  			neon: 'var(--fast-neon)',
   		},
   		keyframes: {
   			'accordion-down': {
