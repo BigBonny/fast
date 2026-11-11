@@ -226,6 +226,7 @@ class _CommandesScreenState extends State<CommandesScreen>
       return Center(
         child: FastEmpty(
           icon: Icons.directions_walk,
+          loop: FastLoops.walking,
           title: provider.tr('no_tracking'),
           subtitle: provider.tr('no_tracking_sub'),
           action: FastButton(
@@ -897,6 +898,9 @@ class _CommandesScreenState extends State<CommandesScreen>
     IconData icon = Icons.info;
     Color iconColor = FASTBrand.gold;
 
+    // Motion loop for the moment; cancelled orders keep the plain icon.
+    FastLoops? loop;
+
     final fast = context.read<FASTProvider>();
     if (isCancelled) {
       title = fast.tr('cancelled_title');
@@ -908,6 +912,13 @@ class _CommandesScreenState extends State<CommandesScreen>
       desc = fast.tr('picked_desc');
       icon = Icons.handshake_outlined;
       iconColor = FASTBrand.success;
+      // Easter egg: every 10th picked-up order gets the sparkler.
+      final picked = fast.orders
+          .where((o) => o.status == OrderStatus.completed)
+          .length;
+      loop = picked > 0 && picked % 10 == 0
+          ? FastLoops.milestone
+          : FastLoops.completed;
     } else {
       switch (order.status) {
         case OrderStatus.placed:
@@ -915,18 +926,21 @@ class _CommandesScreenState extends State<CommandesScreen>
           desc = fast.tr('ordered_desc');
           icon = Icons.receipt_long_outlined;
           iconColor = FASTBrand.info;
+          loop = FastLoops.orderPlaced;
           break;
         case OrderStatus.preparing:
           title = fast.tr('cooking_title');
           desc = fast.tr('cooking_desc');
           icon = Icons.restaurant_menu;
           iconColor = FASTBrand.gold;
+          loop = FastLoops.preparing;
           break;
         case OrderStatus.readyForPickup:
           title = fast.tr('ready_title');
           desc = fast.tr('ready_desc');
           icon = Icons.shopping_bag_outlined;
           iconColor = FASTBrand.success;
+          loop = FastLoops.ready;
           break;
         default:
           break;
@@ -936,6 +950,19 @@ class _CommandesScreenState extends State<CommandesScreen>
     // Amber is drawn as a fill with a dark icon; the other status
     // colours as a tint with the icon in the status colour.
     final amberIcon = iconColor == FASTBrand.gold;
+
+    final iconBadge = Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: amberIcon ? FASTBrand.gold : iconColor.withValues(alpha: 0.12),
+        shape: BoxShape.circle,
+      ),
+      child: Icon(
+        icon,
+        color: amberIcon ? FASTBrand.onAmber : iconColor,
+        size: 20,
+      ),
+    );
 
     return Container(
       padding: EdgeInsets.all(16),
@@ -947,20 +974,10 @@ class _CommandesScreenState extends State<CommandesScreen>
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: amberIcon
-                  ? FASTBrand.gold
-                  : iconColor.withValues(alpha: 0.12),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              icon,
-              color: amberIcon ? FASTBrand.onAmber : iconColor,
-              size: 20,
-            ),
-          ),
+          if (loop != null)
+            FastLoop(loop: loop, size: 64, fallback: iconBadge)
+          else
+            iconBadge,
           SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -1517,6 +1534,7 @@ class _CommandesScreenState extends State<CommandesScreen>
       return Center(
         child: FastEmpty(
           icon: Icons.receipt_long_outlined,
+          loop: FastLoops.clock,
           title: tr(context, 'no_history'),
           subtitle: tr(context, 'history_hint'),
         ),
@@ -1906,7 +1924,11 @@ class _MyReservationsTabState extends State<_MyReservationsTab> {
   Widget build(BuildContext context) {
     if (_loading) {
       return const Center(
-        child: CircularProgressIndicator(color: FASTBrand.gold),
+        child: FastLoop(
+          loop: FastLoops.loading,
+          size: 84,
+          fallback: CircularProgressIndicator(color: FASTBrand.gold),
+        ),
       );
     }
     if (_error != null) {

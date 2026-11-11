@@ -8,6 +8,7 @@ import '../screens/account_screen.dart';
 import '../screens/assistant_screen.dart';
 import '../theme.dart';
 import '../l10n/tr.dart';
+import 'fast_loop.dart';
 import 'fast_night_surface.dart';
 
 /// Slide-in account menu for the client app: night-surface header with
@@ -192,15 +193,29 @@ class ClientDrawer extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.bolt, color: FASTBrand.gold, size: 22),
-                      const SizedBox(width: 2),
-                      Text(
-                        'FAST',
-                        style: FASTText.title.copyWith(
-                          fontWeight: FontWeight.w900,
-                          fontStyle: FontStyle.italic,
-                          letterSpacing: 1,
-                          color: FastNightSurface.onNight,
+                      // Easter egg: five quick taps on the wordmark bring
+                      // out the pigeon.
+                      FastSecretTap(
+                        loop: FastLoops.pigeon,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.bolt,
+                              color: FASTBrand.gold,
+                              size: 22,
+                            ),
+                            const SizedBox(width: 2),
+                            Text(
+                              'FAST',
+                              style: FASTText.title.copyWith(
+                                fontWeight: FontWeight.w900,
+                                fontStyle: FontStyle.italic,
+                                letterSpacing: 1,
+                                color: FastNightSurface.onNight,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       const Spacer(),
