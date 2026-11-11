@@ -172,7 +172,10 @@ class FastButton extends StatelessWidget {
           height: height,
           width: expand ? double.infinity : null,
           padding: expand ? null : const EdgeInsets.symmetric(horizontal: 20),
-          alignment: Alignment.center,
+          // Only a full-width button aligns its content: an alignment makes
+          // a Container grow to fill its parent, which stretched
+          // `expand: false` buttons across the screen in loose layouts.
+          alignment: expand ? Alignment.center : null,
           decoration: BoxDecoration(
             gradient: bg,
             color: switch (kind) {
@@ -199,7 +202,7 @@ class FastButton extends StatelessWidget {
                     ),
                   ],
           ),
-          child: content,
+          child: expand ? content : Center(widthFactor: 1, child: content),
         ),
       ),
     );
