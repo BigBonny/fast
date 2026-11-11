@@ -212,19 +212,16 @@ class _AccountScreenState extends State<AccountScreen>
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.35),
         borderRadius: BorderRadius.circular(FASTRadius.pill),
-        border: Border.all(color: FASTBrand.amber.withValues(alpha: 0.45)),
+        border: Border.all(color: FASTBrand.gold.withValues(alpha: 0.45)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.bolt_outlined, color: FASTBrand.amber, size: 16),
+          const Icon(Icons.bolt_outlined, color: FASTBrand.gold, size: 16),
           const SizedBox(width: FASTSpace.s4),
           Text(
             '$points PTS',
-            style: FASTText.price.copyWith(
-              fontSize: 14,
-              color: FASTBrand.amber,
-            ),
+            style: FASTText.price.copyWith(fontSize: 14, color: FASTBrand.gold),
           ),
         ],
       ),
@@ -1066,7 +1063,7 @@ class _AccountScreenState extends State<AccountScreen>
           vertical: FASTSpace.s8,
         ),
         decoration: BoxDecoration(
-          color: FASTBrand.amber,
+          color: FASTBrand.gold,
           borderRadius: BorderRadius.circular(FASTRadius.pill),
         ),
         child: Row(
@@ -1104,7 +1101,7 @@ class _AccountScreenState extends State<AccountScreen>
           child: LinearProgressIndicator(
             value: progress,
             backgroundColor: context.fast.line,
-            valueColor: const AlwaysStoppedAnimation(FASTBrand.amber),
+            valueColor: const AlwaysStoppedAnimation(FASTBrand.gold),
             minHeight: 10,
           ),
         ),

@@ -192,7 +192,7 @@ class ClientDrawer extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.bolt, color: FASTBrand.amber, size: 22),
+                      const Icon(Icons.bolt, color: FASTBrand.gold, size: 22),
                       const SizedBox(width: 2),
                       Text(
                         'FAST',
@@ -266,19 +266,16 @@ class ClientDrawer extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.35),
         borderRadius: BorderRadius.circular(FASTRadius.pill),
-        border: Border.all(color: FASTBrand.amber.withValues(alpha: 0.45)),
+        border: Border.all(color: FASTBrand.gold.withValues(alpha: 0.45)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.bolt_outlined, color: FASTBrand.amber, size: 16),
+          const Icon(Icons.bolt_outlined, color: FASTBrand.gold, size: 16),
           const SizedBox(width: FASTSpace.s4),
           Text(
             '${provider.userPoints} ${provider.tr('tab_points')}',
-            style: FASTText.price.copyWith(
-              fontSize: 14,
-              color: FASTBrand.amber,
-            ),
+            style: FASTText.price.copyWith(fontSize: 14, color: FASTBrand.gold),
           ),
           const SizedBox(width: FASTSpace.s4),
           Flexible(

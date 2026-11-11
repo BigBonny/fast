@@ -412,7 +412,7 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
                               padding: EdgeInsetsDirectional.only(end: 2),
                               child: Icon(
                                 Icons.star_rounded,
-                                color: FASTBrand.amber,
+                                color: FASTBrand.gold,
                                 size: 18,
                               ),
                             ),
@@ -1031,7 +1031,7 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
                     ? Icons.star_rounded
                     : Icons.star_outline_rounded,
                 size: 16,
-                color: FASTBrand.amber,
+                color: FASTBrand.gold,
               ),
             ),
             const SizedBox(width: FASTSpace.s4),
@@ -1545,7 +1545,7 @@ class _ReviewSheetState extends State<_ReviewSheet> {
                 },
                 icon: Icon(
                   lit ? Icons.star_rounded : Icons.star_outline_rounded,
-                  color: lit ? FASTBrand.amber : fast.faint,
+                  color: lit ? FASTBrand.gold : fast.faint,
                   size: 36,
                 ),
               );

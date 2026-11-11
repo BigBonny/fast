@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 
 import '../theme.dart';
-import 'fast_glow_background.dart';
 
-/// The FAST night surface — the same deep violet-black as the home hero
-/// with one warm amber light and a faint violet one. It carries the
-/// app's atmosphere onto a few set pieces (the pickup code, the hero)
-/// and is not meant for ordinary cards.
+/// The FAST night surface — the app icon as a surface: near-black with a
+/// neon frame whose light runs gold → orange → pink → magenta, and a
+/// little of that light pooling inside. It carries the brand onto a few
+/// set pieces (the pickup code, the membership card, the lead promo, the
+/// drawer header) and is not meant for ordinary cards.
 ///
-/// It looks the same in light and dark mode. A hairline border keeps it
-/// distinct from the page when the page itself is dark.
+/// It looks the same in light and dark mode.
 class FastNightSurface extends StatelessWidget {
   const FastNightSurface({
     super.key,
@@ -20,32 +19,39 @@ class FastNightSurface extends StatelessWidget {
 
   final Widget child;
   final EdgeInsetsGeometry padding;
+
+  /// Corner radius. 0 makes a full-bleed band (the drawer header): no
+  /// frame and no outer glow, since it has no edges to set apart.
   final double radius;
 
   /// Primary text on the night surface.
-  static const Color onNight = Color(0xFFF4F4F5);
+  static const Color onNight = Color(0xFFF7F4F8);
 
   /// Secondary text on the night surface.
-  static const Color onNightMuted = Color(0xFFB8AECF);
+  static const Color onNightMuted = Color(0xFFC0B4C8);
+
+  /// Top and bottom of the backdrop.
+  static const Color top = Color(0xFF170B16);
+  static const Color bottom = Color(0xFF070409);
 
   @override
   Widget build(BuildContext context) {
     final shape = BorderRadius.circular(radius);
-    // A radius of 0 means a full-bleed band (the drawer header): it gets
-    // no hairline and no outer glow, since it has no edges to set apart.
     final isCard = radius > 0;
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: shape,
-        border: isCard
-            ? Border.all(color: Colors.white.withValues(alpha: 0.10))
-            : null,
         boxShadow: isCard
             ? [
                 BoxShadow(
-                  color: FASTBrand.amber.withValues(alpha: 0.18),
-                  blurRadius: 28,
-                  offset: const Offset(0, 10),
+                  color: FASTBrand.neonOrange.withValues(alpha: 0.16),
+                  blurRadius: 22,
+                  offset: const Offset(-6, 8),
+                ),
+                BoxShadow(
+                  color: FASTBrand.neonPink.withValues(alpha: 0.18),
+                  blurRadius: 24,
+                  offset: const Offset(6, 8),
                 ),
               ]
             : null,
@@ -54,6 +60,7 @@ class FastNightSurface extends StatelessWidget {
         borderRadius: shape,
         child: CustomPaint(
           painter: const _NightPainter(),
+          foregroundPainter: isCard ? _NeonFramePainter(radius) : null,
           child: Padding(padding: padding, child: child),
         ),
       ),
@@ -73,29 +80,31 @@ class _NightPainter extends CustomPainter {
         ..shader = const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [FastGlowBackground.topColor, FastGlowBackground.bottomColor],
+          colors: [FastNightSurface.top, FastNightSurface.bottom],
         ).createShader(rect),
     );
+    // Light pooling inside the frame: gold low on the leading side, pink
+    // and magenta on the trailing side — the same order as the sign.
     _glow(
       canvas,
-      Offset(size.width * 1.0, size.height * 0.95),
-      size.width * 0.8,
-      FASTBrand.ember,
-      0.38,
-    );
-    _glow(
-      canvas,
-      Offset(size.width * 0.75, size.height * 1.1),
-      size.width * 0.5,
-      FASTBrand.amber,
+      Offset(0, size.height * 1.05),
+      size.width * 0.55,
+      FASTBrand.neonOrange,
       0.26,
     );
     _glow(
       canvas,
-      Offset(0, 0),
+      Offset(size.width * 0.72, size.height * 1.15),
       size.width * 0.6,
-      const Color(0xFF7C3AED),
-      0.22,
+      FASTBrand.neonPink,
+      0.30,
+    );
+    _glow(
+      canvas,
+      Offset(size.width * 1.02, -size.height * 0.05),
+      size.width * 0.5,
+      FASTBrand.neonMagenta,
+      0.24,
     );
   }
 
@@ -115,4 +124,51 @@ class _NightPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _NightPainter oldDelegate) => false;
+}
+
+/// The neon tube around the card.
+class _NeonFramePainter extends CustomPainter {
+  const _NeonFramePainter(this.radius);
+
+  final double radius;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const stroke = 1.6;
+    final rect = (Offset.zero & size).deflate(stroke / 2);
+    final rrect = RRect.fromRectAndRadius(
+      rect,
+      Radius.circular((radius - stroke / 2).clamp(0, double.infinity)),
+    );
+    final shader = const LinearGradient(
+      begin: Alignment.centerLeft,
+      end: Alignment.centerRight,
+      colors: [
+        FASTBrand.gold,
+        FASTBrand.neonOrange,
+        FASTBrand.neonPink,
+        FASTBrand.neonMagenta,
+      ],
+    ).createShader(rect);
+    // A soft halo under a crisp line, like a lit tube.
+    canvas.drawRRect(
+      rrect,
+      Paint()
+        ..shader = shader
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 5
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5),
+    );
+    canvas.drawRRect(
+      rrect,
+      Paint()
+        ..shader = shader
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = stroke,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _NeonFramePainter oldDelegate) =>
+      oldDelegate.radius != radius;
 }

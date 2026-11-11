@@ -45,7 +45,7 @@ class _ClientIntroGateState extends State<ClientIntroGate> {
           title: tr(context, 'ci1_t'),
           accentPart: tr(context, 'ci1_ta'),
           description: tr(context, 'ci1_d'),
-          accent: FASTBrand.amber,
+          accent: FASTBrand.gold,
           glow: const Color(0xFFF97316),
         ),
         FastIntroSlide(

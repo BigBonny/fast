@@ -340,7 +340,7 @@ class _GroupScreenState extends State<GroupScreen> {
   Widget build(BuildContext context) {
     if (_loading) {
       return const Center(
-        child: CircularProgressIndicator(color: FASTBrand.amber),
+        child: CircularProgressIndicator(color: FASTBrand.gold),
       );
     }
     return Scaffold(
@@ -630,9 +630,7 @@ class _GroupScreenState extends State<GroupScreen> {
                 height: 4,
                 margin: const EdgeInsets.symmetric(horizontal: 3),
                 decoration: BoxDecoration(
-                  color: index <= current
-                      ? FASTBrand.amber
-                      : context.fast.faint,
+                  color: index <= current ? FASTBrand.gold : context.fast.faint,
                   borderRadius: BorderRadius.circular(FASTRadius.pill),
                 ),
               ),

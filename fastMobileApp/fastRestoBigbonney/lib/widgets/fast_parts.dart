@@ -47,7 +47,7 @@ class FastTag extends StatelessWidget {
     final (bg, fg) = switch (kind) {
       FastTagKind.neutral => (fast.cardHigh, fast.t2),
       FastTagKind.ink => (fast.ink, fast.onInk),
-      FastTagKind.accent => (FASTBrand.amber, FASTBrand.onAmber),
+      FastTagKind.accent => (FASTBrand.gold, FASTBrand.onAmber),
       FastTagKind.muted => (fast.faint, fast.t1),
     };
     return Container(
@@ -384,7 +384,7 @@ class FastPickupCode extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.bolt, size: 16, color: FASTBrand.amber),
+                const Icon(Icons.bolt, size: 16, color: FASTBrand.gold),
                 const SizedBox(width: FASTSpace.s4),
                 Expanded(
                   child: Text(
@@ -405,12 +405,18 @@ class FastPickupCode extends StatelessWidget {
             FittedBox(
               fit: BoxFit.scaleDown,
               alignment: AlignmentDirectional.centerStart,
-              child: Directionality(
-                textDirection: TextDirection.ltr,
-                child: SelectableText(
-                  code,
-                  maxLines: 1,
-                  style: FASTText.code.copyWith(color: FASTBrand.amber),
+              // Lit like the sign on the icon: gold to magenta glyphs.
+              child: ShaderMask(
+                blendMode: BlendMode.srcIn,
+                shaderCallback: (rect) =>
+                    FASTBrand.neonGradient.createShader(rect),
+                child: Directionality(
+                  textDirection: TextDirection.ltr,
+                  child: SelectableText(
+                    code,
+                    maxLines: 1,
+                    style: FASTText.code.copyWith(color: Colors.white),
+                  ),
                 ),
               ),
             ),

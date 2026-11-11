@@ -25,8 +25,9 @@ class FASTShades {
     required this.onInk,
   });
 
-  /// Neutral for primary actions and selected states (buttons, active
-  /// tabs). Near-black in light mode, near-white in dark mode.
+  /// Fill for selected states (active tabs and chips, the stepper's
+  /// plus, check marks). The neon rose from the app icon, in both themes.
+  /// The token keeps its first name; it is no longer black or white.
   final Color ink;
 
   /// Content color on top of [ink].
@@ -66,19 +67,19 @@ class FASTShades {
   final Color amberSoftBorder;
 
   static const FASTShades dark = FASTShades(
-    bg: Color(0xFF0A0A0C),
-    card: Color(0xFF18181B),
-    cardHigh: Color(0xFF1F1F23),
-    line: Color(0xFF27272A),
-    faint: Color(0xFF3F3F46),
+    bg: Color(0xFF09070C),
+    card: Color(0xFF16121B),
+    cardHigh: Color(0xFF1E1925),
+    line: Color(0xFF2A2433),
+    faint: Color(0xFF423A4D),
     t1: Color(0xFFF4F4F5),
     t2: Color(0xFFA1A1AA),
     t3: Color(0xFF71717A),
     shadow: Color(0x66000000),
     amberSoftBg: Color(0x33F59E0B),
     amberSoftBorder: Color(0x66F59E0B),
-    ink: Color(0xFFF4F4F5),
-    onInk: Color(0xFF17171B),
+    ink: FASTBrand.rose,
+    onInk: Color(0xFFFFFFFF),
   );
 
   static const FASTShades light = FASTShades(
@@ -93,7 +94,7 @@ class FASTShades {
     shadow: Color(0x14000000),
     amberSoftBg: Color(0xFFFEF3E2),
     amberSoftBorder: Color(0xFFF6D9A8),
-    ink: Color(0xFF17171B),
+    ink: FASTBrand.rose,
     onInk: Color(0xFFFFFFFF),
   );
 }
@@ -237,6 +238,35 @@ extension FASTShadesX on BuildContext {
 /// FAST brand tokens (used by both themes).
 class FASTBrand {
   FASTBrand._();
+
+  // ── Neon palette, taken from the app icon: a lit sign on black whose
+  // light runs gold → orange → hot pink → magenta. ──────────────────────
+
+  /// Gold end of the sign. Stars, small highlight tags, bolts.
+  static const Color gold = Color(0xFFFFB81A);
+
+  /// Orange, between gold and pink.
+  static const Color neonOrange = Color(0xFFFF7A1A);
+
+  /// The accent: hot rose from the middle of the sign. Dark enough that
+  /// white text on it stays readable.
+  static const Color rose = Color(0xFFEE1F5C);
+
+  /// Brighter pink, for glows and gradient stops only (not behind text).
+  static const Color neonPink = Color(0xFFFF2D7A);
+
+  /// Magenta end of the sign.
+  static const Color neonMagenta = Color(0xFFD61BFF);
+
+  /// The sign itself. Primary buttons, the wordmark, the pickup code.
+  /// Text on top of it is [onAmber] (near-black), which stays readable
+  /// from the gold end to the magenta end.
+  static const LinearGradient neonGradient = LinearGradient(
+    begin: Alignment.centerLeft,
+    end: Alignment.centerRight,
+    colors: [gold, neonOrange, neonPink, neonMagenta],
+    stops: [0.0, 0.38, 0.74, 1.0],
+  );
 
   static const Color amber = Color(0xFFF59E0B);
   static const Color amberDeep = Color(0xFFD97706);
