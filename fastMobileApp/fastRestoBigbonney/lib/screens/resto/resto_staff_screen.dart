@@ -11,6 +11,8 @@ import '../../api/api_config.dart';
 import '../../api/api_exceptions.dart';
 import '../../theme.dart';
 import '../../l10n/tr.dart';
+import '../../widgets/fast_parts.dart';
+import '../../widgets/fast_ui.dart';
 
 class RestoStaffScreen extends StatefulWidget {
   const RestoStaffScreen({super.key});
@@ -56,18 +58,24 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(FASTRadius.md),
+        ),
         title: Text(tr(context, 'del_account_q')),
         content: Text(tr(context, 'staff_lose_access').replaceAll('{n}', name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text(tr(context, 'cancel')),
+            child: Text(
+              tr(context, 'cancel'),
+              style: TextStyle(color: ctx.fast.t2),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(
               tr(context, 'del'),
-              style: TextStyle(color: Color(0xFFEF4444)),
+              style: const TextStyle(color: FASTBrand.error),
             ),
           ),
         ],
@@ -100,124 +108,121 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
       isScrollControlled: true,
       backgroundColor: context.fast.card,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(FASTRadius.md),
+        ),
       ),
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setSheet) => Padding(
           padding: EdgeInsets.fromLTRB(
-            20,
-            20,
-            20,
-            MediaQuery.of(ctx).viewInsets.bottom + 20,
+            FASTSpace.s16,
+            FASTSpace.s24,
+            FASTSpace.s16,
+            MediaQuery.of(ctx).viewInsets.bottom + FASTSpace.s24,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                tr(context, 'new_cook'),
-                style: TextStyle(
-                  color: context.fast.t1,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 16,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  tr(context, 'new_cook'),
+                  style: FASTText.title.copyWith(color: context.fast.t1),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                tr(context, 'staff_access'),
-                style: TextStyle(color: context.fast.t3, fontSize: 11),
-              ),
-              const SizedBox(height: 16),
-              _field(nameC, tr(context, 'name_example'), Icons.person_outline),
-              const SizedBox(height: 10),
-              _field(
-                emailC,
-                tr(context, 'email'),
-                Icons.mail_outline,
-                type: TextInputType.emailAddress,
-              ),
-              const SizedBox(height: 10),
-              _field(
-                passC,
-                tr(context, 'password'),
-                Icons.lock_outline,
-                obscure: true,
-              ),
-              const SizedBox(height: 14),
-              // Role picker
-              Row(
-                children: [
-                  _roleChip(
-                    ctx,
-                    setSheet,
-                    'GUEST',
-                    tr(context, 'guest_lbl'),
-                    tr(context, 'menu_soldout_sub'),
-                    role,
-                    (r) => role = r,
-                  ),
-                  const SizedBox(width: 8),
-                  _roleChip(
-                    ctx,
-                    setSheet,
-                    'STAFF',
-                    tr(context, 'manager'),
-                    tr(context, 'orders_menu'),
-                    role,
-                    (r) => role = r,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 18),
-              ElevatedButton(
-                onPressed: saving
-                    ? null
-                    : () async {
-                        if (nameC.text.trim().isEmpty ||
-                            emailC.text.trim().isEmpty ||
-                            passC.text.length < 6) {
-                          _toast(tr(context, 'staff_required'));
-                          return;
-                        }
-                        setSheet(() => saving = true);
-                        try {
-                          await _api.post(
-                            ApiConfig.staff,
-                            body: {
-                              'name': nameC.text.trim(),
-                              'email': emailC.text.trim(),
-                              'password': passC.text,
-                              'staffRole': role,
-                            },
-                          );
-                          if (ctx.mounted) Navigator.pop(ctx);
-                          _load();
-                        } catch (e) {
-                          if (!mounted) return;
-                          setSheet(() => saving = false);
-                          _toast(
-                            e is ApiException
-                                ? e.message
-                                : tr(context, 'create_err'),
-                          );
-                        }
-                      },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: FASTPro.teal,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                const SizedBox(height: FASTSpace.s4),
+                Text(
+                  tr(context, 'staff_access'),
+                  style: FASTText.caption.copyWith(color: context.fast.t2),
+                ),
+                const SizedBox(height: FASTSpace.s16),
+                _field(
+                  nameC,
+                  tr(context, 'name_example'),
+                  Icons.person_outline,
+                ),
+                const SizedBox(height: FASTSpace.s12),
+                _field(
+                  emailC,
+                  tr(context, 'email'),
+                  Icons.mail_outline,
+                  type: TextInputType.emailAddress,
+                ),
+                const SizedBox(height: FASTSpace.s12),
+                _field(
+                  passC,
+                  tr(context, 'password'),
+                  Icons.lock_outline,
+                  obscure: true,
+                ),
+                const SizedBox(height: FASTSpace.s16),
+                // Role picker
+                IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _roleChip(
+                        ctx,
+                        setSheet,
+                        'GUEST',
+                        tr(context, 'guest_lbl'),
+                        tr(context, 'menu_soldout_sub'),
+                        role,
+                        (r) => role = r,
+                      ),
+                      const SizedBox(width: FASTSpace.s8),
+                      _roleChip(
+                        ctx,
+                        setSheet,
+                        'STAFF',
+                        tr(context, 'manager'),
+                        tr(context, 'orders_menu'),
+                        role,
+                        (r) => role = r,
+                      ),
+                    ],
                   ),
                 ),
-                child: Text(
-                  saving
+                const SizedBox(height: FASTSpace.s24),
+                FastButton(
+                  kind: FastButtonKind.ink,
+                  label: saving
                       ? tr(context, 'creating')
                       : tr(context, 'create_account'),
-                  style: const TextStyle(fontWeight: FontWeight.w900),
+                  onPressed: saving
+                      ? null
+                      : () async {
+                          if (nameC.text.trim().isEmpty ||
+                              emailC.text.trim().isEmpty ||
+                              passC.text.length < 6) {
+                            _toast(tr(context, 'staff_required'));
+                            return;
+                          }
+                          setSheet(() => saving = true);
+                          try {
+                            await _api.post(
+                              ApiConfig.staff,
+                              body: {
+                                'name': nameC.text.trim(),
+                                'email': emailC.text.trim(),
+                                'password': passC.text,
+                                'staffRole': role,
+                              },
+                            );
+                            if (ctx.mounted) Navigator.pop(ctx);
+                            _load();
+                          } catch (e) {
+                            if (!mounted) return;
+                            setSheet(() => saving = false);
+                            _toast(
+                              e is ApiException
+                                  ? e.message
+                                  : tr(context, 'create_err'),
+                            );
+                          }
+                        },
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -236,30 +241,41 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
     final sel = current == value;
     return Expanded(
       child: GestureDetector(
-        onTap: () => setSheet(() => onSel(value)),
+        onTap: () {
+          HapticFeedback.selectionClick();
+          setSheet(() => onSel(value));
+        },
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10),
+          padding: const EdgeInsets.symmetric(
+            horizontal: FASTSpace.s8,
+            vertical: FASTSpace.s12,
+          ),
           decoration: BoxDecoration(
             color: sel
                 ? FASTPro.teal.withValues(alpha: 0.15)
                 : context.fast.cardHigh,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(FASTRadius.sm),
             border: Border.all(
               color: sel ? FASTPro.teal : context.fast.line,
               width: sel ? 1.6 : 1,
             ),
           ),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 label,
-                style: TextStyle(
+                textAlign: TextAlign.center,
+                style: FASTText.item.copyWith(
                   color: sel ? FASTPro.teal : context.fast.t1,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 13,
                 ),
               ),
-              Text(sub, style: TextStyle(color: context.fast.t3, fontSize: 9)),
+              const SizedBox(height: 2),
+              Text(
+                sub,
+                textAlign: TextAlign.center,
+                style: FASTText.caption.copyWith(color: context.fast.t2),
+              ),
             ],
           ),
         ),
@@ -274,54 +290,50 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
     TextInputType? type,
     bool obscure = false,
   }) {
+    OutlineInputBorder border(Color color, [double width = 1]) =>
+        OutlineInputBorder(
+          borderRadius: BorderRadius.circular(FASTRadius.sm),
+          borderSide: BorderSide(color: color, width: width),
+        );
     return TextField(
       controller: c,
       keyboardType: type,
       obscureText: obscure,
-      style: TextStyle(color: context.fast.t1, fontSize: 13),
+      cursorColor: FASTPro.teal,
+      style: FASTText.body.copyWith(color: context.fast.t1),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyle(color: context.fast.t3),
+        hintStyle: FASTText.body.copyWith(color: context.fast.t3),
         prefixIcon: Icon(icon, size: 18, color: context.fast.t3),
         filled: true,
         fillColor: context.fast.cardHigh,
-        contentPadding: const EdgeInsets.symmetric(vertical: 12),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: context.fast.line),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: context.fast.line),
-        ),
+        contentPadding: const EdgeInsets.symmetric(vertical: 14),
+        border: border(context.fast.line),
+        enabledBorder: border(context.fast.line),
+        focusedBorder: border(FASTPro.teal, 1.5),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final fast = context.fast;
     return Scaffold(
-      backgroundColor: context.fast.bg,
+      backgroundColor: fast.bg,
       appBar: AppBar(
-        backgroundColor: context.fast.bg,
+        backgroundColor: fast.bg,
         elevation: 0,
         title: Text(
           tr(context, 'team_guests'),
-          style: TextStyle(
-            color: context.fast.t1,
-            fontWeight: FontWeight.w900,
-            fontSize: 16,
-          ),
+          style: FASTText.title.copyWith(color: fast.t1),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FastButton(
+        kind: FastButtonKind.ink,
+        expand: false,
+        icon: Icons.person_add_alt_1_outlined,
+        label: tr(context, 'add_cook'),
         onPressed: _showCreateSheet,
-        backgroundColor: FASTPro.teal,
-        icon: const Icon(Icons.person_add, color: Colors.white),
-        label: Text(
-          tr(context, 'add_cook'),
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
-        ),
       ),
       body: Column(
         children: [
@@ -329,139 +341,142 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
           Expanded(
             child: _loading
                 ? const Center(
-                    child: CircularProgressIndicator(color: FASTPro.teal))
+                    child: CircularProgressIndicator(color: FASTPro.teal),
+                  )
                 : _error != null
                 ? Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(_error!, style: TextStyle(color: context.fast.t2)),
-                  const SizedBox(height: 8),
-                  TextButton(
-                    onPressed: _load,
-                    child: Text(tr(context, 'retry')),
-                  ),
-                ],
-              ),
-            )
-          : _staff.isEmpty
-          ? Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text('🧑‍🍳', style: TextStyle(fontSize: 44)),
-                    const SizedBox(height: 10),
-                    Text(
-                      tr(context, 'no_cooks'),
-                      style: TextStyle(
-                        color: context.fast.t1,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 15,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      tr(context, 'staff_intro'),
-                      style: TextStyle(color: context.fast.t3, fontSize: 11),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-            )
-          : RefreshIndicator(
-              onRefresh: _load,
-              color: FASTPro.teal,
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: _staff.length,
-                itemBuilder: (_, i) {
-                  final s = _staff[i] as Map<String, dynamic>;
-                  final user = s['user'] as Map<String, dynamic>;
-                  final isGuest = s['staffRole'] == 'GUEST';
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 10),
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: context.fast.card,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: context.fast.line),
-                    ),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 20,
-                          backgroundColor: FASTPro.teal.withValues(alpha: 0.15),
-                          child: Text(
-                            (user['name'] as String? ?? '?').characters.first
-                                .toUpperCase(),
-                            style: const TextStyle(
-                              color: FASTPro.teal,
-                              fontWeight: FontWeight.w900,
+                    child: Padding(
+                      padding: const EdgeInsets.all(FASTSpace.s24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            _error!,
+                            textAlign: TextAlign.center,
+                            style: FASTText.body.copyWith(color: fast.t2),
+                          ),
+                          const SizedBox(height: FASTSpace.s8),
+                          TextButton(
+                            onPressed: _load,
+                            child: Text(
+                              tr(context, 'retry'),
+                              style: FASTText.body.copyWith(
+                                color: FASTPro.teal,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                        ],
+                      ),
+                    ),
+                  )
+                : _staff.isEmpty
+                ? Center(
+                    child: SingleChildScrollView(
+                      child: FastEmpty(
+                        icon: Icons.soup_kitchen_outlined,
+                        accent: FASTPro.teal,
+                        title: tr(context, 'no_cooks'),
+                        subtitle: tr(context, 'staff_intro'),
+                      ),
+                    ),
+                  )
+                : RefreshIndicator(
+                    onRefresh: _load,
+                    color: FASTPro.teal,
+                    child: ListView.separated(
+                      padding: const EdgeInsets.only(
+                        top: FASTSpace.s8,
+                        bottom: 120,
+                      ),
+                      itemCount: _staff.length,
+                      separatorBuilder: (_, __) => Divider(
+                        height: 1,
+                        color: fast.line,
+                        indent: FASTSpace.s16,
+                        endIndent: FASTSpace.s16,
+                      ),
+                      itemBuilder: (_, i) {
+                        final s = _staff[i] as Map<String, dynamic>;
+                        final user = s['user'] as Map<String, dynamic>;
+                        final isGuest = s['staffRole'] == 'GUEST';
+                        return Padding(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
+                            FASTSpace.s16,
+                            FASTSpace.s12,
+                            FASTSpace.s4,
+                            FASTSpace.s12,
+                          ),
+                          child: Row(
                             children: [
-                              Text(
-                                user['name'] as String? ?? '',
-                                style: TextStyle(
-                                  color: context.fast.t1,
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 14,
+                              Container(
+                                width: 44,
+                                height: 44,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: fast.cardHigh,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: fast.line),
+                                ),
+                                child: Text(
+                                  (user['name'] as String? ?? '?')
+                                      .characters
+                                      .first
+                                      .toUpperCase(),
+                                  style: FASTText.item.copyWith(color: fast.t1),
                                 ),
                               ),
-                              Text(
-                                user['email'] as String? ?? '',
-                                style: TextStyle(
-                                  color: context.fast.t3,
-                                  fontSize: 11,
+                              const SizedBox(width: FASTSpace.s12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      user['name'] as String? ?? '',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: FASTText.item.copyWith(
+                                        color: fast.t1,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      user['email'] as String? ?? '',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: FASTText.caption.copyWith(
+                                        color: fast.t2,
+                                      ),
+                                    ),
+                                    const SizedBox(height: FASTSpace.s8),
+                                    FastTag(
+                                      isGuest
+                                          ? tr(context, 'guest_badge')
+                                          : 'MANAGER',
+                                      kind: isGuest
+                                          ? FastTagKind.neutral
+                                          : FastTagKind.neutral,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.delete_outline,
+                                  color: FASTBrand.error,
+                                  size: 20,
+                                ),
+                                onPressed: () => _delete(
+                                  s['id'] as String,
+                                  user['name'] as String? ?? '',
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: (isGuest ? FASTPro.magenta : FASTPro.teal)
-                                .withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            isGuest ? tr(context, 'guest_badge') : 'MANAGER',
-                            style: TextStyle(
-                              color: isGuest ? FASTPro.magenta : FASTPro.teal,
-                              fontSize: 9,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(
-                            Icons.delete_outline,
-                            color: Color(0xFFEF4444),
-                            size: 20,
-                          ),
-                          onPressed: () => _delete(
-                            s['id'] as String,
-                            user['name'] as String? ?? '',
-                          ),
-                        ),
-                      ],
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
-            ),
+                  ),
           ),
         ],
       ),
@@ -471,33 +486,50 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
   /// F13 — the owner's shareable invite code: staff/guests join with
   /// first+last name and this code on the role-selection screen.
   Widget _buildInviteCard() {
+    final fast = context.fast;
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.fromLTRB(
+        FASTSpace.s16,
+        FASTSpace.s12,
+        FASTSpace.s16,
+        FASTSpace.s8,
+      ),
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        FASTSpace.s16,
+        FASTSpace.s12,
+        FASTSpace.s4,
+        FASTSpace.s12,
+      ),
       decoration: BoxDecoration(
-        color: FASTPro.teal.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: FASTPro.teal.withValues(alpha: 0.35)),
+        color: fast.card,
+        borderRadius: BorderRadius.circular(FASTRadius.md),
+        border: Border.all(color: fast.line),
       ),
       child: Row(
         children: [
-          const Icon(Icons.vpn_key_outlined, color: FASTPro.teal, size: 18),
-          const SizedBox(width: 10),
+          const Icon(Icons.vpn_key_outlined, color: FASTPro.teal, size: 20),
+          const SizedBox(width: FASTSpace.s12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  tr(context, 'invite_code'),
-                  style: TextStyle(color: context.fast.t3, fontSize: 10),
+                  fastLabelCase(context, tr(context, 'invite_code')),
+                  style: FASTText.label.copyWith(color: fast.t2),
                 ),
-                Text(
-                  _inviteCode!,
-                  style: TextStyle(
-                    color: context.fast.t1,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 16,
-                    letterSpacing: 2,
+                const SizedBox(height: FASTSpace.s4),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: AlignmentDirectional.centerStart,
+                  child: Text(
+                    _inviteCode!,
+                    maxLines: 1,
+                    style: FASTText.price.copyWith(
+                      color: fast.t1,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 2,
+                    ),
                   ),
                 ),
               ],
@@ -505,7 +537,7 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
           ),
           IconButton(
             tooltip: tr(context, 'copy_code'),
-            icon: const Icon(Icons.copy, size: 18, color: FASTPro.teal),
+            icon: Icon(Icons.copy, size: 20, color: fast.t2),
             onPressed: () {
               Clipboard.setData(ClipboardData(text: _inviteCode!));
               _toast(tr(context, 'invite_code'));
@@ -513,7 +545,7 @@ class _RestoStaffScreenState extends State<RestoStaffScreen> {
           ),
           IconButton(
             tooltip: tr(context, 'rotate_code'),
-            icon: const Icon(Icons.refresh, size: 18, color: FASTPro.teal),
+            icon: Icon(Icons.refresh, size: 20, color: fast.t2),
             onPressed: () async {
               try {
                 final data = await _api.post(

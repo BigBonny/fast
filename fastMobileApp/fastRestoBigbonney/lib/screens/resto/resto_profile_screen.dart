@@ -3,31 +3,33 @@ import 'package:provider/provider.dart';
 import '../../resto_provider.dart';
 import '../../theme.dart';
 import '../../widgets/fast_image.dart';
+import '../../widgets/fast_night_surface.dart';
 import '../../l10n/tr.dart';
 
 class RestoProfileScreen extends StatelessWidget {
   const RestoProfileScreen({super.key});
 
   Widget _placeholderImage(BuildContext context) => Container(
-    color: context.fast.card,
+    color: context.fast.cardHigh,
     alignment: Alignment.center,
-    child: Icon(Icons.restaurant, color: context.fast.t3, size: 72),
+    child: Icon(Icons.storefront_outlined, color: context.fast.t3, size: 64),
   );
 
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<RestoProvider>(context);
     final settings = provider.settings;
+    final fast = context.fast;
 
     return Scaffold(
-      backgroundColor: context.fast.bg,
+      backgroundColor: fast.bg,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 250.0,
+            expandedHeight: 220.0,
             floating: false,
             pinned: false,
-            backgroundColor: context.fast.card,
+            backgroundColor: fast.card,
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
                 fit: StackFit.expand,
@@ -39,14 +41,15 @@ class RestoProfileScreen extends StatelessWidget {
                           placeholder: _placeholderImage(context),
                         )
                       : _placeholderImage(context),
-                  Container(
+                  DecoratedBox(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
+                        stops: const [0.5, 1.0],
                         colors: [
                           Colors.transparent,
-                          context.fast.bg.withValues(alpha: 0.95),
+                          fast.bg.withValues(alpha: 0.95),
                         ],
                       ),
                     ),
@@ -57,123 +60,113 @@ class RestoProfileScreen extends StatelessWidget {
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: EdgeInsets.all(24.0),
+              padding: const EdgeInsets.fromLTRB(
+                FASTSpace.s16,
+                0,
+                FASTSpace.s16,
+                FASTSpace.s40,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(
-                                  0xFF00C8B3,
-                                ).withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                settings?.cuisineType.toUpperCase() ??
-                                    'CUISINE',
-                                style: const TextStyle(
-                                  color: Color(0xFF00C8B3),
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
+                  // ─── Header card: the restaurant as customers see it ───
+                  SizedBox(
+                    width: double.infinity,
+                    child: FastNightSurface(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  fastLabelCase(
+                                    context,
+                                    settings?.cuisineType ?? 'CUISINE',
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: FASTText.label.copyWith(
+                                    color: FastNightSurface.onNightMuted,
+                                  ),
                                 ),
                               ),
-                            ),
-                            SizedBox(height: 12),
-                            Text(
-                              settings?.name ?? tr(context, 'my_restaurant'),
-                              style: TextStyle(
-                                fontSize: 32,
-                                fontWeight: FontWeight.w900,
-                                color: context.fast.t1,
+                              const SizedBox(width: FASTSpace.s12),
+                              const Icon(
+                                Icons.star_rounded,
+                                color: FASTBrand.gold,
+                                size: 18,
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: context.fast.card,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: context.fast.line),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.star,
-                              color: Color(0xFFF59E0B),
-                              size: 24,
-                            ),
-                            SizedBox(width: 8),
-                            Text(
-                              '4.8',
-                              style: TextStyle(
-                                color: context.fast.t1,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
+                              const SizedBox(width: FASTSpace.s4),
+                              Text(
+                                '4.8',
+                                style: FASTText.price.copyWith(
+                                  fontSize: 14,
+                                  color: FastNightSurface.onNight,
+                                ),
                               ),
+                            ],
+                          ),
+                          const SizedBox(height: FASTSpace.s8),
+                          Text(
+                            settings?.name ?? tr(context, 'my_restaurant'),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: FASTText.title.copyWith(
+                              color: FastNightSurface.onNight,
                             ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(height: FASTSpace.s8),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.location_on_outlined,
+                                color: FastNightSurface.onNightMuted,
+                                size: 16,
+                              ),
+                              const SizedBox(width: FASTSpace.s4),
+                              Expanded(
+                                child: Text(
+                                  '${settings?.city ?? tr(context, 'city')} • ${tr(context, 'at_km').replaceAll('{n}', '2.4')}',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: FASTText.body.copyWith(
+                                    color: FastNightSurface.onNightMuted,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                  SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Icon(Icons.location_on, color: context.fast.t2, size: 16),
-                      SizedBox(width: 6),
-                      Text(
-                        '${settings?.city ?? tr(context, 'city')} • ${tr(context, 'at_km').replaceAll('{n}', '2.4')}',
-                        style: TextStyle(color: context.fast.t2, fontSize: 16),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 48),
+                  const SizedBox(height: FASTSpace.s40),
                   Text(
                     tr(context, 'public_preview'),
-                    style: TextStyle(
-                      color: context.fast.t1,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: FASTText.title.copyWith(color: fast.t1),
                   ),
-                  SizedBox(height: 16),
-                  Container(
-                    padding: EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: context.fast.card,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: context.fast.line),
+                  const SizedBox(height: FASTSpace.s8),
+                  Divider(height: 1, thickness: 1, color: fast.line),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: FASTSpace.s16,
                     ),
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Icon(
-                          Icons.visibility,
-                          color: Color(0xFF3B82F6),
-                          size: 32,
+                          Icons.visibility_outlined,
+                          color: fast.t2,
+                          size: 22,
                         ),
-                        SizedBox(width: 16),
+                        const SizedBox(width: FASTSpace.s12),
                         Expanded(
                           child: Text(
                             tr(context, 'preview_notice'),
-                            style: TextStyle(
-                              color: context.fast.t2,
+                            style: FASTText.body.copyWith(
+                              color: fast.t2,
                               height: 1.5,
                             ),
                           ),
@@ -181,6 +174,7 @@ class RestoProfileScreen extends StatelessWidget {
                       ],
                     ),
                   ),
+                  Divider(height: 1, thickness: 1, color: fast.line),
                 ],
               ),
             ),

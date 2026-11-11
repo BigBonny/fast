@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme.dart';
 import '../l10n/tr.dart';
+import 'fast_ui.dart';
 
 class RestoSpotlightTutorial extends StatelessWidget {
   final Rect? targetRect;
@@ -45,13 +46,13 @@ class RestoSpotlightTutorial extends StatelessWidget {
       child: Material(
         color: context.fast.card,
         elevation: 18,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(FASTRadius.md),
         child: Container(
           width: cardWidth,
-          padding: EdgeInsets.all(20),
+          padding: const EdgeInsets.all(FASTSpace.s16),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFF59E0B), width: 1.2),
+            borderRadius: BorderRadius.circular(FASTRadius.md),
+            border: Border.all(color: FASTPro.teal, width: 1.2),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -65,15 +66,14 @@ class RestoSpotlightTutorial extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF59E0B).withValues(alpha: 0.14),
-                      borderRadius: BorderRadius.circular(20),
+                      color: FASTPro.teal.withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(FASTRadius.pill),
                     ),
                     child: Text(
                       '${step + 1} / $totalSteps',
-                      style: const TextStyle(
-                        color: Color(0xFFF59E0B),
+                      style: FASTText.price.copyWith(
                         fontSize: 12,
-                        fontWeight: FontWeight.w800,
+                        color: FASTPro.teal,
                       ),
                     ),
                   ),
@@ -84,25 +84,25 @@ class RestoSpotlightTutorial extends StatelessWidget {
                       minimumSize: Size(48, 48),
                       foregroundColor: context.fast.t2,
                     ),
-                    child: Text(tr(context, 'skip_tuto')),
+                    child: Text(
+                      tr(context, 'skip_tuto'),
+                      style: FASTText.body.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ],
               ),
               SizedBox(height: 10),
               Text(
                 title,
-                style: TextStyle(
-                  color: context.fast.t1,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w900,
-                ),
+                style: FASTText.title.copyWith(color: context.fast.t1),
               ),
               SizedBox(height: 8),
               Text(
                 description,
-                style: TextStyle(
+                style: FASTText.body.copyWith(
                   color: context.fast.t2,
-                  fontSize: 14,
                   height: 1.5,
                 ),
               ),
@@ -116,27 +116,17 @@ class RestoSpotlightTutorial extends StatelessWidget {
                         value: (step + 1) / totalSteps,
                         minHeight: 5,
                         backgroundColor: context.fast.faint,
-                        valueColor: const AlwaysStoppedAnimation(
-                          Color(0xFFF59E0B),
-                        ),
+                        valueColor: const AlwaysStoppedAnimation(FASTPro.teal),
                       ),
                     ),
                   ),
                   SizedBox(width: 16),
-                  ElevatedButton(
+                  FastButton(
+                    label: step == totalSteps - 1 ? 'Terminer' : 'Suivant',
                     onPressed: onNext,
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: Size(112, 48),
-                      backgroundColor: Color(0xFFF59E0B),
-                      foregroundColor: FASTBrand.onAmber,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: Text(
-                      step == totalSteps - 1 ? 'Terminer' : 'Suivant',
-                      style: const TextStyle(fontWeight: FontWeight.w900),
-                    ),
+                    kind: FastButtonKind.ink,
+                    expand: false,
+                    height: 48,
                   ),
                 ],
               ),
@@ -198,7 +188,7 @@ class _SpotlightPainter extends CustomPainter {
     canvas.drawRRect(
       RRect.fromRectAndRadius(expanded, radius),
       Paint()
-        ..color = const Color(0xFFF59E0B)
+        ..color = FASTPro.teal
         ..style = PaintingStyle.stroke
         ..strokeWidth = 3,
     );

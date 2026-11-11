@@ -8,7 +8,33 @@ import '../../services/order_service.dart';
 import '../../api/api_exceptions.dart';
 import '../../theme.dart';
 import '../../l10n/tr.dart';
+import '../../widgets/fast_parts.dart';
+import '../../widgets/fast_ui.dart';
 import 'client_proximity.dart';
+
+/// Preparing = violet. Yellow is reserved for "client is on the way".
+const Color _kPreparing = Color(0xFF8B5CF6);
+
+/// Filled pill, 48 high, for the order actions (colour = meaning).
+ButtonStyle _pillFilled(Color bg) => ElevatedButton.styleFrom(
+  backgroundColor: bg,
+  foregroundColor: Colors.white,
+  elevation: 0,
+  minimumSize: const Size(0, 48),
+  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+  shape: const StadiumBorder(),
+  textStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+);
+
+/// Outlined pill, 48 high, in the action's own colour.
+ButtonStyle _pillOutline(Color color) => OutlinedButton.styleFrom(
+  foregroundColor: color,
+  side: BorderSide(color: color),
+  minimumSize: const Size(0, 48),
+  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+  shape: const StadiumBorder(),
+  textStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+);
 
 class RestoOrdersScreen extends StatefulWidget {
   const RestoOrdersScreen({super.key});
@@ -116,7 +142,7 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
         backgroundColor: context.fast.card,
         title: Text(
           tr(context, 'scan_qr_title'),
-          style: TextStyle(color: context.fast.t1),
+          style: FASTText.title.copyWith(color: context.fast.t1),
         ),
         content: SizedBox(
           height: 400,
@@ -124,7 +150,7 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
           child: Column(
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(FASTRadius.sm),
                 child: SizedBox(
                   height: 240,
                   width: 280,
@@ -148,7 +174,7 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                     child: TextField(
                       controller: codeController,
                       textCapitalization: TextCapitalization.characters,
-                      style: TextStyle(color: context.fast.t1, fontSize: 14),
+                      style: FASTText.body.copyWith(color: context.fast.t1),
                       decoration: InputDecoration(
                         hintText: tr(context, 'enter_code'),
                         hintStyle: TextStyle(color: context.fast.t3),
@@ -158,7 +184,7 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                           vertical: 10,
                         ),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(FASTRadius.sm),
                         ),
                       ),
                       onSubmitted: (v) async {
@@ -171,7 +197,7 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                   ),
                   const SizedBox(width: 8),
                   IconButton(
-                    icon: const Icon(Icons.check, color: Color(0xFF10B981)),
+                    icon: const Icon(Icons.check, color: FASTBrand.success),
                     onPressed: () async {
                       final v = codeController.text.trim();
                       if (v.isEmpty || handled) return;
@@ -234,7 +260,7 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
         backgroundColor: context.fast.card,
         title: Text(
           tr(context, 'redeem_code'),
-          style: TextStyle(color: context.fast.t1),
+          style: FASTText.title.copyWith(color: context.fast.t1),
         ),
         content: SizedBox(
           width: 300,
@@ -242,11 +268,10 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
             controller: codeController,
             autofocus: true,
             textCapitalization: TextCapitalization.characters,
-            style: TextStyle(
+            style: FASTText.price.copyWith(
               color: context.fast.t1,
               fontSize: 20,
-              fontFamily: 'monospace',
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w800,
               letterSpacing: 2,
             ),
             textAlign: TextAlign.center,
@@ -254,7 +279,7 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
               hintText: '1234-FAST',
               hintStyle: TextStyle(color: context.fast.t3),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(FASTRadius.sm),
               ),
             ),
             onSubmitted: (_) => submit(dialogContext),
@@ -270,10 +295,7 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
           ),
           ElevatedButton(
             onPressed: () => submit(dialogContext),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF10B981),
-              foregroundColor: Colors.white,
-            ),
+            style: _pillFilled(FASTBrand.success),
             child: Text(tr(context, 'validate_lbl')),
           ),
         ],
@@ -317,42 +339,48 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: ListView(
-        padding: EdgeInsets.fromLTRB(16, 16, 16, 96),
+        padding: const EdgeInsetsDirectional.fromSTEB(
+          FASTSpace.s16,
+          FASTSpace.s16,
+          FASTSpace.s16,
+          96,
+        ),
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                tr(context, 'orders_active'),
-                style: TextStyle(
-                  color: context.fast.t1,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+              Expanded(
+                child: Text(
+                  tr(context, 'orders_active'),
+                  style: FASTText.title.copyWith(color: context.fast.t1),
                 ),
               ),
+              const SizedBox(width: FASTSpace.s12),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(6),
+                  color: FASTBrand.success.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(FASTRadius.pill),
                 ),
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
                       width: 6,
                       height: 6,
                       decoration: const BoxDecoration(
-                        color: Color(0xFF10B981),
+                        color: FASTBrand.success,
                         shape: BoxShape.circle,
                       ),
                     ),
                     const SizedBox(width: 6),
                     Text(
                       tr(context, 'live_lbl'),
-                      style: TextStyle(
-                        color: Color(0xFF10B981),
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                      style: FASTText.caption.copyWith(
+                        color: FASTBrand.success,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                   ],
@@ -360,48 +388,47 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
               ),
             ],
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: FASTSpace.s16),
           if (activeOrders.isEmpty)
-            Center(
-              child: Padding(
-                padding: EdgeInsets.all(32.0),
-                child: Column(
-                  children: [
-                    Text(
-                      tr(context, 'no_active_orders'),
-                      style: TextStyle(
-                        color: context.fast.t2,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      tr(context, 'orders_realtime_hint'),
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: context.fast.t3, fontSize: 12),
-                    ),
-                  ],
-                ),
-              ),
+            FastEmpty(
+              icon: Icons.receipt_long_outlined,
+              title: tr(context, 'no_active_orders'),
+              subtitle: tr(context, 'orders_realtime_hint'),
+              accent: context.fast.t2,
             ),
           ...activeOrders.map((o) => _buildOrderCard(o, rProv)),
 
           if (billedCancelledOrders.isNotEmpty) ...[
-            SizedBox(height: 32),
+            const SizedBox(height: FASTSpace.s24),
             Divider(color: context.fast.line),
-            SizedBox(height: 16),
+            const SizedBox(height: FASTSpace.s16),
             Text(
-              tr(context, 'cancelled_billed'),
-              style: TextStyle(
-                color: context.fast.t1,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              fastLabelCase(context, tr(context, 'cancelled_billed')),
+              style: FASTText.label.copyWith(color: context.fast.t2),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: FASTSpace.s12),
             ...billedCancelledOrders.map((o) => _buildCancelledCard(o)),
           ],
         ],
+      ),
+    );
+  }
+
+  /// Header chip: a filled pill. Colours are passed in by the caller and
+  /// carry the order's meaning — this only gives them a shape.
+  Widget _headerChip(String text, Color bg, Color fg) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(FASTRadius.pill),
+      ),
+      child: Text(
+        text,
+        style: FASTText.caption.copyWith(
+          color: fg,
+          fontWeight: FontWeight.w800,
+        ),
       ),
     );
   }
@@ -421,12 +448,12 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
       }
     }
     Color statusColor = context.fast.faint;
-    if (order.status == OrderStatus.placed) statusColor = Color(0xFF10B981);
+    if (order.status == OrderStatus.placed) statusColor = FASTBrand.success;
     // Violet, not amber: yellow is reserved for "client is on the way" so
     // a freshly auto-accepted order never looks en route.
-    if (order.status == OrderStatus.preparing) statusColor = Color(0xFF8B5CF6);
+    if (order.status == OrderStatus.preparing) statusColor = _kPreparing;
     if (order.status == OrderStatus.readyForPickup) {
-      statusColor = Color(0xFF3B82F6);
+      statusColor = FASTBrand.info;
     }
 
     // Client proximity (see client_proximity.dart): green = not left yet,
@@ -439,14 +466,12 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
     final bool enRouteYellow = prox == ClientProximity.enRoute;
 
     return Container(
-      margin: EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: FASTSpace.s16),
       decoration: BoxDecoration(
         color: enRouteYellow
-            ? const Color(
-                0xFFFACC15,
-              ).withValues(alpha: 0.08)
+            ? kProxYellow.withValues(alpha: 0.08)
             : context.fast.card,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(FASTRadius.md),
         border: Border.all(
           color: accentColor.withValues(alpha: proxTints ? 0.9 : 0.5),
           width: 2,
@@ -455,129 +480,99 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
       child: Column(
         children: [
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(
+              horizontal: FASTSpace.s16,
+              vertical: FASTSpace.s12,
+            ),
             decoration: BoxDecoration(
               color: accentColor.withValues(alpha: 0.1),
               borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(10),
+                top: Radius.circular(FASTRadius.md - 2),
               ),
             ),
             child: Wrap(
-              spacing: 12,
-              runSpacing: 8,
+              spacing: FASTSpace.s8,
+              runSpacing: FASTSpace.s8,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 Text(
                   '#${order.id.substring(order.id.length > 6 ? order.id.length - 6 : 0)}',
-                  style: TextStyle(
-                    color: context.fast.t1,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
+                  style: FASTText.item.copyWith(color: context.fast.t1),
                 ),
                 if (order.groupCode != null)
                   Text(
                     order.groupCode!,
-                    style: const TextStyle(
+                    style: FASTText.body.copyWith(
                       color: FASTPro.teal,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
                 if (proxLabel != null)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: proxColor ?? context.fast.faint,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      proxLabel,
-                      style: TextStyle(
-                        color: prox?.onColor ?? Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 10,
-                      ),
-                    ),
+                  _headerChip(
+                    proxLabel,
+                    proxColor ?? context.fast.faint,
+                    prox?.onColor ?? Colors.white,
                   ),
                 if (order.clientDelayMin > 0)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF3B82F6),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      tr(context, 'client_eta').replaceAll(
-                        '{n}',
-                        '${order.clientDelayMin}',
-                      ),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 10,
-                      ),
-                    ),
+                  _headerChip(
+                    tr(
+                      context,
+                      'client_eta',
+                    ).replaceAll('{n}', '${order.clientDelayMin}'),
+                    FASTBrand.info,
+                    Colors.white,
                   ),
                 Text(
                   orderStatusLabel(context, order.status),
-                  style: TextStyle(
+                  style: FASTText.caption.copyWith(
                     color: statusColor,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
               ],
             ),
           ),
           Padding(
-            padding: EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(FASTSpace.s16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (!_expandedOrders.contains(order.id))
                   InkWell(
-                    onTap: () =>
-                        setState(() => _expandedOrders.add(order.id)),
-                    borderRadius: BorderRadius.circular(8),
+                    onTap: () => setState(() => _expandedOrders.add(order.id)),
+                    borderRadius: BorderRadius.circular(FASTRadius.sm),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       child: Row(
                         children: [
                           Icon(
-                            Icons.receipt_long,
-                            size: 16,
+                            Icons.receipt_long_outlined,
+                            size: 18,
                             color: context.fast.t3,
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: FASTSpace.s8),
                           Expanded(
                             child: Text(
                               tr(
                                 context,
                                 'articles_count',
                               ).replaceAll('{n}', '${order.items.length}'),
-                              style: TextStyle(
+                              style: FASTText.body.copyWith(
                                 color: context.fast.t2,
-                                fontSize: 13,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
                           Text(
                             tr(context, 'see_details'),
-                            style: const TextStyle(
+                            style: FASTText.caption.copyWith(
                               color: FASTPro.teal,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w800,
                             ),
                           ),
-                          const SizedBox(width: 4),
-                          Icon(
+                          const SizedBox(width: FASTSpace.s4),
+                          const Icon(
                             Icons.expand_more,
                             size: 18,
                             color: FASTPro.teal,
@@ -589,40 +584,42 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                 else ...[
                   ...order.items.map(
                     (item) => Padding(
-                      padding: EdgeInsets.only(bottom: 8.0),
+                      padding: const EdgeInsets.only(bottom: FASTSpace.s8),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             '${item.quantity}x',
-                            style: TextStyle(
+                            style: FASTText.price.copyWith(
                               color: context.fast.t1,
-                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              height: 1.35,
                             ),
                           ),
-                          SizedBox(width: 12),
+                          const SizedBox(width: FASTSpace.s12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   item.menuItem.name,
-                                  style: TextStyle(color: context.fast.t1),
+                                  style: FASTText.body.copyWith(
+                                    color: context.fast.t1,
+                                  ),
                                 ),
                                 if (item.selectedOptions.isNotEmpty)
                                   Text(
                                     item.selectedOptions.join(', '),
-                                    style: TextStyle(
+                                    style: FASTText.caption.copyWith(
                                       color: context.fast.t2,
-                                      fontSize: 12,
                                     ),
                                   ),
                                 if (item.allergyNotes.isNotEmpty)
                                   Text(
                                     '${tr(context, 'note_lbl')}: ${item.allergyNotes}',
-                                    style: const TextStyle(
-                                      color: Color(0xFFEF4444),
-                                      fontSize: 12,
+                                    style: FASTText.caption.copyWith(
+                                      color: FASTBrand.error,
+                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
                               ],
@@ -633,59 +630,66 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                     ),
                   ),
                   Align(
-                    alignment: Alignment.centerRight,
+                    alignment: AlignmentDirectional.centerEnd,
                     child: TextButton.icon(
-                      onPressed: () => setState(
-                        () => _expandedOrders.remove(order.id),
+                      onPressed: () =>
+                          setState(() => _expandedOrders.remove(order.id)),
+                      style: TextButton.styleFrom(
+                        foregroundColor: FASTPro.teal,
+                        shape: const StadiumBorder(),
                       ),
-                      icon: const Icon(Icons.expand_less, size: 16),
+                      icon: const Icon(Icons.expand_less, size: 18),
                       label: Text(
                         tr(context, 'reduce'),
-                        style: const TextStyle(fontSize: 12),
+                        style: FASTText.caption.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ),
                   ),
                 ],
                 if (order.fulfillmentType == FulfillmentType.pickup) ...[
-                  const SizedBox(height: 4),
+                  const SizedBox(height: FASTSpace.s4),
                   // Base44-style approach bar: teal → magenta gradient fill
                   // showing how far along their walk the client is.
                   Row(
                     children: [
                       Icon(
-                        Icons.location_on,
-                        size: 13,
+                        Icons.location_on_outlined,
+                        size: 14,
                         color: proxColor ?? context.fast.t3,
                       ),
-                      const SizedBox(width: 4),
-                      Text(
-                        tr(context, 'client_near').replaceAll(
-                          '{n}',
-                          '${(order.userWalkTimeMinutes * (1 - order.gpsProgress / 100)).ceil().clamp(0, 999)}',
-                        ),
-                        style: TextStyle(
-                          color: context.fast.t2,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
+                      const SizedBox(width: FASTSpace.s4),
+                      Expanded(
+                        child: Text(
+                          tr(context, 'client_near').replaceAll(
+                            '{n}',
+                            '${(order.userWalkTimeMinutes * (1 - order.gpsProgress / 100)).ceil().clamp(0, 999)}',
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: FASTText.caption.copyWith(
+                            color: context.fast.t2,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
-                      const Spacer(),
+                      const SizedBox(width: FASTSpace.s8),
                       Text(
                         tr(context, 'pct_route').replaceAll(
                           '{n}',
                           '${order.gpsProgress.clamp(0, 100).round()}',
                         ),
-                        style: TextStyle(
+                        style: FASTText.price.copyWith(
                           color: proxColor ?? context.fast.t3,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 6),
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(FASTRadius.pill),
                     child: SizedBox(
                       height: 6,
                       child: Stack(
@@ -701,10 +705,7 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                             child: Container(
                               decoration: const BoxDecoration(
                                 gradient: LinearGradient(
-                                  colors: [
-                                    Color(0xFF00C8B3),
-                                    Color(0xFFFF0066),
-                                  ],
+                                  colors: [FASTPro.teal, FASTPro.magenta],
                                 ),
                               ),
                             ),
@@ -718,103 +719,106 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      '${tr(context, 'total_lbl')}: €${order.total.toStringAsFixed(2)}',
-                      style: TextStyle(
-                        color: context.fast.t1,
-                        fontWeight: FontWeight.bold,
+                    Flexible(
+                      child: Text.rich(
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: '${tr(context, 'total_lbl')}  ',
+                              style: FASTText.body.copyWith(
+                                color: context.fast.t2,
+                              ),
+                            ),
+                            TextSpan(
+                              text: fastPriceLabel(order.total),
+                              style: FASTText.price.copyWith(
+                                color: context.fast.t1,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     if (order.status == OrderStatus.preparing)
                       Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 12,
+                        margin: const EdgeInsetsDirectional.only(
+                          start: FASTSpace.s12,
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
                           color: FASTBrand.onAmber,
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(FASTRadius.pill),
+                          border: Border.all(color: context.fast.line),
                         ),
+                        // Prep countdown. Teal: a readout, not a status —
+                        // yellow/amber here would read as "en route".
                         child: Text(
                           timerText,
-                          style: const TextStyle(
-                            color: Color(0xFFF59E0B),
-                            fontFamily: 'monospace',
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: FASTText.price.copyWith(color: FASTPro.teal),
                         ),
                       ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: FASTSpace.s16),
 
                 if (order.status == OrderStatus.placed) ...[
                   Text(
-                    tr(context, 'accept_in'),
-                    style: TextStyle(
-                      color: context.fast.t3,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    fastLabelCase(context, tr(context, 'accept_in')),
+                    style: FASTText.label.copyWith(color: context.fast.t2),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: FASTSpace.s8),
                   Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
+                    spacing: FASTSpace.s8,
+                    runSpacing: FASTSpace.s8,
                     children: [
                       for (final t in [5, 8, 10, 15, 20, 25])
                         InkWell(
                           onTap: () =>
                               _acceptOrder(order, rProv, prepMinutes: t),
-                          borderRadius: BorderRadius.circular(6),
+                          borderRadius: BorderRadius.circular(FASTRadius.pill),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
+                              horizontal: 14,
+                              vertical: 8,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(
-                                0xFF10B981,
-                              ).withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(6),
+                              color: FASTBrand.success.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(
+                                FASTRadius.pill,
+                              ),
                               border: Border.all(
-                                color: const Color(
-                                  0xFF10B981,
-                                ).withValues(alpha: 0.4),
+                                color: FASTBrand.success.withValues(alpha: 0.4),
                               ),
                             ),
                             child: Text(
                               '$t min',
-                              style: const TextStyle(
-                                color: Color(0xFF10B981),
+                              style: FASTText.price.copyWith(
+                                color: FASTBrand.success,
                                 fontSize: 12,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w800,
                               ),
                             ),
                           ),
                         ),
                     ],
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: FASTSpace.s12),
                   Row(
                     children: [
                       Expanded(
                         child: ElevatedButton(
                           onPressed: () => _acceptOrder(order, rProv),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF10B981),
-                            foregroundColor: Colors.white,
-                          ),
+                          style: _pillFilled(FASTBrand.success),
                           child: Text(tr(context, 'accept_auto')),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: FASTSpace.s12),
                       OutlinedButton(
                         onPressed: () => _refuseOrder(order),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFFEF4444),
-                          side: const BorderSide(color: Color(0xFFEF4444)),
-                        ),
+                        style: _pillOutline(FASTBrand.error),
                         child: Text(tr(context, 'decline')),
                       ),
                     ],
@@ -829,61 +833,62 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                           Expanded(
                             child: ElevatedButton(
                               onPressed: () => _markReady(order),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF3B82F6),
-                                foregroundColor: Colors.white,
-                              ),
+                              style: _pillFilled(FASTBrand.info),
                               child: Text(tr(context, 'ready_serve')),
                             ),
                           ),
                           if (order.fulfillmentType ==
                               FulfillmentType.pickup) ...[
-                            const SizedBox(width: 8),
+                            const SizedBox(width: FASTSpace.s8),
                             IconButton.outlined(
                               tooltip: tr(context, 'scan_qr_title'),
                               onPressed: () => _showQrScanDialog(order),
+                              constraints: const BoxConstraints(
+                                minWidth: 48,
+                                minHeight: 48,
+                              ),
                               icon: const Icon(
                                 Icons.qr_code_scanner,
-                                color: Color(0xFF10B981),
+                                color: FASTBrand.success,
                               ),
                             ),
                             IconButton.outlined(
                               tooltip: tr(context, 'redeem_code'),
                               onPressed: () => _showCodeDialog(order),
+                              constraints: const BoxConstraints(
+                                minWidth: 48,
+                                minHeight: 48,
+                              ),
                               icon: const Icon(
                                 Icons.pin_outlined,
-                                color: Color(0xFF10B981),
+                                color: FASTBrand.success,
                               ),
                             ),
                           ],
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: FASTSpace.s8),
                       Row(
                         children: [
                           Expanded(
                             child: OutlinedButton(
                               onPressed: () => _refuseOrder(order),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: const Color(0xFFEF4444),
-                                side: const BorderSide(
-                                  color: Color(0xFFEF4444),
-                                ),
+                              style: _pillOutline(FASTBrand.error),
+                              child: Text(
+                                tr(context, 'decline'),
+                                textAlign: TextAlign.center,
                               ),
-                              child: Text(tr(context, 'decline')),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: FASTSpace.s12),
                           Expanded(
                             child: OutlinedButton(
                               onPressed: () => _cancelOrder(order, true),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: const Color(0xFFEF4444),
-                                side: const BorderSide(
-                                  color: Color(0xFFEF4444),
-                                ),
+                              style: _pillOutline(FASTBrand.error),
+                              child: Text(
+                                tr(context, 'cancel_billed'),
+                                textAlign: TextAlign.center,
                               ),
-                              child: Text(tr(context, 'cancel_billed')),
                             ),
                           ),
                         ],
@@ -897,73 +902,52 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
+                          horizontal: FASTSpace.s12,
+                          vertical: FASTSpace.s8,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
+                          color: FASTBrand.info.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(FASTRadius.sm),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.directions_walk,
-                              color: Color(0xFF3B82F6),
+                              color: FASTBrand.info,
                               size: 16,
                             ),
-                            SizedBox(width: 6),
-                            Text(
-                              tr(context, 'client_enroute'),
-                              style: TextStyle(
-                                color: Color(0xFF3B82F6),
-                                fontWeight: FontWeight.w600,
-                                fontSize: 13,
+                            const SizedBox(width: 6),
+                            Flexible(
+                              child: Text(
+                                tr(context, 'client_enroute'),
+                                style: FASTText.body.copyWith(
+                                  color: FASTBrand.info,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: FASTSpace.s12),
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton.icon(
                           onPressed: () => _showQrScanDialog(order),
                           icon: const Icon(Icons.qr_code_scanner, size: 20),
-                          label: Text(
-                            tr(context, 'scan_qr_btn'),
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF10B981),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
+                          label: Text(tr(context, 'scan_qr_btn')),
+                          style: _pillFilled(FASTBrand.success),
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: FASTSpace.s8),
                       SizedBox(
                         width: double.infinity,
                         child: OutlinedButton.icon(
                           onPressed: () => _showCodeDialog(order),
                           icon: const Icon(Icons.pin_outlined, size: 18),
-                          label: Text(
-                            tr(context, 'redeem_code'),
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xFF10B981),
-                            side: const BorderSide(
-                              color: Color(0xFF10B981),
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
+                          label: Text(tr(context, 'redeem_code')),
+                          style: _pillOutline(FASTBrand.success),
                         ),
                       ),
                     ],
@@ -978,26 +962,28 @@ class _RestoOrdersScreenState extends State<RestoOrdersScreen> {
 
   Widget _buildCancelledCard(Order order) {
     return Container(
-      margin: EdgeInsets.only(bottom: 8),
-      padding: EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: FASTSpace.s8),
+      padding: const EdgeInsets.all(FASTSpace.s16),
       decoration: BoxDecoration(
         color: context.fast.card,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(FASTRadius.md),
         border: Border.all(color: context.fast.line),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            '#${order.id.split('-').last}',
-            style: TextStyle(color: context.fast.t2),
-          ),
-          Text(
-            '€${order.total.toStringAsFixed(2)}',
-            style: TextStyle(
-              color: context.fast.t1,
-              fontWeight: FontWeight.bold,
+          Flexible(
+            child: Text(
+              '#${order.id.split('-').last}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: FASTText.body.copyWith(color: context.fast.t2),
             ),
+          ),
+          const SizedBox(width: FASTSpace.s12),
+          Text(
+            fastPriceLabel(order.total),
+            style: FASTText.price.copyWith(color: context.fast.t1),
           ),
         ],
       ),

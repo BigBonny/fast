@@ -565,6 +565,13 @@ class FastNavBar extends StatefulWidget {
   /// and labels are 12. With `false` the bar is exactly the original.
   final bool calm;
 
+  /// Calm mode only: colour of the pill behind the selected tab and of
+  /// the icon and label on it. Defaults to the theme's selected-state
+  /// colour. FAST Pro passes teal so the pill cannot be mistaken for a
+  /// red status next to the RUSH button.
+  final Color? calmPill;
+  final Color? calmOnPill;
+
   const FastNavBar({
     super.key,
     required this.currentIndex,
@@ -576,6 +583,8 @@ class FastNavBar extends StatefulWidget {
     this.inactive,
     this.itemKeys,
     this.calm = false,
+    this.calmPill,
+    this.calmOnPill,
   });
 
   @override
@@ -619,7 +628,7 @@ class _FastNavBarState extends State<FastNavBar>
     // Icon/label color inside the filled indicator — dark on bright
     // accents (teal, amber), white on dark ones. Calm: content on ink.
     final onAccent = calm
-        ? fast.onInk
+        ? (widget.calmOnPill ?? fast.onInk)
         : (accent.computeLuminance() > 0.35
               ? const Color(0xFF10141F)
               : Colors.white);
@@ -677,7 +686,7 @@ class _FastNavBarState extends State<FastNavBar>
                           child: calm
                               ? DecoratedBox(
                                   decoration: BoxDecoration(
-                                    color: fast.ink,
+                                    color: widget.calmPill ?? fast.ink,
                                     borderRadius: BorderRadius.circular(22),
                                   ),
                                 )

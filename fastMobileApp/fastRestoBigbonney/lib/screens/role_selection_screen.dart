@@ -6,6 +6,8 @@ import '../provider.dart';
 import '../l10n/app_strings.dart';
 import '../theme.dart';
 import '../widgets/fast_glow_background.dart';
+import '../widgets/fast_night_surface.dart';
+import '../widgets/fast_ui.dart';
 
 class RoleSelectionScreen extends StatelessWidget {
   const RoleSelectionScreen({super.key});
@@ -28,7 +30,7 @@ class RoleSelectionScreen extends StatelessWidget {
                   // Language picker — reachable before login so users can
                   // switch before they ever see the auth form.
                   Align(
-                    alignment: Alignment.centerRight,
+                    alignment: AlignmentDirectional.centerEnd,
                     child: PopupMenuButton<String>(
                       tooltip: '',
                       icon: const Icon(
@@ -74,18 +76,13 @@ class RoleSelectionScreen extends StatelessWidget {
                             Text(
                               prefix,
                               textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 30,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: -0.5,
-                                color: Colors.white,
-                                height: 1.2,
+                              style: FASTText.display.copyWith(
+                                color: FastNightSurface.onNight,
                               ),
                             ),
                           ShaderMask(
-                            shaderCallback: (bounds) => const LinearGradient(
-                              colors: [Color(0xFFFBBF24), Color(0xFFF97316)],
-                            ).createShader(bounds),
+                            shaderCallback: (bounds) =>
+                                FASTBrand.neonGradient.createShader(bounds),
                             child: const Text(
                               'FAST',
                               style: TextStyle(
@@ -101,10 +98,8 @@ class RoleSelectionScreen extends StatelessWidget {
                             Text(
                               suffix,
                               textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.white,
+                              style: FASTText.title.copyWith(
+                                color: FastNightSurface.onNight,
                               ),
                             ),
                         ],
@@ -115,18 +110,17 @@ class RoleSelectionScreen extends StatelessWidget {
                   Text(
                     fast.tr('welcome_sub'),
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Color(0xFFB8AECF),
+                    style: FASTText.body.copyWith(
+                      color: FastNightSurface.onNightMuted,
                       height: 1.5,
                     ),
                   ),
                   const SizedBox(height: 12),
-                  // Curved orange underline accent
+                  // Curved neon underline accent
                   const Center(child: _CurvedUnderline()),
-                  const SizedBox(height: 48),
+                  const SizedBox(height: FASTSpace.s40),
 
-                  // Client card — light card, person icon
+                  // Client card — light surface, gold icon on near-black
                   _RoleCard(
                     onTap: () => Navigator.push(
                       context,
@@ -135,20 +129,15 @@ class RoleSelectionScreen extends StatelessWidget {
                             const AuthScreen(initialRole: 'CLIENT'),
                       ),
                     ),
-                    cardColor: const Color(0xFFF6F1EA),
+                    night: false,
                     icon: Icons.person_outline,
-                    iconColor: const Color(0xFFF97316),
-                    iconBg: const Color(0xFFFDE8D7),
+                    iconColor: FASTBrand.gold,
                     title: fast.tr('iam_client'),
-                    titleColor: const Color(0xFF1A1425),
                     description: fast.tr('client_desc'),
-                    descColor: const Color(0xFF5F5870),
-                    chevronColor: const Color(0xFFF0E5D8),
-                    chevronIconColor: const Color(0xFF1A1425),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: FASTSpace.s16),
 
-                  // Pro card — amber glass card
+                  // Pro card — night surface, teal icon
                   _RoleCard(
                     onTap: () => Navigator.push(
                       context,
@@ -157,21 +146,11 @@ class RoleSelectionScreen extends StatelessWidget {
                             const AuthScreen(initialRole: 'RESTAURANT'),
                       ),
                     ),
-                    gradient: const LinearGradient(
-                      colors: [Color(0xCCB45309), Color(0xCCEA580C)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderColor: const Color(0x80FBBF24),
-                    icon: Icons.restaurant,
-                    iconColor: const Color(0xFFFBBF24),
-                    iconBg: const Color(0x40FDE68A),
+                    night: true,
+                    icon: Icons.storefront_outlined,
+                    iconColor: FASTPro.teal,
                     title: fast.tr('iam_pro'),
-                    titleColor: Colors.white,
                     description: fast.tr('pro_desc'),
-                    descColor: const Color(0xFFFDE8D7),
-                    chevronColor: const Color(0x40FFFFFF),
-                    chevronIconColor: Colors.white,
                   ),
                 ],
               ),
@@ -183,7 +162,7 @@ class RoleSelectionScreen extends StatelessWidget {
   }
 }
 
-/// Small orange swoosh under the welcome subtitle — a shallow arc
+/// Small neon swoosh under the welcome subtitle — a shallow arc
 /// dipping in the middle, like the reference design.
 class _CurvedUnderline extends StatelessWidget {
   const _CurvedUnderline();
@@ -209,9 +188,7 @@ class _CurvedUnderlinePainter extends CustomPainter {
         size.height * 0.2,
       );
     final paint = Paint()
-      ..shader = const LinearGradient(
-        colors: [Color(0xFFF97316), Color(0xFFEF4444)],
-      ).createShader(Offset.zero & size)
+      ..shader = FASTBrand.neonGradient.createShader(Offset.zero & size)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 4
       ..strokeCap = StrokeCap.round;
@@ -222,107 +199,89 @@ class _CurvedUnderlinePainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
+/// One of the two entry cards. The customer card is a light surface and
+/// the Pro card a night surface, in both theme modes: this screen always
+/// sits on the dark glow background.
 class _RoleCard extends StatelessWidget {
   const _RoleCard({
     required this.onTap,
+    required this.night,
     required this.icon,
     required this.iconColor,
-    required this.iconBg,
     required this.title,
-    required this.titleColor,
     required this.description,
-    required this.descColor,
-    required this.chevronColor,
-    required this.chevronIconColor,
-    this.cardColor,
-    this.gradient,
-    this.borderColor,
   });
 
   final VoidCallback onTap;
+  final bool night;
   final IconData icon;
   final Color iconColor;
-  final Color iconBg;
   final String title;
-  final Color titleColor;
   final String description;
-  final Color descColor;
-  final Color chevronColor;
-  final Color chevronIconColor;
-  final Color? cardColor;
-  final Gradient? gradient;
-  final Color? borderColor;
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
-        child: Ink(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
+    const light = FASTShades.light;
+    final titleColor = night ? FastNightSurface.onNight : light.t1;
+    final descColor = night ? FastNightSurface.onNightMuted : light.t2;
+    final chevronColor = night ? FastNightSurface.onNightMuted : light.t3;
+
+    final content = Row(
+      children: [
+        Container(
+          width: 48,
+          height: 48,
           decoration: BoxDecoration(
-            color: cardColor,
-            gradient: gradient,
-            borderRadius: BorderRadius.circular(20),
-            border: borderColor != null
-                ? Border.all(color: borderColor!, width: 1.2)
+            color: night
+                ? iconColor.withValues(alpha: 0.14)
+                : FASTBrand.onAmber,
+            shape: BoxShape.circle,
+            border: night
+                ? Border.all(color: iconColor.withValues(alpha: 0.4))
                 : null,
           ),
-          child: Row(
+          child: Icon(icon, color: iconColor, size: 24),
+        ),
+        const SizedBox(width: FASTSpace.s16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: iconBg,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, color: iconColor, size: 26),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w900,
-                        color: titleColor,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      description,
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        color: descColor,
-                        height: 1.35,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: chevronColor,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.chevron_right,
-                  color: chevronIconColor,
-                  size: 22,
-                ),
+              Text(title, style: FASTText.item.copyWith(color: titleColor)),
+              const SizedBox(height: FASTSpace.s4),
+              Text(
+                description,
+                style: FASTText.body.copyWith(color: descColor),
               ),
             ],
           ),
         ),
+        const SizedBox(width: FASTSpace.s12),
+        Icon(Icons.chevron_right, color: chevronColor, size: 24),
+      ],
+    );
+
+    const padding = EdgeInsets.symmetric(
+      horizontal: FASTSpace.s16,
+      vertical: 20,
+    );
+
+    return Semantics(
+      button: true,
+      child: FastTap(
+        onTap: onTap,
+        pressedScale: 0.98,
+        child: night
+            ? FastNightSurface(padding: padding, child: content)
+            : Container(
+                padding: padding,
+                decoration: BoxDecoration(
+                  color: light.card,
+                  borderRadius: BorderRadius.circular(FASTRadius.md),
+                  border: Border.all(color: light.line),
+                ),
+                child: content,
+              ),
       ),
     );
   }
