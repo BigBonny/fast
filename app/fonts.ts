@@ -1,4 +1,5 @@
-import { Inter, Bebas_Neue, Playfair_Display } from "next/font/google";
+import { Inter, Bebas_Neue } from "next/font/google";
+import localFont from "next/font/local";
 
 export const inter = Inter({
   subsets: ["latin"],
@@ -16,11 +17,14 @@ export const bebas = Bebas_Neue({
 });
 
 // Display face for headlines and section titles: the same serif the
-// mobile app uses (Playfair Display).
-export const display = Playfair_Display({
-  subsets: ["latin", "latin-ext"],
-  weight: ["700", "800", "900"],
-  style: ["normal", "italic"],
+// mobile app uses (Playfair Display, SIL Open Font License, see
+// app/fonts/PlayfairDisplay-OFL.txt). Loaded from files in the repo, not
+// from Google at build time: the Google loader failed on Vercel's build.
+export const display = localFont({
+  src: [
+    { path: "./fonts/PlayfairDisplay-wght.ttf", weight: "400 900", style: "normal" },
+    { path: "./fonts/PlayfairDisplay-Italic-wght.ttf", weight: "400 900", style: "italic" },
+  ],
   display: "swap",
   variable: "--font-display",
   fallback: ["Georgia", "Times New Roman", "serif"],
