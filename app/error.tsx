@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { AlertTriangle, RotateCcw } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 
 export default function Error({
   error,
@@ -18,26 +17,24 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-8 text-center bg-white dark:bg-gray-950">
-      <div className="w-20 h-20 rounded-3xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center mb-5">
-        <AlertTriangle className="w-9 h-9 text-red-500" />
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 text-center bg-background text-foreground">
+      <div className="w-20 h-20 rounded-full bg-destructive/10 flex items-center justify-center mb-6">
+        <AlertTriangle className="w-9 h-9 text-destructive" />
       </div>
-      <h1 className="text-xl font-black text-gray-900 dark:text-white mb-2">Une erreur est survenue</h1>
-      <p className="text-sm text-gray-400 max-w-xs mb-6">
+      <h1 className="font-display text-3xl font-bold text-foreground mb-2">Une erreur est survenue</h1>
+      <p className="text-sm text-muted-foreground max-w-xs mb-8">
         Quelque chose s&apos;est mal passé de notre côté. Réessayez dans un instant.
       </p>
-      <div className="flex gap-3">
-        <Button onClick={reset} className="rounded-xl px-5 text-white" style={{ background: "#14b8a6" }}>
-          <RotateCcw className="w-4 h-4 mr-2" />
+      <div className="flex flex-wrap justify-center gap-3">
+        <button onClick={reset} className="btn-neon text-sm">
+          <RotateCcw className="w-4 h-4" />
           Réessayer
-        </Button>
-        <Link href="/">
-          <Button variant="outline" className="rounded-xl px-5">
-            Accueil
-          </Button>
+        </button>
+        <Link href="/" className="btn-outline !min-h-[3rem] text-sm">
+          Accueil
         </Link>
       </div>
-      {error.digest && <p className="text-[11px] text-gray-300 mt-6 font-mono">ref: {error.digest}</p>}
+      {error.digest && <p className="text-xs text-muted-foreground mt-8 font-mono">ref: {error.digest}</p>}
     </div>
   );
 }

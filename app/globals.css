@@ -2,49 +2,68 @@
 @tailwind components;
 @tailwind utilities;
 
+/* -- FAST theme -----------------------------------------------------------
+   Same identity as the mobile app, taken from the app icon: a lit neon
+   sign on black whose light runs gold, orange, hot pink, magenta.
+   Light mode is warm cream; dark mode is near-black with a plum cast. */
 :root {
-  --radius: 0.5rem;
-  --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
-  --card: 0 0% 100%;
-  --card-foreground: 222.2 84% 4.9%;
+  --radius: 1rem;
+
+  /* Neon palette (raw colours, usable as text-[var(--fast-rose)] etc.) */
+  --fast-gold: #ffb81a;
+  --fast-orange: #ff7a1a;
+  --fast-rose: #ee1f5c;      /* the accent: selected states, links */
+  --fast-pink: #ff2d7a;      /* glows and gradient stops only */
+  --fast-magenta: #d61bff;
+  --fast-neon: linear-gradient(90deg, #ffb81a 0%, #ff7a1a 38%, #ff2d7a 74%, #d61bff 100%);
+  --fast-on-neon: #17171b;   /* text on the gradient or on gold */
+  --fast-night-top: #170b16;
+  --fast-night-bottom: #070409;
+
+  /* Surfaces and text (light) */
+  --background: 36 24% 96%;
+  --foreground: 240 8% 10%;
+  /* bg-card reads --surface, not --card: the partner theme further down
+     defines its own --card as a hex colour, which would break hsl(). */
+  --surface: 0 0% 100%;
+  --card-foreground: 240 8% 10%;
   --popover: 0 0% 100%;
-  --popover-foreground: 222.2 84% 4.9%;
-  --primary: 221.2 83.2% 53.3%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 210 40% 96.1%;
-  --secondary-foreground: 222.2 47.4% 11.2%;
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --accent: 210 40% 96.1%;
-  --accent-foreground: 222.2 47.4% 11.2%;
+  --popover-foreground: 240 8% 10%;
+  --primary: 342 86% 53%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 40 20% 94%;
+  --secondary-foreground: 240 8% 10%;
+  --muted: 40 20% 94%;
+  --muted-foreground: 240 5% 34%;
+  --accent: 40 20% 94%;
+  --accent-foreground: 240 8% 10%;
   --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
-  --ring: 221.2 83.2% 53.3%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 36 18% 89%;
+  --input: 36 18% 89%;
+  --ring: 342 86% 53%;
 }
 
 .dark {
-  --background: 222.2 84% 4.9%;
-  --foreground: 210 40% 98%;
-  --card: 222.2 84% 4.9%;
-  --card-foreground: 210 40% 98%;
-  --popover: 222.2 84% 4.9%;
-  --popover-foreground: 210 40% 98%;
-  --primary: 217.2 91.2% 59.8%;
-  --primary-foreground: 222.2 47.4% 11.2%;
-  --secondary: 217.2 32.6% 17.5%;
-  --secondary-foreground: 210 40% 98%;
-  --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
-  --accent: 217.2 32.6% 17.5%;
-  --accent-foreground: 210 40% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 217.2 32.6% 17.5%;
-  --input: 217.2 32.6% 17.5%;
-  --ring: 224.3 76.3% 48%;
+  --background: 264 26% 4%;
+  --foreground: 240 5% 96%;
+  --surface: 267 20% 9%;
+  --card-foreground: 240 5% 96%;
+  --popover: 267 20% 9%;
+  --popover-foreground: 240 5% 96%;
+  --primary: 342 86% 53%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 265 19% 12%;
+  --secondary-foreground: 240 5% 96%;
+  --muted: 265 19% 12%;
+  --muted-foreground: 240 5% 65%;
+  --accent: 265 19% 12%;
+  --accent-foreground: 240 5% 96%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 264 17% 17%;
+  --input: 264 17% 17%;
+  --ring: 342 86% 53%;
 }
 
 * {
@@ -67,7 +86,7 @@ body {
 }
 
 ::selection {
-  background: rgba(124, 58, 237, 0.25);
+  background: rgba(238, 31, 92, 0.25);
 }
 
 /* Slim custom scrollbar (desktop) */
@@ -80,13 +99,13 @@ body {
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: rgba(124, 58, 237, 0.35);
+    background: rgba(238, 31, 92, 0.35);
     border-radius: 8px;
     border: 2px solid transparent;
     background-clip: padding-box;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(124, 58, 237, 0.55);
+    background: rgba(238, 31, 92, 0.55);
     background-clip: padding-box;
     border: 2px solid transparent;
   }
@@ -94,7 +113,7 @@ body {
 
 /* Better focus visibility for keyboard users */
 :focus-visible {
-  outline: 2px solid #7c3aed;
+  outline: 2px solid var(--fast-rose);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -130,12 +149,12 @@ button, a {
   100% { background-position: 400px 0; }
 }
 .skeleton-shimmer {
-  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background: linear-gradient(90deg, #f3f1ed 25%, #e8e4de 50%, #f3f1ed 75%);
   background-size: 800px 100%;
   animation: shimmer 1.4s infinite linear;
 }
 .dark .skeleton-shimmer {
-  background: linear-gradient(90deg, #1f2937 25%, #283548 50%, #1f2937 75%);
+  background: linear-gradient(90deg, #16121b 25%, #221c2b 50%, #16121b 75%);
   background-size: 800px 100%;
 }
 
@@ -163,10 +182,10 @@ button, a {
   --pd: #00a090;
   --ac: #ff0066;
   --blk: #f1f5f9;
-  --bg: #0f172a;
-  --card: #1e293b;
-  --gray: #94a3b8;
-  --bdr: #334155;
+  --bg: #09070c;
+  --card: #16121b;
+  --gray: #a1a1aa;
+  --bdr: #2a2433;
   --grn: #10b981;
   --red: #ef4444;
   --orange: #f97316;
@@ -175,14 +194,115 @@ button, a {
 }
 
 [data-theme="light"] {
-  --blk: #0f172a;
-  --bg: #f0f4f8;
+  --blk: #17171b;
+  --bg: #f7f5f2;
   --card: #ffffff;
-  --gray: #6b7280;
-  --bdr: #e5e7eb;
+  --gray: #52525b;
+  --bdr: #e8e4de;
 }
 
 .font-bebas { font-family: var(--font-bebas), cursive; }
+
+/* Display face: the same serif the app uses for headlines and titles. */
+.font-display {
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  letter-spacing: -0.01em;
+}
+
+/* In the components layer so Tailwind utilities on the same element
+   (padding, size, radius) still win over these classes. */
+@layer components {
+  /* -- Neon building blocks ------------------------------------------------- */
+
+  /* Primary button: the sign itself. Dark text reads from gold to magenta. */
+  .btn-neon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 3rem;
+    padding: 0 1.5rem;
+    border-radius: 9999px;
+    background: var(--fast-neon);
+    color: var(--fast-on-neon);
+    font-weight: 800;
+    box-shadow: 0 8px 22px -8px rgba(255, 45, 122, 0.55);
+    transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  }
+  .btn-neon:hover { filter: brightness(1.06); box-shadow: 0 10px 28px -8px rgba(255, 45, 122, 0.7); }
+  .btn-neon:active { transform: scale(0.97); }
+  .btn-neon:disabled, .btn-neon[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; box-shadow: none; }
+
+  /* Secondary button: outline pill. */
+  .btn-outline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0 1.25rem;
+    border-radius: 9999px;
+    border: 1px solid hsl(var(--border));
+    background: transparent;
+    color: hsl(var(--foreground));
+    font-weight: 700;
+    transition: background 0.15s ease, transform 0.15s ease;
+  }
+  .btn-outline:hover { background: hsl(var(--muted)); }
+  .btn-outline:active { transform: scale(0.97); }
+
+  /* Gradient lettering (wordmark, the pickup code, a headline word). */
+  .text-neon {
+    background: var(--fast-neon);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Selected chip / tab. */
+  .chip-on { background: var(--fast-rose); color: #fff; border-color: var(--fast-rose); }
+
+  /* The icon as a surface: near-black, light pooling inside, a neon tube
+     frame. For a few set pieces only (pickup code, promo, membership).
+     Looks the same in light and dark mode. */
+  .night-surface {
+    position: relative;
+    isolation: isolate;
+    color: #f7f4f8;
+    border-radius: 1.25rem;
+    background:
+      radial-gradient(60% 90% at 0% 105%, rgba(255, 122, 26, 0.26), transparent 70%),
+      radial-gradient(60% 90% at 72% 115%, rgba(255, 45, 122, 0.30), transparent 70%),
+      radial-gradient(50% 80% at 102% -5%, rgba(214, 27, 255, 0.24), transparent 70%),
+      linear-gradient(180deg, var(--fast-night-top), var(--fast-night-bottom));
+    box-shadow: -6px 8px 22px -6px rgba(255, 122, 26, 0.22), 6px 8px 24px -6px rgba(255, 45, 122, 0.24);
+  }
+  .night-surface::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    padding: 1.6px;
+    border-radius: inherit;
+    background: var(--fast-neon);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+    pointer-events: none;
+  }
+
+  /* Full-bleed band (page hero, headers): no frame, no rounding, no glow. */
+  .night-band {
+    color: #f7f4f8;
+    background:
+      radial-gradient(45% 80% at 0% 100%, rgba(255, 122, 26, 0.22), transparent 70%),
+      radial-gradient(45% 80% at 80% 110%, rgba(255, 45, 122, 0.26), transparent 70%),
+      radial-gradient(40% 70% at 100% 0%, rgba(214, 27, 255, 0.22), transparent 70%),
+      linear-gradient(180deg, var(--fast-night-top), var(--fast-night-bottom));
+  }
+  .on-night-muted { color: #c0b4c8; }
+}
 
 @keyframes rushPulse {
   0%, 100% { background: #ff0066; }

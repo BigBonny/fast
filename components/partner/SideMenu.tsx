@@ -2,13 +2,14 @@
 
 import React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { m, AnimatePresence } from "framer-motion";
 import { useTheme } from "@/lib/useTheme";
 import type { Restaurant } from "@/lib/types";
 import {
   Store, ShoppingBag, UtensilsCrossed, Settings, TrendingUp, BrainCircuit,
   Users, LayoutDashboard, Radio, FileText, CircleUser, Moon, Sun, Zap,
-  Flame, ChefHat, Antenna, X, type LucideIcon,
+  Flame, ChefHat, Antenna, X, ChevronRight, type LucideIcon,
 } from "lucide-react";
 
 const navItems = [
@@ -31,6 +32,28 @@ const proItems = [
   { Icon: CircleUser, label: "Profil restaurant", href: "/partner/analytics/profile" },
 ];
 
+const sectionLabel = "text-xs font-bold uppercase tracking-wide text-muted-foreground mb-1 px-3 mt-5";
+const rowBase =
+  "group flex items-center gap-3 w-full min-h-[44px] px-3 rounded-full text-sm font-semibold cursor-pointer mb-0.5 transition-colors no-underline text-left active:scale-[0.99] focus-visible:outline-fast-teal";
+const rowIdle = "text-foreground hover:bg-muted";
+const rowSelected = "bg-fast-teal/15 text-foreground";
+
+function NavRow({ item, pathname, onClose }: { item: { Icon: LucideIcon; label: string; href: string }; pathname: string; onClose: () => void }) {
+  const selected = pathname === item.href;
+  return (
+    <Link
+      href={item.href}
+      onClick={onClose}
+      aria-current={selected ? "page" : undefined}
+      className={`${rowBase} ${selected ? rowSelected : rowIdle}`}
+    >
+      <item.Icon className={`w-5 h-5 flex-shrink-0 ${selected ? "text-fast-teal" : "text-muted-foreground"}`} />
+      <span className="flex-1">{item.label}</span>
+      <ChevronRight className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+    </Link>
+  );
+}
+
 export default function SideMenu({
   open,
   onClose,
@@ -47,6 +70,7 @@ export default function SideMenu({
   onOpenKitchen: () => void;
 }) {
   const { theme, toggleTheme } = useTheme();
+  const pathname = usePathname() || "";
 
   return (
     <AnimatePresence>
@@ -64,99 +88,70 @@ export default function SideMenu({
             animate={{ x: 0 }}
             exit={{ x: -280 }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            className="fixed left-0 top-0 bottom-0 w-[280px] bg-[#020617] z-[8001] overflow-y-auto pb-10 border-r border-white/[0.06]"
-            style={{ boxShadow: "20px 0 60px rgba(0,0,0,0.4)" }}
+            className="fixed left-0 top-0 bottom-0 w-[280px] bg-background text-foreground z-[8001] overflow-y-auto pb-10 border-r border-border shadow-2xl"
           >
-            {/* Header */}
-            <div className="p-4 border-b border-white/[0.07]" style={{ background: "linear-gradient(180deg, rgba(0,200,179,0.08), transparent)" }}>
+            {/* Header: the brand block */}
+            <div className="night-band p-4">
               <div className="flex justify-between items-center mb-4">
-                <div className="font-bebas text-[18px] tracking-[4px] bg-gradient-to-br from-[#00c8b3] to-[#ff0066] bg-clip-text text-transparent flex items-center gap-1.5">
-                  <Zap className="w-5 h-5 fill-current" /> <span className="notranslate" translate="no">FAST</span>
+                <div className="font-bebas text-[20px] tracking-[4px] flex items-center gap-1.5">
+                  <Zap className="w-5 h-5 text-fast-orange fill-current" aria-hidden="true" />
+                  <span className="notranslate text-neon" translate="no">FAST</span>
                 </div>
                 <button
                   onClick={onClose}
-                  className="bg-white/[0.08] border border-white/10 text-slate-200 w-8 h-8 rounded-full cursor-pointer text-sm flex items-center justify-center hover:bg-white/15 transition-all active:scale-95"
+                  aria-label="Fermer"
+                  className="bg-white/[0.08] border border-white/10 text-white w-11 h-11 rounded-full cursor-pointer flex items-center justify-center hover:bg-white/15 transition-colors active:scale-95 focus-visible:outline-fast-teal"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#00c8b3] to-[#ff0066] flex items-center justify-center text-2xl flex-shrink-0 shadow-lg shadow-[#00c8b3]/20">
+                <div className="w-12 h-12 rounded-2xl bg-white/[0.08] border border-white/10 flex items-center justify-center flex-shrink-0">
                   <ChefHat className="w-6 h-6 text-white" />
                 </div>
-                <div>
-                  <div className="text-sm font-black text-white">{settings?.name || "Mon Restaurant"}</div>
-                  <div className="text-[11px] text-slate-400 font-medium">{settings?.cuisineType || "Restaurateur"} — <span className="notranslate" translate="no">FAST</span> Pro</div>
+                <div className="min-w-0">
+                  <div className="font-display text-base font-bold text-white truncate">{settings?.name || "Mon Restaurant"}</div>
+                  <div className="text-xs on-night-muted font-medium">{settings?.cuisineType || "Restaurateur"} — <span className="notranslate" translate="no">FAST</span> Pro</div>
                 </div>
               </div>
             </div>
 
-            <div className="p-2.5">
-              <div className="text-[10px] font-black text-slate-600 uppercase tracking-[1.5px] mb-2 px-2.5 mt-3">Navigation</div>
+            <div className="px-2 pb-2">
+              <div className={sectionLabel}>Navigation</div>
               {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={onClose}
-                  className="group flex items-center gap-2.5 w-full bg-white/[0.04] border border-transparent text-slate-200 px-3 py-2.5 rounded-xl text-[13px] font-semibold cursor-pointer mb-1.5 transition-all hover:bg-[#00c8b3]/[0.12] hover:border-[#00c8b3]/20 hover:text-[#00c8b3] no-underline active:scale-[0.98]"
-                >
-                  <item.Icon className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                  <span className="flex-1">{item.label}</span>
-                  <span className="text-slate-600 group-hover:text-[#00c8b3] transition-colors">›</span>
-                </Link>
+                <NavRow key={item.href} item={item} pathname={pathname} onClose={onClose} />
               ))}
 
-              <div className="text-[10px] font-black text-slate-600 uppercase tracking-[1.5px] mb-2 px-2.5 mt-4">Outils avancés</div>
+              <div className={sectionLabel}>Outils avancés</div>
               {extraItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={onClose}
-                  className="group flex items-center gap-2.5 w-full bg-white/[0.04] border border-transparent text-slate-200 px-3 py-2.5 rounded-xl text-[13px] font-semibold cursor-pointer mb-1.5 transition-all hover:bg-[#00c8b3]/[0.12] hover:border-[#00c8b3]/20 hover:text-[#00c8b3] no-underline active:scale-[0.98]"
-                >
-                  <item.Icon className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                  <span className="flex-1">{item.label}</span>
-                  <span className="text-slate-600 group-hover:text-[#00c8b3] transition-colors">›</span>
-                </Link>
+                <NavRow key={item.href} item={item} pathname={pathname} onClose={onClose} />
               ))}
 
-              <div className="text-[10px] font-black text-slate-600 uppercase tracking-[1.5px] mb-2 px-2.5 mt-4">Espace Pro</div>
+              <div className={sectionLabel}>Espace Pro</div>
               {proItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={onClose}
-                  className="group flex items-center gap-2.5 w-full bg-white/[0.04] border border-transparent text-slate-200 px-3 py-2.5 rounded-xl text-[13px] font-semibold cursor-pointer mb-1.5 transition-all hover:bg-[#00c8b3]/[0.12] hover:border-[#00c8b3]/20 hover:text-[#00c8b3] no-underline active:scale-[0.98]"
-                >
-                  <item.Icon className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                  <span className="flex-1">{item.label}</span>
-                  <span className="text-slate-600 group-hover:text-[#00c8b3] transition-colors">›</span>
-                </Link>
+                <NavRow key={item.href} item={item} pathname={pathname} onClose={onClose} />
               ))}
 
-              <div className="text-[10px] font-black text-slate-600 uppercase tracking-[1.5px] mb-2 px-2.5 mt-4">Apparence</div>
-              <button
-                onClick={toggleTheme}
-                className="group flex items-center justify-between w-full bg-white/[0.04] border border-transparent text-slate-200 px-3 py-2.5 rounded-xl text-[13px] font-semibold cursor-pointer mb-1.5 transition-all hover:bg-[#00c8b3]/[0.12] hover:border-[#00c8b3]/20 hover:text-[#00c8b3] text-left active:scale-[0.98]"
-              >
-                <span className="flex items-center gap-2.5">
-                  <span className="group-hover:scale-110 transition-transform">{theme === "dark" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}</span>
+              <div className={sectionLabel}>Apparence</div>
+              <button onClick={toggleTheme} className={`${rowBase} ${rowIdle} justify-between`}>
+                <span className="flex items-center gap-3">
+                  {theme === "dark" ? <Moon className="w-5 h-5 text-muted-foreground" /> : <Sun className="w-5 h-5 text-muted-foreground" />}
                   <span>{theme === "dark" ? "Mode nuit" : "Mode jour"}</span>
                 </span>
-                <span className="text-[11px] font-bold text-slate-500 bg-white/[0.08] px-2 py-0.5 rounded-full group-hover:text-[#00c8b3] transition-colors">
+                <span className="text-xs font-bold text-muted-foreground bg-muted px-2.5 py-1 rounded-full">
                   {theme === "dark" ? "Sombre" : "Clair"}
                 </span>
               </button>
 
-              <div className="text-[10px] font-black text-slate-600 uppercase tracking-[1.5px] mb-2 px-2.5 mt-4">Outils</div>
+              <div className={sectionLabel}>Outils</div>
               <button
                 onClick={() => {
                   onToggleRush();
                   onClose();
                 }}
-                className="group flex items-center gap-2.5 w-full bg-white/[0.04] border border-transparent text-slate-200 px-3 py-2.5 rounded-xl text-[13px] font-semibold cursor-pointer mb-1.5 transition-all hover:bg-[#ff0066]/[0.12] hover:border-[#ff0066]/20 hover:text-[#ff0066] text-left active:scale-[0.98]"
+                className={`${rowBase} ${rowIdle}`}
               >
-                <span className="group-hover:scale-110 transition-transform"><Flame className={`w-5 h-5 ${rushActive ? "text-[#ff0066] fill-current" : ""}`} /></span>
+                <Flame className={`w-5 h-5 flex-shrink-0 ${rushActive ? "text-[color:var(--ac)] fill-current" : "text-muted-foreground"}`} />
                 <span>Mode Rush {rushActive ? "(Actif)" : ""}</span>
               </button>
               <button
@@ -164,17 +159,13 @@ export default function SideMenu({
                   onOpenKitchen();
                   onClose();
                 }}
-                className="group flex items-center gap-2.5 w-full bg-white/[0.04] border border-transparent text-slate-200 px-3 py-2.5 rounded-xl text-[13px] font-semibold cursor-pointer mb-1.5 transition-all hover:bg-[#00c8b3]/[0.12] hover:border-[#00c8b3]/20 hover:text-[#00c8b3] text-left active:scale-[0.98]"
+                className={`${rowBase} ${rowIdle}`}
               >
-                <span className="group-hover:scale-110 transition-transform"><ChefHat className="w-5 h-5" /></span>
+                <ChefHat className="w-5 h-5 flex-shrink-0 text-muted-foreground" />
                 <span>Écran cuisine</span>
               </button>
-              <Link
-                href="/partner/orders"
-                onClick={onClose}
-                className="group flex items-center gap-2.5 w-full bg-white/[0.04] border border-transparent text-slate-200 px-3 py-2.5 rounded-xl text-[13px] font-semibold cursor-pointer mb-1.5 transition-all hover:bg-[#00c8b3]/[0.12] hover:border-[#00c8b3]/20 hover:text-[#00c8b3] no-underline active:scale-[0.98]"
-              >
-                <span className="group-hover:scale-110 transition-transform"><Antenna className="w-5 h-5" /></span>
+              <Link href="/partner/orders" onClick={onClose} className={`${rowBase} ${rowIdle}`}>
+                <Antenna className="w-5 h-5 flex-shrink-0 text-muted-foreground" />
                 <span>Radar GPS — Suivi clients</span>
               </Link>
             </div>

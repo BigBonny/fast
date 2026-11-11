@@ -9,9 +9,9 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 
 const STATUS_STEPS = [
-  { key: "PLACED", label: "Commande reçue", icon: Circle, color: "#6b7280" },
-  { key: "PREPARING", label: "En préparation", icon: ChefHat, color: "#8b5cf6" },
-  { key: "READY_FOR_PICKUP", label: "Prête à récupérer", icon: Package, color: "#f59e0b" },
+  { key: "PLACED", label: "Commande reçue", icon: Circle, color: "var(--fast-rose)" },
+  { key: "PREPARING", label: "En préparation", icon: ChefHat, color: "var(--fast-rose)" },
+  { key: "READY_FOR_PICKUP", label: "Prête à récupérer", icon: Package, color: "var(--fast-rose)" },
   { key: "COMPLETED", label: "Récupérée !", icon: PartyPopper, color: "#10b981" },
 ];
 
@@ -34,22 +34,22 @@ function OrderTrackingContent({ orderId }: { orderId: string }) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "#0a0e1a" }}>
-        <div className="w-10 h-10 border-4 border-violet-500 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-10 h-10 border-4 border-fast-rose border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   if (!order) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-6" style={{ background: "#0a0e1a" }}>
-        <div className="w-20 h-20 rounded-3xl bg-white/10 flex items-center justify-center">
-          <Inbox className="w-10 h-10 text-gray-400" />
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-background">
+        <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mb-6">
+          <Inbox className="w-10 h-10 text-muted-foreground" />
         </div>
-        <p className="text-white font-bold text-lg">Aucune commande active</p>
-        <p className="text-gray-400 text-sm text-center">Tes commandes apparaîtront ici une fois passées.</p>
-        <Link href="/">
-          <button className="mt-4 px-6 py-3 rounded-xl font-bold text-white" style={{ background: "linear-gradient(135deg, #7c3aed, #06b6d4)" }}>
+        <p className="font-display text-foreground font-bold text-2xl mb-2">Aucune commande active</p>
+        <p className="text-muted-foreground text-sm text-center max-w-xs">Tes commandes apparaîtront ici une fois passées.</p>
+        <Link href="/" className="mt-7">
+          <button className="btn-neon">
             Commander maintenant
           </button>
         </Link>
@@ -58,34 +58,40 @@ function OrderTrackingContent({ orderId }: { orderId: string }) {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: "#0a0e1a" }}>
+    <div className="min-h-screen bg-background pb-24">
       {/* Header */}
-      <div className="px-5 pt-5 pb-4 flex items-center justify-between max-w-2xl mx-auto">
+      <div className="px-4 sm:px-6 pt-4 pb-4 flex items-center justify-between gap-3 max-w-2xl mx-auto">
         <Link href="/orders">
-          <button className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
-            <ArrowLeft className="w-4 h-4 text-white" />
+          <button className="w-11 h-11 rounded-full border border-border bg-card flex items-center justify-center hover:bg-muted transition-colors">
+            <ArrowLeft className="w-5 h-5 text-foreground" />
           </button>
         </Link>
-        <div className="text-center">
-          <p className="text-white font-black text-base">{order.restaurant?.name || "Restaurant"}</p>
-          <p className="text-gray-400 text-xs">#{order.id?.slice(-6).toUpperCase()}</p>
+        <div className="flex items-center gap-1.5 bg-emerald-500/10 rounded-full px-3 py-1.5">
+          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-emerald-700 dark:text-emerald-400 text-xs font-bold tracking-wide">EN DIRECT</span>
         </div>
-        <div className="flex items-center gap-1.5 bg-emerald-500/20 rounded-full px-3 py-1">
-          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-emerald-400 text-xs font-bold">EN DIRECT</span>
+      </div>
+
+      {/* Commande */}
+      <div className="px-4 sm:px-6 max-w-2xl mx-auto mb-8">
+        <div className="night-surface p-6 text-center">
+          <p className="on-night-muted text-xs font-bold tracking-wide tabular-nums">#{order.id?.slice(-6).toUpperCase()}</p>
+          <p className="font-display font-extrabold text-3xl leading-tight mt-2">{order.restaurant?.name || "Restaurant"}</p>
+          <span className="inline-flex items-center rounded-full bg-white/10 border border-white/15 px-3 py-1.5 text-xs font-bold mt-4">
+            {STATUS_STEPS[currentStep]?.label}
+          </span>
         </div>
       </div>
 
       {/* Étapes de progression */}
-      <div className="mx-5 md:mx-auto md:max-w-2xl rounded-2xl p-5 mb-5" style={{ background: "#1a1f2e" }}>
-        <p className="text-white font-black text-sm mb-4">Progression de ta commande</p>
+      <div className="mx-4 sm:mx-6 md:mx-auto md:max-w-2xl rounded-2xl border border-border bg-card p-5 mb-5">
+        <p className="font-display text-foreground font-bold text-lg mb-5">Progression de ta commande</p>
 
         <div className="relative">
-          <div className="absolute left-4 top-4 bottom-4 w-0.5" style={{ background: "#2a2f3e" }} />
+          <div className="absolute left-4 top-4 bottom-4 w-0.5 bg-border" />
           <div
-            className="absolute left-4 top-4 w-0.5 transition-all duration-1000"
+            className="absolute left-4 top-4 w-0.5 transition-all duration-1000 bg-fast-rose"
             style={{
-              background: "linear-gradient(180deg, #06b6d4, #8b5cf6)",
               height: `${(currentStep / (STATUS_STEPS.length - 1)) * 100}%`,
             }}
           />
@@ -105,21 +111,19 @@ function OrderTrackingContent({ orderId }: { orderId: string }) {
                   transition={{ delay: index * 0.08 }}
                 >
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center z-10 transition-all duration-500 ${isCurrent ? "ring-2 ring-offset-2 ring-offset-[#1a1f2e]" : ""}`}
-                    style={{
-                      background: isDone ? step.color : "#2a2f3e",
-                    }}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center z-10 transition-all duration-500 ${isDone ? "" : "bg-muted"} ${isCurrent ? "ring-2 ring-fast-rose/40 ring-offset-2 ring-offset-card" : ""}`}
+                    style={isDone ? { background: step.color } : undefined}
                   >
-                    <Icon className="w-4 h-4" style={{ color: isDone ? "white" : "#4b5563" }} />
+                    <Icon className={`w-4 h-4 ${isDone ? "text-white" : "text-muted-foreground"}`} />
                   </div>
 
                   <div className="flex-1">
-                    <p className={`text-sm font-bold transition-colors ${isDone ? "text-white" : "text-gray-600"}`}>
+                    <p className={`text-sm font-bold transition-colors ${isDone ? "text-foreground" : "text-muted-foreground"}`}>
                       {step.label}
                     </p>
                     {isCurrent && (
                       <m.p
-                        className="text-xs mt-0.5"
+                        className="text-xs font-semibold mt-0.5"
                         style={{ color: step.color }}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -143,28 +147,28 @@ function OrderTrackingContent({ orderId }: { orderId: string }) {
       </div>
 
       {/* Récapitulatif commande */}
-      <div className="mx-5 md:mx-auto md:max-w-2xl rounded-2xl p-5 mb-6" style={{ background: "#1a1f2e" }}>
-        <p className="text-white font-black text-sm mb-3">Récapitulatif</p>
-        <div className="space-y-2">
+      <div className="mx-4 sm:mx-6 md:mx-auto md:max-w-2xl rounded-2xl border border-border bg-card p-5 mb-6">
+        <p className="font-display text-foreground font-bold text-lg mb-4">Récapitulatif</p>
+        <div className="space-y-2.5">
           {(order.items || []).map((item, i) => {
             const qty = item.quantity || 1;
             const name = item.menuItem?.name || "Article";
             const price = item.menuItem?.price ?? item.price ?? 0;
             return (
-              <div key={i} className="flex items-center justify-between">
-                <span className="text-gray-300 text-sm">
+              <div key={i} className="flex items-center justify-between gap-3">
+                <span className="text-muted-foreground text-sm">
                   {qty}x {name}
                 </span>
-                <span className="text-white text-sm font-bold">
+                <span className="text-foreground text-sm font-bold tabular-nums">
                   {(price * qty).toFixed(2)}€
                 </span>
               </div>
             );
           })}
         </div>
-        <div className="mt-3 pt-3 border-t border-white/10 flex justify-between">
-          <span className="text-gray-400 text-sm">Total</span>
-          <span className="text-yellow-400 font-black">{order.total?.toFixed(2)}€</span>
+        <div className="mt-4 pt-4 border-t border-border flex justify-between items-center">
+          <span className="text-foreground text-sm font-bold">Total</span>
+          <span className="text-foreground font-extrabold text-lg tabular-nums">{order.total?.toFixed(2)}€</span>
         </div>
       </div>
     </div>
@@ -173,8 +177,8 @@ function OrderTrackingContent({ orderId }: { orderId: string }) {
 
 export default function OrderTrackingPage({ params }: { params: { id: string } }) {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center" style={{ background: "#0a0e1a" }}>
-      <div className="w-10 h-10 border-4 border-violet-500 border-t-transparent rounded-full animate-spin" />
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="w-10 h-10 border-4 border-fast-rose border-t-transparent rounded-full animate-spin" />
     </div>}>
       <OrderTrackingContent orderId={params.id} />
     </Suspense>

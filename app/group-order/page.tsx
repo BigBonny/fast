@@ -5,7 +5,6 @@ import { m } from "framer-motion";
 import { ArrowLeft, Users, Plus, Link2, Copy, Check, PartyPopper, LogOut } from "lucide-react";
 import Link from "next/link";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
 import { groupApi, restaurantApi, getErrorMessage } from "@/api/fastBackend";
 import { useAuth } from "@/lib/AuthContext";
 
@@ -57,30 +56,32 @@ export default function GroupOrderPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-20">
+    <div className="min-h-screen bg-background pb-24">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-900 px-5 py-4 flex items-center gap-3 border-b border-gray-100 dark:border-gray-800 sticky top-0 z-20">
-        <Link href="/" className="w-9 h-9 bg-gray-50 dark:bg-gray-800 rounded-xl flex items-center justify-center">
-          <ArrowLeft className="w-4 h-4 text-gray-600 dark:text-gray-300" />
-        </Link>
-        <div className="flex items-center gap-2">
-          <Users className="w-5 h-5 text-violet-500" />
-          <h1 className="font-bold text-gray-900 dark:text-white">Commande de groupe</h1>
+      <div className="bg-background/90 backdrop-blur-md px-4 sm:px-6 py-3 border-b border-border sticky top-0 z-20">
+        <div className="max-w-2xl mx-auto flex items-center gap-3">
+          <Link href="/" className="w-11 h-11 rounded-full border border-border bg-card flex items-center justify-center hover:bg-muted transition-colors shrink-0">
+            <ArrowLeft className="w-5 h-5 text-foreground" />
+          </Link>
+          <div className="flex items-center gap-2 min-w-0">
+            <Users className="w-5 h-5 text-fast-rose shrink-0" />
+            <h1 className="font-display font-bold text-xl text-foreground truncate">Commande de groupe</h1>
+          </div>
         </div>
       </div>
 
-      <div className="px-5 pt-6">
+      <div className="px-4 sm:px-6 pt-6 max-w-2xl mx-auto">
         {!isAuthenticated ? (
-          <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 text-center border border-gray-100 dark:border-gray-800">
-            <Users className="w-10 h-10 text-violet-400 mx-auto mb-3" />
-            <h2 className="font-bold text-gray-900 dark:text-white mb-1">Connectez-vous</h2>
-            <p className="text-sm text-gray-400 mb-5">
+          <div className="flex flex-col items-center text-center py-16">
+            <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-5">
+              <Users className="w-9 h-9 text-muted-foreground" />
+            </div>
+            <h2 className="font-display font-bold text-2xl text-foreground mb-2">Connectez-vous</h2>
+            <p className="text-sm text-muted-foreground mb-7 max-w-xs">
               Les commandes de groupe nécessitent un compte <span className="notranslate" translate="no">FAST</span>.
             </p>
-            <Link href="/login">
-              <Button className="rounded-xl px-6" style={{ background: "#7c3aed" }}>
-                Se connecter
-              </Button>
+            <Link href="/login" className="btn-neon">
+              Se connecter
             </Link>
           </div>
         ) : isLoading ? (
@@ -90,67 +91,68 @@ export default function GroupOrderPage() {
           </div>
         ) : group ? (
           /* Active group */
-          <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-violet-100 dark:bg-violet-500/15 rounded-xl flex items-center justify-center">
-                  <Users className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+          <div>
+            <div className="flex items-center justify-between gap-3 mb-5">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-11 h-11 bg-fast-rose/10 rounded-full flex items-center justify-center shrink-0">
+                  <Users className="w-5 h-5 text-fast-rose" />
                 </div>
-                <div>
-                  <h3 className="font-bold text-gray-900 dark:text-white">Groupe actif</h3>
-                  <p className="text-xs text-gray-400">
+                <div className="min-w-0">
+                  <h3 className="font-display font-bold text-xl text-foreground leading-tight">Groupe actif</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
                     {restaurants.find((r) => r.id === group.restaurantId)?.name || ""}
                     {restaurants.find((r) => r.id === group.restaurantId) ? " • " : ""}
                     {group.members?.length || 0} personne{(group.members?.length || 0) > 1 ? "s" : ""} • En cours
                   </p>
                 </div>
               </div>
-              <span className="px-3 py-1 bg-emerald-100 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-xs font-bold rounded-full">
+              <span className="px-3 py-1.5 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-bold rounded-full shrink-0">
                 Actif
               </span>
             </div>
 
             {/* Code */}
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Link2 className="w-5 h-5 text-gray-400" />
-                <span className="font-mono font-bold text-gray-900 dark:text-white">{group.code}</span>
+            <div className="bg-card border border-border rounded-2xl p-5 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <Link2 className="w-5 h-5 text-muted-foreground shrink-0" />
+                <span className="font-extrabold text-3xl tracking-widest tabular-nums text-foreground truncate">{group.code}</span>
               </div>
               <m.button
                 whileTap={{ scale: 0.95 }}
                 onClick={copyCode}
                 aria-label="Copier le code du groupe"
-                className="w-10 h-10 rounded-xl bg-white dark:bg-gray-700 flex items-center justify-center shadow-sm"
+                className="w-11 h-11 rounded-full border border-border bg-background flex items-center justify-center hover:bg-muted transition-colors shrink-0"
               >
-                {copied ? <Check className="w-5 h-5 text-emerald-500" /> : <Copy className="w-5 h-5 text-gray-500" />}
+                {copied ? <Check className="w-5 h-5 text-emerald-500" /> : <Copy className="w-5 h-5 text-foreground" />}
               </m.button>
             </div>
 
             {/* Members */}
-            <div className="mt-4 flex -space-x-2">
+            <div className="mt-6 border-y border-border divide-y divide-border">
               {(group.members || []).map((member) => (
-                <div
-                  key={member.id}
-                  title={member.name}
-                  className="w-10 h-10 rounded-full border-2 border-white dark:border-gray-900 flex items-center justify-center text-xs font-bold text-white"
-                  style={{ background: "linear-gradient(135deg, #7c3aed, #06b6d4)" }}
-                >
-                  {member.name?.[0]?.toUpperCase() || "?"}
+                <div key={member.id} className="flex items-center gap-3 py-3">
+                  <div
+                    title={member.name}
+                    className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-sm font-bold text-foreground shrink-0"
+                  >
+                    {member.name?.[0]?.toUpperCase() || "?"}
+                  </div>
+                  <span className="text-sm font-semibold text-foreground truncate">{member.name}</span>
                 </div>
               ))}
             </div>
 
-            <Button
-              variant="outline"
-              className="w-full mt-5 rounded-xl h-11 text-red-500 border-red-200 hover:bg-red-50"
+            <button
+              type="button"
+              className="w-full mt-8 min-h-[44px] rounded-full border border-red-500/40 text-red-600 dark:text-red-400 font-bold text-sm inline-flex items-center justify-center gap-2 hover:bg-red-500/10 transition-colors disabled:opacity-50 disabled:pointer-events-none"
               onClick={() => leaveMutation.mutate(group.id)}
               disabled={leaveMutation.isPending}
             >
-              <LogOut className="w-4 h-4 mr-2" />
+              <LogOut className="w-4 h-4" />
               Quitter le groupe
-            </Button>
+            </button>
             {leaveMutation.isError && (
-              <p role="alert" className="text-sm text-red-500 mt-2">
+              <p role="alert" className="text-sm text-red-600 dark:text-red-400 mt-2">
                 {getErrorMessage(leaveMutation.error)}
               </p>
             )}
@@ -158,33 +160,34 @@ export default function GroupOrderPage() {
         ) : (
           <>
             {/* Create Group */}
-            <div className="bg-gradient-to-br from-violet-500 to-pink-500 rounded-2xl p-6 text-white mb-6">
-              <PartyPopper className="w-12 h-12 text-white/90 mb-4" />
-              <h2 className="text-xl font-black mb-2">Commandez avec vos amis</h2>
-              <p className="text-white/80 text-sm mb-4">
+            <div className="night-surface p-6 mb-10">
+              <PartyPopper className="w-10 h-10 text-fast-gold mb-4" />
+              <h2 className="font-display text-2xl font-extrabold mb-2">Commandez avec vos amis</h2>
+              <p className="on-night-muted text-sm leading-relaxed mb-5">
                 Créez un groupe et invitez vos amis à commander ensemble. Chacun choisit ce qu&apos;il veut !
               </p>
               <select
                 value={createRestoId}
                 onChange={(e) => setCreateRestoId(e.target.value)}
                 aria-label="Restaurant du groupe"
-                className="w-full mb-3 h-12 px-4 rounded-xl bg-white/15 border border-white/25 text-white font-semibold text-sm outline-none focus:border-white/60 [&>option]:text-gray-900"
+                className="w-full mb-3 h-12 px-4 rounded-xl bg-white/10 border border-white/20 text-white font-semibold text-sm outline-none focus:border-fast-pink [&>option]:text-fast-ink"
               >
                 <option value="">Choisissez le restaurant…</option>
                 {restaurants.map((r) => (
                   <option key={r.id} value={r.id}>{r.name}</option>
                 ))}
               </select>
-              <Button
-                className="w-full bg-white text-violet-600 font-bold hover:bg-white/90 rounded-xl h-12"
+              <button
+                type="button"
+                className="btn-neon w-full"
                 onClick={() => createMutation.mutate()}
                 disabled={createMutation.isPending || !createRestoId}
               >
-                <Plus className="w-5 h-5 mr-2" />
+                <Plus className="w-5 h-5" />
                 {createMutation.isPending ? "Création…" : "Créer un groupe"}
-              </Button>
+              </button>
               {createMutation.isError && (
-                <p role="alert" className="text-sm text-white/90 mt-2">
+                <p role="alert" className="text-sm text-red-300 mt-3">
                   {getErrorMessage(createMutation.error)}
                 </p>
               )}
@@ -196,9 +199,9 @@ export default function GroupOrderPage() {
                 e.preventDefault();
                 if (joinCode.trim()) joinMutation.mutate(joinCode);
               }}
-              className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 mb-6"
+              className="mb-6"
             >
-              <label htmlFor="group-code" className="block font-bold text-gray-900 dark:text-white mb-4">
+              <label htmlFor="group-code" className="block font-display font-bold text-xl text-foreground mb-4">
                 Rejoindre un groupe
               </label>
               <div className="flex gap-2">
@@ -208,19 +211,18 @@ export default function GroupOrderPage() {
                   value={joinCode}
                   onChange={(e) => setJoinCode(e.target.value)}
                   placeholder="Entrez le code du groupe"
-                  className="flex-1 bg-gray-50 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500 rounded-xl px-4 py-3 text-sm border-0 focus:ring-2 focus:ring-violet-500"
+                  className="flex-1 min-w-0 bg-card text-foreground placeholder:text-muted-foreground rounded-xl px-4 py-3 text-sm border border-border outline-none focus:border-fast-rose focus:ring-2 focus:ring-fast-rose/25"
                 />
-                <Button
+                <button
                   type="submit"
-                  className="rounded-xl px-6"
-                  style={{ background: "#7c3aed" }}
+                  className="btn-outline shrink-0 text-sm disabled:opacity-50 disabled:pointer-events-none"
                   disabled={!joinCode.trim() || joinMutation.isPending}
                 >
                   {joinMutation.isPending ? "…" : "Rejoindre"}
-                </Button>
+                </button>
               </div>
               {joinMutation.isError && (
-                <p role="alert" className="text-sm text-red-500 mt-2">
+                <p role="alert" className="text-sm text-red-600 dark:text-red-400 mt-2">
                   {getErrorMessage(joinMutation.error, "Code de groupe invalide.")}
                 </p>
               )}

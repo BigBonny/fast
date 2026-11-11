@@ -1,7 +1,7 @@
 "use client";
 
 import { m, AnimatePresence } from "framer-motion";
-import { X, User, ShoppingBag, Heart, MapPin, Settings, Shield, FileText, LogOut, Store, LucideIcon, Zap, Star } from "lucide-react";
+import { X, User, UserPlus, ShoppingBag, Heart, MapPin, Settings, Shield, FileText, LogOut, LogIn, Store, LucideIcon, Star, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/lib/AuthContext";
 import { useI18n, LANGUAGES } from "@/lib/i18n";
@@ -45,6 +45,9 @@ export default function SideMenu({ isOpen, onClose }: SideMenuProps) {
     { icon: FileText, label: t("cgu"), href: "/terms-of-service" },
   ];
 
+  // Hairline dividers between groups: partner / account / legal.
+  const groupStarts = new Set(["/profile", "/privacy-policy"]);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -60,56 +63,51 @@ export default function SideMenu({ isOpen, onClose }: SideMenuProps) {
 
           {/* Drawer */}
           <m.div
-            className="fixed top-0 left-0 bottom-0 z-50 w-72 flex flex-col"
-            style={{ background: "#0d1117" }}
+            className="fixed top-0 left-0 bottom-0 z-50 w-72 flex flex-col bg-card text-foreground border-r border-border shadow-2xl"
             initial={{ x: -288 }}
             animate={{ x: 0 }}
             exit={{ x: -288 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
             {/* Header */}
-            <div className="pt-12 pb-6 px-6" style={{ background: "linear-gradient(135deg, #1a0533, #0a1628)" }}>
-              <div className="flex items-center justify-between mb-5">
-                <div className="flex items-center gap-1">
-                  <Zap className="w-5 h-5 text-cyan-400 fill-cyan-400" />
-                  <span className="font-black text-xl italic" style={{
-                    background: "linear-gradient(90deg, #06b6d4, #8b5cf6, #ec4899)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    transform: "skewX(-8deg)",
-                    display: "inline-block"
-                  }}><span className="notranslate" translate="no">FAST</span></span>
-                  <Zap className="w-5 h-5 text-pink-500 fill-pink-500" />
-                </div>
-                <button onClick={onClose} className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-                  <X className="w-4 h-4 text-white" />
+            <div className="night-band pt-12 pb-6 px-6">
+              <div className="flex items-center justify-between mb-6">
+                <span className="text-neon font-black text-3xl italic tracking-tight pr-1">
+                  <span className="notranslate" translate="no">FAST</span>
+                </span>
+                <button
+                  onClick={onClose}
+                  className="w-11 h-11 -mr-2 rounded-full bg-white/10 hover:bg-white/15 transition-colors flex items-center justify-center"
+                >
+                  <X className="w-5 h-5 text-white" />
                 </button>
               </div>
 
               {/* Avatar user */}
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl font-black text-white"
-                  style={{ background: "linear-gradient(135deg, #7c3aed, #06b6d4)" }}>
+                <div className="w-12 h-12 shrink-0 rounded-full flex items-center justify-center text-xl font-extrabold bg-primary text-primary-foreground">
                   {user?.name ? user.name[0].toUpperCase() : <User className="w-6 h-6" />}
                 </div>
-                <div>
-                  <p className="text-white font-bold text-sm">{user?.name || t("my_account")}</p>
-                  <p className="text-gray-400 text-xs">{user?.email || ""}</p>
+                <div className="min-w-0">
+                  <p className="font-display text-white font-bold text-lg leading-tight truncate">{user?.name || t("my_account")}</p>
+                  <p className="on-night-muted text-xs truncate">{user?.email || ""}</p>
                 </div>
               </div>
 
               {/* Points */}
-              <div className="mt-4 flex items-center gap-2 bg-yellow-400/10 rounded-xl px-3 py-2">
-                <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+              <div className="mt-5 flex items-center gap-3 rounded-2xl bg-white/[0.06] border border-white/10 px-3 py-2.5">
+                <span className="w-8 h-8 shrink-0 rounded-full bg-fast-gold flex items-center justify-center">
+                  <Star className="w-4 h-4 text-fast-ink fill-fast-ink" />
+                </span>
                 <div>
-                  <p className="text-yellow-400 font-black text-sm">{user?.points ?? 0} Points</p>
-                  <p className="text-gray-400 text-xs">{t("wallet")}</p>
+                  <p className="text-white font-extrabold text-sm tabular-nums">{user?.points ?? 0} Points</p>
+                  <p className="on-night-muted text-xs">{t("wallet")}</p>
                 </div>
               </div>
             </div>
 
             {/* Menu items */}
-            <div className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
+            <div className="flex-1 px-3 py-3 overflow-y-auto">
               {menuItems.map((item, idx) => {
                 const Icon = item.icon;
                 return (
@@ -119,23 +117,19 @@ export default function SideMenu({ isOpen, onClose }: SideMenuProps) {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: idx * 0.05 }}
                   >
+                    {idx > 0 && groupStarts.has(item.href) && (
+                      <div className="my-2 mx-3 border-t border-border" />
+                    )}
                     <Link href={item.href} onClick={onClose}>
-                      <div className="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-white/8 transition-all group active:scale-[0.98]">
-                        <div
-                          className="w-9 h-9 rounded-xl flex items-center justify-center transition-all group-hover:scale-110"
-                          style={{
-                            background: item.isPartner
-                              ? "linear-gradient(135deg, #00c8b3, #7c3aed)"
-                              : "linear-gradient(135deg, #1a1f2e, #111827)",
-                            boxShadow: item.isPartner ? "0 4px 12px rgba(0,200,179,0.25)" : "none",
-                          }}
-                        >
-                          <Icon className={`w-4 h-4 ${item.isPartner ? "text-white" : "text-violet-400"}`} />
-                        </div>
-                        <span className="text-white text-sm font-bold group-hover:text-violet-300 transition-colors">
+                      <div className="flex items-center gap-3 px-3 min-h-[48px] rounded-xl hover:bg-muted transition-colors active:scale-[0.98]">
+                        <Icon
+                          className={`w-5 h-5 shrink-0 ${item.isPartner ? "text-fast-rose" : "text-muted-foreground"}`}
+                          strokeWidth={1.8}
+                        />
+                        <span className="text-foreground text-sm font-semibold">
                           {item.label}
                         </span>
-                        <span className="ml-auto text-gray-500 group-hover:text-white/70 transition-colors">›</span>
+                        <ChevronRight className="ml-auto w-4 h-4 shrink-0 text-muted-foreground rtl:rotate-180" />
                       </div>
                     </Link>
                   </m.div>
@@ -144,12 +138,12 @@ export default function SideMenu({ isOpen, onClose }: SideMenuProps) {
             </div>
 
             {/* Footer */}
-            <div className="px-4 pb-8 space-y-1 border-t border-white/5 pt-4">
+            <div className="px-4 pb-8 pt-4 space-y-3 border-t border-border">
               <select
                 value={lang}
                 onChange={(e) => setLang(e.target.value)}
                 aria-label="Language"
-                className="w-full mb-2 px-4 py-3 rounded-xl bg-white/5 text-white text-sm font-bold border border-white/10 outline-none cursor-pointer"
+                className="w-full h-11 px-4 rounded-full bg-transparent text-foreground text-sm font-bold border border-border outline-none cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
               >
                 {LANGUAGES.map((l) => (
                   <option key={l.code} value={l.code} className="text-black">
@@ -159,30 +153,24 @@ export default function SideMenu({ isOpen, onClose }: SideMenuProps) {
               </select>
               {isAuthenticated ? (
                 <button
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-500/10 transition-colors"
+                  className="w-full flex items-center justify-center gap-2 min-h-[44px] px-4 rounded-full border border-red-500/60 text-red-600 dark:text-red-400 text-sm font-bold hover:bg-red-500/10 transition-colors"
                   onClick={handleLogout}
                 >
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-red-500/20">
-                    <LogOut className="w-4 h-4 text-red-400" />
-                  </div>
-                  <span className="text-red-400 text-sm font-medium">{t("logout")}</span>
+                  <LogOut className="w-4 h-4" />
+                  <span>{t("logout")}</span>
                 </button>
               ) : (
                 <div className="space-y-2">
-                  <Link href="/login" onClick={onClose}>
-                    <div className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-emerald-500/20">
-                        <User className="w-4 h-4 text-emerald-400" />
-                      </div>
-                      <span className="text-emerald-400 text-sm font-medium">{t("login_submit")}</span>
+                  <Link href="/login" onClick={onClose} className="block">
+                    <div className="btn-neon w-full text-sm">
+                      <LogIn className="w-4 h-4" />
+                      <span>{t("login_submit")}</span>
                     </div>
                   </Link>
-                  <Link href="/register" onClick={onClose}>
-                    <div className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-violet-500/20">
-                        <User className="w-4 h-4 text-violet-400" />
-                      </div>
-                      <span className="text-violet-400 text-sm font-medium">{t("signup_btn")}</span>
+                  <Link href="/register" onClick={onClose} className="block">
+                    <div className="btn-outline w-full text-sm">
+                      <UserPlus className="w-4 h-4" />
+                      <span>{t("signup_btn")}</span>
                     </div>
                   </Link>
                 </div>

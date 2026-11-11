@@ -12,10 +12,12 @@ export default function PartnerIndex() {
   }, [router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: "#020617" }}>
-      <div className="font-bebas text-3xl tracking-[8px] animate-pulse flex items-center gap-2" style={{ color: "#00c8b3" }}>
-        <Zap className="w-7 h-7 fill-current" /> <span className="notranslate" translate="no">FAST</span>
+    <div className="min-h-screen flex flex-col items-center justify-center gap-5 bg-background">
+      <div className="font-bebas text-3xl tracking-[8px] flex items-center gap-2">
+        <Zap className="w-7 h-7 text-fast-orange fill-current" aria-hidden="true" />
+        <span className="notranslate text-neon" translate="no">FAST</span>
       </div>
+      <span className="w-5 h-5 rounded-full border-2 border-fast-teal/30 border-t-fast-teal animate-spin" aria-hidden="true" />
     </div>
   );
 }
