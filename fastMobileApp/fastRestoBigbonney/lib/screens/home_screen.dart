@@ -1507,6 +1507,9 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         FastEmpty(
           icon: Icons.restaurant_outlined,
+          // Easter egg: between midnight and 5 am the closed café gives
+          // way to the moon over the rooftops.
+          loop: DateTime.now().hour < 5 ? FastLoops.midnight : FastLoops.closed,
           title: tr(context, 'no_cuisine'),
           subtitle: tr(context, 'widen_radius'),
           action: FastButton(

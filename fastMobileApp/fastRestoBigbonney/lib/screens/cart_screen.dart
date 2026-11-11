@@ -68,6 +68,7 @@ class _CartScreenState extends State<CartScreen> {
       return Center(
         child: FastEmpty(
           icon: Icons.shopping_bag_outlined,
+          loop: FastLoops.emptyCart,
           title: provider.tr('cart_empty'),
           subtitle: tr(context, 'cart_empty_hint'),
           action: FastButton(

@@ -99,6 +99,8 @@ flutter:
   # Assets
   assets:
     - assets/images/
+    # Short silent motion loops (lib/widgets/fast_loop.dart).
+    - assets/loops/
 
   # Display typeface for headlines and section titles (SIL Open Font
   # License, see assets/fonts/PlayfairDisplay-OFL.txt). Variable fonts: the

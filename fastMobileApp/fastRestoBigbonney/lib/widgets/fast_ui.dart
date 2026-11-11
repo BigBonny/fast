@@ -3,6 +3,9 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import '../theme.dart';
+import 'fast_loop.dart';
+
+export 'fast_loop.dart';
 
 // FAST motion system — shared micro-interactions and branded components.
 // `FastTap` gives every tappable surface the same springy press feel,
@@ -449,6 +452,10 @@ class FastEmpty extends StatelessWidget {
   final Widget? action;
   final Color? accent;
 
+  /// Optional motion loop shown in place of the icon badge; the badge
+  /// stays as the fallback while it loads or when it cannot play.
+  final FastLoops? loop;
+
   const FastEmpty({
     super.key,
     required this.icon,
@@ -456,33 +463,23 @@ class FastEmpty extends StatelessWidget {
     this.subtitle,
     this.action,
     this.accent,
+    this.loop,
   });
 
   @override
   Widget build(BuildContext context) {
     final fast = context.fast;
     final accent = this.accent ?? FASTBrand.amber;
+    final badge = _badge(accent);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 84,
-            height: 84,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: accent.withValues(alpha: 0.10),
-              border: Border.all(color: accent.withValues(alpha: 0.25)),
-              boxShadow: [
-                BoxShadow(
-                  color: accent.withValues(alpha: 0.20),
-                  blurRadius: 32,
-                ),
-              ],
-            ),
-            child: Icon(icon, color: accent, size: 34),
-          ),
+          if (loop != null)
+            FastLoop(loop: loop!, size: 148, fallback: badge)
+          else
+            badge,
           const SizedBox(height: 18),
           Text(
             title,
@@ -505,6 +502,25 @@ class FastEmpty extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _badge(Color accent) {
+    return Container(
+            width: 84,
+            height: 84,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: accent.withValues(alpha: 0.10),
+              border: Border.all(color: accent.withValues(alpha: 0.25)),
+              boxShadow: [
+                BoxShadow(
+                  color: accent.withValues(alpha: 0.20),
+                  blurRadius: 32,
+                ),
+              ],
+            ),
+            child: Icon(icon, color: accent, size: 34),
+          );
   }
 }
 
