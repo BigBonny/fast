@@ -804,25 +804,37 @@ export const connectRefreshPage = (_req: Request, res: Response): void => {
   connectLandingPage(res, false);
 };
 
-export const createConnectAccountLink = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const stripe = stripeClient();
+/** French "0612345678" → "+33612345678"; undefined when it isn't a usable number. */
+const toE164Fr = (raw: string | null | undefined): string | undefined => {
+  const phone = (raw || '').replace(/[\s.-]/g, '');
+  if (/^\+[1-9]\d{7,14}$/.test(phone)) return phone;
+  if (/^0[1-9]\d{8}$/.test(phone)) return `+33${phone.slice(1)}`;
+  return undefined;
+};
+
+/**
+ * Finds the owner's Connect account, creating and pre-filling it when
+ * missing. Returns the account id, or null when the response was already
+ * sent (no restaurant, demo/platform-collect restaurant, test-mode
+ * auto-connect, account unavailable). Shared by the hosted account link
+ * and the embedded account session.
+ */
+const resolveConnectAccount = async (
+  stripe: Stripe,
+  req: Request,
+  res: Response,
+): Promise<string | null> => {
     const restaurant = await prisma.restaurant.findUnique({ where: { ownerId: req.user!.userId } });
     if (!restaurant) {
       res.status(404).json({ error: 'Restaurant introuvable' });
-      return;
+      return null;
     }
     // Demo restaurant — already "connected", no Stripe onboarding needed.
     if (restaurant.id === env.demoRestaurantId || env.platformCollectRestaurantIds.includes(restaurant.id)) {
       res.json({ connected: true });
-      return;
+      return null;
     }
     const owner = await prisma.user.findUnique({ where: { id: req.user!.userId } });
-    // Hosted onboarding follows the app's language when the client sends it.
-    const lang =
-      typeof req.body?.language === 'string' && /^[a-z]{2}$/.test(req.body.language)
-        ? req.body.language
-        : 'fr';
 
     // Everything the owner already typed into FAST — passed at ACCOUNT
     // CREATION, not via update: Express accounts collect requirements
@@ -846,8 +858,21 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
         : { day: a, month: b, year: c };
     }
     const ownerAddress = (restaurant.ownerAddress || '').trim();
+    const ownerPhone = toE164Fr(restaurant.phone);
+    // The legal representative as FAST already knows them — every field
+    // sent here is one fewer screen in Stripe's onboarding form.
+    const representative = {
+      first_name: nameParts[0] || undefined,
+      last_name: nameParts.length > 1 ? nameParts.slice(1).join(' ') : undefined,
+      email: owner?.email || undefined,
+      phone: ownerPhone,
+      dob,
+      address: ownerAddress ? { line1: ownerAddress, country: 'FR' } : undefined,
+    };
 
-    const buildCreateParams = (withIban: boolean): Stripe.AccountCreateParams => ({
+    // `rich` adds the optional prefill (representative, activity
+    // description). Creation retries without it if Stripe refuses a value.
+    const buildCreateParams = (withIban: boolean, rich: boolean): Stripe.AccountCreateParams => ({
       // New platforms reject the legacy `type: 'express'` — controller
       // properties are the modern equivalent: Express dashboard access,
       // platform pays fees, platform liable for losses, Stripe collects
@@ -875,6 +900,9 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
       business_profile: {
         name: restaurant.name,
         mcc: '5812', // eating places / restaurants
+        ...(rich
+          ? { product_description: 'Restauration — commandes à emporter (click & collect)' }
+          : {}),
         support_phone: restaurant.phone || undefined,
         support_address: restaurant.address
           ? {
@@ -884,6 +912,7 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
             }
           : undefined,
       },
+      ...(rich && !siren ? { individual: representative } : {}),
       // `company` only when it's actually a company — Stripe rejects
       // the field on individual accounts.
       ...(siren
@@ -937,20 +966,43 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
     // In test mode the platform-collected shortcut below creates/updates
     // the account — no need to spawn an Express account first.
     if (!accountId && !isTestKey) {
-      let account;
-      try {
-        account = await stripe.accounts.create(buildCreateParams(ibanValid));
-      } catch (createErr) {
-        if (!ibanValid) throw createErr;
-        // Some Stripe configs reject a bank account at creation —
-        // retry without it; onboarding will collect the IBAN itself.
-        account = await stripe.accounts.create(buildCreateParams(false));
+      // Most pre-filled first. Some Stripe configs reject a bank account
+      // or a representative value at creation — fall back step by step;
+      // onboarding then collects whatever couldn't be sent here.
+      const attempts: Array<[withIban: boolean, rich: boolean]> = ibanValid
+        ? [[true, true], [false, true], [true, false], [false, false]]
+        : [[false, true], [false, false]];
+      let account: Stripe.Account | undefined;
+      let createErr: unknown;
+      for (const [withIban, rich] of attempts) {
+        try {
+          account = await stripe.accounts.create(buildCreateParams(withIban, rich));
+          break;
+        } catch (err) {
+          createErr = err;
+          // Platform not activated — no variant can succeed.
+          if (/must be activated/i.test((err as Error).message)) break;
+        }
       }
+      if (!account) throw createErr;
       accountId = account.id;
       await prisma.restaurant.update({
         where: { id: restaurant.id },
         data: { stripeAccountId: accountId },
       });
+      // Companies: attach the representative so onboarding opens with
+      // their identity filled in. Best-effort — Stripe may refuse it on
+      // accounts whose requirements it collects itself.
+      if (siren && representative.first_name) {
+        try {
+          await stripe.accounts.createPerson(accountId, {
+            ...representative,
+            relationship: { representative: true },
+          });
+        } catch (personErr) {
+          console.warn('[Stripe] representative prefill failed:', (personErr as Error).message);
+        }
+      }
     } else if (accountId) {
       // Existing account — best-effort update (Stripe may reject some
       // fields on Express; warn and continue either way).
@@ -1032,11 +1084,11 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
               data: { stripeChargesEnabled: true, stripePayoutsEnabled: current.payouts_enabled ?? false },
             });
             res.json({ accountId, connected: true });
-            return;
+            return null;
           }
           if (current.controller?.requirement_collection === 'application') {
             res.json({ accountId, connected: false, pending: true });
-            return;
+            return null;
           }
           // Express/other account type still incomplete — replace it with
           // a fresh platform-collected account below (test mode only, so
@@ -1135,7 +1187,7 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
           connected: enabled.charges_enabled ?? false,
           pending: !enabled.charges_enabled,
         });
-        return;
+        return null;
       } catch (testErr) {
         console.warn('[Stripe] test-mode auto-connect failed:', (testErr as Error).message);
       }
@@ -1143,8 +1195,62 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
 
     if (!accountId) {
       res.status(500).json({ error: 'Compte Stripe indisponible. Réessayez.' });
-      return;
+      return null;
     }
+    return accountId;
+};
+
+const connectError = (res: Response, err: unknown, what: string): void => {
+  const message = (err as Error).message;
+  // The FAST platform account itself hasn't finished Stripe activation —
+  // restaurant owners can't fix this, so say so instead of relaying the
+  // raw Stripe platform error.
+  if (/must be activated/i.test(message)) {
+    res.status(503).json({
+      error: 'Le service de paiement FAST est en cours d\'activation. Réessayez plus tard ou contactez le support.',
+    });
+    return;
+  }
+  // Stripe errors reach the client but were invisible in server
+  // logs — log them so Connect failures are actually diagnosable.
+  console.error(`[Stripe] connect ${what} failed:`, message);
+  res.status(500).json({ error: message });
+};
+
+/**
+ * Embedded onboarding: the app renders Stripe's form natively from this
+ * session's client secret instead of opening the hosted page. Same
+ * account resolution (and the same no-session answers) as the link.
+ */
+export const createConnectAccountSession = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const stripe = stripeClient();
+    const accountId = await resolveConnectAccount(stripe, req, res);
+    if (!accountId) return;
+    const session = await stripe.accountSessions.create({
+      account: accountId,
+      components: { account_onboarding: { enabled: true } },
+    });
+    res.json({
+      clientSecret: session.client_secret,
+      publishableKey: env.stripePublishableKey,
+      accountId,
+    });
+  } catch (err) {
+    connectError(res, err, 'account-session');
+  }
+};
+
+export const createConnectAccountLink = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const stripe = stripeClient();
+    const accountId = await resolveConnectAccount(stripe, req, res);
+    if (!accountId) return;
+    // Hosted onboarding follows the app's language when the client sends it.
+    const lang =
+      typeof req.body?.language === 'string' && /^[a-z]{2}$/.test(req.body.language)
+        ? req.body.language
+        : 'fr';
 
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
@@ -1161,20 +1267,7 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
 
     res.json({ url: `${accountLink.url}&locale=${lang}`, accountId });
   } catch (err) {
-    const message = (err as Error).message;
-    // The FAST platform account itself hasn't finished Stripe activation —
-    // restaurant owners can't fix this, so say so instead of relaying the
-    // raw Stripe platform error.
-    if (/must be activated/i.test(message)) {
-      res.status(503).json({
-        error: 'Le service de paiement FAST est en cours d\'activation. Réessayez plus tard ou contactez le support.',
-      });
-      return;
-    }
-    // Stripe errors reach the client but were invisible in server
-    // logs — log them so Connect failures are actually diagnosable.
-    console.error('[Stripe] connect account-link failed:', message);
-    res.status(500).json({ error: message });
+    connectError(res, err, 'account-link');
   }
 };
 

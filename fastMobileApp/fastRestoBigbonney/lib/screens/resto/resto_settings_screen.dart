@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_stripe_connect/flutter_stripe_connect.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -154,8 +156,90 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
     }
   }
 
+  /// Stripe's onboarding form, rendered natively inside FAST. Returns
+  /// false when it couldn't be started (old backend, unsupported
+  /// platform, load failure) so the caller opens the hosted page instead.
+  Future<bool> _startEmbeddedOnboarding() async {
+    final isMobile =
+        !kIsWeb &&
+        (defaultTargetPlatform == TargetPlatform.android ||
+            defaultTargetPlatform == TargetPlatform.iOS);
+    if (!isMobile) return false;
+    final title = tr(context, 'stripe_payments');
+    try {
+      final session = await _paymentService.createConnectAccountSession();
+      String? secret = session['clientSecret'] as String?;
+      final key = session['publishableKey'] as String?;
+      if (secret == null || key == null || key.isEmpty) {
+        // No form to show: demo restaurant, or test mode where the
+        // backend connected the account through the API.
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                session['connected'] == true
+                    ? tr(context, 'stripe_active')
+                    : tr(context, 'stripe_pending'),
+              ),
+            ),
+          );
+        }
+        return true;
+      }
+      await StripeConnect.instance.initialize(
+        publishableKey: key,
+        // The first call reuses the session just created; Stripe asks
+        // again only when that one expires mid-flow.
+        clientSecretProvider: () async {
+          final ready = secret;
+          secret = null;
+          if (ready != null) return ready;
+          final fresh = await _paymentService.createConnectAccountSession();
+          return fresh['clientSecret'] as String? ?? '';
+        },
+        appearance: const ConnectAppearance(
+          colors: ConnectColors(
+            primary: '#00C8B3',
+            formHighlightBorder: '#00C8B3',
+          ),
+        ),
+      );
+      var failed = false;
+      await StripeConnect.presentAccountOnboarding(
+        title: title,
+        // Only what Stripe needs right now — nothing "for later".
+        collectionOptions: const AccountCollectionOptions(),
+        onExit: () {
+          if (mounted) _loadConnectStatus();
+        },
+        onLoadError: (error) {
+          // Can fire more than once — fall back to the hosted page once.
+          debugPrint('[Stripe] embedded onboarding failed: $error');
+          if (failed || !mounted) return;
+          failed = true;
+          _openHostedOnboarding();
+        },
+      );
+      return true;
+    } catch (e) {
+      debugPrint('[Stripe] embedded onboarding unavailable: $e');
+      return false;
+    }
+  }
+
   Future<void> _configureStripeConnect() async {
     setState(() => _connectLoading = true);
+    try {
+      if (!await _startEmbeddedOnboarding()) await _openHostedOnboarding();
+      await _loadConnectStatus();
+    } finally {
+      if (mounted) setState(() => _connectLoading = false);
+    }
+  }
+
+  /// Stripe's hosted onboarding page in an in-app webview — the path used
+  /// when the embedded form isn't available.
+  Future<void> _openHostedOnboarding() async {
     try {
       final link = await _paymentService.createConnectAccountLink(
         language: context.read<FASTProvider>().appLanguage,
@@ -178,7 +262,6 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
           ),
         );
       }
-      await _loadConnectStatus();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -187,8 +270,6 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
           ),
         );
       }
-    } finally {
-      if (mounted) setState(() => _connectLoading = false);
     }
   }
 

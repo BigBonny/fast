@@ -61,6 +61,8 @@ class ApiConfig {
       '/payments/payment-intent/$intentId/confirm';
   static const String stripeConnectAccountLink =
       '/payments/connect/account-link';
+  static const String stripeConnectAccountSession =
+      '/payments/connect/account-session';
   static const String stripeConnectStatus = '/payments/connect/status';
   static const String uploads = '/uploads';
   static const String menuAiPhoto = '/menu/ai-photo';
