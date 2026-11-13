@@ -1265,7 +1265,12 @@ export const createConnectAccountLink = async (req: Request, res: Response): Pro
       },
     });
 
-    res.json({ url: `${accountLink.url}&locale=${lang}`, accountId });
+    // Stripe's link has no query string (…/setup/s/acct_x/token), so the
+    // locale must be added as a real parameter — gluing "&locale=" onto
+    // it corrupts the token and Stripe answers "page not found".
+    const url = new URL(accountLink.url);
+    url.searchParams.set('locale', lang);
+    res.json({ url: url.toString(), accountId });
   } catch (err) {
     connectError(res, err, 'account-link');
   }
