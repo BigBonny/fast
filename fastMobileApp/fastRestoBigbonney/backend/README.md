@@ -180,6 +180,7 @@ Les commandes payées reçoivent un `pickupToken` unique (`FAST-<hex>`) pour le 
 | GET | `/api/payments/checkout/success` | — | — | Page web fallback succès |
 | GET | `/api/payments/checkout/cancel` | — | — | Page web fallback annulation |
 | POST | `/api/payments/connect/account-link` | ✅ | RESTAURANT | Lancer onboarding Stripe Connect |
+| POST | `/api/payments/connect/account-session` | ✅ | RESTAURANT | Session pour l'onboarding Stripe intégré à l'app |
 | GET | `/api/payments/connect/status` | ✅ | RESTAURANT | Statut du compte Connect |
 
 Le subtotal inclut les suppléments (`selectedOptions` = IDs de `MenuItemSupplement`). Les articles indisponibles sont rejetés au checkout.

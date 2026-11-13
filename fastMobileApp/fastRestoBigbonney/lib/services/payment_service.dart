@@ -178,6 +178,17 @@ class PaymentService {
     return data as Map<String, dynamic>;
   }
 
+  /// Embedded onboarding session. Carries `clientSecret` +
+  /// `publishableKey` when Stripe's form must be shown; otherwise the
+  /// same `connected` / `pending` answer as the account link.
+  Future<Map<String, dynamic>> createConnectAccountSession() async {
+    final data = await _api.post(
+      ApiConfig.stripeConnectAccountSession,
+      body: {},
+    );
+    return data as Map<String, dynamic>;
+  }
+
   Future<Map<String, dynamic>> getConnectStatus() async {
     final data = await _api.get(ApiConfig.stripeConnectStatus);
     return data as Map<String, dynamic>;
