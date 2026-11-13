@@ -76,6 +76,10 @@ class UserData {
   // For STAFF/GUEST kitchen accounts — the restaurant they're assigned to
   final String? restaurantId;
   final String? staffRole;
+  // Proven by a code sent to the address / number (Google & Apple
+  // sign-ins count as verified email).
+  final bool emailVerified;
+  final bool phoneVerified;
 
   UserData({
     required this.id,
@@ -88,6 +92,8 @@ class UserData {
     this.driverProfile,
     this.restaurantId,
     this.staffRole,
+    this.emailVerified = false,
+    this.phoneVerified = false,
   });
 
   factory UserData.fromJson(Map<String, dynamic> json) => UserData(
@@ -111,6 +117,30 @@ class UserData {
         strOrNull(
           (json['staffAssignment'] as Map<String, dynamic>?)?['staffRole'],
         ),
+    emailVerified: json['emailVerified'] == true,
+    phoneVerified: json['phoneVerified'] == true,
+  );
+
+  UserData copyWith({
+    String? email,
+    String? name,
+    String? phone,
+    int? points,
+    bool? emailVerified,
+    bool? phoneVerified,
+  }) => UserData(
+    id: id,
+    email: email ?? this.email,
+    name: name ?? this.name,
+    phone: phone ?? this.phone,
+    role: role,
+    points: points ?? this.points,
+    restaurant: restaurant,
+    driverProfile: driverProfile,
+    restaurantId: restaurantId,
+    staffRole: staffRole,
+    emailVerified: emailVerified ?? this.emailVerified,
+    phoneVerified: phoneVerified ?? this.phoneVerified,
   );
 
   /// Round-trips [fromJson] — used to cache the session user so a cold
@@ -126,6 +156,8 @@ class UserData {
     'driverProfile': driverProfile?.toJson(),
     'restaurantId': restaurantId,
     'staffRole': staffRole,
+    'emailVerified': emailVerified,
+    'phoneVerified': phoneVerified,
   };
 
   bool get isRestaurant => role == 'RESTAURANT';

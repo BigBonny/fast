@@ -268,6 +268,24 @@ class FASTBrand {
     stops: [0.0, 0.38, 0.74, 1.0],
   );
 
+  // ── Call-to-action gradient (2026 home redesign): orange → hot pink →
+  // violet, with WHITE text. Used by primary buttons, the selected
+  // category chip and the selected bottom-nav pill. ──────────────────────
+  static const Color ctaOrange = Color(0xFFFF7A00);
+  static const Color ctaPink = Color(0xFFFF1F6E);
+  static const Color ctaViolet = Color(0xFF9B1FE8);
+
+  /// Solid fallback / single-colour stand-in for [ctaGradient].
+  static const Color cta = ctaPink;
+  static const Color onCta = Colors.white;
+
+  static const LinearGradient ctaGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [ctaOrange, ctaPink, ctaViolet],
+    stops: [0.0, 0.52, 1.0],
+  );
+
   static const Color amber = Color(0xFFF59E0B);
   static const Color amberDeep = Color(0xFFD97706);
   static const Color ember = Color(0xFFEA580C);
@@ -467,9 +485,10 @@ class FASTTheme {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
+        // Plain ElevatedButtons can't take a gradient: solid CTA pink.
         style: ElevatedButton.styleFrom(
-          backgroundColor: FASTBrand.amber,
-          foregroundColor: FASTBrand.onAmber,
+          backgroundColor: FASTBrand.cta,
+          foregroundColor: FASTBrand.onCta,
           elevation: 0,
           textStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
           shape: RoundedRectangleBorder(

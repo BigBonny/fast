@@ -112,6 +112,7 @@ model User {
   lockedUntil         DateTime?
   stripeCustomerId    String?   @unique
   phoneVerified       Boolean   @default(false)
+  emailVerified       Boolean   @default(false)
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 
@@ -153,6 +154,21 @@ model PhoneVerification {
   createdAt  DateTime  @default(now())
 
   @@index([phone, createdAt])
+}
+
+/// One-time email code. `email` is the address the code was sent to, so a
+/// code stops counting once the account changes its email.
+model EmailVerification {
+  id         String    @id @default(cuid())
+  userId     String
+  email      String
+  codeHash   String
+  attempts   Int       @default(0)
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId, createdAt])
 }
 
 model SavedAddress {

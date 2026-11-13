@@ -90,6 +90,9 @@ class ApiConfig {
   static const String phoneStatus = '/auth/phone/status';
   static const String phoneRequestCode = '/auth/phone/request-code';
   static const String phoneVerifyCode = '/auth/phone/verify';
+  static const String phoneConfirm = '/auth/phone/confirm';
+  static const String emailRequestCode = '/auth/email/request-code';
+  static const String emailVerifyCode = '/auth/email/verify';
 
   // Notifications
   static const String fcmToken = '/users/me/fcm-token';

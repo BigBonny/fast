@@ -102,6 +102,35 @@ class AuthService {
     }
   }
 
+  /// Sends a 6-digit code to the signed-in account's email. Returns the
+  /// code itself only from a dev backend without a mail provider.
+  Future<String?> requestEmailCode() async {
+    final data = await _api.post(ApiConfig.emailRequestCode);
+    return data is Map<String, dynamic> ? data['devCode'] as String? : null;
+  }
+
+  /// Throws [ApiException] with the server message on a wrong code.
+  Future<void> verifyEmailCode(String code) async {
+    await _api.post(ApiConfig.emailVerifyCode, body: {'code': code});
+  }
+
+  /// Sends an SMS code; returns it only from a dev backend without SMS.
+  Future<String?> requestPhoneCodeDev(String phone) async {
+    final data = await _api.post(
+      ApiConfig.phoneRequestCode,
+      body: {'phone': phone},
+    );
+    return data is Map<String, dynamic> ? data['devCode'] as String? : null;
+  }
+
+  /// Signed-in: proves the number and saves it as the account's phone.
+  Future<void> confirmAccountPhone(String phone, String code) async {
+    await _api.post(
+      ApiConfig.phoneConfirm,
+      body: {'phone': phone, 'code': code},
+    );
+  }
+
   /// Returns the new session token: changing the password signs out every
   /// other device, so the old token stops working.
   Future<String?> changePassword({

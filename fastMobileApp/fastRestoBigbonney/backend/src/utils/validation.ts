@@ -307,6 +307,10 @@ export const phoneVerifySchema = z.object({
   code: z.string().min(4).max(8),
 });
 
+export const emailVerifySchema = z.object({
+  code: z.string().trim().regex(/^\d{6}$/, 'Code à 6 chiffres'),
+});
+
 
 // ─── Menu supplements ───────────────────────────────────────
 
