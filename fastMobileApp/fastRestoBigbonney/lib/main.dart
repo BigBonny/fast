@@ -779,6 +779,8 @@ class _MainShellState extends State<MainShell>
       ),
       bottomNavigationBar: FastNavBar(
         calm: true,
+        calmGradient: FASTBrand.ctaGradient,
+        calmOnPill: FASTBrand.onCta,
         currentIndex: _getBottomNavIndex(provider.currentScreen),
         onTap: (index) {
           HapticFeedback.selectionClick();

@@ -7,6 +7,7 @@ import '../provider.dart';
 import '../models.dart';
 import '../api/api_exceptions.dart';
 import '../providers/auth_provider.dart';
+import '../widgets/verify_code_sheet.dart';
 import '../widgets/fast_night_surface.dart';
 import '../widgets/fast_ui.dart';
 import '../widgets/notification_center.dart';
@@ -429,11 +430,21 @@ class _AccountScreenState extends State<AccountScreen>
                   label: provider.tr('phone'),
                   value: provider.userPhone,
                   hint: provider.tr('not_provided'),
+                  verified: context.watch<AuthProvider>().user?.phoneVerified,
+                  onVerify: () => _verify(
+                    provider,
+                    VerifyTarget.phone,
+                    provider.userPhone,
+                  ),
                   onEdit: () => _showEditDialog(
                     context,
                     provider.tr('phone'),
                     provider.userPhone,
-                    (val, _) => provider.updateProfile(phone: val),
+                    (val, _) async {
+                      final auth = context.read<AuthProvider>();
+                      await provider.updateProfile(phone: val);
+                      await auth.refreshUser();
+                    },
                     keyboardType: TextInputType.phone,
                   ),
                 ),
@@ -442,14 +453,24 @@ class _AccountScreenState extends State<AccountScreen>
                   label: provider.tr('email'),
                   value: provider.userEmail,
                   hint: provider.tr('not_provided'),
+                  verified: context.watch<AuthProvider>().user?.emailVerified,
+                  onVerify: () => _verify(
+                    provider,
+                    VerifyTarget.email,
+                    provider.userEmail,
+                  ),
                   onEdit: () => _showEditDialog(
                     context,
                     provider.tr('email'),
                     provider.userEmail,
-                    (val, pwd) => provider.updateProfile(
-                      email: val,
-                      currentPassword: pwd,
-                    ),
+                    (val, pwd) async {
+                      final auth = context.read<AuthProvider>();
+                      await provider.updateProfile(
+                        email: val,
+                        currentPassword: pwd,
+                      );
+                      await auth.refreshUser();
+                    },
                     keyboardType: TextInputType.emailAddress,
                     askPassword: true,
                   ),
@@ -703,11 +724,75 @@ class _AccountScreenState extends State<AccountScreen>
     );
   }
 
+  /// Opens the code sheet; on success shows a confirmation snackbar.
+  Future<void> _verify(
+    FASTProvider provider,
+    VerifyTarget target,
+    String destination,
+  ) async {
+    final ok = await showVerifyCodeSheet(
+      context,
+      target: target,
+      destination: destination,
+    );
+    if (!ok || !mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          provider.tr(
+            target == VerifyTarget.email
+                ? 'email_verified_ok'
+                : 'phone_verified_ok',
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// "Vérifié" tick, or a gradient "Vérifier" pill that opens the sheet.
+  Widget _verifyBadge({required bool verified, required VoidCallback onTap}) {
+    if (verified) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.verified, size: 14, color: FASTBrand.success),
+          const SizedBox(width: 4),
+          Text(
+            tr(context, 'verified'),
+            style: FASTText.caption.copyWith(
+              color: FASTBrand.success,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      );
+    }
+    return FastTap(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          gradient: FASTBrand.ctaGradient,
+          borderRadius: BorderRadius.circular(FASTRadius.pill),
+        ),
+        child: Text(
+          tr(context, 'verify_action'),
+          style: FASTText.caption.copyWith(
+            color: FASTBrand.onCta,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _editableField({
     required String label,
     required String value,
     required String hint,
     required VoidCallback onEdit,
+    bool? verified,
+    VoidCallback? onVerify,
   }) {
     return Padding(
       padding: const EdgeInsets.all(FASTSpace.s16),
@@ -728,6 +813,10 @@ class _AccountScreenState extends State<AccountScreen>
                     color: value.isNotEmpty ? context.fast.t1 : context.fast.t3,
                   ),
                 ),
+                if (verified != null && onVerify != null && value.isNotEmpty) ...[
+                  const SizedBox(height: FASTSpace.s8),
+                  _verifyBadge(verified: verified, onTap: onVerify),
+                ],
               ],
             ),
           ),

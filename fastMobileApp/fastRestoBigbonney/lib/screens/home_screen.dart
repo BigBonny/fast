@@ -1251,13 +1251,23 @@ class _HomeScreenState extends State<HomeScreen> {
               duration: Duration(milliseconds: 200),
               curve: Curves.easeOutCubic,
               padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              // Selected is ink, flat — no amber fill, no glow.
+              // Selected: the CTA gradient (orange → pink → violet).
               decoration: BoxDecoration(
-                color: isActive ? context.fast.ink : context.fast.card,
+                color: isActive ? null : context.fast.card,
+                gradient: isActive ? FASTBrand.ctaGradient : null,
                 borderRadius: BorderRadius.circular(FASTRadius.md),
                 border: Border.all(
-                  color: isActive ? context.fast.ink : context.fast.line,
+                  color: isActive ? Colors.transparent : context.fast.line,
                 ),
+                boxShadow: isActive
+                    ? [
+                        BoxShadow(
+                          color: FASTBrand.ctaPink.withValues(alpha: 0.30),
+                          blurRadius: 14,
+                          offset: const Offset(0, 6),
+                        ),
+                      ]
+                    : null,
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -1271,7 +1281,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
-                      color: isActive ? context.fast.onInk : context.fast.t2,
+                      color: isActive ? FASTBrand.onCta : context.fast.t2,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

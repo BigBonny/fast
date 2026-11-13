@@ -287,6 +287,26 @@ class AuthProvider extends ChangeNotifier {
   bool _isLoggingOut = false;
   bool get isLoggingOut => _isLoggingOut;
 
+  /// Re-reads /auth/me — after a profile edit or a verification, so the
+  /// verified badges follow the server.
+  Future<void> refreshUser() async {
+    if (_user == null) return;
+    await _refreshMe();
+  }
+
+  /// Applies a verification the server just confirmed, without waiting
+  /// for a round-trip.
+  void markVerified({bool? email, bool? phone, String? newPhone}) {
+    if (_user == null) return;
+    _user = _user!.copyWith(
+      emailVerified: email,
+      phoneVerified: phone,
+      phone: newPhone,
+    );
+    notifyListeners();
+    unawaited(_cacheUser());
+  }
+
   Future<void> logout() async {
     if (_isLoggingOut) return;
     _isLoggingOut = true;

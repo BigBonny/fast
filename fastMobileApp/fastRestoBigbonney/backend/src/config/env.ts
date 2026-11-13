@@ -31,9 +31,16 @@ export const env = {
   lockoutMinutes: parseInt(process.env.LOCKOUT_MINUTES || '15', 10),
   mistralApiKey: process.env.MISTRAL_API_KEY || '',
   geminiApiKey: process.env.GEMINI_API_KEY || '',
+  // fal.ai key for the FLUX dish-photo fallback (see menu.controller).
+  falKey: process.env.FAL_KEY || '',
   twilioAccountSid: process.env.TWILIO_ACCOUNT_SID || '',
   twilioAuthToken: process.env.TWILIO_AUTH_TOKEN || '',
   twilioFromNumber: process.env.TWILIO_FROM_NUMBER || '',
+  // Transactional email (verification codes) via Resend's HTTP API.
+  // MAIL_FROM must be on a domain verified in Resend.
+  resendApiKey: process.env.RESEND_API_KEY || '',
+  // e.g. "FAST <no-reply@your-domain.fr>".
+  mailFrom: process.env.MAIL_FROM || '',
   stripeSecretKey: process.env.STRIPE_SECRET_KEY || '',
   stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY || '',
   // Demo/screenshot restaurant — treated as Stripe-connected without

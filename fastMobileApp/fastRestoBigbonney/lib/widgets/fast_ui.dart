@@ -109,11 +109,13 @@ class FastButton extends StatelessWidget {
     final enabled = onPressed != null && !loading;
 
     final (bg, fg, border, glow) = switch (kind) {
+      // Primary and ink share the CTA gradient from the home redesign:
+      // orange → hot pink → violet with white text.
       FastButtonKind.primary => (
-        FASTBrand.accentGradient,
-        FASTBrand.onAmber,
+        FASTBrand.ctaGradient,
+        FASTBrand.onCta,
         null,
-        FASTBrand.amber.withValues(alpha: enabled ? 0.35 : 0.0),
+        FASTBrand.ctaPink.withValues(alpha: enabled ? 0.32 : 0.0),
       ),
       FastButtonKind.soft => (null, FASTBrand.amberDeep, null, null),
       FastButtonKind.outline => (
@@ -123,12 +125,11 @@ class FastButton extends StatelessWidget {
         null,
       ),
       FastButtonKind.ghost => (null, FASTBrand.amberDeep, null, null),
-      // The neon sign: gradient fill, near-black text, a soft pink glow.
       FastButtonKind.ink => (
-        FASTBrand.neonGradient,
-        FASTBrand.onAmber,
+        FASTBrand.ctaGradient,
+        FASTBrand.onCta,
         null,
-        FASTBrand.neonPink.withValues(alpha: enabled ? 0.28 : 0.0),
+        FASTBrand.ctaPink.withValues(alpha: enabled ? 0.32 : 0.0),
       ),
     };
 
@@ -183,8 +184,8 @@ class FastButton extends StatelessWidget {
             gradient: bg,
             color: switch (kind) {
               FastButtonKind.soft => fast.amberSoftBg,
-              FastButtonKind.primary => FASTBrand.amber,
-              FastButtonKind.ink => FASTBrand.neonOrange,
+              FastButtonKind.primary => FASTBrand.cta,
+              FastButtonKind.ink => FASTBrand.cta,
               _ => Colors.transparent,
             },
             border:
@@ -591,6 +592,10 @@ class FastNavBar extends StatefulWidget {
   final Color? calmPill;
   final Color? calmOnPill;
 
+  /// Calm mode only: paints the selected pill with a gradient instead of
+  /// [calmPill] — the customer shell passes [FASTBrand.ctaGradient].
+  final Gradient? calmGradient;
+
   const FastNavBar({
     super.key,
     required this.currentIndex,
@@ -604,6 +609,7 @@ class FastNavBar extends StatefulWidget {
     this.calm = false,
     this.calmPill,
     this.calmOnPill,
+    this.calmGradient,
   });
 
   @override
@@ -705,8 +711,21 @@ class _FastNavBarState extends State<FastNavBar>
                           child: calm
                               ? DecoratedBox(
                                   decoration: BoxDecoration(
-                                    color: widget.calmPill ?? fast.ink,
+                                    color: widget.calmGradient == null
+                                        ? (widget.calmPill ?? fast.ink)
+                                        : null,
+                                    gradient: widget.calmGradient,
                                     borderRadius: BorderRadius.circular(22),
+                                    boxShadow: widget.calmGradient == null
+                                        ? null
+                                        : [
+                                            BoxShadow(
+                                              color: FASTBrand.ctaPink
+                                                  .withValues(alpha: 0.35),
+                                              blurRadius: 16,
+                                              offset: const Offset(0, 6),
+                                            ),
+                                          ],
                                   ),
                                 )
                               : Container(
@@ -837,24 +856,34 @@ class _FastNavBarState extends State<FastNavBar>
                 ),
               ),
               const SizedBox(height: 3),
-              Text(
-                item.label,
-                style: TextStyle(
-                  fontSize: calm ? 12 : 9,
-                  fontWeight: calm ? FontWeight.w700 : FontWeight.w800,
-                  color: color,
-                  letterSpacing: calm ? 0 : 0.2,
-                  height: calm ? 1.2 : null,
+              // Long labels ("Restaurants", "Commandes", German/Turkish…)
+              // shrink to fit the tab instead of being cut with "…".
+              // The text scale is capped so large accessibility fonts
+              // don't shrink every label to nothing.
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  item.label,
+                  textScaler: MediaQuery.textScalerOf(
+                    context,
+                  ).clamp(maxScaleFactor: 1.2),
+                  style: TextStyle(
+                    fontSize: calm ? 12 : 9,
+                    fontWeight: calm ? FontWeight.w700 : FontWeight.w800,
+                    color: color,
+                    letterSpacing: calm ? -0.1 : 0.2,
+                    height: calm ? 1.2 : null,
+                  ),
+                  maxLines: 1,
+                  softWrap: false,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
               ),
             ],
           );
           if (!calm) return column;
-          // Keep the label inside the ink pill (pill is inset 3 a side).
+          // Keep the label inside the pill (pill is inset 3 a side).
           return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 4),
             child: column,
           );
         },

@@ -588,38 +588,53 @@ Return ONLY a JSON object: {"description": "<text>"}`;
 
 // ─── AI dish photo ─────────────────────────────────────────
 // Realistic "approximate" photo for dishes the owner has not
-// photographed. Prefers Gemini's image model when GEMINI_API_KEY
-// is configured (the image is written into UPLOAD_DIR so it lives
-// under our control). Otherwise falls back to pollinations.ai —
-// free, keyless, deterministic per dish name — so every menu item
-// can always end up with a plausible photo.
+// photographed. Provider chain, best value first:
+//   1. Gemini "Nano Banana 2" (GEMINI_API_KEY + Supabase storage) —
+//      ~$0.034/image, best fidelity to the named dish.
+//   2. FLUX.1 [schnell] on fal.ai (FAL_KEY) — ~$0.0015 per 800x600
+//      image, fast and good; fallback when Gemini fails or is off.
+//   3. pollinations.ai — free and keyless, last resort only, so a dish
+//      never ends up without a photo when no key is configured.
 
 const GEMINI_IMAGE_MODELS = [
-  'gemini-2.5-flash-image',
-  'gemini-2.0-flash-preview-image-generation',
+  'gemini-3.1-flash-image', // Nano Banana 2
+  'gemini-3.1-flash-image-preview', // same model, launch-era name
+  'gemini-2.5-flash-image', // previous generation
 ];
+// Worst case per dish (Gemini timeout + FLUX + copy) must stay well under
+// Vercel's 60 s maxDuration — see PHOTO_BATCH_DEADLINE_MS too.
+const GEMINI_IMAGE_TIMEOUT_MS = 20_000;
 
 async function geminiGenerateImage(prompt: string): Promise<string | null> {
   const apiKey = env.geminiApiKey;
   // The result is written through storeMedia — without Supabase storage
-  // that means ephemeral /uploads links that die on cold start, which is
-  // worse than a warmed pollinations URL. Skip straight to that path.
+  // that means ephemeral /uploads links that die on cold start. Skip to
+  // the next provider instead.
   if (!apiKey || !storageConfigured()) return null;
   for (const model of GEMINI_IMAGE_MODELS) {
     try {
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
         {
           method: 'POST',
-          signal: AbortSignal.timeout(45000),
-          headers: { 'Content-Type': 'application/json' },
+          signal: AbortSignal.timeout(GEMINI_IMAGE_TIMEOUT_MS),
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
           body: JSON.stringify({
             contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { responseModalities: ['IMAGE'] },
+            generationConfig: {
+              responseModalities: ['IMAGE'],
+              imageConfig: { aspectRatio: '4:3' },
+            },
           }),
         },
       );
-      if (!response.ok) continue;
+      if (!response.ok) {
+        // Unknown/retired model name -> try the next one. Quota, outage
+        // or safety refusals won't be fixed by another Gemini model.
+        if (response.status === 404 || response.status === 400) continue;
+        console.warn(`[ai-photo] gemini ${model} ${response.status}`);
+        return null;
+      }
       const data = (await response.json()) as {
         candidates?: { content?: { parts?: Record<string, any>[] } }[];
       };
@@ -633,7 +648,7 @@ async function geminiGenerateImage(prompt: string): Promise<string | null> {
       const mime = (inline?.inlineData?.mimeType ??
         inline?.inline_data?.mime_type ??
         'image/png') as string;
-      if (!b64) continue;
+      if (!b64) return null; // refused / text-only answer
       const ext = mime.includes('png') ? '.png' : '.jpg';
       const filename = `ai-${Date.now()}-${crypto
         .randomBytes(4)
@@ -644,22 +659,92 @@ async function geminiGenerateImage(prompt: string): Promise<string | null> {
         mime,
         uploadDir,
       );
-    } catch {
-      continue;
+    } catch (err) {
+      // Timeout or network: another Gemini model would hit the same wall.
+      console.warn(`[ai-photo] gemini ${model} failed:`, (err as Error).message);
+      return null;
     }
   }
   return null;
 }
 
-function pollinationsDishPhoto(prompt: string, seedSource: string): string {
+/** Deterministic per-dish seed, so regenerating gives a stable photo. */
+export function dishSeed(seedSource: string): number {
   let seed = 7;
   for (const ch of seedSource) {
     seed = (seed * 31 + ch.charCodeAt(0)) % 2147483647;
   }
+  return Math.abs(seed);
+}
+
+/**
+ * FLUX.1 [schnell] on fal.ai — synchronous endpoint, 4 steps, ~1-2 s.
+ * fal's result URLs are temporary, so with Supabase storage the bytes are
+ * copied to our CDN; without it the fal URL is returned as is.
+ */
+async function falFluxGenerateImage(
+  prompt: string,
+  seedSource: string,
+  filename: string,
+): Promise<string | null> {
+  if (!env.falKey) return null;
+  try {
+    const resp = await fetch('https://fal.run/fal-ai/flux/schnell', {
+      method: 'POST',
+      signal: AbortSignal.timeout(12_000),
+      headers: {
+        Authorization: `Key ${env.falKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        prompt,
+        image_size: { width: 800, height: 600 },
+        num_inference_steps: 4,
+        num_images: 1,
+        seed: dishSeed(seedSource),
+        enable_safety_checker: true,
+      }),
+    });
+    if (!resp.ok) {
+      console.warn(`[ai-photo] fal ${resp.status}: ${(await resp.text()).slice(0, 200)}`);
+      return null;
+    }
+    const data = (await resp.json()) as {
+      images?: { url?: string; content_type?: string }[];
+      has_nsfw_concepts?: boolean[];
+    };
+    const image = data.images?.[0];
+    if (!image?.url || data.has_nsfw_concepts?.[0]) return null;
+    if (!storageConfigured()) return image.url;
+    const img = await fetch(image.url, { signal: AbortSignal.timeout(8_000) });
+    if (!img.ok) return image.url;
+    const bytes = Buffer.from(await img.arrayBuffer());
+    const mime = image.content_type || img.headers.get('content-type') || 'image/jpeg';
+    return await storeMedia(bytes, filename, mime, uploadDir);
+  } catch (err) {
+    console.warn('[ai-photo] fal failed:', (err as Error).message);
+    return null;
+  }
+}
+
+/** Runs the provider chain; always returns a URL (pollinations last). */
+async function generateDishImage(
+  prompt: string,
+  seedSource: string,
+  filename: string,
+): Promise<{ imageUrl: string; source: 'gemini' | 'flux' | 'pollinations' }> {
+  const gemini = await geminiGenerateImage(prompt);
+  if (gemini) return { imageUrl: gemini, source: 'gemini' };
+  const flux = await falFluxGenerateImage(prompt, seedSource, filename);
+  if (flux) return { imageUrl: flux, source: 'flux' };
+  return { imageUrl: await bakeDishPhoto(prompt, seedSource, filename), source: 'pollinations' };
+}
+
+function pollinationsDishPhoto(prompt: string, seedSource: string): string {
   const q = new URLSearchParams({
     width: '800',
     height: '600',
-    seed: String(Math.abs(seed)),
+    seed: String(dishSeed(seedSource)),
     nologo: 'true',
     // turbo generates in seconds vs ~30 s for flux — the URL is rendered
     // on first load, so model latency is the visible "Photos IA" wait.
@@ -675,7 +760,9 @@ const PHOTO_FETCH_TIMEOUT_MS = 15_000;
 // client loops while `remaining` > 0 rather than timing out on a big menu.
 const PHOTO_BATCH_SIZE = 6;
 const PHOTO_BATCH_CONCURRENCY = 3;
-const PHOTO_BATCH_DEADLINE_MS = 40_000;
+// A new chunk only starts in the first 12 s: one chunk can take up to
+// ~40 s (Gemini 20 s + FLUX 12 s + copy 8 s), and Vercel stops at 60 s.
+const PHOTO_BATCH_DEADLINE_MS = 12_000;
 
 /**
  * A pollinations URL only renders on first fetch — storing it raw made the
@@ -747,29 +834,20 @@ export const generateDishPhoto = async (
   const safeCat = (category ?? '').trim().slice(0, 60);
   const prompt = dishPhotoPrompt(safeName, safeDesc, safeCat);
 
-  if (env.geminiApiKey) {
-    const url = await geminiGenerateImage(prompt);
-    if (url) {
-      res.json({ imageUrl: url, source: 'gemini' });
-      return;
-    }
-  }
-  res.json({
-    imageUrl: await bakeDishPhoto(
+  res.json(
+    await generateDishImage(
       prompt,
       safeName,
       `ai-${Date.now()}-${crypto.randomBytes(4).toString('hex')}.jpg`,
     ),
-    source: 'pollinations',
-  });
+  );
 };
 
 /// Batch fill — assigns a photo for every menu item that still lacks
 /// one. Each call bakes a small chunk of real images (see bakeDishPhoto)
 /// inside a deadline, so the client loops while `remaining` > 0 and shows
-/// progress as chunks land instead of one long opaque wait. Without
-/// Supabase storage the fetches still warm the provider cache — the lazy
-/// pollinations URL stays the fallback either way.
+/// progress as chunks land instead of one long opaque wait. Uses the same
+/// provider chain as a single photo (Gemini -> FLUX -> pollinations).
 export const generateMenuPhotos = async (
   req: Request,
   res: Response,
@@ -805,7 +883,7 @@ export const generateMenuPhotos = async (
           (item.description ?? '').slice(0, 200),
           (item.category ?? '').slice(0, 60),
         );
-        const imageUrl = await bakeDishPhoto(
+        const { imageUrl, source } = await generateDishImage(
           prompt,
           item.name,
           `ai-${item.id}-${Date.now()}.jpg`,
@@ -814,7 +892,7 @@ export const generateMenuPhotos = async (
           where: { id: item.id },
           data: { image: imageUrl },
         });
-        results.push({ id: item.id, imageUrl, source: 'pollinations' });
+        results.push({ id: item.id, imageUrl, source });
       }),
     );
   }
