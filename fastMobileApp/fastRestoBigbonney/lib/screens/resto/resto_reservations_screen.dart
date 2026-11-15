@@ -51,9 +51,44 @@ class _RestoReservationsScreenState extends State<RestoReservationsScreen> {
     if (mounted) setState(() => _loading = false);
   }
 
+  /// Cancelling a confirmed table tells the client — ask first.
+  Future<void> _cancelConfirmed(Reservation r) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: ctx.fast.card,
+        title: Text(
+          tr(ctx, 'cancel_reservation_q'),
+          style: FASTText.title.copyWith(color: ctx.fast.t1),
+        ),
+        content: Text(
+          tr(ctx, 'resa_cancel_notice'),
+          style: FASTText.body.copyWith(color: ctx.fast.t2),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(tr(ctx, 'close')),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              tr(ctx, 'cancel_reservation'),
+              style: const TextStyle(color: FASTBrand.error),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (ok == true && mounted) await _setStatus(r, 'CANCELLED');
+  }
+
   Future<void> _setStatus(Reservation r, String status) async {
     try {
       await _service.setStatus(r.id, status);
+      if (mounted) {
+        context.read<RestoProvider>().noteReservationStatus(r.id, status);
+      }
       _load();
     } catch (e) {
       if (mounted) {
@@ -212,6 +247,17 @@ class _RestoReservationsScreenState extends State<RestoReservationsScreen> {
           if (r.note != null && r.note!.isNotEmpty) ...[
             const SizedBox(height: FASTSpace.s8),
             Text(r.note!, style: FASTText.caption.copyWith(color: fast.t2)),
+          ],
+          if (r.isConfirmed && r.isUpcoming) ...[
+            const SizedBox(height: FASTSpace.s8),
+            Align(
+              alignment: AlignmentDirectional.centerEnd,
+              child: TextButton(
+                onPressed: () => _cancelConfirmed(r),
+                style: TextButton.styleFrom(foregroundColor: FASTBrand.error),
+                child: Text(tr(context, 'cancel_reservation')),
+              ),
+            ),
           ],
           if (r.isPending) ...[
             const SizedBox(height: FASTSpace.s16),

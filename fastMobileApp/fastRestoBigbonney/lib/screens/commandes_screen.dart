@@ -111,7 +111,9 @@ class _CommandesScreenState extends State<CommandesScreen>
     _tabController = TabController(
       length: 3,
       vsync: this,
-      initialIndex: hasActiveOrder ? 0 : 1,
+      // A tapped reservation notification asks for the reservations tab.
+      initialIndex:
+          provider.takePendingCommandesTab() ?? (hasActiveOrder ? 0 : 1),
     );
   }
 
@@ -163,6 +165,13 @@ class _CommandesScreenState extends State<CommandesScreen>
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<FASTProvider>(context);
+    // Already on this screen when the notification is tapped: switch tab.
+    final wantedTab = provider.takePendingCommandesTab();
+    if (wantedTab != null && wantedTab != _tabController.index) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _tabController.animateTo(wantedTab);
+      });
+    }
 
     return Scaffold(
       backgroundColor: context.fast.bg,
@@ -1893,6 +1902,10 @@ class _MyReservationsTabState extends State<_MyReservationsTab> {
     if (ok != true || !mounted) return;
     try {
       await _service.cancel(r.id);
+      if (mounted) {
+        // Drops the "table in 1 hour" reminder of a cancelled table.
+        unawaited(context.read<FASTProvider>().syncReservationReminders());
+      }
       _load();
     } catch (e) {
       if (mounted) {
@@ -2033,7 +2046,7 @@ class _MyReservationsTabState extends State<_MyReservationsTab> {
               ),
             ],
           ),
-          if (r.isPending) ...[
+          if (r.isCancellable) ...[
             const SizedBox(height: FASTSpace.s12),
             SizedBox(
               width: double.infinity,

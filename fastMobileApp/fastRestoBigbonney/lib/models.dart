@@ -1045,7 +1045,19 @@ class Reservation {
   });
 
   bool get isPending => status == 'PENDING';
+  bool get isConfirmed => status == 'CONFIRMED';
   bool get isUpcoming => dateTime.isAfter(DateTime.now());
+
+  /// A request, or a confirmed table that hasn't started, can still be
+  /// cancelled (by the client) — same rule as the backend.
+  bool get isCancellable => (isPending || isConfirmed) && isUpcoming;
+
+  /// "15/11 20:30" in the device's time zone — used in notifications.
+  String get shortWhen {
+    final d = dateTime.toLocal();
+    String two(int v) => v.toString().padLeft(2, '0');
+    return '${two(d.day)}/${two(d.month)} ${two(d.hour)}:${two(d.minute)}';
+  }
 
   factory Reservation.fromApiJson(Map<String, dynamic> json) => Reservation(
     id: strOrNull(json['id']) ?? '',

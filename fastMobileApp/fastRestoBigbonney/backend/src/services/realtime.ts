@@ -24,7 +24,10 @@ type PushableNotification = {
   orderId?: string | null;
 } | null;
 
-function pushPayload(notification: unknown) {
+/** Extra routing data for the tap (e.g. `{ reservationId }`). */
+type PushExtra = Record<string, string>;
+
+function pushPayload(notification: unknown, extra: PushExtra = {}) {
   const n = notification as PushableNotification;
   return {
     title: n?.title,
@@ -32,13 +35,18 @@ function pushPayload(notification: unknown) {
     data: {
       type: n?.type ?? '',
       ...(n?.orderId ? { orderId: n.orderId } : {}),
+      ...extra,
     },
   };
 }
 
 /** Push a stored notification to one user's devices. */
-export function safeEmitNotificationToUser(userId: string, notification: unknown): void {
-  runAfterResponse(sendPushToUser(userId, pushPayload(notification)));
+export function safeEmitNotificationToUser(
+  userId: string,
+  notification: unknown,
+  extra: PushExtra = {},
+): void {
+  runAfterResponse(sendPushToUser(userId, pushPayload(notification, extra)));
 }
 
 /**
@@ -51,8 +59,9 @@ export function notifyRestaurantTeam(
   restaurantId: string,
   ownerId: string,
   notification: unknown,
+  extra: PushExtra = {},
 ): void {
-  const payload = pushPayload(notification);
+  const payload = pushPayload(notification, extra);
   runAfterResponse(
     (async () => {
       const staff = await prisma.restaurantStaff.findMany({

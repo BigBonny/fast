@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'models.dart';
 import 'services/order_service.dart';
+import 'services/reservation_service.dart';
 import 'services/menu_service.dart';
 import 'services/restaurant_service.dart';
 import 'services/stats_service.dart';
@@ -26,9 +27,16 @@ class RestoProvider extends ChangeNotifier {
 
   // Orders specific to Resto
   List<Order> _restoOrders = [];
+
   /// Order IDs already surfaced to the owner — new ones trigger an alert.
   /// Null until the first successful fetch so a restart never re-alerts.
   Set<String>? _seenOrderIds;
+
+  /// Reservation id → status at the last poll. Null until the first
+  /// successful fetch, so a restart never re-alerts old requests.
+  Map<String, String>? _seenReservations;
+  int _pendingReservations = 0;
+  int _pollTick = 0;
 
   // Menu
   List<MenuItem> _menu = [];
@@ -59,6 +67,8 @@ class RestoProvider extends ChangeNotifier {
     _sessionGeneration++;
     _statsRequestId++;
     _seenOrderIds = null;
+    _seenReservations = null;
+    _pendingReservations = 0;
     stopPolling();
     _settings = null;
     _restaurantId = null;
@@ -78,6 +88,83 @@ class RestoProvider extends ChangeNotifier {
   }
 
   final _orderService = OrderService();
+  final _reservationService = ReservationService();
+
+  /// Reservation requests still waiting for an answer — badge in the menu.
+  int get pendingReservations => _pendingReservations;
+
+  /// Fetches the reservations and raises a system notification for every
+  /// new request and every table a client cancelled since the last poll —
+  /// the same wake-up call as for new orders.
+  Future<void> refreshReservations() async {
+    if (_menuOnly || _restaurantId == null) return;
+    final generation = _sessionGeneration;
+    try {
+      final list = await _reservationService.restaurantReservations(
+        _restaurantId!,
+      );
+      if (_disposed || generation != _sessionGeneration) return;
+      final alerts = reservationAlerts(_seenReservations, list);
+      for (final r in alerts.created) {
+        unawaited(
+          LocalPushService.instance.show(
+            title: AppStrings.trNow('notif_resa_new_t'),
+            body: AppStrings.trNow('notif_resa_new_b')
+                .replaceAll('{name}', r.customerName)
+                .replaceAll('{n}', '${r.partySize}')
+                .replaceAll('{when}', r.shortWhen),
+          ),
+        );
+      }
+      for (final r in alerts.cancelled) {
+        unawaited(
+          LocalPushService.instance.show(
+            title: AppStrings.trNow('notif_resa_cancel_t'),
+            body: AppStrings.trNow('notif_resa_cancel_b')
+                .replaceAll('{name}', r.customerName)
+                .replaceAll('{when}', r.shortWhen),
+          ),
+        );
+      }
+      _seenReservations = {for (final r in list) r.id: r.status};
+      final pending = list.where((r) => r.isPending && r.isUpcoming).length;
+      if (pending != _pendingReservations) {
+        _pendingReservations = pending;
+        notifyListeners();
+      }
+    } catch (_) {
+      // Guests and offline phones simply get no reservation alerts.
+    }
+  }
+
+  /// Pure: what changed since [seen] that the team must hear about.
+  /// `created` = requests that appeared and still wait for an answer;
+  /// `cancelled` = requests or confirmed tables the client cancelled.
+  @visibleForTesting
+  static ({List<Reservation> created, List<Reservation> cancelled})
+  reservationAlerts(Map<String, String>? seen, List<Reservation> list) {
+    if (seen == null) return (created: const [], cancelled: const []);
+    final created = <Reservation>[];
+    final cancelled = <Reservation>[];
+    for (final r in list) {
+      final before = seen[r.id];
+      if (before == null) {
+        if (r.isPending) created.add(r);
+      } else if (r.status == 'CANCELLED' &&
+          (before == 'PENDING' || before == 'CONFIRMED')) {
+        cancelled.add(r);
+      }
+    }
+    return (created: created, cancelled: cancelled);
+  }
+
+  /// The restaurant just answered or cancelled [id] itself: remember the
+  /// new status so the next poll doesn't announce its own action.
+  void noteReservationStatus(String id, String status) {
+    _seenReservations?[id] = status;
+    unawaited(refreshReservations());
+  }
+
   final _menuService = MenuService();
   final _statsService = StatsService();
 
@@ -352,8 +439,12 @@ class RestoProvider extends ChangeNotifier {
 
   void _startPolling() {
     _pollTimer?.cancel();
+    _pollTick = 0;
+    unawaited(refreshReservations());
     _pollTimer = Timer.periodic(const Duration(seconds: 15), (_) {
       refreshOrders();
+      // Reservations move slowly: every other tick (30 s) is plenty.
+      if ((++_pollTick).isEven) unawaited(refreshReservations());
     });
   }
 
