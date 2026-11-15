@@ -59,5 +59,11 @@ compte". Brand teal `#00C8B3`, magenta `#FF0066`.
 - Realtime-ish updates: polling + Firebase Cloud Messaging push; pickup
   proximity/GPS tracking runs in `ProximityService` with background
   location on iOS (`UIBackgroundModes: location` in Info.plist).
+- Loyalty cards: opt-in per restaurant (`loyaltyEnabled`, threshold,
+  free-text reward, set in FAST Pro settings). Progress is derived, never
+  stored: paid + completed orders since `loyaltyStartedAt` minus
+  `LoyaltyRedemption.stampsUsed` (`backend/src/services/loyalty.ts`), so
+  refunds/cancellations can't leave stale points. The client redeems at
+  the counter from "Ma fidélité".
 - Address autocomplete uses the French BAN API (not Nominatim).
 - AI features (assistants, menu scanner) use Google Gemini.

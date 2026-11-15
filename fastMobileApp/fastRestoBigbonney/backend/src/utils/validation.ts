@@ -93,6 +93,10 @@ export const updateRestaurantSchema = createRestaurantSchema.partial().extend({
     .optional(),
   ownerBirthDate: z.string().max(10).optional(),
   ownerAddress: z.string().max(200).optional(),
+  // Loyalty card: the restaurateur picks the order count and the reward.
+  loyaltyEnabled: z.boolean().optional(),
+  loyaltyThreshold: z.number().int().min(2).max(50).optional(),
+  loyaltyReward: z.string().trim().max(80).optional(),
 });
 
 // ─── Order tracking / pickup ─────────────────────────────────

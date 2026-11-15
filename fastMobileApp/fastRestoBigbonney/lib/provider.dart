@@ -19,6 +19,7 @@ import 'services/payment_service.dart';
 import 'services/local_push_service.dart';
 import 'services/proximity_service.dart';
 import 'services/push_service.dart';
+import 'services/loyalty_service.dart';
 import 'api/api_exceptions.dart';
 import 'l10n/app_strings.dart';
 
@@ -116,6 +117,8 @@ class FASTProvider extends ChangeNotifier {
   // Services
   final _restaurantService = RestaurantService();
   final _orderService = OrderService();
+  final _loyaltyService = LoyaltyService();
+  List<LoyaltyCard> _loyaltyCards = [];
   final _notificationService = NotificationService();
   final _reviewService = ReviewService();
   final _authService = AuthService();
@@ -156,6 +159,7 @@ class FASTProvider extends ChangeNotifier {
     _userPhone = '';
     _userPoints = 0;
     _orders = [];
+    _loyaltyCards = [];
     _notifications = [];
     _orderStatusBaseline = null;
     _seenNotificationIds = null;
@@ -205,6 +209,43 @@ class FASTProvider extends ChangeNotifier {
   List<CartItem> get cart => _cart;
   List<PushNotification> get notifications => _notifications;
   List<Order> get orders => _orders;
+
+  /// Loyalty cards the client has started, closest to the reward first.
+  List<LoyaltyCard> get loyaltyCards => _loyaltyCards;
+
+  /// The client's card at [restaurantId], or null if not started yet.
+  LoyaltyCard? loyaltyCardFor(String restaurantId) {
+    for (final c in _loyaltyCards) {
+      if (c.restaurantId == restaurantId) return c;
+    }
+    return null;
+  }
+
+  /// Fetches the cards from the backend. Silent on failure: the cards
+  /// already shown stay, and guests simply have none.
+  Future<void> loadLoyaltyCards() async {
+    if (_userId.isEmpty) return;
+    final generation = _requestGeneration;
+    try {
+      final cards = await _loyaltyService.myCards();
+      if (_disposed || generation != _requestGeneration) return;
+      _loyaltyCards = cards;
+      notifyListeners();
+    } catch (_) {}
+  }
+
+  /// Uses a completed card. Returns null on success, otherwise the
+  /// message to show.
+  Future<String?> redeemLoyaltyReward(String restaurantId) async {
+    try {
+      await _loyaltyService.redeem(restaurantId);
+      await loadLoyaltyCards();
+      return null;
+    } catch (e) {
+      return _extractErrorMessage(e);
+    }
+  }
+
   Restaurant? get selectedRestaurant => _selectedRestaurant;
   String? get activeGroupId => _activeGroupId;
   String? get activeGroupCode => _activeGroupCode;
@@ -762,6 +803,7 @@ class FASTProvider extends ChangeNotifier {
       fetchUserLocation();
       // Start/stop order polling based on active orders
       syncOrderPolling();
+      unawaited(loadLoyaltyCards());
       await Future.wait([
         _saveRestaurants(),
         _saveOrders(),
@@ -863,7 +905,6 @@ class FASTProvider extends ChangeNotifier {
     CategoryItem(id: 'vegan', name: 'Vegan & Végétarien', icon: '🥦'),
     CategoryItem(id: 'halal', name: 'Halal', icon: '🍖'),
     CategoryItem(id: 'boulangerie', name: 'Boulangerie', icon: '🥐'),
-    CategoryItem(id: 'sandwicherie', name: 'Sandwicherie', icon: '🥖'),
     CategoryItem(id: 'crepes', name: 'Crêpes & Gaufres', icon: '🥞'),
     CategoryItem(id: 'dessert', name: 'Desserts', icon: '🍰'),
     CategoryItem(id: 'glaces', name: 'Glaces', icon: '🍦'),
@@ -929,7 +970,8 @@ class FASTProvider extends ChangeNotifier {
     _activeGroupCode = null;
     final themePref = prefs.getString('fast_theme_mode') ?? 'system';
     _viewAsClientUser = prefs.getString('fast_view_as_client_user');
-    _viewAsClient = _viewAsClientUser != null &&
+    _viewAsClient =
+        _viewAsClientUser != null &&
         (prefs.getBool('fast_view_as_client') ?? false);
     _appLanguage = prefs.getString('fast_app_language') ?? 'fr';
     // Hidden languages (hi/bn/ur/bm/wo/ln) keep their maps for later
@@ -1056,6 +1098,8 @@ class FASTProvider extends ChangeNotifier {
         (r) => r.id == id,
         orElse: () => _restaurants.first,
       );
+      // Fresh stamp count for the loyalty bubble on the restaurant page.
+      if (_selectedRestaurant!.hasLoyalty) unawaited(loadLoyaltyCards());
     }
     notifyListeners();
   }
@@ -1130,31 +1174,24 @@ class FASTProvider extends ChangeNotifier {
 
   // Autocomplete Category Suggestion Chip Logic
   // Suggests the built-in categories AND custom categories restaurateurs
-  // saved via "Autre…" (e.g. "Congolais") — matched against what's typed.
+  // created (e.g. "Congolais") — matched against what's typed, ignoring
+  // case and accents, names starting with the keyword first.
   List<CategoryItem> getAutocompleteCategories() {
-    if (_searchKeyword.isEmpty) return [];
-    final kw = _searchKeyword.toLowerCase();
-    final results = categories
-        .where((c) => c.id != 'all' && c.name.toLowerCase().contains(kw))
-        .toList();
-    final seen = results.map((c) => c.id).toSet();
-    for (final r in _restaurants) {
-      for (final raw in r.category.split(',')) {
-        final label = raw.trim();
-        if (label.isEmpty) continue;
-        final id = normalizeCategoryId(label);
-        if (seen.contains(id) || !label.toLowerCase().contains(kw)) continue;
-        seen.add(id);
-        results.add(
-          CategoryItem(id: 'custom:$label', name: label, icon: '🏷️'),
-        );
-      }
-    }
+    final kw = foldText(_searchKeyword);
+    if (kw.isEmpty) return [];
+    final results = [
+      ...categories.where((c) => c.id != 'all'),
+      ...customCategoriesInUse,
+    ].where((c) => foldText(c.name).contains(kw)).toList();
+    int rank(CategoryItem c) => foldText(c.name).startsWith(kw) ? 0 : 1;
+    results.sort((a, b) => rank(a).compareTo(rank(b)));
     return results;
   }
 
   /// Custom (non-canonical) categories currently in use by restaurants —
   /// surfaced in the strip so community cuisines are browsable directly.
+  /// Spelling variants ("Congolais", "congolaise", "Congolais ") collapse
+  /// into one entry.
   List<CategoryItem> get customCategoriesInUse {
     final known = categories.map((c) => c.id).toSet();
     final seen = <String>{};
@@ -1164,12 +1201,32 @@ class FASTProvider extends ChangeNotifier {
         final label = raw.trim();
         if (label.isEmpty) continue;
         final id = normalizeCategoryId(label);
-        if (known.contains(id) || seen.contains(id)) continue;
-        seen.add(id);
+        if (known.contains(id) || !seen.add(categoryStem(id))) continue;
         out.add(CategoryItem(id: 'custom:$label', name: label, icon: '🏷️'));
       }
     }
     return out;
+  }
+
+  /// The strip shown on the home page: built-in categories then custom
+  /// ones, each appearing once.
+  List<CategoryItem> get browseCategories {
+    final seen = <String>{};
+    return [
+      for (final c in [...categories, ...customCategoriesInUse])
+        if (seen.add(categoryStem(foldText(c.name)))) c,
+    ];
+  }
+
+  /// Folded label without its plural/feminine ending, so near-identical
+  /// spellings share one key.
+  static String categoryStem(String folded) {
+    var s = folded;
+    // "congolais", "congolaise", "congolaises" → one key.
+    while (s.length > 4 && (s.endsWith('s') || s.endsWith('e'))) {
+      s = s.substring(0, s.length - 1);
+    }
+    return s;
   }
 
   // Cached filtered restaurants (recomputed only when filters/data change)
@@ -1194,21 +1251,22 @@ class FASTProvider extends ChangeNotifier {
       final matchesCategory =
           _selectedCategory == 'all' ||
           (customFilter != null
-              ? rest.category.toLowerCase().contains(customFilter)
+              ? foldText(rest.category).contains(foldText(customFilter))
               : rest.category
                     .split(',')
                     .any((c) => normalizeCategoryId(c) == _selectedCategory));
 
-      final kw = _searchKeyword.toLowerCase();
+      final kw = foldText(_searchKeyword);
       final matchesSearch =
-          rest.name.toLowerCase().contains(kw) ||
-          rest.description.toLowerCase().contains(kw) ||
-          rest.category.toLowerCase().contains(kw) ||
-          rest.cuisineType.toLowerCase().contains(kw) ||
+          kw.isEmpty ||
+          foldText(rest.name).contains(kw) ||
+          foldText(rest.description).contains(kw) ||
+          foldText(rest.category).contains(kw) ||
+          foldText(rest.cuisineType).contains(kw) ||
           rest.menu.any(
             (item) =>
-                item.name.toLowerCase().contains(kw) ||
-                item.description.toLowerCase().contains(kw),
+                foldText(item.name).contains(kw) ||
+                foldText(item.description).contains(kw),
           );
 
       final matchesDietary =
@@ -1242,20 +1300,7 @@ class FASTProvider extends ChangeNotifier {
   // Normalize a stored category/cuisine label ('Burger', 'Bols/Healthy',
   // 'Italien'...) to a canonical category id from `categories`.
   static String normalizeCategoryId(String raw) {
-    var s = raw.toLowerCase().trim();
-    s = s
-        .replaceAll('é', 'e')
-        .replaceAll('è', 'e')
-        .replaceAll('ê', 'e')
-        .replaceAll('ë', 'e')
-        .replaceAll('à', 'a')
-        .replaceAll('â', 'a')
-        .replaceAll('î', 'i')
-        .replaceAll('ï', 'i')
-        .replaceAll('ô', 'o')
-        .replaceAll('û', 'u')
-        .replaceAll('ù', 'u')
-        .replaceAll('ç', 'c');
+    final s = foldText(raw);
     const aliases = {
       // Display names → ids (a resto can store several, comma-separated)
       'burgers': 'burger',
@@ -1302,7 +1347,8 @@ class FASTProvider extends ChangeNotifier {
       'bols/healthy': 'poke',
       'bowls': 'poke',
       'bowl': 'poke',
-      'sandwicheries': 'sandwicherie',
+      'sandwicherie': 'sandwich',
+      'sandwicheries': 'sandwich',
       'crepes & gaufres': 'crepes',
       'crepe': 'crepes',
       'gaufre': 'crepes',
@@ -1339,8 +1385,65 @@ class FASTProvider extends ChangeNotifier {
       'other': 'autre',
       'autres': 'autre',
     };
-    return aliases[s] ?? s;
+    String? known(String k) =>
+        aliases[k] ?? (_canonicalCategoryIds.contains(k) ? k : null);
+    final direct = known(s);
+    if (direct != null) return direct;
+    // Spelling variants of a built-in category must not become a second
+    // chip: "Pizzas", "Cuisine indienne", "Restaurant chinois"...
+    final candidates = <String>[s];
+    for (final prefix in const ['cuisine ', 'restaurant ']) {
+      if (s.startsWith(prefix)) candidates.add(s.substring(prefix.length));
+    }
+    for (final c in candidates) {
+      for (final ending in const ['', 's', 'e', 'es', 'ne', 'nes']) {
+        if (!c.endsWith(ending) || c.length <= ending.length + 2) continue;
+        final hit = known(c.substring(0, c.length - ending.length));
+        if (hit != null) return hit;
+      }
+    }
+    return s;
   }
+
+  static const _canonicalCategoryIds = {
+    'burger',
+    'tacos',
+    'kebab',
+    'pizza',
+    'poulet',
+    'sandwich',
+    'fast-food',
+    'hot-dogs',
+    'sushi',
+    'poke',
+    'chinois',
+    'vietnamien',
+    'indien',
+    'thailandais',
+    'coreen',
+    'mexicain',
+    'italien',
+    'grec',
+    'monde',
+    'grillades',
+    'poisson',
+    'vegan',
+    'halal',
+    'boulangerie',
+    'crepes',
+    'dessert',
+    'glaces',
+    'bubble-tea',
+    'cafe',
+    'brasserie',
+    'traditionnel',
+    'gastronomique',
+    'buffet',
+    'mediterraneen',
+    'africain',
+    'antillais',
+    'autre',
+  };
 
   // Surprise Me logic - Slot Machine visual animation
   void triggerSurpriseMe(BuildContext context) {

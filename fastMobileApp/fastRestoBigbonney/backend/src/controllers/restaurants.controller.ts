@@ -173,6 +173,18 @@ export const updateRestaurant = async (req: Request, res: Response): Promise<voi
 
   const { dietaryOptions, truckStops, ...restData } = data;
 
+  // Loyalty card: a reward is required to switch it on, and only orders
+  // placed from the first activation onwards earn stamps.
+  const loyaltyOn = data.loyaltyEnabled ?? restaurant.loyaltyEnabled;
+  if (loyaltyOn && !(data.loyaltyReward ?? restaurant.loyaltyReward).trim()) {
+    res.status(400).json({ error: 'Indiquez la récompense de votre carte fidélité' });
+    return;
+  }
+  const loyaltyStart =
+    data.loyaltyEnabled && !restaurant.loyaltyStartedAt
+      ? { loyaltyStartedAt: new Date() }
+      : {};
+
   // Geocode each declared truck stop (address + city → lat/lng).
   let geocodedStops: Array<Record<string, unknown>> | undefined;
   if (truckStops !== undefined) {
@@ -191,6 +203,7 @@ export const updateRestaurant = async (req: Request, res: Response): Promise<voi
     data: {
       ...restData,
       ...coords,
+      ...loyaltyStart,
       dietaryOptions: dietaryOptions
         ? {
             deleteMany: {},

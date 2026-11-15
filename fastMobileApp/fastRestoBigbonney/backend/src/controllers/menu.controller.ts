@@ -629,10 +629,14 @@ async function geminiGenerateImage(prompt: string): Promise<string | null> {
         },
       );
       if (!response.ok) {
-        // Unknown/retired model name -> try the next one. Quota, outage
-        // or safety refusals won't be fixed by another Gemini model.
+        // Google's error text says why (no billing, quota, bad model…);
+        // it never echoes the key. Logged for every failure so a silent
+        // fall-through to the fallback can be diagnosed in Vercel logs.
+        const detail = (await response.text().catch(() => '')).slice(0, 300);
+        console.warn(`[ai-photo] gemini ${model} ${response.status}: ${detail}`);
+        // Unknown/retired model name -> try the next one. Quota, billing,
+        // outage or safety refusals won't be fixed by another model.
         if (response.status === 404 || response.status === 400) continue;
-        console.warn(`[ai-photo] gemini ${model} ${response.status}`);
         return null;
       }
       const data = (await response.json()) as {
@@ -648,7 +652,12 @@ async function geminiGenerateImage(prompt: string): Promise<string | null> {
       const mime = (inline?.inlineData?.mimeType ??
         inline?.inline_data?.mime_type ??
         'image/png') as string;
-      if (!b64) return null; // refused / text-only answer
+      if (!b64) {
+        // Refused (safety) or a text-only answer.
+        const reason = (data as any).candidates?.[0]?.finishReason ?? (data as any).promptFeedback?.blockReason;
+        console.warn(`[ai-photo] gemini ${model} returned no image (${reason ?? 'unknown'})`);
+        return null;
+      }
       const ext = mime.includes('png') ? '.png' : '.jpg';
       const filename = `ai-${Date.now()}-${crypto
         .randomBytes(4)
