@@ -430,6 +430,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           borderRadius: BorderRadius.circular(FASTRadius.md),
         ),
         clipBehavior: Clip.antiAlias,
+        // The frameless app-icon artwork has a wide black margin; zooming
+        // in lets the logo fill the tile.
         child: Transform.scale(
           scale: 1.35,
           child: Image.asset('assets/images/logo.png', fit: BoxFit.cover),
