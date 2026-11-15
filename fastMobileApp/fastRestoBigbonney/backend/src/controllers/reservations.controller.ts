@@ -2,7 +2,26 @@ import { Request, Response } from 'express';
 import { prisma } from '../services/prisma';
 import { createReservationSchema, updateReservationStatusSchema } from '../utils/validation';
 import { getRestaurantIdForUser } from '../middleware/auth';
-import { safeEmitNotificationToUser } from '../services/realtime';
+import { safeEmitNotificationToUser, notifyRestaurantTeam } from '../services/realtime';
+
+/** "12/11/2026 20:30" in Paris time — the wording used in every message. */
+export const reservationWhen = (dateTime: Date): string =>
+  dateTime.toLocaleString('fr-FR', { timeZone: 'Europe/Paris', dateStyle: 'short', timeStyle: 'short' });
+
+/**
+ * What the restaurant may do with a reservation: answer a pending
+ * request, or cancel one it had confirmed. Everything else is final.
+ */
+export function canRestaurantSetStatus(current: string, next: string): boolean {
+  if (current === 'PENDING') return next === 'CONFIRMED' || next === 'DECLINED';
+  if (current === 'CONFIRMED') return next === 'CANCELLED';
+  return false;
+}
+
+/** The client may cancel a request or a confirmed table that hasn't started. */
+export function canClientCancel(status: string, dateTime: Date, now = new Date()): boolean {
+  return (status === 'PENDING' || status === 'CONFIRMED') && dateTime.getTime() > now.getTime();
+}
 
 /** Client creates a reservation request (F10). */
 export const createReservation = async (req: Request, res: Response): Promise<void> => {
@@ -38,15 +57,18 @@ export const createReservation = async (req: Request, res: Response): Promise<vo
     },
   });
 
+  // The whole team hears about it (owner + staff devices), like a new order.
   const notification = await prisma.notification.create({
     data: {
       userId: restaurant.ownerId,
       title: 'Nouvelle demande de réservation',
-      body: `${reservation.userName} — ${reservation.partySize} pers. le ${dateTime.toLocaleString('fr-FR', { timeZone: 'Europe/Paris', dateStyle: 'short', timeStyle: 'short' })}`,
-      type: 'STATUS',
+      body: `${reservation.userName} — ${reservation.partySize} pers. le ${reservationWhen(dateTime)}`,
+      type: 'INFO',
     },
   });
-  safeEmitNotificationToUser(restaurant.ownerId, notification);
+  notifyRestaurantTeam(restaurantId, restaurant.ownerId, notification, {
+    reservationId: reservation.id,
+  });
 
   res.status(201).json(reservation);
 };
@@ -62,22 +84,47 @@ export const listMyReservations = async (req: Request, res: Response): Promise<v
   res.json(reservations);
 };
 
-/** Client cancels a pending reservation. */
+/** Client cancels a pending request or a confirmed table. */
 export const cancelMyReservation = async (req: Request, res: Response): Promise<void> => {
   const reservation = await prisma.reservation.findUnique({ where: { id: req.params.id as string } });
   if (!reservation || reservation.userId !== req.user!.userId) {
     res.status(404).json({ error: 'Réservation introuvable' });
     return;
   }
-  if (reservation.status !== 'PENDING') {
-    res.status(409).json({ error: 'Seule une réservation en attente peut être annulée' });
+  if (!canClientCancel(reservation.status, reservation.dateTime)) {
+    res.status(409).json({ error: 'Cette réservation ne peut plus être annulée' });
     return;
   }
-  const updated = await prisma.reservation.update({
-    where: { id: reservation.id },
+  // Conditional update: a confirm/decline racing this cancel wins or
+  // loses cleanly instead of being overwritten.
+  const claimed = await prisma.reservation.updateMany({
+    where: { id: reservation.id, status: reservation.status },
     data: { status: 'CANCELLED' },
   });
-  res.json(updated);
+  if (claimed.count !== 1) {
+    res.status(409).json({ error: 'La réservation a changé entre-temps, rafraîchissez' });
+    return;
+  }
+  const updated = await prisma.reservation.findUniqueOrThrow({
+    where: { id: reservation.id },
+    include: { restaurant: { select: { ownerId: true } } },
+  });
+
+  // The restaurant must know the table is free again.
+  const notification = await prisma.notification.create({
+    data: {
+      userId: updated.restaurant.ownerId,
+      title: 'Réservation annulée',
+      body: `${reservation.userName} a annulé sa table de ${reservation.partySize} pers. du ${reservationWhen(reservation.dateTime)}`,
+      type: 'INFO',
+    },
+  });
+  notifyRestaurantTeam(reservation.restaurantId, updated.restaurant.ownerId, notification, {
+    reservationId: reservation.id,
+  });
+
+  const { restaurant: _restaurant, ...plain } = updated;
+  res.json(plain);
 };
 
 /** Restaurant staff lists reservations for their restaurant. */
@@ -95,7 +142,10 @@ export const listRestaurantReservations = async (req: Request, res: Response): P
   res.json(reservations);
 };
 
-/** Restaurant staff confirms or declines a reservation (not guests). */
+/**
+ * Restaurant staff confirms or declines a request, or cancels a table
+ * they had confirmed (not guests). The client is told every time.
+ */
 export const updateReservationStatus = async (req: Request, res: Response): Promise<void> => {
   if (req.user!.role === 'GUEST' || req.user!.staffRole === 'GUEST') {
     res.status(403).json({ error: 'Accès invité : commandes uniquement' });
@@ -113,28 +163,54 @@ export const updateReservationStatus = async (req: Request, res: Response): Prom
     res.status(404).json({ error: 'Réservation introuvable' });
     return;
   }
-  if (reservation.status !== 'PENDING') {
+  if (!canRestaurantSetStatus(reservation.status, data.status)) {
     res.status(409).json({ error: 'Cette réservation a déjà été traitée' });
     return;
   }
 
-  const updated = await prisma.reservation.update({
-    where: { id: reservation.id },
+  const claimed = await prisma.reservation.updateMany({
+    where: { id: reservation.id, status: reservation.status },
     data: { status: data.status },
   });
+  if (claimed.count !== 1) {
+    res.status(409).json({ error: 'La réservation a changé entre-temps, rafraîchissez' });
+    return;
+  }
+  const updated = await prisma.reservation.findUniqueOrThrow({
+    where: { id: reservation.id },
+    include: { restaurant: { select: { name: true } } },
+  });
 
+  const when = reservationWhen(reservation.dateTime);
+  const place = updated.restaurant.name;
+  const message =
+    data.status === 'CONFIRMED'
+      ? {
+          title: 'Réservation confirmée',
+          body: `${place} : votre table pour ${reservation.partySize} pers. est confirmée le ${when}`,
+        }
+      : data.status === 'DECLINED'
+        ? {
+            title: 'Réservation refusée',
+            body: `${place} n'a pas pu accepter votre demande du ${when}`,
+          }
+        : {
+            title: 'Réservation annulée par le restaurant',
+            body: `${place} a dû annuler votre table du ${when}`,
+          };
+  // Not 'STATUS': the app's polling only raises a banner for the other
+  // types, and a reservation answer must reach the client without FCM.
   const notification = await prisma.notification.create({
     data: {
       userId: reservation.userId,
-      title: data.status === 'CONFIRMED' ? 'Réservation confirmée' : 'Réservation refusée',
-      body:
-        data.status === 'CONFIRMED'
-          ? `Votre table pour ${reservation.partySize} pers. est confirmée le ${reservation.dateTime.toLocaleString('fr-FR', { timeZone: 'Europe/Paris', dateStyle: 'short', timeStyle: 'short' })}`
-          : `Votre demande de réservation du ${reservation.dateTime.toLocaleString('fr-FR', { timeZone: 'Europe/Paris', dateStyle: 'short', timeStyle: 'short' })} a été refusée`,
-      type: 'STATUS',
+      ...message,
+      type: data.status === 'CONFIRMED' ? 'SUCCESS' : 'INFO',
     },
   });
-  safeEmitNotificationToUser(reservation.userId, notification);
+  safeEmitNotificationToUser(reservation.userId, notification, {
+    reservationId: reservation.id,
+  });
 
-  res.json(updated);
+  const { restaurant: _restaurant, ...plain } = updated;
+  res.json(plain);
 };

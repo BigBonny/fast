@@ -20,6 +20,7 @@ import 'services/local_push_service.dart';
 import 'services/proximity_service.dart';
 import 'services/push_service.dart';
 import 'services/loyalty_service.dart';
+import 'services/reservation_service.dart';
 import 'api/api_exceptions.dart';
 import 'l10n/app_strings.dart';
 
@@ -118,6 +119,65 @@ class FASTProvider extends ChangeNotifier {
   final _restaurantService = RestaurantService();
   final _orderService = OrderService();
   final _loyaltyService = LoyaltyService();
+  final _reservationService = ReservationService();
+
+  /// Tab the orders screen should open on next (2 = reservations), set
+  /// when a reservation notification is tapped. Read once, then cleared.
+  int? _pendingCommandesTab;
+  int? takePendingCommandesTab() {
+    final tab = _pendingCommandesTab;
+    _pendingCommandesTab = null;
+    return tab;
+  }
+
+  /// How long before the table the reminder fires.
+  static const reservationReminderLead = Duration(hours: 1);
+
+  /// Pure: delay until the reminder for [r], or null when none is due
+  /// (not confirmed, or the reminder time has already passed).
+  @visibleForTesting
+  static Duration? reservationReminderDelay(Reservation r, DateTime now) {
+    if (!r.isConfirmed) return null;
+    final at = r.dateTime.subtract(reservationReminderLead);
+    return at.isAfter(now) ? at.difference(now) : null;
+  }
+
+  /// Schedules "your table in 1 hour" for every confirmed reservation and
+  /// clears it for the ones cancelled or declined since. Local to the
+  /// phone: it fires even without network or a server push.
+  Future<void> syncReservationReminders() async {
+    if (_userId.isEmpty) return;
+    final generation = _requestGeneration;
+    try {
+      final list = await _reservationService.myReservations();
+      if (_disposed || generation != _requestGeneration) return;
+      final push = LocalPushService.instance;
+      final now = DateTime.now();
+      for (final r in list) {
+        final key = 'reservation_${r.id}';
+        final delay = reservationReminderDelay(r, now);
+        if (delay == null) {
+          unawaited(push.cancelReminderFor(key));
+          continue;
+        }
+        final d = r.dateTime.toLocal();
+        final time =
+            '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+        unawaited(
+          push.scheduleReminder(
+            orderId: key,
+            title: tr('notif_resa_remind_t'),
+            body: tr('notif_resa_remind_b')
+                .replaceAll('{name}', r.restaurantName)
+                .replaceAll('{n}', '${r.partySize}')
+                .replaceAll('{time}', time),
+            delay: delay,
+          ),
+        );
+      }
+    } catch (_) {}
+  }
+
   List<LoyaltyCard> _loyaltyCards = [];
   final _notificationService = NotificationService();
   final _reviewService = ReviewService();
@@ -496,9 +556,13 @@ class FASTProvider extends ChangeNotifier {
     _notifications = notifications;
     _seenNotificationIds = notifications.map((n) => n.id).toSet();
     if (seen == null) return;
-    for (final n in freshNotifications(seen, notifications).reversed) {
+    final fresh = freshNotifications(seen, notifications);
+    for (final n in fresh.reversed) {
       unawaited(LocalPushService.instance.show(title: n.title, body: n.body));
     }
+    // A reservation may just have been confirmed or cancelled: bring the
+    // "table in 1 hour" reminders in line.
+    if (fresh.isNotEmpty) unawaited(syncReservationReminders());
   }
 
   void syncFromAuth({
@@ -562,7 +626,14 @@ class FASTProvider extends ChangeNotifier {
     // Push tap → land on the order list (client shell ignores the call
     // harmlessly for restaurant-side notifications).
     PushService.instance.onOpen = (data) {
-      if (data['orderId'] != null) navigateToScreen('commandes');
+      if (data['reservationId'] != null) {
+        // Straight to the reservations tab of the orders screen.
+        _pendingCommandesTab = 2;
+        unawaited(syncReservationReminders());
+        navigateToScreen('commandes');
+      } else if (data['orderId'] != null) {
+        navigateToScreen('commandes');
+      }
     };
 
     ProximityService.instance.start(
@@ -804,6 +875,7 @@ class FASTProvider extends ChangeNotifier {
       // Start/stop order polling based on active orders
       syncOrderPolling();
       unawaited(loadLoyaltyCards());
+      unawaited(syncReservationReminders());
       await Future.wait([
         _saveRestaurants(),
         _saveOrders(),

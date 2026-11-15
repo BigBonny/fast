@@ -116,6 +116,7 @@ class RestoDrawer extends StatelessWidget {
                     context,
                     icon: Icons.event_outlined,
                     label: provider.tr('reservations'),
+                    badge: context.watch<RestoProvider>().pendingReservations,
                     onTap: () =>
                         _push(context, const RestoReservationsScreen()),
                   ),
@@ -334,6 +335,7 @@ class RestoDrawer extends StatelessWidget {
     required String label,
     String? subtitle,
     VoidCallback? onTap,
+    int badge = 0,
   }) {
     return ListTile(
       onTap: onTap,
@@ -347,7 +349,31 @@ class RestoDrawer extends StatelessWidget {
               subtitle,
               style: FASTText.caption.copyWith(color: context.fast.t2),
             ),
-      trailing: Icon(Icons.chevron_right, color: context.fast.t3, size: 20),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (badge > 0) ...[
+            Container(
+              constraints: const BoxConstraints(minWidth: 22),
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+              decoration: BoxDecoration(
+                color: FASTBrand.error,
+                borderRadius: BorderRadius.circular(FASTRadius.pill),
+              ),
+              child: Text(
+                '$badge',
+                textAlign: TextAlign.center,
+                style: FASTText.caption.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+            const SizedBox(width: FASTSpace.s8),
+          ],
+          Icon(Icons.chevron_right, color: context.fast.t3, size: 20),
+        ],
+      ),
       shape: const RoundedRectangleBorder(),
     );
   }

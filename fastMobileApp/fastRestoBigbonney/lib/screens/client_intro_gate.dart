@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'resto/pro_intro_slides.dart';
 import '../l10n/tr.dart';
 import '../theme.dart';
+import '../widgets/fast_glow_background.dart';
 import '../widgets/intro_carousel.dart';
 
 /// Gate in front of the client app — plays the client intro carousel on
@@ -32,7 +33,7 @@ class _ClientIntroGateState extends State<ClientIntroGate> {
     if (_done || (_dismissed ?? false)) return widget.child;
     if (_dismissed == null) {
       return Scaffold(
-        backgroundColor: const Color(0xFF0A0416),
+        backgroundColor: FastGlowBackground.bottomColor,
         body: Center(
           child: CircularProgressIndicator(color: context.fast.line),
         ),
@@ -46,23 +47,23 @@ class _ClientIntroGateState extends State<ClientIntroGate> {
           accentPart: tr(context, 'ci1_ta'),
           description: tr(context, 'ci1_d'),
           accent: FASTBrand.gold,
-          glow: const Color(0xFFF97316),
+          glow: FASTBrand.neonOrange,
         ),
         FastIntroSlide(
           icon: Icons.location_on_outlined,
           title: tr(context, 'ci2_t'),
           accentPart: tr(context, 'ci2_ta'),
           description: tr(context, 'ci2_d'),
-          accent: const Color(0xFFA855F7),
-          glow: const Color(0xFF7C3AED),
+          accent: FASTBrand.neonOrange,
+          glow: FASTBrand.neonPink,
         ),
         FastIntroSlide(
           icon: Icons.card_giftcard,
           title: tr(context, 'ci3_t'),
           accentPart: tr(context, 'ci3_ta'),
           description: tr(context, 'ci3_d'),
-          accent: const Color(0xFFFF2D95),
-          glow: const Color(0xFFEC4899),
+          accent: FASTBrand.neonPink,
+          glow: FASTBrand.neonMagenta,
           bannerText: tr(context, 'ci3_welcome'),
         ),
       ],

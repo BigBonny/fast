@@ -1118,6 +1118,14 @@ class AppStrings {
     'menu_cat_sides': 'Accompagnements',
     'menu_cat_desserts': 'Desserts',
     'menu_cat_drinks': 'Boissons',
+    // Reservation notifications
+    'notif_resa_new_t': 'Nouvelle demande de réservation',
+    'notif_resa_new_b': '{name} — {n} pers. · {when}',
+    'notif_resa_cancel_t': 'Réservation annulée',
+    'notif_resa_cancel_b': '{name} a annulé sa table du {when}',
+    'notif_resa_remind_t': 'Votre table dans 1 heure',
+    'notif_resa_remind_b': '{name} · {n} pers. à {time}',
+    'resa_cancel_notice': 'Le client sera prévenu de l’annulation.',
   };
 
   // ──────────────────────────── English ────────────────────────────
@@ -2158,6 +2166,14 @@ class AppStrings {
     'menu_cat_sides': 'Sides',
     'menu_cat_desserts': 'Desserts',
     'menu_cat_drinks': 'Drinks',
+    // Reservation notifications
+    'notif_resa_new_t': 'New reservation request',
+    'notif_resa_new_b': '{name} — {n} guests · {when}',
+    'notif_resa_cancel_t': 'Reservation cancelled',
+    'notif_resa_cancel_b': '{name} cancelled their table on {when}',
+    'notif_resa_remind_t': 'Your table in 1 hour',
+    'notif_resa_remind_b': '{name} · {n} guests at {time}',
+    'resa_cancel_notice': 'The customer will be told about the cancellation.',
   };
 
   // ──────────────────────────── Turkish ────────────────────────────
@@ -3205,6 +3221,14 @@ class AppStrings {
     'menu_cat_sides': 'Yan ürünler',
     'menu_cat_desserts': 'Tatlılar',
     'menu_cat_drinks': 'İçecekler',
+    // Reservation notifications
+    'notif_resa_new_t': 'Yeni rezervasyon talebi',
+    'notif_resa_new_b': '{name} — {n} kişi · {when}',
+    'notif_resa_cancel_t': 'Rezervasyon iptal edildi',
+    'notif_resa_cancel_b': '{name}, {when} tarihli masasını iptal etti',
+    'notif_resa_remind_t': 'Masanız 1 saat sonra',
+    'notif_resa_remind_b': '{name} · {n} kişi, saat {time}',
+    'resa_cancel_notice': 'Müşteriye iptal bildirilecek.',
   };
 
   // ──────────────────────────── Arabic ────────────────────────────
@@ -4216,6 +4240,14 @@ class AppStrings {
     'menu_cat_sides': 'الأطباق الجانبية',
     'menu_cat_desserts': 'الحلويات',
     'menu_cat_drinks': 'المشروبات',
+    // Reservation notifications
+    'notif_resa_new_t': 'طلب حجز جديد',
+    'notif_resa_new_b': '{name} — {n} أشخاص · {when}',
+    'notif_resa_cancel_t': 'تم إلغاء الحجز',
+    'notif_resa_cancel_b': 'ألغى {name} طاولته بتاريخ {when}',
+    'notif_resa_remind_t': 'طاولتك بعد ساعة',
+    'notif_resa_remind_b': '{name} · {n} أشخاص الساعة {time}',
+    'resa_cancel_notice': 'سيتم إبلاغ الزبون بالإلغاء.',
   };
 
   // ──────────────────────────── Spanish ────────────────────────────
@@ -5279,6 +5311,14 @@ class AppStrings {
     'menu_cat_sides': 'Acompañamientos',
     'menu_cat_desserts': 'Postres',
     'menu_cat_drinks': 'Bebidas',
+    // Reservation notifications
+    'notif_resa_new_t': 'Nueva solicitud de reserva',
+    'notif_resa_new_b': '{name} — {n} pers. · {when}',
+    'notif_resa_cancel_t': 'Reserva cancelada',
+    'notif_resa_cancel_b': '{name} ha cancelado su mesa del {when}',
+    'notif_resa_remind_t': 'Tu mesa en 1 hora',
+    'notif_resa_remind_b': '{name} · {n} pers. a las {time}',
+    'resa_cancel_notice': 'Se avisará al cliente de la cancelación.',
   };
 
   // ──────────────────────────── Portuguese ────────────────────────────
@@ -6339,6 +6379,14 @@ class AppStrings {
     'menu_cat_sides': 'Acompanhamentos',
     'menu_cat_desserts': 'Sobremesas',
     'menu_cat_drinks': 'Bebidas',
+    // Reservation notifications
+    'notif_resa_new_t': 'Novo pedido de reserva',
+    'notif_resa_new_b': '{name} — {n} pess. · {when}',
+    'notif_resa_cancel_t': 'Reserva cancelada',
+    'notif_resa_cancel_b': '{name} cancelou a mesa de {when}',
+    'notif_resa_remind_t': 'A tua mesa daqui a 1 hora',
+    'notif_resa_remind_b': '{name} · {n} pess. às {time}',
+    'resa_cancel_notice': 'O cliente será avisado do cancelamento.',
   };
 
   // ──────────────────────────── Italian ────────────────────────────
@@ -7397,6 +7445,14 @@ class AppStrings {
     'menu_cat_sides': 'Contorni',
     'menu_cat_desserts': 'Dolci',
     'menu_cat_drinks': 'Bevande',
+    // Reservation notifications
+    'notif_resa_new_t': 'Nuova richiesta di prenotazione',
+    'notif_resa_new_b': '{name} — {n} pers. · {when}',
+    'notif_resa_cancel_t': 'Prenotazione annullata',
+    'notif_resa_cancel_b': '{name} ha annullato il tavolo del {when}',
+    'notif_resa_remind_t': 'Il tuo tavolo tra 1 ora',
+    'notif_resa_remind_b': '{name} · {n} pers. alle {time}',
+    'resa_cancel_notice': 'Il cliente sarà avvisato dell’annullamento.',
   };
 
   // ──────────────────────────── Chinese ────────────────────────────
@@ -8360,6 +8416,14 @@ class AppStrings {
     'menu_cat_sides': '配菜',
     'menu_cat_desserts': '甜点',
     'menu_cat_drinks': '饮料',
+    // Reservation notifications
+    'notif_resa_new_t': '新的订位请求',
+    'notif_resa_new_b': '{name} — {n} 人 · {when}',
+    'notif_resa_cancel_t': '订位已取消',
+    'notif_resa_cancel_b': '{name} 取消了 {when} 的订位',
+    'notif_resa_remind_t': '您的订位将在 1 小时后开始',
+    'notif_resa_remind_b': '{name} · {n} 人，{time}',
+    'resa_cancel_notice': '顾客将收到取消通知。',
   };
 
   // ─────────── Essential keys — other languages ───────────

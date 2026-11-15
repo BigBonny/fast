@@ -1,16 +1,22 @@
 // lib/widgets/intro_carousel.dart
-// Shared intro carousel — dark branded glow stage, one accent color per
-// slide, breathing icon medallion with a slow orbiting dashed ring,
-// sliding text transitions and a gradient CTA. Used by the first-launch
-// onboarding and by the client intro gate (which passes `calm: true`:
-// the medallion plays one entrance and settles instead of looping).
+// Shared intro carousel, in the same language as the rest of the app:
+// the glow backdrop of the welcome screen, a night-surface medallion
+// with the neon frame, Playfair headlines, the neon wordmark and the
+// app's own call-to-action button. Each slide takes two neighbouring
+// colours of the sign (gold → orange → pink → magenta), so the carousel
+// walks along it. Used by the first-launch onboarding and by the client
+// intro gate (which passes `calm: true`: the medallion plays one
+// entrance and settles instead of looping).
 
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../l10n/tr.dart';
+import '../theme.dart';
 import 'fast_glow_background.dart';
+import 'fast_night_surface.dart';
+import 'fast_ui.dart';
 
 /// One slide of [FastIntroCarousel].
 class FastIntroSlide {
@@ -228,17 +234,16 @@ class _FastIntroCarouselState extends State<FastIntroCarousel>
                           _dontShowAgain
                               ? Icons.check_box
                               : Icons.check_box_outline_blank,
-                          size: 15,
+                          size: 16,
                           color: _dontShowAgain
                               ? slide.accent
-                              : const Color(0xFF94A3B8),
+                              : FastNightSurface.onNightMuted,
                         ),
-                        const SizedBox(width: 7),
+                        const SizedBox(width: FASTSpace.s8),
                         Text(
                           tr(context, 'dont_show_again'),
-                          style: TextStyle(
-                            color: const Color(0xFF94A3B8),
-                            fontSize: widget.calm ? 12 : 11.5,
+                          style: FASTText.caption.copyWith(
+                            color: FastNightSurface.onNightMuted,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -287,52 +292,15 @@ class _FastIntroCarouselState extends State<FastIntroCarousel>
                       }),
                     ),
                     const SizedBox(height: 20),
-                    GestureDetector(
-                      onTap: _suivant,
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 350),
-                        width: double.infinity,
-                        height: 56,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.centerLeft,
-                            end: Alignment.centerRight,
-                            colors: [slide.accent, slide.glow],
-                          ),
-                          borderRadius: BorderRadius.circular(
-                            widget.calm ? 999 : 16,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: slide.accent.withValues(alpha: 0.45),
-                              blurRadius: 22,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              isLast
-                                  ? tr(context, 'get_started')
-                                  : tr(context, 'next'),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w900,
-                                fontSize: 16,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Icon(
-                              isLast ? Icons.bolt : Icons.arrow_forward_rounded,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                          ],
-                        ),
-                      ),
+                    // The same call-to-action as everywhere else.
+                    FastButton(
+                      label: isLast
+                          ? tr(context, 'get_started')
+                          : tr(context, 'next'),
+                      icon: isLast ? Icons.bolt : Icons.arrow_forward_rounded,
+                      onPressed: _suivant,
+                      height: 56,
+                      fontSize: 16,
                     ),
                     if (slide.bannerText != null) ...[
                       const SizedBox(height: 14),
@@ -361,22 +329,21 @@ class _FastIntroCarouselState extends State<FastIntroCarousel>
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(FASTRadius.pill),
           border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[
-              Icon(icon, size: 13, color: const Color(0xFF94A3B8)),
-              const SizedBox(width: 5),
+              Icon(icon, size: 14, color: FastNightSurface.onNightMuted),
+              const SizedBox(width: FASTSpace.s4),
             ],
             Text(
               label,
-              style: const TextStyle(
-                color: Color(0xFF94A3B8),
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
+              style: FASTText.caption.copyWith(
+                color: FastNightSurface.onNightMuted,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],
@@ -459,32 +426,30 @@ class _FastIntroCarouselState extends State<FastIntroCarousel>
                         ),
                         Transform.scale(
                           scale: scale,
-                          child: Container(
+                          // The app icon as a tile: near-black with the
+                          // neon frame, the pictogram lit in the slide's
+                          // two colours.
+                          child: SizedBox(
                             width: 148,
                             height: 148,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(44),
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [slide.accent, slide.glow],
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: slide.accent.withValues(alpha: 0.5),
-                                  blurRadius: 36,
-                                  spreadRadius: 2,
+                            child: FastNightSurface(
+                              radius: 44,
+                              padding: EdgeInsets.zero,
+                              child: Center(
+                                child: ShaderMask(
+                                  blendMode: BlendMode.srcIn,
+                                  shaderCallback: (rect) => LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [slide.accent, slide.glow],
+                                  ).createShader(rect),
+                                  child: Icon(
+                                    slide.icon,
+                                    size: 68,
+                                    color: Colors.white,
+                                  ),
                                 ),
-                              ],
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.22),
-                                width: 1.4,
                               ),
-                            ),
-                            child: Icon(
-                              slide.icon,
-                              size: 68,
-                              color: Colors.white,
                             ),
                           ),
                         ),
@@ -520,11 +485,9 @@ class _FastIntroCarouselState extends State<FastIntroCarousel>
                 children: [
                   Text(
                     '0${_currentPage + 1} — 0${widget.slides.length}',
-                    style: TextStyle(
+                    style: FASTText.label.copyWith(
                       color: slide.accent,
-                      fontSize: widget.calm ? 12 : 11,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 4,
+                      letterSpacing: 3,
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -544,10 +507,9 @@ class _FastIntroCarouselState extends State<FastIntroCarousel>
                   Text(
                     slide.description,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Color(0xFF94A3B8),
-                      height: 1.65,
+                    style: FASTText.body.copyWith(
+                      color: FastNightSurface.onNightMuted,
+                      height: 1.6,
                     ),
                   ),
                 ],
@@ -560,12 +522,11 @@ class _FastIntroCarouselState extends State<FastIntroCarousel>
   }
 
   Widget _buildTitle(FastIntroSlide slide) {
-    const white = TextStyle(
+    // The display face used for every headline in the app.
+    final white = FASTText.display.copyWith(
       fontSize: 30,
-      fontWeight: FontWeight.w900,
-      color: Colors.white,
+      color: FastNightSurface.onNight,
       height: 1.15,
-      letterSpacing: -0.4,
     );
     final part = slide.accentPart;
     final split = part == null ? -1 : slide.title.indexOf(part);
@@ -601,22 +562,20 @@ class _BannerPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const white = TextStyle(
-      color: Colors.white,
-      fontWeight: FontWeight.w800,
-      fontSize: 13.5,
+    final white = FASTText.body.copyWith(
+      color: FastNightSurface.onNight,
+      fontWeight: FontWeight.w700,
     );
     final split = text.indexOf('FAST');
     final spans = <InlineSpan>[
       if (split >= 0) ...[
         TextSpan(text: text.substring(0, split), style: white),
-        const TextSpan(
+        TextSpan(
           text: 'FAST',
-          style: TextStyle(
-            color: Color(0xFFFBBF24),
+          style: white.copyWith(
+            color: FASTBrand.gold,
             fontWeight: FontWeight.w900,
             fontStyle: FontStyle.italic,
-            fontSize: 13.5,
           ),
         ),
         TextSpan(text: text.substring(split + 4), style: white),
@@ -627,14 +586,14 @@ class _BannerPill extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(14),
+        color: Colors.black.withValues(alpha: 0.35),
+        borderRadius: BorderRadius.circular(FASTRadius.pill),
         border: Border.all(color: accent.withValues(alpha: 0.45)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.celebration, color: Color(0xFFFBBF24), size: 16),
+          const Icon(Icons.celebration, color: FASTBrand.gold, size: 16),
           const SizedBox(width: 8),
           Flexible(child: Text.rich(TextSpan(children: spans))),
           const SizedBox(width: 8),
@@ -642,7 +601,7 @@ class _BannerPill extends StatelessWidget {
             flipX: true,
             child: const Icon(
               Icons.celebration,
-              color: Color(0xFFFBBF24),
+              color: FASTBrand.gold,
               size: 16,
             ),
           ),
@@ -652,7 +611,8 @@ class _BannerPill extends StatelessWidget {
   }
 }
 
-/// Compact amber-gradient FAST wordmark used in intro headers.
+/// Compact FAST wordmark used in intro headers — the neon sign, like
+/// the welcome screen and the home hero.
 class MiniFastWordmark extends StatelessWidget {
   const MiniFastWordmark({super.key});
 
@@ -661,14 +621,10 @@ class MiniFastWordmark extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(Icons.bolt, color: Color(0xFFFBBF24), size: 20),
+        const Icon(Icons.bolt, color: FASTBrand.gold, size: 20),
         ShaderMask(
           blendMode: BlendMode.srcIn,
-          shaderCallback: (rect) => const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFFFCD34D), Color(0xFFF59E0B), Color(0xFFD97706)],
-          ).createShader(rect),
+          shaderCallback: (rect) => FASTBrand.neonGradient.createShader(rect),
           child: const Text(
             'FAST',
             style: TextStyle(
