@@ -17,6 +17,7 @@ import '../../l10n/tr.dart';
 import '../../widgets/fast_ui.dart';
 import '../assistant_screen.dart';
 import '../../widgets/address_autocomplete_field.dart';
+import '../../widgets/suggest_field.dart';
 
 class RestoSettingsScreen extends StatefulWidget {
   const RestoSettingsScreen({super.key});
@@ -64,6 +65,18 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
   // Catégories personnalisées ("Autre…") + mode food truck
   final _customCategoryCtrl = TextEditingController();
   bool _isFoodTruck = false;
+
+  // Carte fidélité — le restaurateur choisit le nombre de commandes et
+  // la récompense ; rien n'est imposé par FAST.
+  bool _loyaltyEnabled = false;
+  int _loyaltyThreshold = 10;
+  final _loyaltyRewardCtrl = TextEditingController();
+  static const _loyaltyPresets = [
+    'loy_pro_r_menu',
+    'loy_pro_r_drink',
+    'loy_pro_r_dessert',
+    'loy_pro_r_discount',
+  ];
   // Une adresse par jour de semaine (1 = lundi … 7 = dimanche).
   final Map<int, TextEditingController> _truckDayCtrls = {
     for (var d = 1; d <= 7; d++) d: TextEditingController(),
@@ -113,7 +126,6 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
     'Vegan & Végétarien',
     'Halal',
     'Boulangerie',
-    'Sandwicherie',
     'Crêpes & Gaufres',
     'Desserts',
     'Glaces',
@@ -329,6 +341,10 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
         _seatingCtrl.text =
             '${(data['seatingCapacity'] as num?)?.toInt() ?? 0}';
         _isFoodTruck = data['isFoodTruck'] as bool? ?? false;
+        _loyaltyEnabled = data['loyaltyEnabled'] as bool? ?? false;
+        _loyaltyThreshold = ((data['loyaltyThreshold'] as num?)?.toInt() ?? 10)
+            .clamp(2, 50);
+        _loyaltyRewardCtrl.text = data['loyaltyReward'] as String? ?? '';
         final stops = data['truckStops'] as List<dynamic>? ?? [];
         for (final s in stops) {
           final m = s as Map<String, dynamic>;
@@ -380,6 +396,10 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
       setState(() => _error = tr(context, 'no_resto_found'));
       return;
     }
+    if (_loyaltyEnabled && _loyaltyRewardCtrl.text.trim().isEmpty) {
+      setState(() => _error = tr(context, 'loy_pro_reward_required'));
+      return;
+    }
     setState(() {
       _saving = true;
       _error = null;
@@ -416,6 +436,9 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
       'dineInFee': double.tryParse(_dineInFeeCtrl.text.trim()) ?? 0,
       'seatingCapacity': int.tryParse(_seatingCtrl.text.trim()) ?? 0,
       'isFoodTruck': _isFoodTruck,
+      'loyaltyEnabled': _loyaltyEnabled,
+      'loyaltyThreshold': _loyaltyThreshold,
+      'loyaltyReward': _loyaltyRewardCtrl.text.trim(),
       'truckStops': _isFoodTruck
           ? [
               for (var d = 1; d <= 7; d++)
@@ -478,14 +501,45 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
     }
   }
 
-  void _addCustomCategory() {
-    final v = _customCategoryCtrl.text.trim();
+  /// Key shared by every spelling of one category ("Pizza", "pizzas",
+  /// "Cuisine indienne" / "Indien"…), so a category can't be added twice.
+  static String _catKey(String label) =>
+      FASTProvider.categoryStem(FASTProvider.normalizeCategoryId(label));
+
+  /// Adds [label] to the selection — reusing the built-in category or
+  /// the already-selected entry it matches instead of creating a double.
+  void _selectCategory(String label) {
+    final v = label.trim();
     if (v.isEmpty) return;
-    final label = v[0].toUpperCase() + v.substring(1);
+    final key = _catKey(v);
+    final builtIn = _categories.where((c) => _catKey(c) == key);
+    final already = _selectedCategories.where((c) => _catKey(c) == key);
     setState(() {
-      _selectedCategories.add(label);
+      if (already.isEmpty) {
+        _selectedCategories.add(
+          builtIn.isNotEmpty
+              ? builtIn.first
+              : v[0].toUpperCase() + v.substring(1),
+        );
+      }
       _customCategoryCtrl.clear();
     });
+  }
+
+  /// Everything the search can find: built-in categories (in the app
+  /// language) plus the custom ones other restaurants already created.
+  Map<String, String> _categoryChoices(BuildContext context) {
+    final out = <String, String>{};
+    for (final c in _categories) {
+      if (c == 'Autres') continue;
+      out[catLabel(context, c)] = c;
+    }
+    for (final c in context.read<FASTProvider>().customCategoriesInUse) {
+      out.putIfAbsent(c.name, () => c.name);
+    }
+    final taken = _selectedCategories.map(_catKey).toSet();
+    out.removeWhere((_, value) => taken.contains(_catKey(value)));
+    return out;
   }
 
   @override
@@ -501,6 +555,7 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
     _dineInFeeCtrl.dispose();
     _seatingCtrl.dispose();
     _customCategoryCtrl.dispose();
+    _loyaltyRewardCtrl.dispose();
     for (final c in _truckDayCtrls.values) {
       c.dispose();
     }
@@ -744,46 +799,43 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
                     ),
               ],
             ),
-            // La petite barre apparaît quand "Autres" est sélectionné.
-            if (_selectedCategories.contains('Autres')) ...[
-              const SizedBox(height: FASTSpace.s12),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _customCategoryCtrl,
-                      style: FASTText.body.copyWith(color: fast.t1),
-                      cursorColor: FASTPro.teal,
-                      textCapitalization: TextCapitalization.words,
-                      decoration: _inputDecoration(
-                        hint: tr(context, 'custom_category_hint'),
-                      ).copyWith(isDense: true),
-                      onSubmitted: (_) => _addCustomCategory(),
-                    ),
-                  ),
-                  const SizedBox(width: FASTSpace.s8),
-                  OutlinedButton(
-                    onPressed: _addCustomCategory,
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: _onTeal,
-                      side: const BorderSide(color: FASTPro.teal),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: FASTSpace.s16,
-                        vertical: FASTSpace.s12,
+            const SizedBox(height: FASTSpace.s12),
+            // Search first: an existing category is one tap away, and a
+            // new one can only be created when nothing matches.
+            Builder(
+              builder: (context) {
+                final choices = _categoryChoices(context);
+                return SuggestField(
+                  controller: _customCategoryCtrl,
+                  options: choices.keys.toList(),
+                  accent: FASTPro.teal,
+                  clearOnPick: true,
+                  showOnEmpty: false,
+                  textCapitalization: TextCapitalization.words,
+                  textInputAction: TextInputAction.done,
+                  decoration:
+                      _inputDecoration(
+                        hint: tr(context, 'cat_search_hint'),
+                      ).copyWith(
+                        isDense: true,
+                        prefixIcon: Icon(
+                          Icons.search,
+                          size: 18,
+                          color: fast.t3,
+                        ),
                       ),
-                      shape: const StadiumBorder(),
-                    ),
-                    child: Text(
-                      tr(context, 'add'),
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+                  createLabel: (typed) =>
+                      tr(context, 'cat_create').replaceAll('{n}', typed),
+                  onSelected: (label) =>
+                      _selectCategory(choices[label] ?? label),
+                  onCreate: _selectCategory,
+                  onSubmitted: (v) {
+                    final hit = existingOption(choices.keys, v);
+                    _selectCategory(hit != null ? choices[hit]! : v);
+                  },
+                );
+              },
+            ),
           ],
         ),
 
@@ -815,6 +867,10 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
             ),
           ],
         ),
+
+        sectionGap,
+        _section(tr(context, 'loy_pro_section')),
+        _buildLoyaltyCard(),
 
         sectionGap,
         _section(tr(context, 'prep_time_title')),
@@ -1255,6 +1311,126 @@ class _RestoSettingsScreenState extends State<RestoSettingsScreen>
   Color get _onTeal => Theme.of(context).brightness == Brightness.dark
       ? FASTPro.teal
       : FASTPro.tealDark;
+
+  /// Loyalty programme: on/off, number of orders, reward.
+  Widget _buildLoyaltyCard() {
+    final fast = context.fast;
+    final reward = _loyaltyRewardCtrl.text.trim();
+    final presets = [for (final k in _loyaltyPresets) tr(context, k)];
+    final isCustom = reward.isNotEmpty && !presets.contains(reward);
+    return _card(
+      padding: const EdgeInsets.symmetric(
+        horizontal: FASTSpace.s16,
+        vertical: FASTSpace.s8,
+      ),
+      children: [
+        FastSwitchTile(
+          leading: _rowIcon(Icons.card_giftcard_outlined),
+          title: _rowTitle(tr(context, 'loy_pro_enable')),
+          subtitle: _rowCaption(tr(context, 'loy_pro_enable_sub')),
+          accent: FASTPro.teal,
+          value: _loyaltyEnabled,
+          onChanged: (v) => setState(() => _loyaltyEnabled = v),
+        ),
+        if (_loyaltyEnabled) ...[
+          _hairline(),
+          const SizedBox(height: FASTSpace.s12),
+          _rowTitle(tr(context, 'loy_pro_threshold')),
+          const SizedBox(height: FASTSpace.s8),
+          Wrap(
+            spacing: FASTSpace.s8,
+            runSpacing: FASTSpace.s8,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              for (final n in const [5, 10, 15])
+                _chip(
+                  '$n ${tr(context, 'loy_pro_orders')}',
+                  _loyaltyThreshold == n,
+                  (_) => setState(() => _loyaltyThreshold = n),
+                ),
+              // Any other number, one order at a time.
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    visualDensity: VisualDensity.compact,
+                    icon: Icon(Icons.remove_circle_outline, color: fast.t2),
+                    onPressed: _loyaltyThreshold > 2
+                        ? () => setState(() => _loyaltyThreshold--)
+                        : null,
+                  ),
+                  Text(
+                    '$_loyaltyThreshold',
+                    style: FASTText.price.copyWith(
+                      fontSize: 16,
+                      color: fast.t1,
+                    ),
+                  ),
+                  IconButton(
+                    visualDensity: VisualDensity.compact,
+                    icon: Icon(Icons.add_circle_outline, color: fast.t2),
+                    onPressed: _loyaltyThreshold < 50
+                        ? () => setState(() => _loyaltyThreshold++)
+                        : null,
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: FASTSpace.s16),
+          _rowTitle(tr(context, 'loy_pro_reward_q')),
+          const SizedBox(height: FASTSpace.s8),
+          Wrap(
+            spacing: FASTSpace.s8,
+            runSpacing: FASTSpace.s8,
+            children: [
+              for (final p in presets)
+                _chip(
+                  p,
+                  reward == p,
+                  (_) => setState(() => _loyaltyRewardCtrl.text = p),
+                ),
+              _chip(
+                tr(context, 'loy_pro_r_custom'),
+                isCustom,
+                (_) => setState(() {
+                  if (!isCustom) _loyaltyRewardCtrl.clear();
+                }),
+              ),
+            ],
+          ),
+          const SizedBox(height: FASTSpace.s12),
+          TextField(
+            controller: _loyaltyRewardCtrl,
+            maxLength: 80,
+            cursorColor: FASTPro.teal,
+            textCapitalization: TextCapitalization.sentences,
+            style: FASTText.body.copyWith(color: fast.t1),
+            onChanged: (_) => setState(() {}),
+            decoration: _inputDecoration(
+              label: tr(context, 'loy_your_reward'),
+              hint: tr(context, 'loy_pro_custom_hint'),
+            ).copyWith(counterText: ''),
+          ),
+          if (reward.isNotEmpty) ...[
+            const SizedBox(height: FASTSpace.s8),
+            Text(
+              tr(context, 'loy_pro_preview')
+                  .replaceAll('{n}', '$_loyaltyThreshold')
+                  .replaceAll('{r}', reward),
+              style: FASTText.caption.copyWith(color: fast.t2, height: 1.4),
+            ),
+          ],
+          const SizedBox(height: FASTSpace.s8),
+          Text(
+            tr(context, 'loy_pro_rules'),
+            style: FASTText.caption.copyWith(color: fast.t3, height: 1.4),
+          ),
+          const SizedBox(height: FASTSpace.s8),
+        ],
+      ],
+    );
+  }
 
   Widget _section(String title) => Padding(
     padding: const EdgeInsetsDirectional.only(

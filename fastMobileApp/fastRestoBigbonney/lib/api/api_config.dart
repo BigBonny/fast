@@ -94,6 +94,11 @@ class ApiConfig {
   static const String emailRequestCode = '/auth/email/request-code';
   static const String emailVerifyCode = '/auth/email/verify';
 
+  // Loyalty cards
+  static const String loyaltyCards = '/loyalty/cards';
+  static String redeemLoyalty(String restaurantId) =>
+      '/loyalty/$restaurantId/redeem';
+
   // Notifications
   static const String fcmToken = '/users/me/fcm-token';
   static const String notifications = '/notifications';

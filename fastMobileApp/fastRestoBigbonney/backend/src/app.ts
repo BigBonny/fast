@@ -27,6 +27,7 @@ import refundRoutes from './routes/refunds.routes';
 import addressesRoutes from './routes/addresses.routes';
 import reservationsRoutes from './routes/reservations.routes';
 import assistantRoutes from './routes/assistant.routes';
+import loyaltyRoutes from './routes/loyalty.routes';
 import { stripeWebhook } from './controllers/payments.controller';
 
 initSentry();
@@ -158,6 +159,7 @@ app.use('/api/staff', staffRoutes);
 app.use('/api/addresses', addressesRoutes);
 app.use('/api/reservations', reservationsRoutes);
 app.use('/api/assistant', assistantRoutes);
+app.use('/api/loyalty', loyaltyRoutes);
 app.use('/api/uploads', uploadRoutes);
 app.use('/api/users', usersRoutes);
 

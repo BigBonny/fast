@@ -18,6 +18,7 @@ import {
 import { getRestaurantIdForUser } from '../middleware/auth';
 import { isRefundablePaymentStatus, refundPaidOrder } from '../services/stripeRefunds';
 import { expireUnacceptedOrders } from '../services/staleOrders';
+import { notifyLoyaltyAfterCompletion } from '../services/loyalty';
 
 const orderInclude = {
   items: { include: { menuItem: true } },
@@ -357,6 +358,7 @@ async function completePickup(orderId: string, userId: string) {
 
   safeEmitNotificationToUser(userId, updated.statusNotification);
   safeEmitNotificationToUser(userId, updated.ratingNotification);
+  await notifyLoyaltyAfterCompletion(orderId);
   return updated.order;
 }
 
@@ -525,6 +527,7 @@ export const updateOrderStatus = async (req: Request, res: Response): Promise<vo
       },
     });
     safeEmitNotificationToUser(order.userId, ratingNotification);
+    await notifyLoyaltyAfterCompletion(order.id);
   }
 
   res.json(updated);

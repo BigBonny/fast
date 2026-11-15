@@ -1,5 +1,7 @@
 // lib/screens/restaurant_screen.dart
 
+import '../widgets/loyalty_card.dart';
+import 'loyalty_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -461,6 +463,19 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
                               ),
                             ),
                           ],
+                        ),
+                      ),
+                    ],
+                    if (rest.hasLoyalty) ...[
+                      const SizedBox(height: FASTSpace.s12),
+                      LoyaltyBubble(
+                        restaurant: rest,
+                        card: provider.loyaltyCardFor(rest.id),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const LoyaltyScreen(),
+                          ),
                         ),
                       ),
                     ],

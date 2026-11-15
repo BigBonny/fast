@@ -14,13 +14,17 @@ import '../widgets/fast_ui.dart';
 import '../l10n/tr.dart';
 import '../services/restaurant_service.dart';
 
-/// Shell of a promo card: the night surface for the lead card, a plain
-/// card with a hairline for the others.
+/// Shell of a promo card: the night surface for the lead card; the
+/// others sit on the card colour washed with their own neon accent, so
+/// the row reads as one sign running gold → orange → pink → magenta.
 class _PromoShell extends StatelessWidget {
-  const _PromoShell({required this.night, required this.child});
+  const _PromoShell({required this.night, required this.child, this.accent});
 
   final bool night;
   final Widget child;
+
+  /// Tint of a non-night card; null keeps the plain card.
+  final Color? accent;
 
   @override
   Widget build(BuildContext context) {
@@ -33,8 +37,28 @@ class _PromoShell extends StatelessWidget {
           ? null
           : BoxDecoration(
               color: fast.card,
+              gradient: accent == null
+                  ? null
+                  : LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color.alphaBlend(
+                          accent!.withValues(alpha: 0.22),
+                          fast.card,
+                        ),
+                        Color.alphaBlend(
+                          accent!.withValues(alpha: 0.06),
+                          fast.card,
+                        ),
+                      ],
+                    ),
               borderRadius: BorderRadius.circular(FASTRadius.md),
-              border: Border.all(color: fast.line),
+              border: Border.all(
+                color: accent == null
+                    ? fast.line
+                    : accent!.withValues(alpha: 0.45),
+              ),
             ),
       child: night ? FastNightSurface(child: child) : child,
     );
@@ -50,10 +74,13 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
+  // "A restaurant is missing?" promo card — typed name, sent to the team.
+  final TextEditingController _missingController = TextEditingController();
 
   @override
   void dispose() {
     _searchController.dispose();
+    _missingController.dispose();
     super.dispose();
   }
 
@@ -431,6 +458,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                           // it (vital on iOS).
                                           textInputAction:
                                               TextInputAction.search,
+                                          // Names of places and dishes:
+                                          // no autocorrect rewriting them.
+                                          autocorrect: false,
                                           onSubmitted: (_) => FocusManager
                                               .instance
                                               .primaryFocus
@@ -569,26 +599,44 @@ class _HomeScreenState extends State<HomeScreen> {
     FASTProvider provider,
     List<CategoryItem> suggCategories,
   ) {
-    final kw = provider.searchKeyword.toLowerCase();
+    // Case- and accent-insensitive ("creperie" finds "Crêperie").
+    final kw = foldText(provider.searchKeyword);
 
-    // Find matching dishes
+    // Find matching restaurants and dishes
     final List<Map<String, dynamic>> matchingDishes = [];
     final List<Restaurant> matchingRestaurants = [];
 
     for (var r in provider.restaurants) {
       bool matchedRest =
-          r.name.toLowerCase().contains(kw) ||
-          r.description.toLowerCase().contains(kw);
+          foldText(r.name).contains(kw) ||
+          foldText(r.description).contains(kw) ||
+          foldText(r.category).contains(kw) ||
+          foldText(r.cuisineType).contains(kw);
       if (matchedRest) {
         matchingRestaurants.add(r);
       }
       for (var d in r.menu) {
-        if (d.name.toLowerCase().contains(kw) ||
-            d.description.toLowerCase().contains(kw)) {
+        if (foldText(d.name).contains(kw) ||
+            foldText(d.description).contains(kw)) {
           matchingDishes.add({'restaurant': r, 'item': d});
         }
       }
     }
+    // Names that start with what was typed come first, then names that
+    // contain it, then matches on the description or cuisine.
+    int rank(String name) {
+      final n = foldText(name);
+      if (n.startsWith(kw)) return 0;
+      if (n.split(' ').any((w) => w.startsWith(kw))) return 1;
+      return n.contains(kw) ? 2 : 3;
+    }
+
+    matchingRestaurants.sort((a, b) => rank(a.name).compareTo(rank(b.name)));
+    matchingDishes.sort(
+      (a, b) => rank(
+        (a['item'] as MenuItem).name,
+      ).compareTo(rank((b['item'] as MenuItem).name)),
+    );
 
     final fast = context.fast;
 
@@ -1104,9 +1152,12 @@ class _HomeScreenState extends State<HomeScreen> {
             subtitle: tr(context, 'promo_velvet'),
             cta: tr(context, 'cta_enjoy'),
           ),
+          _missingRestaurantCard(context),
           _promoBanner(
             context: context,
             onTap: () => provider.navigateToScreen('group'),
+            accent: FASTBrand.neonOrange,
+            onAccent: FASTBrand.onAmber,
             watermark: Icons.groups_outlined,
             tag: tr(context, 'with_friends'),
             title: tr(context, 'group_tagline'),
@@ -1117,6 +1168,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _promoBanner(
             context: context,
             onTap: () => provider.triggerSurpriseMe(context),
+            accent: FASTBrand.ctaViolet,
             watermark: Icons.casino_outlined,
             tag: tr(context, 'cta_surprise'),
             title: tr(context, 'promo_surprise_t2'),
@@ -1129,8 +1181,148 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  /// One promo card. Flat surface: ink for the lead card, plain card with
-  /// a hairline for the others.
+  /// Small pill at the top of a tinted promo card.
+  Widget _accentTag(BuildContext context, String label, Color accent) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: 0.20),
+        borderRadius: BorderRadius.circular(FASTRadius.pill),
+        border: Border.all(color: accent.withValues(alpha: 0.55)),
+      ),
+      child: Text(
+        label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: FASTText.caption.copyWith(
+          fontWeight: FontWeight.w700,
+          color: context.fast.t1,
+        ),
+      ),
+    );
+  }
+
+  /// Promo card with a text field: the client types a restaurant they
+  /// can't find on FAST. Sending opens the request sheet prefilled, where
+  /// the city can be added; the team then calls the restaurant.
+  Widget _missingRestaurantCard(BuildContext context) {
+    final fast = context.fast;
+    const accent = FASTBrand.rose;
+    void send() {
+      final name = _missingController.text.trim();
+      FocusManager.instance.primaryFocus?.unfocus();
+      _showRestaurantRequestSheet(context, name);
+      _missingController.clear();
+    }
+
+    return _PromoShell(
+      night: false,
+      accent: accent,
+      child: Stack(
+        children: [
+          PositionedDirectional(
+            top: -4,
+            end: -4,
+            child: Icon(
+              Icons.storefront_outlined,
+              size: 64,
+              color: accent.withValues(alpha: 0.22),
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _accentTag(context, tr(context, 'promo_missing_tag'), accent),
+              Text(
+                tr(context, 'promo_missing_t'),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: FASTText.item.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: fast.t1,
+                ),
+              ),
+              SizedBox(
+                height: 40,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _missingController,
+                        textInputAction: TextInputAction.send,
+                        textCapitalization: TextCapitalization.words,
+                        autocorrect: false,
+                        onSubmitted: (_) => send(),
+                        cursorColor: accent,
+                        style: FASTText.body.copyWith(color: fast.t1),
+                        decoration: InputDecoration(
+                          hintText: tr(context, 'promo_missing_hint'),
+                          hintStyle: FASTText.body.copyWith(color: fast.t3),
+                          isDense: true,
+                          filled: true,
+                          fillColor: fast.card,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: FASTSpace.s12,
+                            vertical: 10,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(
+                              FASTRadius.pill,
+                            ),
+                            borderSide: BorderSide(color: fast.line),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(
+                              FASTRadius.pill,
+                            ),
+                            borderSide: BorderSide(color: fast.line),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(
+                              FASTRadius.pill,
+                            ),
+                            borderSide: const BorderSide(
+                              color: accent,
+                              width: 1.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: FASTSpace.s8),
+                    Semantics(
+                      button: true,
+                      label: tr(context, 'req_resto_submit'),
+                      child: FastTap(
+                        onTap: send,
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: const BoxDecoration(
+                            color: accent,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.arrow_forward,
+                            size: 18,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// One promo card: the night surface for the lead card, a wash of
+  /// [accent] for the others.
   Widget _promoBanner({
     required BuildContext context,
     required VoidCallback onTap,
@@ -1141,6 +1333,8 @@ class _HomeScreenState extends State<HomeScreen> {
     required String cta,
     bool onInkCard = false,
     IconData ctaIcon = Icons.chevron_right,
+    Color? accent,
+    Color onAccent = Colors.white,
   }) {
     final fast = context.fast;
     // The lead card sits on the night surface — it carries the hero's
@@ -1148,12 +1342,15 @@ class _HomeScreenState extends State<HomeScreen> {
     // (The flag keeps its name; it now means "the lead, dark card".)
     final fg = onInkCard ? FastNightSurface.onNight : fast.t1;
     final fgMuted = onInkCard ? FastNightSurface.onNightMuted : fast.t2;
-    final pillBg = onInkCard ? FastNightSurface.onNight : fast.ink;
-    final pillFg = onInkCard ? FASTBrand.onAmber : fast.onInk;
+    final pillBg = onInkCard ? FastNightSurface.onNight : (accent ?? fast.ink);
+    final pillFg = onInkCard
+        ? FASTBrand.onAmber
+        : (accent == null ? fast.onInk : onAccent);
     return FastTap(
       onTap: onTap,
       child: _PromoShell(
         night: onInkCard,
+        accent: accent,
         child: Stack(
           children: [
             // Large, faint line icon in the top corner, clear of the text.
@@ -1163,17 +1360,22 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Icon(
                 watermark,
                 size: 64,
-                color: fg.withValues(alpha: 0.08),
+                color: accent == null
+                    ? fg.withValues(alpha: 0.08)
+                    : accent.withValues(alpha: 0.28),
               ),
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                FastTag(
-                  tag,
-                  kind: onInkCard ? FastTagKind.accent : FastTagKind.neutral,
-                ),
+                if (accent != null && !onInkCard)
+                  _accentTag(context, tag, accent)
+                else
+                  FastTag(
+                    tag,
+                    kind: onInkCard ? FastTagKind.accent : FastTagKind.neutral,
+                  ),
                 Text(
                   title,
                   maxLines: 2,
@@ -1231,7 +1433,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // Categories horizontal scrolling band — fixed list + any custom
   // categories saved by restaurateurs (community cuisines, food trucks…).
   Widget _buildCategoryStrip(BuildContext context, FASTProvider provider) {
-    final cats = [...provider.categories, ...provider.customCategoriesInUse];
+    final cats = provider.browseCategories;
     return SizedBox(
       height: 84,
       child: ListView.separated(
@@ -1779,6 +1981,35 @@ class _RestaurantRequestSheetState extends State<_RestaurantRequestSheet> {
   bool _sending = false;
 
   @override
+  void initState() {
+    super.initState();
+    // Refresh the "already on FAST" matches while the name is typed.
+    _name.addListener(() {
+      if (mounted) setState(() {});
+    });
+  }
+
+  /// Restaurants already on FAST whose name matches what is typed.
+  List<Restaurant> _existingMatches() {
+    final typed = foldText(_name.text);
+    if (typed.length < 2) return const [];
+    return context
+        .read<FASTProvider>()
+        .restaurants
+        .where((r) => foldText(r.name).contains(typed))
+        .take(3)
+        .toList();
+  }
+
+  void _openExisting(Restaurant r) {
+    final provider = context.read<FASTProvider>();
+    Navigator.of(context).pop();
+    provider.setKeyword('');
+    provider.selectRestaurant(r.id);
+    provider.navigateToScreen('restaurant');
+  }
+
+  @override
   void dispose() {
     _name.dispose();
     _city.dispose();
@@ -1872,7 +2103,42 @@ class _RestaurantRequestSheetState extends State<_RestaurantRequestSheet> {
             style: inputStyle,
             decoration: _fieldStyle(tr(context, 'req_resto_name')),
             textCapitalization: TextCapitalization.words,
+            autocorrect: false,
           ),
+          if (_existingMatches().isNotEmpty) ...[
+            const SizedBox(height: FASTSpace.s8),
+            Text(
+              tr(context, 'req_resto_exists'),
+              style: FASTText.caption.copyWith(
+                color: fast.t2,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: FASTSpace.s4),
+            Wrap(
+              spacing: FASTSpace.s8,
+              runSpacing: FASTSpace.s8,
+              children: [
+                for (final r in _existingMatches())
+                  ActionChip(
+                    avatar: Icon(
+                      Icons.storefront_outlined,
+                      size: 16,
+                      color: fast.ink,
+                    ),
+                    label: Text(r.name),
+                    labelStyle: FASTText.caption.copyWith(
+                      color: fast.t1,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    backgroundColor: fast.card,
+                    side: BorderSide(color: fast.line),
+                    shape: const StadiumBorder(),
+                    onPressed: () => _openExisting(r),
+                  ),
+              ],
+            ),
+          ],
           const SizedBox(height: FASTSpace.s12),
           TextField(
             controller: _city,

@@ -29,6 +29,7 @@ enum DietaryPreference {
   dairyFree('Sans Lactose', 'DAIRY_FREE');
 
   final String label;
+
   /// Exact backend enum value — `name.toUpperCase()` produced
   /// "GLUTENFREE"/"DAIRYFREE" which the API rejects.
   final String apiValue;
@@ -53,16 +54,16 @@ double computeFastPrice(double basePrice) {
   final rate = basePrice < 10
       ? 0.125
       : basePrice < 15
-          ? 0.10
-          : basePrice <= 25
-              ? 0.07
-              : basePrice <= 100
-                  ? 0.05
-                  : basePrice <= 500
-                      ? 0.02
-                      : basePrice <= 1000
-                          ? 0.01
-                          : 0.005;
+      ? 0.10
+      : basePrice <= 25
+      ? 0.07
+      : basePrice <= 100
+      ? 0.05
+      : basePrice <= 500
+      ? 0.02
+      : basePrice <= 1000
+      ? 0.01
+      : 0.005;
   return (basePrice * (1 + rate) * 100).roundToDouble() / 100;
 }
 
@@ -381,6 +382,13 @@ class Restaurant {
   final int seatingCapacity;
   final List<TruckStop> truckStops;
   final TruckStop? todayStop;
+  // Loyalty card — the restaurateur's own order count and reward.
+  final bool loyaltyEnabled;
+  final int loyaltyThreshold;
+  final String loyaltyReward;
+
+  /// True when the restaurant runs a usable loyalty programme.
+  bool get hasLoyalty => loyaltyEnabled && loyaltyReward.trim().isNotEmpty;
 
   Restaurant({
     required this.id,
@@ -410,6 +418,9 @@ class Restaurant {
     this.seatingCapacity = 0,
     this.truckStops = const [],
     this.todayStop,
+    this.loyaltyEnabled = false,
+    this.loyaltyThreshold = 10,
+    this.loyaltyReward = '',
   });
 
   Map<String, dynamic> toJson() => {
@@ -419,6 +430,9 @@ class Restaurant {
     'image': image,
     'category': category,
     'cuisineType': cuisineType,
+    'loyaltyEnabled': loyaltyEnabled,
+    'loyaltyThreshold': loyaltyThreshold,
+    'loyaltyReward': loyaltyReward,
     'rating': rating,
     'reviewsCount': reviewsCount,
     'reviews': reviews.map((r) => r.toJson()).toList(),
@@ -487,6 +501,9 @@ class Restaurant {
     todayStop: json['todayStop'] != null
         ? TruckStop.fromJson(json['todayStop'] as Map<String, dynamic>)
         : null,
+    loyaltyEnabled: json['loyaltyEnabled'] as bool? ?? false,
+    loyaltyThreshold: (json['loyaltyThreshold'] as num?)?.toInt() ?? 10,
+    loyaltyReward: strOrNull(json['loyaltyReward']) ?? '',
   );
 
   /// Parse from backend API JSON format
@@ -532,6 +549,9 @@ class Restaurant {
     todayStop: json['todayStop'] != null
         ? TruckStop.fromJson(json['todayStop'] as Map<String, dynamic>)
         : null,
+    loyaltyEnabled: json['loyaltyEnabled'] as bool? ?? false,
+    loyaltyThreshold: (json['loyaltyThreshold'] as num?)?.toInt() ?? 10,
+    loyaltyReward: strOrNull(json['loyaltyReward']) ?? '',
   );
 
   static List<DietaryPreference> _parseDietaryOptions(dynamic options) {
@@ -1033,19 +1053,80 @@ class Reservation {
     restaurantName:
         strOrNull((json['restaurant'] as Map<String, dynamic>?)?['name']) ?? '',
     restaurantImage:
-        strOrNull((json['restaurant'] as Map<String, dynamic>?)?['image']) ?? '',
+        strOrNull((json['restaurant'] as Map<String, dynamic>?)?['image']) ??
+        '',
     customerName:
         strOrNull(json['userName']) ??
-            strOrNull(
-              (json['customer'] as Map<String, dynamic>?)?['name'],
-            ) ??
-            strOrNull(json['customerName']) ??
-            '',
+        strOrNull((json['customer'] as Map<String, dynamic>?)?['name']) ??
+        strOrNull(json['customerName']) ??
+        '',
     partySize: json['partySize'] as int? ?? 2,
-    dateTime: DateTime.tryParse(strOrNull(json['dateTime']) ?? '') ??
-        DateTime.now(),
+    dateTime:
+        DateTime.tryParse(strOrNull(json['dateTime']) ?? '') ?? DateTime.now(),
     status: strOrNull(json['status']) ?? 'PENDING',
     note: strOrNull(json['note']),
     tableNumber: strOrNull(json['tableNumber']),
   );
+}
+
+/// One loyalty card: the client's progress at one restaurant. The count
+/// comes from the backend (paid + completed orders), never from the app.
+class LoyaltyCard {
+  final String restaurantId;
+  final String restaurantName;
+  final String restaurantImage;
+  final int threshold;
+  final String reward;
+  final int stamps;
+  final int remaining;
+  final bool rewardAvailable;
+
+  const LoyaltyCard({
+    required this.restaurantId,
+    required this.restaurantName,
+    this.restaurantImage = '',
+    required this.threshold,
+    required this.reward,
+    this.stamps = 0,
+    int? remaining,
+    this.rewardAvailable = false,
+  }) : remaining = remaining ?? threshold - stamps;
+
+  /// A blank card for a restaurant the client hasn't ordered from yet.
+  factory LoyaltyCard.blank(Restaurant r) => LoyaltyCard(
+    restaurantId: r.id,
+    restaurantName: r.name,
+    restaurantImage: r.image,
+    threshold: r.loyaltyThreshold,
+    reward: r.loyaltyReward,
+  );
+
+  factory LoyaltyCard.fromApiJson(Map<String, dynamic> json) {
+    final threshold = (json['threshold'] as num?)?.toInt() ?? 10;
+    final stamps = (json['stamps'] as num?)?.toInt() ?? 0;
+    return LoyaltyCard(
+      restaurantId: strOrNull(json['restaurantId']) ?? '',
+      restaurantName: strOrNull(json['restaurantName']) ?? '',
+      restaurantImage: strOrNull(json['restaurantImage']) ?? '',
+      threshold: threshold,
+      reward: strOrNull(json['reward']) ?? '',
+      stamps: stamps,
+      remaining: (json['remaining'] as num?)?.toInt() ?? threshold - stamps,
+      rewardAvailable: json['rewardAvailable'] as bool? ?? false,
+    );
+  }
+}
+
+/// Lower-cases and strips French accents so "Crêpes", "crepes" and
+/// "CREPES" compare equal — used by search and by category matching.
+String foldText(String raw) {
+  const from = 'àâäáãéèêëíìîïóòôöõúùûüçñ';
+  const to = 'aaaaaeeeeiiiiooooouuuucn';
+  final s = raw.toLowerCase().trim();
+  final out = StringBuffer();
+  for (final ch in s.split('')) {
+    final i = from.indexOf(ch);
+    out.write(i >= 0 ? to[i] : ch);
+  }
+  return out.toString().replaceAll(RegExp(r'\s+'), ' ');
 }

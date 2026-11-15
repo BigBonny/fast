@@ -6,6 +6,7 @@ import '../l10n/app_strings.dart';
 import '../providers/auth_provider.dart';
 import '../screens/account_screen.dart';
 import '../screens/assistant_screen.dart';
+import '../screens/loyalty_screen.dart';
 import '../theme.dart';
 import '../l10n/tr.dart';
 import 'fast_loop.dart';
@@ -65,6 +66,19 @@ class ClientDrawer extends StatelessWidget {
                     onTap: () {
                       Navigator.of(context).pop();
                       provider.navigateToScreen('commandes');
+                    },
+                  ),
+                  _item(
+                    context,
+                    icon: Icons.card_giftcard_outlined,
+                    label: provider.tr('loy_title'),
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const LoyaltyScreen(),
+                        ),
+                      );
                     },
                   ),
                   _settingsItem(context, provider),

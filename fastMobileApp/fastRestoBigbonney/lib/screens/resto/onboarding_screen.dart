@@ -77,7 +77,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     'Vegan & Végétarien',
     'Halal',
     'Boulangerie',
-    'Sandwicherie',
     'Crêpes & Gaufres',
     'Desserts',
     'Glaces',

@@ -71,11 +71,14 @@ class _AuthScreenState extends State<AuthScreen>
     AuthService().phoneVerificationEnabled().then((enabled) {
       if (mounted) setState(() => _smsRequired = enabled);
     });
-    _loginEmail.addListener(() {
-      // Rebuild so the prefix-filtered suggestions refresh as the user
-      // types — cheap, only fires on local text changes.
-      setState(() {});
-    });
+    // Rebuild so the suggestions under the email fields refresh as the
+    // user types — cheap, only fires on local text changes.
+    void refresh() {
+      if (mounted) setState(() {});
+    }
+
+    _loginEmail.addListener(refresh);
+    _registerEmail.addListener(refresh);
     SharedPreferences.getInstance().then((prefs) {
       if (mounted) {
         setState(() {
@@ -122,6 +125,8 @@ class _AuthScreenState extends State<AuthScreen>
 
     if (success && mounted) {
       _rememberEmail(_loginEmail.text);
+      // Lets the system password manager offer to save the credentials.
+      TextInput.finishAutofillContext();
       _navigateToShell();
     }
   }
@@ -317,105 +322,164 @@ class _AuthScreenState extends State<AuthScreen>
     return Form(
       key: _loginFormKey,
       child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _buildTextField(
-              controller: _loginEmail,
-              label: fast.tr('email'),
-              hint: fast.tr('email_hint'),
-              icon: Icons.email_outlined,
-              keyboardType: TextInputType.emailAddress,
-              autofillHints: const [AutofillHints.email],
-              validator: (v) {
-                if (v == null || v.trim().isEmpty) {
-                  return fast.tr('err_email_required');
-                }
-                if (!v.contains('@')) return fast.tr('err_email_invalid');
-                return null;
-              },
-            ),
-            _buildEmailSuggestions(fast),
-            SizedBox(height: 20),
-            _buildTextField(
-              controller: _loginPassword,
-              label: fast.tr('password'),
-              hint: '••••••••',
-              icon: Icons.lock_outlined,
-              obscureText: _obscureLoginPwd,
-              autofillHints: const [AutofillHints.password],
-              suffix: IconButton(
-                icon: Icon(
-                  _obscureLoginPwd ? Icons.visibility_off : Icons.visibility,
-                  color: context.fast.t3,
-                  size: 20,
-                ),
-                onPressed: () =>
-                    setState(() => _obscureLoginPwd = !_obscureLoginPwd),
+        child: AutofillGroup(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildTextField(
+                controller: _loginEmail,
+                label: fast.tr('email'),
+                hint: fast.tr('email_hint'),
+                icon: Icons.email_outlined,
+                keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.next,
+                autofillHints: const [
+                  AutofillHints.username,
+                  AutofillHints.email,
+                ],
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) {
+                    return fast.tr('err_email_required');
+                  }
+                  if (!v.contains('@')) return fast.tr('err_email_invalid');
+                  return null;
+                },
               ),
-              validator: (v) {
-                if (v == null || v.isEmpty) return fast.tr('err_pwd_required');
-                return null;
-              },
-            ),
-            SizedBox(height: 32),
-            Consumer<AuthProvider>(
-              builder: (context, auth, _) {
-                if (auth.error != null) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: Text(
-                      auth.error!,
-                      style: FASTText.body.copyWith(color: FASTBrand.error),
-                      textAlign: TextAlign.center,
-                    ),
+              _buildEmailSuggestions(_loginEmail, history: true),
+              SizedBox(height: 20),
+              _buildTextField(
+                controller: _loginPassword,
+                label: fast.tr('password'),
+                hint: '••••••••',
+                icon: Icons.lock_outlined,
+                obscureText: _obscureLoginPwd,
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => _handleLogin(),
+                autofillHints: const [AutofillHints.password],
+                suffix: IconButton(
+                  icon: Icon(
+                    _obscureLoginPwd ? Icons.visibility_off : Icons.visibility,
+                    color: context.fast.t3,
+                    size: 20,
+                  ),
+                  onPressed: () =>
+                      setState(() => _obscureLoginPwd = !_obscureLoginPwd),
+                ),
+                validator: (v) {
+                  if (v == null || v.isEmpty) {
+                    return fast.tr('err_pwd_required');
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 32),
+              Consumer<AuthProvider>(
+                builder: (context, auth, _) {
+                  if (auth.error != null) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: Text(
+                        auth.error!,
+                        style: FASTText.body.copyWith(color: FASTBrand.error),
+                        textAlign: TextAlign.center,
+                      ),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
+              Consumer<AuthProvider>(
+                builder: (context, auth, _) {
+                  return FastButton(
+                    label: fast.tr('login_btn'),
+                    onPressed: _handleLogin,
+                    loading: auth.isBusy,
+                    kind: FastButtonKind.ink,
+                    fontSize: 16,
                   );
-                }
-                return const SizedBox.shrink();
-              },
-            ),
-            Consumer<AuthProvider>(
-              builder: (context, auth, _) {
-                return FastButton(
-                  label: fast.tr('login_btn'),
-                  onPressed: _handleLogin,
-                  loading: auth.isBusy,
-                  kind: FastButtonKind.ink,
-                  fontSize: 16,
-                );
-              },
-            ),
-            _buildGoogleButton(),
-          ],
+                },
+              ),
+              _buildGoogleButton(),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  /// F14 — emails used on this device that still match the typed prefix.
-  /// Appears from the first letter; one tap fills the field. Only the
-  /// address is stored — never the password.
-  Widget _buildEmailSuggestions(FASTProvider fast) {
-    final typed = _loginEmail.text.trim().toLowerCase();
-    if (typed.isEmpty || _emailHistory.isEmpty) return const SizedBox.shrink();
-    final matches = _emailHistory
-        .where((e) => e.startsWith(typed) && e != typed)
-        .toList();
-    if (matches.isEmpty) return const SizedBox.shrink();
+  // Mail providers most used by FAST customers, offered as soon as the
+  // "@" is typed so the address is finished in one tap.
+  static const _emailDomains = [
+    'gmail.com',
+    'outlook.fr',
+    'hotmail.fr',
+    'hotmail.com',
+    'yahoo.fr',
+    'icloud.com',
+    'orange.fr',
+    'free.fr',
+    'sfr.fr',
+    'laposte.net',
+  ];
+
+  /// Email autofill chips under an email field; one tap fills it.
+  /// - F14: addresses already used on this device ([history]) — shown
+  ///   while the field is empty, then filtered by what is typed. Only
+  ///   the address is stored, never the password.
+  /// - Domain completion: "marie@g" offers "marie@gmail.com".
+  Widget _buildEmailSuggestions(
+    TextEditingController controller, {
+    bool history = false,
+  }) {
+    final typed = controller.text.trim().toLowerCase();
+    final suggestions = <String>[];
+    if (history) {
+      suggestions.addAll(
+        _emailHistory.where((e) => e.startsWith(typed) && e != typed).take(3),
+      );
+    }
+    final at = typed.indexOf('@');
+    if (at > 0) {
+      final local = typed.substring(0, at);
+      final domain = typed.substring(at + 1);
+      for (final d in _emailDomains) {
+        final full = '$local@$d';
+        if (d.startsWith(domain) &&
+            d != domain &&
+            !suggestions.contains(full)) {
+          suggestions.add(full);
+        }
+        if (suggestions.length >= 4) break;
+      }
+    }
+    if (suggestions.isEmpty) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(top: 8),
       child: Wrap(
         spacing: 8,
         runSpacing: 8,
         children: [
-          for (final email in matches)
+          for (final email in suggestions)
             ActionChip(
-              avatar: const Icon(Icons.history, size: 14),
+              avatar: Icon(
+                _emailHistory.contains(email)
+                    ? Icons.history
+                    : Icons.alternate_email,
+                size: 14,
+                color: context.fast.t2,
+              ),
               label: Text(email, style: FASTText.caption),
               backgroundColor: context.fast.card,
               side: BorderSide(color: context.fast.line),
               labelStyle: TextStyle(color: context.fast.t2),
-              onPressed: () => _loginEmail.text = email,
+              onPressed: () {
+                controller.value = TextEditingValue(
+                  text: email,
+                  selection: TextSelection.collapsed(offset: email.length),
+                );
+                // On to the next field (password / phone).
+                FocusScope.of(context).nextFocus();
+              },
             ),
         ],
       ),
@@ -543,265 +607,283 @@ class _AuthScreenState extends State<AuthScreen>
     return Form(
       key: _registerFormKey,
       child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _buildLanguagePicker(),
-            const SizedBox(height: 20),
-            _buildTextField(
-              controller: _registerName,
-              label: fast.tr('name'),
-              hint: 'Jean Dupont',
-              icon: Icons.person_outlined,
-              validator: (v) {
-                if (v == null || v.trim().isEmpty) {
-                  return fast.tr('err_name_required');
-                }
-                return null;
-              },
-            ),
-            SizedBox(height: 20),
-            _buildTextField(
-              controller: _registerEmail,
-              label: fast.tr('email'),
-              hint: fast.tr('email_hint'),
-              icon: Icons.email_outlined,
-              keyboardType: TextInputType.emailAddress,
-              autofillHints: const [AutofillHints.email],
-              validator: (v) {
-                if (v == null || v.trim().isEmpty) {
-                  return fast.tr('err_email_required');
-                }
-                if (!v.contains('@')) return fast.tr('err_email_invalid');
-                return null;
-              },
-            ),
-            SizedBox(height: 20),
-            _buildTextField(
-              controller: _registerPhone,
-              label: fast.tr('phone'),
-              hint: '06 12 34 56 78',
-              icon: Icons.phone_outlined,
-              keyboardType: TextInputType.phone,
-              onChanged: (_) {
-                if (_phoneVerified) setState(() => _phoneVerified = false);
-              },
-              validator: (v) {
-                if (v == null || v.trim().isEmpty) {
-                  return fast.tr('err_phone_required');
-                }
-                return null;
-              },
-            ),
-            if (_smsRequired) ...[
-              const SizedBox(height: 10),
-              if (_phoneVerified)
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.check_circle,
-                      color: FASTBrand.success,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      fast.tr('phone_verified'),
-                      style: FASTText.caption.copyWith(
-                        color: FASTBrand.success,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                )
-              else ...[
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: _smsBusy ? null : _requestSmsCode,
-                    icon: const Icon(Icons.sms_outlined, size: 16),
-                    label: Text(
-                      _smsSent ? fast.tr('resend_code') : fast.tr('send_code'),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: context.fast.t1,
-                      side: BorderSide(color: context.fast.faint),
-                      shape: const StadiumBorder(),
-                    ),
-                  ),
-                ),
-                if (_smsSent) ...[
-                  const SizedBox(height: 10),
+        child: AutofillGroup(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildLanguagePicker(),
+              const SizedBox(height: 20),
+              _buildTextField(
+                controller: _registerName,
+                label: fast.tr('name'),
+                hint: 'Jean Dupont',
+                icon: Icons.person_outlined,
+                textInputAction: TextInputAction.next,
+                autofillHints: const [AutofillHints.name],
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) {
+                    return fast.tr('err_name_required');
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 20),
+              _buildTextField(
+                controller: _registerEmail,
+                label: fast.tr('email'),
+                hint: fast.tr('email_hint'),
+                icon: Icons.email_outlined,
+                keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.next,
+                autofillHints: const [AutofillHints.email],
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) {
+                    return fast.tr('err_email_required');
+                  }
+                  if (!v.contains('@')) return fast.tr('err_email_invalid');
+                  return null;
+                },
+              ),
+              _buildEmailSuggestions(_registerEmail),
+              SizedBox(height: 20),
+              _buildTextField(
+                controller: _registerPhone,
+                label: fast.tr('phone'),
+                hint: '06 12 34 56 78',
+                icon: Icons.phone_outlined,
+                keyboardType: TextInputType.phone,
+                autofillHints: const [AutofillHints.telephoneNumber],
+                onChanged: (_) {
+                  if (_phoneVerified) setState(() => _phoneVerified = false);
+                },
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) {
+                    return fast.tr('err_phone_required');
+                  }
+                  return null;
+                },
+              ),
+              if (_smsRequired) ...[
+                const SizedBox(height: 10),
+                if (_phoneVerified)
                   Row(
                     children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _smsCode,
-                          keyboardType: TextInputType.number,
-                          maxLength: 6,
-                          style: TextStyle(
-                            color: context.fast.t1,
-                            fontSize: 14,
-                            letterSpacing: 4,
-                          ),
-                          decoration: InputDecoration(
-                            hintText: '••••••',
-                            counterText: '',
-                            hintStyle: TextStyle(color: context.fast.t3),
-                            filled: true,
-                            fillColor: context.fast.card,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(
-                                FASTRadius.sm,
-                              ),
-                              borderSide: BorderSide(color: context.fast.line),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(
-                                FASTRadius.sm,
-                              ),
-                              borderSide: BorderSide(color: context.fast.line),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(
-                                FASTRadius.sm,
-                              ),
-                              borderSide: BorderSide(
-                                color: context.fast.ink,
-                                width: 1.5,
-                              ),
-                            ),
-                          ),
-                        ),
+                      const Icon(
+                        Icons.check_circle,
+                        color: FASTBrand.success,
+                        size: 16,
                       ),
-                      const SizedBox(width: 10),
-                      ElevatedButton(
-                        onPressed: _smsBusy ? null : _verifySmsCode,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: context.fast.ink,
-                          foregroundColor: context.fast.onInk,
-                          shape: const StadiumBorder(),
+                      const SizedBox(width: 6),
+                      Text(
+                        fast.tr('phone_verified'),
+                        style: FASTText.caption.copyWith(
+                          color: FASTBrand.success,
+                          fontWeight: FontWeight.w700,
                         ),
-                        child: Text(fast.tr('verify')),
                       ),
                     ],
+                  )
+                else ...[
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: _smsBusy ? null : _requestSmsCode,
+                      icon: const Icon(Icons.sms_outlined, size: 16),
+                      label: Text(
+                        _smsSent
+                            ? fast.tr('resend_code')
+                            : fast.tr('send_code'),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: context.fast.t1,
+                        side: BorderSide(color: context.fast.faint),
+                        shape: const StadiumBorder(),
+                      ),
+                    ),
                   ),
+                  if (_smsSent) ...[
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _smsCode,
+                            keyboardType: TextInputType.number,
+                            maxLength: 6,
+                            style: TextStyle(
+                              color: context.fast.t1,
+                              fontSize: 14,
+                              letterSpacing: 4,
+                            ),
+                            decoration: InputDecoration(
+                              hintText: '••••••',
+                              counterText: '',
+                              hintStyle: TextStyle(color: context.fast.t3),
+                              filled: true,
+                              fillColor: context.fast.card,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(
+                                  FASTRadius.sm,
+                                ),
+                                borderSide: BorderSide(
+                                  color: context.fast.line,
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(
+                                  FASTRadius.sm,
+                                ),
+                                borderSide: BorderSide(
+                                  color: context.fast.line,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(
+                                  FASTRadius.sm,
+                                ),
+                                borderSide: BorderSide(
+                                  color: context.fast.ink,
+                                  width: 1.5,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        ElevatedButton(
+                          onPressed: _smsBusy ? null : _verifySmsCode,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: context.fast.ink,
+                            foregroundColor: context.fast.onInk,
+                            shape: const StadiumBorder(),
+                          ),
+                          child: Text(fast.tr('verify')),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ],
-            ],
-            SizedBox(height: 20),
-            if (widget.initialRole == 'LIVREUR') ...[
-              Text(
-                fast.tr('availability_mode'),
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: context.fast.t1,
-                ),
-              ),
-              SizedBox(height: 8),
-              SegmentedButton<String>(
-                segments: [
-                  ButtonSegment(
-                    value: 'OCCASIONAL',
-                    icon: Icon(Icons.flash_on_outlined),
-                    label: Text(fast.tr('occasional')),
-                  ),
-                  ButtonSegment(
-                    value: 'PERMANENT',
-                    icon: Icon(Icons.calendar_month_outlined),
-                    label: Text(fast.tr('permanent')),
-                  ),
-                ],
-                selected: {_driverType},
-                onSelectionChanged: (selection) =>
-                    setState(() => _driverType = selection.first),
-                showSelectedIcon: false,
-                style: ButtonStyle(
-                  minimumSize: WidgetStatePropertyAll(Size(0, 48)),
-                  foregroundColor: WidgetStateProperty.resolveWith(
-                    (states) => states.contains(WidgetState.selected)
-                        ? context.fast.bg
-                        : context.fast.t1,
-                  ),
-                  backgroundColor: WidgetStateProperty.resolveWith(
-                    (states) => states.contains(WidgetState.selected)
-                        ? Color(0xFFF59E0B)
-                        : context.fast.card,
+              SizedBox(height: 20),
+              if (widget.initialRole == 'LIVREUR') ...[
+                Text(
+                  fast.tr('availability_mode'),
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: context.fast.t1,
                   ),
                 ),
-              ),
-              SizedBox(height: 8),
-              Text(
-                fast.tr(
-                  _driverType == 'OCCASIONAL'
-                      ? 'occasional_desc'
-                      : 'permanent_desc',
-                ),
-                style: TextStyle(
-                  color: context.fast.t2,
-                  fontSize: 12,
-                  height: 1.4,
-                ),
-              ),
-              const SizedBox(height: 20),
-            ],
-            _buildTextField(
-              controller: _registerPassword,
-              label: fast.tr('password'),
-              hint: '••••••••',
-              icon: Icons.lock_outlined,
-              obscureText: _obscureRegisterPwd,
-              autofillHints: const [AutofillHints.newPassword],
-              suffix: IconButton(
-                icon: Icon(
-                  _obscureRegisterPwd ? Icons.visibility_off : Icons.visibility,
-                  color: context.fast.t3,
-                  size: 20,
-                ),
-                onPressed: () =>
-                    setState(() => _obscureRegisterPwd = !_obscureRegisterPwd),
-              ),
-              validator: (v) {
-                if (v == null || v.isEmpty) return fast.tr('err_pwd_required');
-                if (v.length < 8) return fast.tr('err_pwd_min');
-                if (!v.contains(RegExp(r'[A-Z]'))) {
-                  return fast.tr('err_pwd_upper');
-                }
-                if (!v.contains(RegExp(r'[0-9]'))) {
-                  return fast.tr('err_pwd_digit');
-                }
-                return null;
-              },
-            ),
-            SizedBox(height: 32),
-            Consumer<AuthProvider>(
-              builder: (context, auth, _) {
-                if (auth.error != null) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: Text(
-                      auth.error!,
-                      style: FASTText.body.copyWith(color: FASTBrand.error),
-                      textAlign: TextAlign.center,
+                SizedBox(height: 8),
+                SegmentedButton<String>(
+                  segments: [
+                    ButtonSegment(
+                      value: 'OCCASIONAL',
+                      icon: Icon(Icons.flash_on_outlined),
+                      label: Text(fast.tr('occasional')),
                     ),
+                    ButtonSegment(
+                      value: 'PERMANENT',
+                      icon: Icon(Icons.calendar_month_outlined),
+                      label: Text(fast.tr('permanent')),
+                    ),
+                  ],
+                  selected: {_driverType},
+                  onSelectionChanged: (selection) =>
+                      setState(() => _driverType = selection.first),
+                  showSelectedIcon: false,
+                  style: ButtonStyle(
+                    minimumSize: WidgetStatePropertyAll(Size(0, 48)),
+                    foregroundColor: WidgetStateProperty.resolveWith(
+                      (states) => states.contains(WidgetState.selected)
+                          ? context.fast.bg
+                          : context.fast.t1,
+                    ),
+                    backgroundColor: WidgetStateProperty.resolveWith(
+                      (states) => states.contains(WidgetState.selected)
+                          ? Color(0xFFF59E0B)
+                          : context.fast.card,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  fast.tr(
+                    _driverType == 'OCCASIONAL'
+                        ? 'occasional_desc'
+                        : 'permanent_desc',
+                  ),
+                  style: TextStyle(
+                    color: context.fast.t2,
+                    fontSize: 12,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
+              _buildTextField(
+                controller: _registerPassword,
+                label: fast.tr('password'),
+                hint: '••••••••',
+                icon: Icons.lock_outlined,
+                obscureText: _obscureRegisterPwd,
+                autofillHints: const [AutofillHints.newPassword],
+                suffix: IconButton(
+                  icon: Icon(
+                    _obscureRegisterPwd
+                        ? Icons.visibility_off
+                        : Icons.visibility,
+                    color: context.fast.t3,
+                    size: 20,
+                  ),
+                  onPressed: () => setState(
+                    () => _obscureRegisterPwd = !_obscureRegisterPwd,
+                  ),
+                ),
+                validator: (v) {
+                  if (v == null || v.isEmpty) {
+                    return fast.tr('err_pwd_required');
+                  }
+                  if (v.length < 8) return fast.tr('err_pwd_min');
+                  if (!v.contains(RegExp(r'[A-Z]'))) {
+                    return fast.tr('err_pwd_upper');
+                  }
+                  if (!v.contains(RegExp(r'[0-9]'))) {
+                    return fast.tr('err_pwd_digit');
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 32),
+              Consumer<AuthProvider>(
+                builder: (context, auth, _) {
+                  if (auth.error != null) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: Text(
+                        auth.error!,
+                        style: FASTText.body.copyWith(color: FASTBrand.error),
+                        textAlign: TextAlign.center,
+                      ),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
+              Consumer<AuthProvider>(
+                builder: (context, auth, _) {
+                  return FastButton(
+                    label: fast.tr('register_btn'),
+                    onPressed: _handleRegister,
+                    loading: auth.isBusy,
+                    kind: FastButtonKind.ink,
+                    fontSize: 16,
                   );
-                }
-                return const SizedBox.shrink();
-              },
-            ),
-            Consumer<AuthProvider>(
-              builder: (context, auth, _) {
-                return FastButton(
-                  label: fast.tr('register_btn'),
-                  onPressed: _handleRegister,
-                  loading: auth.isBusy,
-                  kind: FastButtonKind.ink,
-                  fontSize: 16,
-                );
-              },
-            ),
-            _buildGoogleButton(),
-          ],
+                },
+              ),
+              _buildGoogleButton(),
+            ],
+          ),
         ),
       ),
     );
@@ -881,7 +963,10 @@ class _AuthScreenState extends State<AuthScreen>
     String? Function(String?)? validator,
     Iterable<String>? autofillHints,
     void Function(String)? onChanged,
+    TextInputAction? textInputAction,
+    void Function(String)? onSubmitted,
   }) {
+    final isEmail = keyboardType == TextInputType.emailAddress;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -901,6 +986,12 @@ class _AuthScreenState extends State<AuthScreen>
           validator: validator,
           autofillHints: autofillHints,
           onChanged: onChanged,
+          textInputAction: textInputAction,
+          onFieldSubmitted: onSubmitted,
+          // An address must not be "corrected" or capitalised.
+          autocorrect: !isEmail && !obscureText,
+          enableSuggestions: !obscureText,
+          textCapitalization: TextCapitalization.none,
           style: TextStyle(color: context.fast.t1, fontSize: 14),
           decoration: InputDecoration(
             hintText: hint,

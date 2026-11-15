@@ -167,7 +167,8 @@ void main() {
     await tester.pump();
     // A layout exception here renders a blank page in release builds.
     expect(tester.takeException(), isNull);
-    expect(find.byType(TextField), findsOneWidget);
+    // The search pill, plus the "missing restaurant" card's field.
+    expect(find.byType(TextField), findsNWidgets(2));
     await tester.pumpWidget(const SizedBox.shrink());
   });
 

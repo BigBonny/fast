@@ -129,6 +129,7 @@ model User {
   reservations     Reservation[]
   restaurantRequests RestaurantRequest[]
   deviceTokens     DeviceToken[]
+  loyaltyRedemptions LoyaltyRedemption[]
 }
 
 model DeviceToken {
@@ -232,10 +233,18 @@ model Restaurant {
   staffInviteCode      String?
   payoutFrequency      String   @default("daily") // daily | weekly | monthly
   isFoodTruck          Boolean  @default(false)
+  // Loyalty card — opt-in, the restaurateur picks the number of orders
+  // and the reward (free text). Only orders placed after
+  // `loyaltyStartedAt` count (services/loyalty.ts).
+  loyaltyEnabled       Boolean  @default(false)
+  loyaltyThreshold     Int      @default(10)
+  loyaltyReward        String   @default("")
+  loyaltyStartedAt     DateTime?
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
   owner          User                      @relation("RestaurantOwner", fields: [ownerId], references: [id])
+  loyaltyRedemptions LoyaltyRedemption[]
   menuItems      MenuItem[]
   reviews        Review[]
   orders         Order[]
@@ -616,6 +625,27 @@ model RestaurantRequest {
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([status, createdAt])
+}
+
+// ─── Loyalty ────────────────────────────────────────────────
+
+// One row per reward a client used. A card's progress is never stored:
+// it is (paid + completed orders at the restaurant) minus the stamps
+// already spent here, so a refund or cancellation can never leave a
+// stale point behind.
+model LoyaltyRedemption {
+  id           String   @id @default(cuid())
+  userId       String
+  restaurantId String
+  stampsUsed   Int
+  reward       String
+  createdAt    DateTime @default(now())
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@index([userId, restaurantId])
+  @@index([restaurantId, createdAt])
 }
 
 // ─── Rate limiting ──────────────────────────────────────────

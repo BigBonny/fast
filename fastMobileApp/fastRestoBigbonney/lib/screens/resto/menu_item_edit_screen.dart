@@ -11,6 +11,7 @@ import '../../l10n/tr.dart';
 import '../../widgets/fast_image.dart';
 import '../../widgets/fast_parts.dart';
 import '../../widgets/fast_ui.dart';
+import '../../widgets/suggest_field.dart';
 
 class MenuItemEditScreen extends StatefulWidget {
   final MenuItem? item; // null = create mode
@@ -163,7 +164,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
             ? _name.text.trim()
             : (widget.item?.name ?? ''),
         description: _description.text.trim(),
-        category: _category.text.trim(),
+        category: _categoryValue(),
       );
       if (mounted && url.isNotEmpty) {
         setState(() => _image.text = url);
@@ -443,7 +444,7 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
       // Backend treats this as the BASE price and applies the FAST markup.
       'basePrice': parseAmount(_price.text) ?? 0,
       'image': _image.text.trim(),
-      'category': _category.text.trim(),
+      'category': _categoryValue(),
       'prepTime': (int.tryParse(_prepTime.text.trim()) ?? 0).clamp(0, 120),
       'prepTimeRush': (int.tryParse(_prepTimeRush.text.trim()) ?? 0).clamp(
         0,
@@ -759,6 +760,31 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                 ),
               ),
             SizedBox(height: 16),
+            // Category: searches the menu's existing categories while
+            // typing; a new one is only created when nothing matches.
+            SuggestField(
+              controller: _category,
+              options: _categoryOptions(),
+              accent: FASTPro.teal,
+              maxLength: 50,
+              textCapitalization: TextCapitalization.words,
+              style: TextStyle(
+                color: context.fast.t1,
+                fontSize: 15,
+                height: 1.35,
+              ),
+              decoration: _decoration(
+                tr(context, 'category_lbl'),
+                Icons.category_outlined,
+              ),
+              createLabel: (typed) =>
+                  tr(context, 'cat_create').replaceAll('{n}', typed),
+              onCreate: (_) {},
+              validator: (v) => v == null || v.trim().isEmpty
+                  ? tr(context, 'required_f')
+                  : null,
+            ),
+            const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
@@ -779,18 +805,6 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
                       }
                       return null;
                     },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _field(
-                    controller: _category,
-                    label: tr(context, 'category_lbl'),
-                    icon: Icons.category_outlined,
-                    maxLength: 50,
-                    validator: (v) => v == null || v.trim().isEmpty
-                        ? tr(context, 'required_f')
-                        : null,
                   ),
                 ),
               ],
@@ -1161,38 +1175,69 @@ class _MenuItemEditScreenState extends State<MenuItemEditScreen> {
           : null,
       cursorColor: FASTPro.teal,
       style: TextStyle(color: context.fast.t1, fontSize: 15, height: 1.35),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: TextStyle(color: context.fast.t3, fontSize: 14),
-        floatingLabelStyle: const TextStyle(color: FASTPro.teal),
-        prefixIcon: Icon(icon, color: context.fast.t3, size: 18),
-        filled: true,
-        fillColor: context.fast.cardHigh,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(FASTRadius.sm),
-          borderSide: BorderSide(color: context.fast.line),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(FASTRadius.sm),
-          borderSide: BorderSide(color: context.fast.line),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(FASTRadius.sm),
-          borderSide: const BorderSide(color: FASTPro.teal, width: 1.5),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(FASTRadius.sm),
-          borderSide: const BorderSide(color: FASTBrand.error),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(FASTRadius.sm),
-          borderSide: const BorderSide(color: FASTBrand.error, width: 1.5),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
+      decoration: _decoration(label, icon),
+    );
+  }
+
+  /// Categories already used on this menu, then the usual ones — what
+  /// the category field suggests while typing.
+  List<String> _categoryOptions() {
+    final used = context
+        .read<RestoProvider>()
+        .menu
+        .map((m) => m.category.trim())
+        .where((c) => c.isNotEmpty);
+    return [
+      ...{...used},
+      for (final k in const [
+        'menu_cat_starters',
+        'menu_cat_mains',
+        'menu_cat_menus',
+        'menu_cat_sides',
+        'menu_cat_desserts',
+        'menu_cat_drinks',
+      ])
+        tr(context, k),
+    ];
+  }
+
+  /// The category to save: an existing category's exact spelling when
+  /// the typed one only differs by case or accents ("boissons" →
+  /// "Boissons"), so the menu never shows the same section twice.
+  String _categoryValue() {
+    final typed = _category.text.trim();
+    return existingOption(_categoryOptions(), typed) ?? typed;
+  }
+
+  InputDecoration _decoration(String label, IconData icon) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: TextStyle(color: context.fast.t3, fontSize: 14),
+      floatingLabelStyle: const TextStyle(color: FASTPro.teal),
+      prefixIcon: Icon(icon, color: context.fast.t3, size: 18),
+      filled: true,
+      fillColor: context.fast.cardHigh,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(FASTRadius.sm),
+        borderSide: BorderSide(color: context.fast.line),
       ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(FASTRadius.sm),
+        borderSide: BorderSide(color: context.fast.line),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(FASTRadius.sm),
+        borderSide: const BorderSide(color: FASTPro.teal, width: 1.5),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(FASTRadius.sm),
+        borderSide: const BorderSide(color: FASTBrand.error),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(FASTRadius.sm),
+        borderSide: const BorderSide(color: FASTBrand.error, width: 1.5),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     );
   }
 }
