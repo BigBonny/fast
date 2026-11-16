@@ -43,7 +43,9 @@ android {
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         // 26 is the floor imposed by sentry_flutter (Android 8.0, ~99% of devices).
         minSdk = 26
-        targetSdk = 35
+        // Google Play requires API 36 (Android 16) for new apps and updates
+        // since 31 Aug 2026.
+        targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         manifestPlaceholders["appLabel"] = "FAST"

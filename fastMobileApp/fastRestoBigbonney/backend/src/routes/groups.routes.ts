@@ -13,6 +13,8 @@ import {
   getGroupCarts,
   updateHostLocation,
   getRestaurantGroupOrders,
+  setMyCraving,
+  changeGroupRestaurant,
 } from '../controllers/groups.controller';
 import { authenticate, requireRestaurantAccess } from '../middleware/auth';
 import { asyncHandler } from '../utils/asyncHandler';
@@ -28,6 +30,8 @@ router.get('/:id/cart', authenticate, asyncHandler(getGroupCarts));
 router.put('/:id/cart', authenticate, asyncHandler(saveGroupCart));
 router.patch('/:id/location', authenticate, asyncHandler(updateHostLocation));
 router.patch('/:id/member', authenticate, asyncHandler(updateMyGroupMember));
+router.patch('/:id/craving', authenticate, asyncHandler(setMyCraving));
+router.patch('/:id/restaurant', authenticate, asyncHandler(changeGroupRestaurant));
 router.patch('/:id/payment-status', authenticate, asyncHandler(updateMyPaymentStatus));
 router.patch('/:id/member/payment-status', authenticate, asyncHandler(updateMyPaymentStatus));
 router.post('/:id/lock', authenticate, asyncHandler(lockGroup));

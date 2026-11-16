@@ -72,6 +72,13 @@ class FASTProvider extends ChangeNotifier {
   Restaurant? _selectedRestaurant;
   String? _activeGroupId;
   String? _activeGroupCode;
+
+  // What each member of the active group feels like eating — one entry
+  // per distinct craving. Drives the "good for the whole group" ranking.
+  List<String> _groupCravings = [];
+  String _myCraving = '';
+  bool _groupOpen = false;
+  Timer? _cravingTimer;
   FulfillmentType _fulfillmentType = FulfillmentType.pickup;
   String _deliveryAddress = '';
   double? _deliveryLatitude;
@@ -227,6 +234,7 @@ class FASTProvider extends ChangeNotifier {
     _selectedRestaurant = null;
     _activeGroupId = null;
     _activeGroupCode = null;
+    _clearGroupCravings();
     _activeOrderId = null;
     _deliveryAddress = '';
     _deliveryLatitude = null;
@@ -308,6 +316,142 @@ class FASTProvider extends ChangeNotifier {
 
   Restaurant? get selectedRestaurant => _selectedRestaurant;
   String? get activeGroupId => _activeGroupId;
+
+  /// Distinct cravings of the active group's members ("burger", "pizza").
+  List<String> get groupCravings => _groupCravings;
+  String get myCraving => _myCraving;
+
+  /// True when at least two different cravings have to be reconciled —
+  /// only then does the group ranking reorder anything.
+  bool get groupRankingActive =>
+      _activeGroupId != null && _groupCravings.length >= 2;
+
+  /// Pure: does [r] serve [craving]? Matches its categories, cuisine,
+  /// name and available dishes, ignoring case, accents and plurals.
+  /// Descriptions are left out: "no pizza here" must not match pizza.
+  static bool restaurantHasCraving(Restaurant r, String craving) {
+    final q = foldText(craving);
+    if (q.length < 2) return false;
+    final catId = normalizeCategoryId(craving);
+    for (final c in r.category.split(',')) {
+      if (c.trim().isNotEmpty && normalizeCategoryId(c) == catId) return true;
+    }
+    final stem = categoryStem(q);
+    bool has(String text) {
+      final f = foldText(text);
+      return f.contains(q) || (stem.length >= 3 && f.contains(stem));
+    }
+
+    if (has(r.category) || has(r.cuisineType) || has(r.name)) return true;
+    return r.menu.any((m) => m.available && (has(m.name) || has(m.category)));
+  }
+
+  /// Pure: the entries of [cravings] that [r] can serve.
+  static List<String> cravingsServedBy(Restaurant r, List<String> cravings) =>
+      cravings.where((c) => restaurantHasCraving(r, c)).toList();
+
+  /// Pure: one entry per distinct craving, first spelling kept
+  /// ("Burger" and "burgers" are the same wish).
+  static List<String> distinctCravings(Iterable<String> raw) {
+    final seen = <String>{};
+    return [
+      for (final c in raw.map((c) => c.trim()))
+        if (c.isNotEmpty && seen.add(categoryStem(normalizeCategoryId(c)))) c,
+    ];
+  }
+
+  /// Pure: [restaurants] with the ones serving the most cravings first;
+  /// the incoming order (distance) is kept within each level.
+  static List<Restaurant> rankForGroup(
+    List<Restaurant> restaurants,
+    List<String> cravings,
+  ) {
+    final scored = [
+      for (var i = 0; i < restaurants.length; i++)
+        (i, cravingsServedBy(restaurants[i], cravings).length, restaurants[i]),
+    ];
+    scored.sort((a, b) {
+      final byCoverage = b.$2.compareTo(a.$2);
+      return byCoverage != 0 ? byCoverage : a.$1.compareTo(b.$1);
+    });
+    return [for (final e in scored) e.$3];
+  }
+
+  /// How many of the group's cravings [r] serves.
+  int groupCoverage(Restaurant r) => cravingsServedBy(r, _groupCravings).length;
+
+  /// True when [r] serves every craving of the group.
+  bool servesWholeGroup(Restaurant r) =>
+      groupRankingActive && groupCoverage(r) == _groupCravings.length;
+
+  /// Restaurants serving at least one craving, best coverage first.
+  List<Restaurant> get groupRestaurantSuggestions {
+    if (_groupCravings.isEmpty) return const [];
+    var list = _restaurants.where((r) => groupCoverage(r) > 0).toList();
+    if (_userLocation != null) {
+      list.sort((a, b) => getRealDistance(a).compareTo(getRealDistance(b)));
+    }
+    list = rankForGroup(list, _groupCravings);
+    return list.take(5).toList();
+  }
+
+  /// Reads the cravings out of a group payload from the backend.
+  void applyGroupPayload(Map<String, dynamic> group) {
+    final members = (group['members'] as List<dynamic>? ?? const [])
+        .whereType<Map<String, dynamic>>();
+    final cravings = distinctCravings(
+      members.map((m) => m['craving'] as String? ?? ''),
+    );
+    var mine = '';
+    for (final m in members) {
+      final uid = (m['user'] as Map<String, dynamic>?)?['id'] ?? m['userId'];
+      if (uid == _userId) mine = (m['craving'] as String? ?? '').trim();
+    }
+    final open = (group['status'] as String? ?? 'OPEN') == 'OPEN';
+    if (cravings.join('|') == _groupCravings.join('|') &&
+        mine == _myCraving &&
+        open == _groupOpen) {
+      return;
+    }
+    _groupCravings = cravings;
+    _myCraving = mine;
+    _groupOpen = open;
+    _cachedFiltered = null;
+    notifyListeners();
+  }
+
+  /// Refreshes the active group's cravings (the group screen does it on
+  /// its own while open; this covers the home page).
+  Future<void> syncGroupCravings() async {
+    final id = _activeGroupId;
+    if (id == null || _userId.isEmpty) return;
+    try {
+      applyGroupPayload(await _groupService.getGroup(id));
+    } catch (_) {}
+  }
+
+  /// Saves what I feel like eating to the active group. Returns the
+  /// updated group, or null when it could not be saved.
+  Future<Map<String, dynamic>?> setMyCraving(String craving) async {
+    final id = _activeGroupId;
+    if (id == null) return null;
+    try {
+      final group = await _groupService.setCraving(id, craving.trim());
+      applyGroupPayload(group);
+      return group;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _clearGroupCravings() {
+    _cravingTimer?.cancel();
+    _groupCravings = [];
+    _myCraving = '';
+    _groupOpen = false;
+    _cachedFiltered = null;
+  }
+
   String? get activeGroupCode => _activeGroupCode;
   FulfillmentType get fulfillmentType => _fulfillmentType;
   String get deliveryAddress => _deliveryAddress;
@@ -876,6 +1020,7 @@ class FASTProvider extends ChangeNotifier {
       syncOrderPolling();
       unawaited(loadLoyaltyCards());
       unawaited(syncReservationReminders());
+      unawaited(syncGroupCravings());
       await Future.wait([
         _saveRestaurants(),
         _saveOrders(),
@@ -1204,6 +1349,7 @@ class FASTProvider extends ChangeNotifier {
   void clearActiveGroup() {
     _activeGroupId = null;
     _activeGroupCode = null;
+    _clearGroupCravings();
     SharedPreferences.getInstance().then((prefs) {
       prefs.remove(_activeGroupIdKey);
       prefs.remove(_activeGroupCodeKey);
@@ -1219,6 +1365,23 @@ class FASTProvider extends ChangeNotifier {
   void setKeyword(String keyword) {
     _searchKeyword = keyword;
     notifyListeners();
+    _shareSearchWithGroup(keyword);
+  }
+
+  /// In an open group, what I search for is what I feel like eating:
+  /// once I stop typing it becomes my craving, so the others see the
+  /// restaurants that also serve it first.
+  void _shareSearchWithGroup(String keyword) {
+    _cravingTimer?.cancel();
+    final wish = keyword.trim();
+    if (_activeGroupId == null || !_groupOpen || wish.length < 3) return;
+    if (foldText(wish) == foldText(_myCraving)) return;
+    _cravingTimer = Timer(const Duration(milliseconds: 1500), () {
+      if (_disposed || foldText(_searchKeyword.trim()) != foldText(wish)) {
+        return;
+      }
+      unawaited(setMyCraving(wish));
+    });
   }
 
   void toggleDietary(DietaryPreference pref) {
@@ -1308,7 +1471,7 @@ class FASTProvider extends ChangeNotifier {
   // List filter logic
   List<Restaurant> getFilteredRestaurants() {
     final filterKey =
-        '$_selectedCategory|$_searchKeyword|${_selectedDietary.length}|${_restaurants.length}|$_searchRadiusKm|$_userLocation';
+        '$_selectedCategory|$_searchKeyword|${_selectedDietary.length}|${_restaurants.length}|$_searchRadiusKm|$_userLocation|$_activeGroupId|${_groupCravings.join(',')}';
     if (_cachedFiltered != null && _cachedFilterKey == filterKey) {
       return _cachedFiltered!;
     }
@@ -1365,7 +1528,11 @@ class FASTProvider extends ChangeNotifier {
     if (_userLocation != null) {
       list.sort((a, b) => getRealDistance(a).compareTo(getRealDistance(b)));
     }
-    _cachedFiltered = list;
+    // In a group with different cravings, the restaurants that serve
+    // everyone come first so the group can order from a single place.
+    _cachedFiltered = groupRankingActive
+        ? rankForGroup(list, _groupCravings)
+        : list;
     return _cachedFiltered!;
   }
 

@@ -32,7 +32,8 @@ class ApiConfig {
   static String menuByRestaurant(String id) => '/menu/restaurant/$id';
   static String menuItem(String id) => '/menu/$id';
   static String enhanceMenuItem(String id) => '/menu/$id/enhance';
-  static String managedMenuByRestaurant(String id) => '/menu/restaurant/$id/manage';
+  static String managedMenuByRestaurant(String id) =>
+      '/menu/restaurant/$id/manage';
   static String scanMenu(String restaurantId) =>
       '/menu/restaurant/$restaurantId/scan';
   static String menuItemSupplements(String menuItemId) =>
@@ -126,6 +127,8 @@ class ApiConfig {
   static String lockGroup(String id) => '/groups/$id/lock';
   static String submitGroup(String id) => '/groups/$id/submit';
   static String groupCart(String id) => '/groups/$id/cart';
+  static String groupCraving(String id) => '/groups/$id/craving';
+  static String groupRestaurant(String id) => '/groups/$id/restaurant';
 
   // Deliveries
   static const String availableDeliveries = '/deliveries/available';

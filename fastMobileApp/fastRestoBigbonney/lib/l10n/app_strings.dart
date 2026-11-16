@@ -1126,6 +1126,31 @@ class AppStrings {
     'notif_resa_remind_t': 'Votre table dans 1 heure',
     'notif_resa_remind_b': '{name} · {n} pers. à {time}',
     'resa_cancel_notice': 'Le client sera prévenu de l’annulation.',
+    // Group cravings
+    'grp_crave_title': 'Vos envies',
+    'grp_crave_sub':
+        'Chacun indique ce qu’il veut manger : les restaurants qui proposent tout passent en premier.',
+    'grp_crave_hint': 'De quoi avez-vous envie ? (burger, pizza…)',
+    'grp_crave_member': 'Envie : {n}',
+    'grp_current': 'Restaurant du groupe',
+    'grp_match_title': 'Où commander ensemble',
+    'grp_match_all': 'Convient à tout le groupe',
+    'grp_match_some': '{a}/{b} envies',
+    'grp_match_none':
+        'Aucun restaurant ne propose tout. Voici ceux qui s’en approchent le plus.',
+    'grp_match_empty':
+        'Aucun restaurant ne correspond à ces envies pour l’instant.',
+    'grp_match_host':
+        'Choisissez un restaurant pour y faire commander tout le groupe.',
+    'grp_host_only':
+        'Seul l’organisateur peut changer le restaurant du groupe.',
+    'grp_switch_cta': 'Choisir',
+    'grp_switch_q': 'Commander chez {n} ?',
+    'grp_switch_body':
+        'Tout le groupe commandera dans ce restaurant. Les paniers déjà composés seront vidés.',
+    'grp_switch_done': 'Le groupe commande maintenant chez {n}',
+    'grp_home_title': 'Groupe : {n}',
+    'grp_home_sub': 'Les restaurants qui proposent tout sont en premier.',
   };
 
   // ──────────────────────────── English ────────────────────────────
@@ -2174,6 +2199,27 @@ class AppStrings {
     'notif_resa_remind_t': 'Your table in 1 hour',
     'notif_resa_remind_b': '{name} · {n} guests at {time}',
     'resa_cancel_notice': 'The customer will be told about the cancellation.',
+    // Group cravings
+    'grp_crave_title': 'What you feel like',
+    'grp_crave_sub':
+        'Everyone says what they want to eat: restaurants serving all of it come first.',
+    'grp_crave_hint': 'What do you feel like? (burger, pizza…)',
+    'grp_crave_member': 'Wants: {n}',
+    'grp_current': 'Group restaurant',
+    'grp_match_title': 'Where to order together',
+    'grp_match_all': 'Good for the whole group',
+    'grp_match_some': '{a}/{b} cravings',
+    'grp_match_none': 'No restaurant serves everything. These come closest.',
+    'grp_match_empty': 'No restaurant matches these cravings yet.',
+    'grp_match_host': 'Pick a restaurant to have the whole group order there.',
+    'grp_host_only': 'Only the organiser can change the group’s restaurant.',
+    'grp_switch_cta': 'Choose',
+    'grp_switch_q': 'Order from {n}?',
+    'grp_switch_body':
+        'The whole group will order from this restaurant. Carts already filled will be emptied.',
+    'grp_switch_done': 'The group now orders from {n}',
+    'grp_home_title': 'Group: {n}',
+    'grp_home_sub': 'Restaurants serving everything come first.',
   };
 
   // ──────────────────────────── Turkish ────────────────────────────
@@ -3229,6 +3275,28 @@ class AppStrings {
     'notif_resa_remind_t': 'Masanız 1 saat sonra',
     'notif_resa_remind_b': '{name} · {n} kişi, saat {time}',
     'resa_cancel_notice': 'Müşteriye iptal bildirilecek.',
+    // Group cravings
+    'grp_crave_title': 'Canınız ne çekiyor',
+    'grp_crave_sub':
+        'Herkes ne yemek istediğini yazar: hepsini sunan restoranlar önce gelir.',
+    'grp_crave_hint': 'Canınız ne çekiyor? (burger, pizza…)',
+    'grp_crave_member': 'İstek: {n}',
+    'grp_current': 'Grubun restoranı',
+    'grp_match_title': 'Birlikte nereden sipariş verilir',
+    'grp_match_all': 'Tüm gruba uygun',
+    'grp_match_some': '{a}/{b} istek',
+    'grp_match_none':
+        'Hiçbir restoran hepsini sunmuyor. En yakın olanlar bunlar.',
+    'grp_match_empty': 'Bu isteklere uyan restoran henüz yok.',
+    'grp_match_host': 'Tüm grubun sipariş vereceği restoranı seçin.',
+    'grp_host_only': 'Grubun restoranını yalnızca organizatör değiştirebilir.',
+    'grp_switch_cta': 'Seç',
+    'grp_switch_q': '{n} restoranından sipariş verilsin mi?',
+    'grp_switch_body':
+        'Tüm grup bu restorandan sipariş verecek. Hazırlanan sepetler boşaltılacak.',
+    'grp_switch_done': 'Grup artık {n} restoranından sipariş veriyor',
+    'grp_home_title': 'Grup: {n}',
+    'grp_home_sub': 'Hepsini sunan restoranlar önce gelir.',
   };
 
   // ──────────────────────────── Arabic ────────────────────────────
@@ -4248,6 +4316,27 @@ class AppStrings {
     'notif_resa_remind_t': 'طاولتك بعد ساعة',
     'notif_resa_remind_b': '{name} · {n} أشخاص الساعة {time}',
     'resa_cancel_notice': 'سيتم إبلاغ الزبون بالإلغاء.',
+    // Group cravings
+    'grp_crave_title': 'ماذا تشتهون',
+    'grp_crave_sub':
+        'يكتب كل واحد ما يريد أن يأكل: المطاعم التي تقدّم كل شيء تظهر أولاً.',
+    'grp_crave_hint': 'ماذا تشتهي؟ (برغر، بيتزا…)',
+    'grp_crave_member': 'يشتهي: {n}',
+    'grp_current': 'مطعم المجموعة',
+    'grp_match_title': 'أين نطلب معاً',
+    'grp_match_all': 'يناسب كل المجموعة',
+    'grp_match_some': '{a}/{b} رغبات',
+    'grp_match_none': 'لا يوجد مطعم يقدّم كل شيء. هذه الأقرب إلى رغباتكم.',
+    'grp_match_empty': 'لا يوجد مطعم يطابق هذه الرغبات حالياً.',
+    'grp_match_host': 'اختر مطعماً لتطلب منه كل المجموعة.',
+    'grp_host_only': 'المنظّم فقط يستطيع تغيير مطعم المجموعة.',
+    'grp_switch_cta': 'اختيار',
+    'grp_switch_q': 'الطلب من {n}؟',
+    'grp_switch_body':
+        'ستطلب كل المجموعة من هذا المطعم. سيتم إفراغ السلال المُعدّة.',
+    'grp_switch_done': 'المجموعة تطلب الآن من {n}',
+    'grp_home_title': 'المجموعة: {n}',
+    'grp_home_sub': 'المطاعم التي تقدّم كل شيء تظهر أولاً.',
   };
 
   // ──────────────────────────── Spanish ────────────────────────────
@@ -5319,6 +5408,30 @@ class AppStrings {
     'notif_resa_remind_t': 'Tu mesa en 1 hora',
     'notif_resa_remind_b': '{name} · {n} pers. a las {time}',
     'resa_cancel_notice': 'Se avisará al cliente de la cancelación.',
+    // Group cravings
+    'grp_crave_title': 'Vuestros antojos',
+    'grp_crave_sub':
+        'Cada uno indica lo que quiere comer: los restaurantes que lo ofrecen todo salen primero.',
+    'grp_crave_hint': '¿Qué te apetece? (burger, pizza…)',
+    'grp_crave_member': 'Antojo: {n}',
+    'grp_current': 'Restaurante del grupo',
+    'grp_match_title': 'Dónde pedir juntos',
+    'grp_match_all': 'Vale para todo el grupo',
+    'grp_match_some': '{a}/{b} antojos',
+    'grp_match_none':
+        'Ningún restaurante lo ofrece todo. Estos son los que más se acercan.',
+    'grp_match_empty':
+        'Ningún restaurante coincide con estos antojos por ahora.',
+    'grp_match_host': 'Elige un restaurante para que todo el grupo pida allí.',
+    'grp_host_only':
+        'Solo el organizador puede cambiar el restaurante del grupo.',
+    'grp_switch_cta': 'Elegir',
+    'grp_switch_q': '¿Pedir en {n}?',
+    'grp_switch_body':
+        'Todo el grupo pedirá en este restaurante. Las cestas ya preparadas se vaciarán.',
+    'grp_switch_done': 'El grupo pide ahora en {n}',
+    'grp_home_title': 'Grupo: {n}',
+    'grp_home_sub': 'Los restaurantes que lo ofrecen todo salen primero.',
   };
 
   // ──────────────────────────── Portuguese ────────────────────────────
@@ -6387,6 +6500,29 @@ class AppStrings {
     'notif_resa_remind_t': 'A tua mesa daqui a 1 hora',
     'notif_resa_remind_b': '{name} · {n} pess. às {time}',
     'resa_cancel_notice': 'O cliente será avisado do cancelamento.',
+    // Group cravings
+    'grp_crave_title': 'Os vossos desejos',
+    'grp_crave_sub':
+        'Cada um indica o que quer comer: os restaurantes que têm tudo aparecem primeiro.',
+    'grp_crave_hint': 'O que te apetece? (burger, pizza…)',
+    'grp_crave_member': 'Apetece: {n}',
+    'grp_current': 'Restaurante do grupo',
+    'grp_match_title': 'Onde pedir juntos',
+    'grp_match_all': 'Serve para todo o grupo',
+    'grp_match_some': '{a}/{b} desejos',
+    'grp_match_none':
+        'Nenhum restaurante tem tudo. Estes são os que mais se aproximam.',
+    'grp_match_empty':
+        'Nenhum restaurante corresponde a estes desejos por agora.',
+    'grp_match_host': 'Escolhe um restaurante para todo o grupo pedir lá.',
+    'grp_host_only': 'Só o organizador pode mudar o restaurante do grupo.',
+    'grp_switch_cta': 'Escolher',
+    'grp_switch_q': 'Pedir no {n}?',
+    'grp_switch_body':
+        'Todo o grupo vai pedir neste restaurante. Os cestos já preparados serão esvaziados.',
+    'grp_switch_done': 'O grupo pede agora no {n}',
+    'grp_home_title': 'Grupo: {n}',
+    'grp_home_sub': 'Os restaurantes que têm tudo aparecem primeiro.',
   };
 
   // ──────────────────────────── Italian ────────────────────────────
@@ -7453,6 +7589,30 @@ class AppStrings {
     'notif_resa_remind_t': 'Il tuo tavolo tra 1 ora',
     'notif_resa_remind_b': '{name} · {n} pers. alle {time}',
     'resa_cancel_notice': 'Il cliente sarà avvisato dell’annullamento.',
+    // Group cravings
+    'grp_crave_title': 'Le vostre voglie',
+    'grp_crave_sub':
+        'Ognuno indica cosa vuole mangiare: i ristoranti che offrono tutto vengono per primi.',
+    'grp_crave_hint': 'Di cosa hai voglia? (burger, pizza…)',
+    'grp_crave_member': 'Voglia: {n}',
+    'grp_current': 'Ristorante del gruppo',
+    'grp_match_title': 'Dove ordinare insieme',
+    'grp_match_all': 'Va bene per tutto il gruppo',
+    'grp_match_some': '{a}/{b} voglie',
+    'grp_match_none':
+        'Nessun ristorante offre tutto. Questi sono i più vicini.',
+    'grp_match_empty': 'Nessun ristorante corrisponde a queste voglie per ora.',
+    'grp_match_host':
+        'Scegli un ristorante per far ordinare lì tutto il gruppo.',
+    'grp_host_only':
+        'Solo l’organizzatore può cambiare il ristorante del gruppo.',
+    'grp_switch_cta': 'Scegli',
+    'grp_switch_q': 'Ordinare da {n}?',
+    'grp_switch_body':
+        'Tutto il gruppo ordinerà in questo ristorante. I carrelli già preparati verranno svuotati.',
+    'grp_switch_done': 'Il gruppo ora ordina da {n}',
+    'grp_home_title': 'Gruppo: {n}',
+    'grp_home_sub': 'I ristoranti che offrono tutto vengono per primi.',
   };
 
   // ──────────────────────────── Chinese ────────────────────────────
@@ -8424,6 +8584,25 @@ class AppStrings {
     'notif_resa_remind_t': '您的订位将在 1 小时后开始',
     'notif_resa_remind_b': '{name} · {n} 人，{time}',
     'resa_cancel_notice': '顾客将收到取消通知。',
+    // Group cravings
+    'grp_crave_title': '大家想吃什么',
+    'grp_crave_sub': '每个人写下想吃的东西：能满足所有人的餐厅会排在最前面。',
+    'grp_crave_hint': '你想吃什么？（汉堡、披萨…）',
+    'grp_crave_member': '想吃：{n}',
+    'grp_current': '团体餐厅',
+    'grp_match_title': '一起在哪里点餐',
+    'grp_match_all': '适合整个团体',
+    'grp_match_some': '{a}/{b} 个口味',
+    'grp_match_none': '没有餐厅能满足所有口味。以下是最接近的。',
+    'grp_match_empty': '暂时没有符合这些口味的餐厅。',
+    'grp_match_host': '选择一家餐厅，让整个团体都在那里点餐。',
+    'grp_host_only': '只有发起人可以更换团体餐厅。',
+    'grp_switch_cta': '选择',
+    'grp_switch_q': '在 {n} 点餐？',
+    'grp_switch_body': '整个团体将在这家餐厅点餐。已选好的购物车将被清空。',
+    'grp_switch_done': '团体现在在 {n} 点餐',
+    'grp_home_title': '团体：{n}',
+    'grp_home_sub': '能满足所有人的餐厅排在最前面。',
   };
 
   // ─────────── Essential keys — other languages ───────────

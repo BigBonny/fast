@@ -1,7 +1,14 @@
 import { Request, Response } from 'express';
 import { randomBytes } from 'crypto';
 import { prisma } from '../services/prisma';
-import { createGroupSchema, joinGroupSchema, updateGroupMemberSchema, saveGroupCartSchema } from '../utils/validation';
+import {
+  createGroupSchema,
+  joinGroupSchema,
+  updateGroupMemberSchema,
+  saveGroupCartSchema,
+  groupCravingSchema,
+  groupRestaurantSchema,
+} from '../utils/validation';
 import { computeCartPricing } from '../utils/cartPricing';
 import { getRestaurantIdForUser } from '../middleware/auth';
 import { safeEmitNotificationToUser } from '../services/realtime';
@@ -361,6 +368,133 @@ export const updateMyGroupMember = async (req: Request, res: Response): Promise<
     where: { id: member.id },
     data: updateData,
     include: { user: { select: { id: true, name: true } } },
+  });
+  res.json(updated);
+};
+
+/** A member says what they feel like eating ("burger", "pizza"). */
+export const setMyCraving = async (req: Request, res: Response): Promise<void> => {
+  const id = req.params.id as string;
+  const { craving } = groupCravingSchema.parse(req.body);
+
+  const member = await prisma.groupMember.findUnique({
+    where: { groupId_userId: { groupId: id, userId: req.user!.userId } },
+    include: { group: { select: { status: true } } },
+  });
+  if (!member) {
+    res.status(403).json({ error: 'Accès interdit' });
+    return;
+  }
+  if (member.group.status !== 'OPEN') {
+    res.status(409).json({ error: 'Le groupe n’est plus ouvert' });
+    return;
+  }
+
+  await prisma.groupMember.update({
+    where: { id: member.id },
+    data: { craving },
+  });
+  const group = await prisma.groupOrder.findUnique({
+    where: { id },
+    include: safeGroupInclude,
+  });
+  res.json(group);
+};
+
+/**
+ * Why the group's restaurant can't be changed any more, or null when it
+ * can: only while invitations are open and nobody has started paying,
+ * because a share is priced and paid against one restaurant's menu.
+ */
+export function restaurantChangeBlocker(
+  status: string,
+  memberPaymentStatuses: string[],
+): string | null {
+  if (status !== 'OPEN') return 'Le groupe n’est plus ouvert';
+  if (memberPaymentStatuses.some((p) => p === 'PAID' || p === 'READY')) {
+    return 'Un membre a déjà commencé à payer : le restaurant ne peut plus changer';
+  }
+  return null;
+}
+
+/**
+ * The host moves the group to another restaurant — typically one that
+ * covers everyone's craving. Carts belong to the old menu, so they are
+ * emptied, and the other members are told.
+ */
+export const changeGroupRestaurant = async (req: Request, res: Response): Promise<void> => {
+  const id = req.params.id as string;
+  const { restaurantId } = groupRestaurantSchema.parse(req.body);
+
+  const group = await prisma.groupOrder.findUnique({
+    where: { id },
+    include: { members: { select: { userId: true, paymentStatus: true } } },
+  });
+  if (!group) {
+    res.status(404).json({ error: 'Groupe introuvable' });
+    return;
+  }
+  if (group.hostUserId !== req.user!.userId) {
+    res.status(403).json({ error: 'Seul l’organisateur peut changer de restaurant' });
+    return;
+  }
+  const blocker = restaurantChangeBlocker(
+    group.status,
+    group.members.map((m) => m.paymentStatus),
+  );
+  if (blocker) {
+    res.status(409).json({ error: blocker });
+    return;
+  }
+  const restaurant = await prisma.restaurant.findFirst({
+    where: { id: restaurantId, isActive: true },
+    select: { id: true, name: true },
+  });
+  if (!restaurant) {
+    res.status(404).json({ error: 'Restaurant introuvable ou inactif' });
+    return;
+  }
+
+  if (restaurant.id !== group.restaurantId) {
+    const moved = await prisma.$transaction(async (tx) => {
+      // Conditional: a payment starting at the same moment wins.
+      const claimed = await tx.groupOrder.updateMany({
+        where: {
+          id,
+          status: 'OPEN',
+          members: { none: { paymentStatus: { in: ['PAID', 'READY'] } } },
+        },
+        data: { restaurantId: restaurant.id },
+      });
+      if (claimed.count !== 1) return false;
+      await tx.groupMember.updateMany({
+        where: { groupId: id },
+        data: { cartItemsJson: '', itemsCount: 0, total: 0, isReady: false },
+      });
+      return true;
+    });
+    if (!moved) {
+      res.status(409).json({ error: 'Le groupe a changé entre-temps, rafraîchissez' });
+      return;
+    }
+
+    for (const m of group.members) {
+      if (m.userId === req.user!.userId) continue;
+      const notification = await prisma.notification.create({
+        data: {
+          userId: m.userId,
+          title: 'Nouveau restaurant pour le groupe',
+          body: `Le groupe commande maintenant chez ${restaurant.name}. Composez votre part.`,
+          type: 'INFO',
+        },
+      });
+      safeEmitNotificationToUser(m.userId, notification);
+    }
+  }
+
+  const updated = await prisma.groupOrder.findUnique({
+    where: { id },
+    include: safeGroupInclude,
   });
   res.json(updated);
 };

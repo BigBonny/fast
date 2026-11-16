@@ -4,15 +4,23 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../api/api_exceptions.dart';
+import '../models.dart';
 import '../provider.dart';
 import '../providers/auth_provider.dart';
 import '../services/group_service.dart';
 import '../theme.dart';
 import '../l10n/tr.dart';
+import '../widgets/fast_parts.dart';
 import '../widgets/fast_ui.dart';
+import '../widgets/suggest_field.dart';
 
 class GroupScreen extends StatefulWidget {
-  const GroupScreen({super.key});
+  const GroupScreen({super.key, this.debugGroup});
+
+  /// Tests only: show this group payload instead of loading and polling
+  /// one from the backend.
+  @visibleForTesting
+  final Map<String, dynamic>? debugGroup;
 
   @override
   State<GroupScreen> createState() => _GroupScreenState();
@@ -21,6 +29,9 @@ class GroupScreen extends StatefulWidget {
 class _GroupScreenState extends State<GroupScreen> {
   final _service = GroupService();
   final _codeController = TextEditingController();
+  // "What do you feel like?" — my craving, shared with the group.
+  final _cravingController = TextEditingController();
+  final _cravingFocus = FocusNode();
   int _shakeTick = 0;
   Map<String, dynamic>? _group;
   Timer? _refreshTimer;
@@ -30,6 +41,12 @@ class _GroupScreenState extends State<GroupScreen> {
   @override
   void initState() {
     super.initState();
+    final debugGroup = widget.debugGroup;
+    if (debugGroup != null) {
+      _group = debugGroup;
+      _loading = false;
+      return;
+    }
     _restoreActiveGroup();
   }
 
@@ -37,6 +54,8 @@ class _GroupScreenState extends State<GroupScreen> {
   void dispose() {
     _refreshTimer?.cancel();
     _codeController.dispose();
+    _cravingController.dispose();
+    _cravingFocus.dispose();
     super.dispose();
   }
 
@@ -74,11 +93,18 @@ class _GroupScreenState extends State<GroupScreen> {
       _loading = false;
       _error = null;
     });
-    context.read<FASTProvider>().setActiveGroup(
+    final provider = context.read<FASTProvider>();
+    provider.setActiveGroup(
       id: data['id'] as String?,
       code: data['code'] as String?,
       restaurantId: data['restaurantId'] as String?,
     );
+    provider.applyGroupPayload(data);
+    // Mirror my saved craving in the field, unless I'm typing in it.
+    if (!_cravingFocus.hasFocus &&
+        _cravingController.text.trim() != provider.myCraving) {
+      _cravingController.text = provider.myCraving;
+    }
     _startPolling();
     final status = data['status'] as String? ?? 'OPEN';
     if (status == 'SUBMITTED' && previousStatus != 'SUBMITTED') {
@@ -281,6 +307,69 @@ class _GroupScreenState extends State<GroupScreen> {
     } catch (e) {
       if (mounted) setState(() => _error = _message(e));
     }
+  }
+
+  /// Saves what I feel like eating; the whole group sees it.
+  Future<void> _saveCraving(String craving) async {
+    final provider = context.read<FASTProvider>();
+    _cravingFocus.unfocus();
+    final group = await provider.setMyCraving(craving);
+    if (!mounted) return;
+    if (group == null) {
+      setState(() => _error = provider.tr('generic_error'));
+      return;
+    }
+    await _setGroup(group);
+  }
+
+  /// Host moves the group to [restaurant] — carts made on the previous
+  /// menu are emptied, so ask first.
+  Future<void> _switchRestaurant(Restaurant restaurant) async {
+    final id = _group?['id'] as String?;
+    if (id == null) return;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: ctx.fast.card,
+        title: Text(
+          tr(ctx, 'grp_switch_q').replaceAll('{n}', restaurant.name),
+          style: FASTText.title.copyWith(color: ctx.fast.t1),
+        ),
+        content: Text(
+          tr(ctx, 'grp_switch_body'),
+          style: FASTText.body.copyWith(color: ctx.fast.t2),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(tr(ctx, 'back')),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              tr(ctx, 'confirm'),
+              style: TextStyle(
+                color: ctx.fast.ink,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    final provider = context.read<FASTProvider>();
+    await _action(() => _service.changeRestaurant(id, restaurant.id));
+    if (!mounted || _error != null) return;
+    // My own cart was for the previous restaurant's menu.
+    if (provider.cart.isNotEmpty) provider.clearCart();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          tr(context, 'grp_switch_done').replaceAll('{n}', restaurant.name),
+        ),
+      ),
+    );
   }
 
   void _orderMyPart() {
@@ -557,6 +646,10 @@ class _GroupScreenState extends State<GroupScreen> {
             ],
           ),
         ),
+        if (status == 'OPEN') ...[
+          const SizedBox(height: FASTSpace.s40),
+          _cravingSection(group, isHost: isHost, paidCount: paidCount),
+        ],
         const SizedBox(height: FASTSpace.s40),
         _sectionLabel(tr(context, 'participants')),
         const SizedBox(height: FASTSpace.s12),
@@ -608,6 +701,228 @@ class _GroupScreenState extends State<GroupScreen> {
           ),
         ],
         if (status == 'SUBMITTED') const _SubmittedCard(),
+      ],
+    );
+  }
+
+  /// Cravings: everyone says what they feel like, and the restaurants
+  /// that serve all of it are listed first so the group orders from a
+  /// single place. The host can move the group to one of them.
+  Widget _cravingSection(
+    Map<String, dynamic> group, {
+    required bool isHost,
+    required int paidCount,
+  }) {
+    final provider = context.watch<FASTProvider>();
+    final fast = context.fast;
+    final cravings = provider.groupCravings;
+    final currentId = group['restaurantId'] as String?;
+    final currentName =
+        (group['restaurant'] as Map<String, dynamic>?)?['name'] as String? ??
+        '';
+    Restaurant? current;
+    for (final r in provider.restaurants) {
+      if (r.id == currentId) current = r;
+    }
+    final suggestions = provider.groupRestaurantSuggestions;
+    final anyFull = suggestions.any(provider.servesWholeGroup);
+    final options = [
+      for (final c in provider.categories)
+        if (c.id != 'all' && c.id != 'autre') catLabel(context, c.id),
+      for (final c in provider.customCategoriesInUse) c.name,
+    ];
+
+    Widget coverageTag(Restaurant r) {
+      final served = provider.groupCoverage(r);
+      if (provider.servesWholeGroup(r)) {
+        return FastTag(
+          tr(context, 'grp_match_all'),
+          kind: FastTagKind.accent,
+          icon: Icons.groups_outlined,
+        );
+      }
+      return FastTag(
+        tr(
+          context,
+          'grp_match_some',
+        ).replaceAll('{a}', '$served').replaceAll('{b}', '${cravings.length}'),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _sectionLabel(tr(context, 'grp_crave_title')),
+        const SizedBox(height: FASTSpace.s4),
+        Text(
+          tr(context, 'grp_crave_sub'),
+          style: FASTText.caption.copyWith(color: fast.t2, height: 1.4),
+        ),
+        const SizedBox(height: FASTSpace.s12),
+        SuggestField(
+          controller: _cravingController,
+          focusNode: _cravingFocus,
+          options: options,
+          showOnEmpty: false,
+          maxLength: 40,
+          textInputAction: TextInputAction.done,
+          style: FASTText.body.copyWith(color: fast.t1),
+          decoration: _fieldDecoration(context).copyWith(
+            hintText: tr(context, 'grp_crave_hint'),
+            prefixIcon: Icon(Icons.restaurant_menu, color: fast.t2, size: 20),
+            suffixIcon: IconButton(
+              tooltip: tr(context, 'confirm'),
+              onPressed: () => _saveCraving(_cravingController.text),
+              icon: Icon(Icons.check, color: fast.t1),
+            ),
+          ),
+          createLabel: (typed) => '« $typed »',
+          onSelected: _saveCraving,
+          onCreate: _saveCraving,
+          onSubmitted: _saveCraving,
+        ),
+        if (cravings.isNotEmpty) ...[
+          const SizedBox(height: FASTSpace.s12),
+          Wrap(
+            spacing: FASTSpace.s8,
+            runSpacing: FASTSpace.s8,
+            children: [
+              for (final c in cravings)
+                FastTag(c, kind: FastTagKind.ink, icon: Icons.favorite_border),
+            ],
+          ),
+        ],
+        // The restaurant the group orders from today.
+        if (currentName.isNotEmpty) ...[
+          const SizedBox(height: FASTSpace.s16),
+          Container(
+            padding: const EdgeInsets.all(FASTSpace.s12),
+            decoration: BoxDecoration(
+              color: fast.card,
+              borderRadius: BorderRadius.circular(FASTRadius.md),
+              border: Border.all(color: fast.line),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.storefront_outlined, color: fast.t2, size: 20),
+                const SizedBox(width: FASTSpace.s12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        tr(context, 'grp_current'),
+                        style: FASTText.caption.copyWith(color: fast.t2),
+                      ),
+                      Text(
+                        currentName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: FASTText.body.copyWith(
+                          color: fast.t1,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (current != null && cravings.isNotEmpty) ...[
+                  const SizedBox(width: FASTSpace.s8),
+                  coverageTag(current),
+                ],
+              ],
+            ),
+          ),
+        ],
+        if (cravings.isNotEmpty) ...[
+          const SizedBox(height: FASTSpace.s24),
+          _sectionLabel(tr(context, 'grp_match_title')),
+          const SizedBox(height: FASTSpace.s4),
+          Text(
+            suggestions.isEmpty
+                ? tr(context, 'grp_match_empty')
+                : !anyFull && cravings.length >= 2
+                ? tr(context, 'grp_match_none')
+                : isHost
+                ? tr(context, 'grp_match_host')
+                : tr(context, 'grp_host_only'),
+            style: FASTText.caption.copyWith(color: fast.t2, height: 1.4),
+          ),
+          const SizedBox(height: FASTSpace.s8),
+          for (final r in suggestions)
+            Container(
+              margin: const EdgeInsets.only(bottom: FASTSpace.s8),
+              padding: const EdgeInsets.all(FASTSpace.s12),
+              decoration: BoxDecoration(
+                color: fast.card,
+                borderRadius: BorderRadius.circular(FASTRadius.md),
+                border: Border.all(
+                  color: provider.servesWholeGroup(r)
+                      ? fast.amberSoftBorder
+                      : fast.line,
+                ),
+              ),
+              // The tag gets its own line so it is never cut off by the
+              // button beside the name.
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  coverageTag(r),
+                  const SizedBox(height: FASTSpace.s8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              r.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: FASTText.body.copyWith(
+                                color: fast.t1,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              FASTProvider.cravingsServedBy(
+                                r,
+                                cravings,
+                              ).join(' · '),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: FASTText.caption.copyWith(color: fast.t2),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: FASTSpace.s8),
+                      if (r.id == currentId)
+                        Icon(
+                          Icons.check_circle,
+                          color: FASTBrand.success,
+                          size: 22,
+                        )
+                      else if (isHost && paidCount == 0)
+                        OutlinedButton(
+                          onPressed: () => _switchRestaurant(r),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: fast.t1,
+                            side: BorderSide(color: fast.faint),
+                            shape: const StadiumBorder(),
+                            textStyle: FASTText.caption.copyWith(
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          child: Text(tr(context, 'grp_switch_cta')),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+        ],
       ],
     );
   }
@@ -678,6 +993,7 @@ class _GroupScreenState extends State<GroupScreen> {
     final name = user?['name'] as String? ?? tr(context, 'participant');
     final paymentStatus = member['paymentStatus'] as String? ?? 'DRAFT';
     final paid = paymentStatus == 'PAID';
+    final craving = (member['craving'] as String? ?? '').trim();
     return Container(
       margin: const EdgeInsets.only(bottom: FASTSpace.s8),
       padding: const EdgeInsets.all(FASTSpace.s16),
@@ -724,6 +1040,16 @@ class _GroupScreenState extends State<GroupScreen> {
                     color: paid ? FASTBrand.success : context.fast.t2,
                   ),
                 ),
+                if (craving.isNotEmpty)
+                  Text(
+                    tr(context, 'grp_crave_member').replaceAll('{n}', craving),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: FASTText.caption.copyWith(
+                      color: context.fast.t1,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
               ],
             ),
           ),

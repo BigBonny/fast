@@ -632,6 +632,16 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     matchingRestaurants.sort((a, b) => rank(a.name).compareTo(rank(b.name)));
+    // In a group, the places that serve everyone's craving lead.
+    if (provider.groupRankingActive) {
+      final ranked = FASTProvider.rankForGroup(
+        matchingRestaurants,
+        provider.groupCravings,
+      );
+      matchingRestaurants
+        ..clear()
+        ..addAll(ranked);
+    }
     matchingDishes.sort(
       (a, b) => rank(
         (a['item'] as MenuItem).name,
@@ -709,7 +719,13 @@ class _HomeScreenState extends State<HomeScreen> {
           title: r.name,
           caption:
               '${r.pickupPrepTime} ${tr(context, 'min_prep')} • ${provider.getRealDistance(r).toStringAsFixed(1)} km',
-          trailing: Icon(Icons.chevron_right, size: 20, color: fast.t3),
+          trailing: provider.servesWholeGroup(r)
+              ? FastTag(
+                  tr(context, 'grp_match_all'),
+                  kind: FastTagKind.accent,
+                  icon: Icons.groups_outlined,
+                )
+              : Icon(Icons.chevron_right, size: 20, color: fast.t3),
           onTap: () {
             provider.selectRestaurant(r.id);
             provider.navigateToScreen('restaurant');
@@ -1113,19 +1129,72 @@ class _HomeScreenState extends State<HomeScreen> {
         else
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: FASTSpace.s16),
-            child: ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: filteredRest.length,
-              itemBuilder: (context, index) {
-                final rest = filteredRest[index];
-                return _buildRestaurantCard(context, provider, rest, index);
-              },
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // In a group whose members want different things, say why
+                // the list is ordered the way it is.
+                if (provider.groupRankingActive) _groupRankingNote(context),
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: filteredRest.length,
+                  itemBuilder: (context, index) {
+                    final rest = filteredRest[index];
+                    return _buildRestaurantCard(context, provider, rest, index);
+                  },
+                ),
+              ],
             ),
           ),
 
         const SizedBox(height: 80), // bottom offset for basket
       ],
+    );
+  }
+
+  /// "Group: burger + pizza — places serving everything come first."
+  Widget _groupRankingNote(BuildContext context) {
+    final fast = context.fast;
+    final provider = context.read<FASTProvider>();
+    return Container(
+      margin: const EdgeInsets.only(bottom: FASTSpace.s12),
+      padding: const EdgeInsets.all(FASTSpace.s12),
+      decoration: BoxDecoration(
+        color: fast.amberSoftBg,
+        borderRadius: BorderRadius.circular(FASTRadius.md),
+        border: Border.all(color: fast.amberSoftBorder),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.groups_outlined, color: fast.t1, size: 20),
+          const SizedBox(width: FASTSpace.s12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  tr(
+                    context,
+                    'grp_home_title',
+                  ).replaceAll('{n}', provider.groupCravings.join(' + ')),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: FASTText.body.copyWith(
+                    color: fast.t1,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  tr(context, 'grp_home_sub'),
+                  style: FASTText.caption.copyWith(color: fast.t2),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1585,6 +1654,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    if (provider.servesWholeGroup(rest)) ...[
+                      FastTag(
+                        tr(context, 'grp_match_all'),
+                        kind: FastTagKind.accent,
+                        icon: Icons.groups_outlined,
+                      ),
+                      const SizedBox(height: FASTSpace.s8),
+                    ],
                     Text(
                       rest.name,
                       maxLines: 1,
