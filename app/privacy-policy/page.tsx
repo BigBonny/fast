@@ -37,6 +37,13 @@ export default function PrivacyPolicyPage() {
             <h3 className="font-display font-bold text-xl text-foreground mb-2">Partage</h3>
             <p>Nous ne vendons pas vos données. Elles ne sont partagées qu'avec les restaurants concernés pour le traitement de vos commandes.</p>
           </div>
+          <div>
+            <h3 className="font-display font-bold text-xl text-foreground mb-2">Suppression du compte</h3>
+            <p>
+              Vous pouvez supprimer votre compte et vos données personnelles à tout moment.{" "}
+              <Link href="/delete-account" className="font-bold text-fast-rose hover:underline">Voir comment supprimer mon compte</Link>.
+            </p>
+          </div>
         </div>
       </div>
     </div>
