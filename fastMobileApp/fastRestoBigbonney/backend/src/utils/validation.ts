@@ -251,6 +251,15 @@ export const updateGroupMemberSchema = z.object({
   isReady: z.boolean(),
 });
 
+export const groupCravingSchema = z.object({
+  // Empty string clears it.
+  craving: z.string().trim().max(40, 'Envie trop longue'),
+});
+
+export const groupRestaurantSchema = z.object({
+  restaurantId: z.string().min(1, 'Restaurant requis'),
+});
+
 export const saveGroupCartSchema = z.object({
   items: z.array(cartItemSchema).max(50, 'Maximum 50 articles'),
 });

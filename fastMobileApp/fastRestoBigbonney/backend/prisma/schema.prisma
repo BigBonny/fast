@@ -529,6 +529,9 @@ model GroupMember {
   isReady       Boolean                  @default(false)
   paymentStatus GroupMemberPaymentStatus @default(DRAFT)
   role          String                   @default("MEMBER") // HOST or MEMBER
+  // What this member feels like eating ("burger", "pizza"). The app ranks
+  // first the restaurants that cover every member's craving.
+  craving       String                   @default("")
   createdAt     DateTime                 @default(now())
 
   group GroupOrder @relation(fields: [groupId], references: [id], onDelete: Cascade)

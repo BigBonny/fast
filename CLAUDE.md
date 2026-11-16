@@ -65,5 +65,11 @@ compte". Brand teal `#00C8B3`, magenta `#FF0066`.
   `LoyaltyRedemption.stampsUsed` (`backend/src/services/loyalty.ts`), so
   refunds/cancellations can't leave stale points. The client redeems at
   the counter from "Ma fidélité".
+- Group cravings: each `GroupMember.craving` ("burger", "pizza") is set
+  from the group screen or, in an open group, from the home search. The
+  app ranks restaurants serving every craving first
+  (`FASTProvider.rankForGroup`, client-side); the host can move the
+  group to one (`PATCH /groups/:id/restaurant`, only while OPEN and
+  before anyone pays — carts are emptied).
 - Address autocomplete uses the French BAN API (not Nominatim).
 - AI features (assistants, menu scanner) use Google Gemini.

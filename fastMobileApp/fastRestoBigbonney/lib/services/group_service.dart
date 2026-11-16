@@ -73,6 +73,27 @@ class GroupService {
     return response as Map<String, dynamic>;
   }
 
+  /// What I feel like eating; an empty string clears it. Returns the group.
+  Future<Map<String, dynamic>> setCraving(String id, String craving) async {
+    final response = await _client.patch(
+      ApiConfig.groupCraving(id),
+      body: {'craving': craving},
+    );
+    return response as Map<String, dynamic>;
+  }
+
+  /// Host only: move the group to another restaurant. Returns the group.
+  Future<Map<String, dynamic>> changeRestaurant(
+    String id,
+    String restaurantId,
+  ) async {
+    final response = await _client.patch(
+      ApiConfig.groupRestaurant(id),
+      body: {'restaurantId': restaurantId},
+    );
+    return response as Map<String, dynamic>;
+  }
+
   Future<Map<String, dynamic>> getCart(String id) async {
     final response = await _client.get(ApiConfig.groupCart(id));
     return response as Map<String, dynamic>;
