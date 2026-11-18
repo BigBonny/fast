@@ -26,12 +26,9 @@ class LocationService {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) return _lastKnownLocation;
 
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) return _lastKnownLocation;
-      }
-      if (permission == LocationPermission.deniedForever) {
+      final permission = await ensurePermission();
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
         return _lastKnownLocation;
       }
 
@@ -49,6 +46,30 @@ class LocationService {
       debugPrint('LocationService.getCurrentLocation error: $e');
       return _lastKnownLocation;
     }
+  }
+
+  Future<LocationPermission>? _permissionRequest;
+
+  /// Checks location permission and asks for it when it hasn't been decided.
+  /// Every caller shares one in-flight request: Android delivers a second
+  /// concurrent request as an empty result ("denied"), which used to make
+  /// the first sign-in after an order skip location tracking.
+  Future<LocationPermission> ensurePermission() {
+    return _permissionRequest ??= _checkThenRequest().whenComplete(() {
+      _permissionRequest = null;
+    });
+  }
+
+  static Future<LocationPermission> _checkThenRequest() async {
+    var permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      // An interrupted dialog also reports denied: trust the real state.
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.checkPermission();
+      }
+    }
+    return permission;
   }
 
   /// Haversine distance in km between two points

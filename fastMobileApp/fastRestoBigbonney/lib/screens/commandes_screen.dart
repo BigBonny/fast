@@ -14,6 +14,7 @@ import '../provider.dart';
 import '../models.dart';
 import '../services/map_helper.dart';
 import '../services/location_service.dart';
+import '../services/proximity_service.dart';
 import '../services/delivery_service.dart';
 import 'qr_screen.dart';
 import '../theme.dart';
@@ -845,24 +846,28 @@ class _CommandesScreenState extends State<CommandesScreen>
     if (rest == null) return;
 
     final restPoint = LatLng(rest.latitude, rest.longitude);
+    // Start the shared tracking stream first so it owns the GPS stream with
+    // its Android foreground service; this screen only reads its fixes.
+    ProximityService.instance.sync();
     final start = await LocationService.instance.getCurrentLocation(
       forceRefresh: true,
     );
     if (start != null) {
-      _routePolyline = await LocationService.instance.getWalkingRoute(
+      final route = await LocationService.instance.getWalkingRoute(
         start,
         restPoint,
       );
-      if (mounted) setState(() {});
+      if (!mounted || _trackingOrderId != order.id) return;
+      _routePolyline = route;
+      setState(() {});
     }
+    // Tracking may have moved to another order (or stopped) during the
+    // awaits above — don't leak a subscription for the old one.
+    if (!mounted || _trackingOrderId != order.id) return;
+    ProximityService.instance.sync();
 
-    const settings = geo_loc.LocationSettings(
-      accuracy: geo_loc.LocationAccuracy.high,
-      distanceFilter: 15,
-    );
-
-    _locationSub =
-        geo_loc.Geolocator.getPositionStream(locationSettings: settings).listen(
+    _locationSub?.cancel();
+    _locationSub = ProximityService.instance.positions.listen(
           (pos) async {
             if (!mounted || _trackingOrderId != order.id) return;
             final current = LatLng(pos.latitude, pos.longitude);

@@ -51,6 +51,15 @@ class ProximityService {
   String _fgTitle = 'FAST';
   String _fgBody = 'Tracking your pickup';
 
+  bool _starting = false;
+
+  /// Fixes from the tracking stream, for screens that draw the walk (map
+  /// dot, route progress). Screens must listen here rather than open their
+  /// own Geolocator stream — see [_ensureStream].
+  final StreamController<Position> _positions =
+      StreamController<Position>.broadcast();
+  Stream<Position> get positions => _positions.stream;
+
   bool get isRunning => _sub != null;
 
   /// Binds live data sources. Call once per session (login) — [sync]
@@ -95,7 +104,8 @@ class ProximityService {
 
   /// Call after every order-list change: starts tracking when a pickup
   /// order exists, pauses when there's nothing to arrive for. Retrying
-  /// here also covers the user granting permission mid-session.
+  /// here also covers the user granting permission mid-session. Concurrent
+  /// calls share one permission request and one stream start.
   void sync() {
     if (kIsWeb) return;
     if (activePickupOrders().isEmpty) {
@@ -107,20 +117,21 @@ class ProximityService {
   }
 
   void _ensureStream() {
+    if (_starting) return;
+    _starting = true;
     unawaited(
-      Geolocator.checkPermission()
+      LocationService.instance
+          .ensurePermission()
           .then((permission) {
-            if (permission == LocationPermission.denied) {
-              return Geolocator.requestPermission();
-            }
-            return permission;
-          })
-          .then((permission) {
-            if (!canTrackWith(permission as LocationPermission) ||
+            if (!canTrackWith(permission) ||
                 _sub != null ||
                 activePickupOrders().isEmpty) {
               return;
             }
+            // Geolocator hands every caller the first position stream that
+            // was opened, with that caller's settings. Opening it here
+            // first (and being the only place that opens it) is what keeps
+            // the Android foreground service attached.
             _sub =
                 Geolocator.getPositionStream(
                   locationSettings: _settings(),
@@ -135,7 +146,8 @@ class ProximityService {
           })
           .catchError((Object _) {
             // No geolocator implementation (tests, desktop) — skip quietly.
-          }),
+          })
+          .whenComplete(() => _starting = false),
     );
   }
 
@@ -165,6 +177,7 @@ class ProximityService {
   }
 
   void _onPosition(Position p) {
+    _positions.add(p);
     final orders = _orders?.call() ?? const <Order>[];
     final restaurants = _restaurants?.call() ?? const <Restaurant>[];
     for (final (order, restaurant) in evaluateArrivals(
