@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'permission_queue.dart';
 import 'package:flutter/widgets.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -41,7 +42,9 @@ class PushService {
 
     final messaging = FirebaseMessaging.instance;
     try {
-      await messaging.requestPermission(alert: true, badge: true, sound: true);
+      await PermissionQueue.run(
+        () => messaging.requestPermission(alert: true, badge: true, sound: true),
+      );
       await _registerToken(messaging);
 
       // Re-register whenever FCM rotates the token.

@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
+import 'permission_queue.dart';
 
 class LocationService {
   LocationService._();
@@ -51,13 +52,14 @@ class LocationService {
   Future<LocationPermission>? _permissionRequest;
 
   /// Checks location permission and asks for it when it hasn't been decided.
-  /// Every caller shares one in-flight request: Android delivers a second
-  /// concurrent request as an empty result ("denied"), which used to make
-  /// the first sign-in after an order skip location tracking.
+  /// Every caller shares one in-flight request, queued behind any other
+  /// permission dialog ([PermissionQueue]): Android drops a request made
+  /// while another dialog is open and reports it as "denied", which used to
+  /// make the first sign-in after an order skip location tracking.
   Future<LocationPermission> ensurePermission() {
-    return _permissionRequest ??= _checkThenRequest().whenComplete(() {
-      _permissionRequest = null;
-    });
+    return _permissionRequest ??= PermissionQueue.run(
+      _checkThenRequest,
+    ).whenComplete(() => _permissionRequest = null);
   }
 
   static Future<LocationPermission> _checkThenRequest() async {

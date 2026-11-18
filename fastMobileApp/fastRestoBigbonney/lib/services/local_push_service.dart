@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'permission_queue.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest_all.dart' as tzdata;
@@ -144,16 +145,18 @@ class LocalPushService {
     if (!_initialized || _permissionRequested || kIsWeb) return;
     _permissionRequested = true;
     try {
-      final androidImpl = _plugin
-          .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin
-          >();
-      await androidImpl?.requestNotificationsPermission();
-      await _plugin
-          .resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin
-          >()
-          ?.requestPermissions(alert: true, badge: true, sound: true);
+      await PermissionQueue.run(() async {
+        final androidImpl = _plugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >();
+        await androidImpl?.requestNotificationsPermission();
+        await _plugin
+            .resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin
+            >()
+            ?.requestPermissions(alert: true, badge: true, sound: true);
+      });
     } catch (_) {}
   }
 
