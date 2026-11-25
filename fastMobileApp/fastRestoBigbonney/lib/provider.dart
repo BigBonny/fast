@@ -19,6 +19,7 @@ import 'services/payment_service.dart';
 import 'services/local_push_service.dart';
 import 'services/proximity_service.dart';
 import 'services/push_service.dart';
+import 'services/app_foreground.dart';
 import 'services/loyalty_service.dart';
 import 'services/reservation_service.dart';
 import 'api/api_exceptions.dart';
@@ -1054,16 +1055,43 @@ class FASTProvider extends ChangeNotifier {
     syncOrderPolling();
   }
 
-  /// Periodic poll while signed in (every 30s): notifications always,
-  /// orders only while one is in flight. This is the production delivery
-  /// path for order/notification alerts (no socket on Vercel).
+  /// Periodic poll while signed in and on screen (30 s tick). With an
+  /// order in flight: orders + notifications every tick. Otherwise only
+  /// notifications, every [idleNotificationEveryTicks] ticks (2 min) —
+  /// FCM push is the primary alert path, this is the fallback (no socket
+  /// on Vercel). Nothing is fetched while backgrounded; [onAppResumed]
+  /// catches up.
   void startOrderPolling() {
     if (_orderPollTimer != null) return;
+    _orderPollTick = 0;
     _orderPollTimer = Timer.periodic(const Duration(seconds: 30), (_) {
-      if (_userId.isEmpty) return;
-      if (_hasActiveOrders) unawaited(refreshOrders());
-      unawaited(refreshNotifications());
+      if (_userId.isEmpty || !AppForeground.isActive) return;
+      final active = _hasActiveOrders;
+      if (active) unawaited(refreshOrders());
+      if (shouldPollNotifications(++_orderPollTick, hasActiveOrders: active)) {
+        unawaited(refreshNotifications());
+      }
     });
+  }
+
+  int _orderPollTick = 0;
+
+  /// Idle customers poll notifications every this many 30 s ticks.
+  static const int idleNotificationEveryTicks = 4;
+
+  /// Pure: whether this poll tick fetches notifications.
+  @visibleForTesting
+  static bool shouldPollNotifications(
+    int tick, {
+    required bool hasActiveOrders,
+  }) => hasActiveOrders || tick % idleNotificationEveryTicks == 0;
+
+  /// Back from the background: polling skipped its calls meanwhile, so
+  /// refresh once right away.
+  void onAppResumed() {
+    if (_userId.isEmpty || _orderPollTimer == null) return;
+    if (_hasActiveOrders) unawaited(refreshOrders());
+    unawaited(refreshNotifications());
   }
 
   bool get _hasActiveOrders => _orders.any(

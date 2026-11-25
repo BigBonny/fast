@@ -13,6 +13,7 @@ import 'provider.dart';
 import 'resto_provider.dart';
 import 'theme.dart';
 import 'api/api_client.dart';
+import 'services/app_foreground.dart';
 import 'providers/auth_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/restaurant_screen.dart';
@@ -191,9 +192,16 @@ class _FASTAppState extends State<FASTApp> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    final wasActive = AppForeground.isActive;
+    AppForeground.update(state);
     if (state == AppLifecycleState.resumed) {
       context.read<FASTProvider>().refreshAutoTheme();
       _handleStripeReturn();
+      // Polling was skipped while in the background: catch up at once.
+      if (!wasActive) {
+        context.read<FASTProvider>().onAppResumed();
+        context.read<RestoProvider>().onAppResumed();
+      }
     }
   }
 
