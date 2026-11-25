@@ -8,6 +8,7 @@ import '../models.dart';
 import '../provider.dart';
 import '../providers/auth_provider.dart';
 import '../services/group_service.dart';
+import '../services/app_foreground.dart';
 import '../theme.dart';
 import '../l10n/tr.dart';
 import '../widgets/fast_parts.dart';
@@ -79,7 +80,8 @@ class _GroupScreenState extends State<GroupScreen> {
 
   void _startPolling() {
     _refreshTimer?.cancel();
-    _refreshTimer = Timer.periodic(const Duration(seconds: 6), (_) {
+    _refreshTimer = Timer.periodic(const Duration(seconds: 15), (_) {
+      if (!AppForeground.isActive) return;
       final id = _group?['id'] as String?;
       if (id != null) _refresh(id, quiet: true);
     });

@@ -14,6 +14,7 @@ import 'api/api_client.dart';
 import 'api/api_config.dart';
 import 'l10n/app_strings.dart';
 import 'services/local_push_service.dart';
+import 'services/app_foreground.dart';
 
 class RestoProvider extends ChangeNotifier {
   RestaurantSettings? _settings;
@@ -442,10 +443,21 @@ class RestoProvider extends ChangeNotifier {
     _pollTick = 0;
     unawaited(refreshReservations());
     _pollTimer = Timer.periodic(const Duration(seconds: 15), (_) {
+      // Backgrounded: new orders arrive by FCM push; [onAppResumed]
+      // catches up when the app comes back.
+      if (!AppForeground.isActive) return;
       refreshOrders();
       // Reservations move slowly: every other tick (30 s) is plenty.
       if ((++_pollTick).isEven) unawaited(refreshReservations());
     });
+  }
+
+  /// Back from the background: refresh at once instead of waiting for
+  /// the next tick.
+  void onAppResumed() {
+    if (_pollTimer == null) return;
+    unawaited(refreshOrders());
+    unawaited(refreshReservations());
   }
 
   void stopPolling() {
